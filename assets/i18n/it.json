@@ -724,6 +724,8 @@
     }
   },
   "compactPlayer": {
+    "takeABreak": "Prenditi una pausa",
+    "manualRest": "Pausa",
     "defaultWorkoutName": "Allenamento",
     "paused": "[IN PAUSA]",
     "overallProgress": "Progresso totale",
@@ -764,7 +766,7 @@
     "switchExerciseTitle": "CAMBIA ESERCIZIO",
     "similarExercisesTitle": "ESERCIZI SIMILI",
     "searchPlaceholder": "Cerca un sostituto...",
-    "rest": "RIPOSO",
+    "rest": "Recupero",
     "workoutCompleteRest": "Allenamento Completato!",
     "insights": {
       "title": "Statistiche Performance",
@@ -864,7 +866,12 @@
       "addFieldMessage": "Quale metrica vuoi aggiungere a tutte le serie di questo esercizio?",
       "setTargetTitle": "Imposta Target {{field}}",
       "setTargetMessage": "Inserisci il valore target che vuoi applicare alla serie corrente per questo esercizio.",
-      "applyTarget": "Applica Target"
+      "applyTarget": "Applica Target",
+      "startRest": "Inizia pausa",
+      "manualRestMessage": "Imposta i secondi di pausa",
+      "manualRestTitle": "Timer pausa personalizzato",
+      "chooseTimerMessage": "Scegli il tipo di timer",
+      "chooseTimerTitle": "Tipo di timer"
     },
     "actions": {
       "pause": "PAUSA SESSIONE",
@@ -872,7 +879,9 @@
       "notes": "NOTE SESSIONE",
       "addExercise": "AGGIUNGI ESERCIZIO",
       "toolkit": "TOOLKIT PESI",
-      "quit": "ABBANDONA ALLENAMENTO"
+      "quit": "ABBANDONA ALLENAMENTO",
+      "countdown": "CONTO ALLA ROVESCIA",
+      "stopwatch": "CRONOMETRO"
     }
   },
   "actionButtons": {
@@ -982,7 +991,7 @@
       "generalHealth": "Salute generale e longevità",
       "sportSpecific": "Performance sport-specifica",
       "maintenance": "Mantenimento",
-      "rest": "Riposo",
+      "rest": "Recupero",
       "custom": "Personalizzato"
     },
     "routineBuilder": {
@@ -1156,7 +1165,7 @@
     },
     "alerts": {
       "tabataConvertTitle": "Convertire in Tabata?",
-      "tabataConvertMessage": "Questo convertirà tutti gli esercizi in un unico superset. Ogni turno sarà impostato su 20 secondi di lavoro e 10 secondi di riposo. Sei sicuro?",
+      "tabataConvertMessage": "Questo convertirà tutti gli esercizi in un unico superset. Ogni turno sarà impostato su 20 secondi di lavoro e 10 secondi di recupero. Sei sicuro?",
       "convert": "Converti",
       "removeLastRoundTitle": "Rimuovi Ultimo Turno",
       "removeLastRoundMessage": "Questo è l'ultimo turno del superset. Rimuovendolo si eliminerà l'intero superset dall'allenamento. Continuare?",
@@ -1608,7 +1617,11 @@
   "restTimer": {
     "nextUp": "Prossimo",
     "lastTime": "Serie precedente",
-    "skip": "Salta"
+    "skip": "Salta",
+    "switchToStopwatch": "Passa al cronometro",
+    "switchToTimer": "Passa al timer",
+    "elapsed": "Tempo trascorso",
+    "stop": "Ferma"
   },
   "barbellCalculator": {
     "nav": {
@@ -2180,7 +2193,7 @@
       "labels": {
         "exerciseName": "Nome Esercizio",
         "numSets": "Numero di Serie",
-        "rest": "Riposo tra le Serie (secondi)",
+        "rest": "Recupero tra le Serie (secondi)",
         "targetDistance": "Distanza Obiettivo ({{unit}})",
         "targetDuration": "Durata Obiettivo (secondi)",
         "numReps": "Numero di Ripetizioni",

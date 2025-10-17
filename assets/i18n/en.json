@@ -728,6 +728,8 @@
     }
   },
   "compactPlayer": {
+    "takeABreak": "Take a break",
+    "manualRest": "Rest",
     "defaultWorkoutName": "Workout",
     "paused": "[PAUSED]",
     "overallProgress": "Overall progress",
@@ -868,7 +870,12 @@
       "addFieldMessage": "Which metric would you like to add to all sets of this exercise?",
       "setTargetTitle": "Set Target {{field}}",
       "setTargetMessage": "Enter the target value you want to apply to the current set for this exercise.",
-      "applyTarget": "Apply Target"
+      "applyTarget": "Apply Target",
+      "startRest": "Start rest timer",
+      "manualRestMessage": "Set rest seconds",
+      "manualRestTitle": "Custom rest timer",
+      "chooseTimerMessage": "Choose the timer type",
+      "chooseTimerTitle": "Timer type"
     },
     "actions": {
       "pause": "PAUSE SESSION",
@@ -876,7 +883,9 @@
       "notes": "SESSION NOTES",
       "addExercise": "ADD EXERCISE",
       "toolkit": "WEIGHT TOOLKIT",
-      "quit": "QUIT WORKOUT"
+      "quit": "QUIT WORKOUT",
+      "countdown": "COUNTDOWN",
+      "stopwatch": "STOPWATCH"
     }
   },
   "actionButtons": {
@@ -1622,7 +1631,11 @@
   "restTimer": {
     "nextUp": "Next Up",
     "lastTime": "Last time",
-    "skip": "Skip"
+    "skip": "Skip",
+    "switchToStopwatch": "Switch to Stopwatch",
+    "switchToTimer": "Switch to Timer",
+    "elapsed": "Time elapsed",
+    "stop": "Stop"
   },
   "barbellCalculator": {
     "nav": {
