@@ -1,4 +1,4 @@
-<div class="compact-player-container bg-gray-100 dark:bg-gray-900 min-h-screen">
+<div class="compact-player-container bg-gray-200 dark:bg-gray-900 min-h-screen">
   <!-- Header -->
   <header #header
     class="sticky top-0 z-20 bg-white dark:bg-gray-800 shadow-md px-3 pt-3 pb-2 flex flex-col justify-between rounded-b-md">
@@ -45,8 +45,8 @@
     <div class="w-full mt-2">
       <span class="flex justify-center text-primary-light font-mono">{{ 'compactPlayer.overallProgress' | translate
         }}</span>
-      <div class="progress-bar-container w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 relative">
-        <div class="progress-bar bg-primary h-3 rounded-full" [style.width.%]="workoutProgress()"></div>
+      <div class="progress-bar-container w-full bg-gray-300 dark:bg-gray-700 rounded-full h-5 relative flex items-center">
+        <div class="progress-bar bg-primary h-3 rounded-full my-1 mx-1" [style.width.%]="workoutProgress()"></div>
         <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
           {{ workoutProgress() | number:'1.0-0' }}%
         </span>
@@ -57,7 +57,7 @@
 
 
   <!-- Main Content: Exercises List -->
-  <main class="pt-5 px-1 pb-36">
+  <main class="pt-5 px-1 pb-36 bg-gray-200 dark:bg-gray-900">
     <div *ngIf="routine() as currentRoutine; else loading" cdkDropList [cdkDropListData]="currentRoutine.exercises"
       (cdkDropListDropped)="onExerciseDrop($event)" class="">
       <ng-container *ngFor="let exercise of currentRoutine.exercises; let exIndex = index;">
@@ -141,7 +141,7 @@
           <!-- Sets Container -->
           <!-- Sets Container -->
           <div *ngIf="expandedExerciseIndex() === exIndex"
-            class="bg-gray-200 dark:bg-gray-700/50 pt-2 pb-3 px-1 border-t border-gray-200 dark:border-gray-700 rounded-b-md">
+            class="bg-gray-100 dark:bg-gray-700/50 pt-2 pb-3 px-1 border-t border-gray-200 dark:border-gray-700 rounded-b-md">
 
             <!-- Sets List -->
             <div class="space-y-3">
