@@ -111,3 +111,40 @@ input::-webkit-inner-spin-button {
 .target-class {
   @apply text-center font-bold text-xs text-white dark:text-gray-500 mt-[-4px] py-1 bg-gray-400 dark:bg-white rounded-none rounded-b-md;
 }
+
+/* Keyframe for the "bumping in" (complete) animation */
+@keyframes bump-in-animation {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 6px 15px rgba(34, 197, 94, 0.3); /* Greenish shadow for positive feedback */
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Keyframe for the "bumping out" (un-complete) animation */
+@keyframes bump-out-animation {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.97); /* Slightly shrink to indicate removal */
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Class to apply the "bump in" animation */
+.animate-bump-in {
+  animation: bump-in-animation 0.3s ease-out forwards;
+}
+
+/* Class to apply the "bump out" animation */
+.animate-bump-out {
+  animation: bump-out-animation 0.3s ease-out forwards;
+}

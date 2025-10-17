@@ -1396,7 +1396,7 @@ export class WorkoutService {
     const buttons: AlertButton[] = availableMetrics.map(field => ({
       text: field.charAt(0).toUpperCase() + field.slice(1),
       role: 'add', data: field,
-      icon: field === METRIC.duration ? 'hourglass' : field
+      icon: field === METRIC.duration ? 'duration' : field
     }));
     buttons.push({ text: this.translate.instant('common.cancel'), role: 'cancel', data: null, icon: 'cancel' });
 
@@ -1501,7 +1501,7 @@ export class WorkoutService {
       text: field.charAt(0).toUpperCase() + field.slice(1),
       role: 'remove',
       data: field,
-      icon: field === METRIC.duration ? 'hourglass' : field,
+      icon: field === METRIC.duration ? 'duration' : field,
       cssClass: 'bg-red-500 hover:bg-red-600'
     }));
 

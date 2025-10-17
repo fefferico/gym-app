@@ -13,6 +13,7 @@ import {
   ExerciseTargetExecutionSetParams,
   ExerciseCurrentExecutionSetParams,
   METRIC,
+  TimedSetState,
 } from '../../../core/models/workout.model';
 import { Exercise } from '../../../core/models/exercise.model';
 import { WorkoutService } from '../../../core/services/workout.service';
@@ -53,6 +54,7 @@ import { SessionOverviewModalComponent } from '../session-overview-modal/session
 import { FullScreenRestTimerComponent } from '../../../shared/components/full-screen-rest-timer/full-screen-rest-timer';
 import { AudioService } from '../../../core/services/audio.service';
 import { se } from 'date-fns/locale';
+import { PressDirective } from '../../../shared/directives/press.directive';
 
 // Interface for saving the paused state
 
@@ -85,7 +87,7 @@ export interface NextStepInfo {
   imports: [
     CommonModule, DatePipe, WeightUnitPipe, IconComponent,
     ExerciseSelectionModalComponent, FormsModule, ActionMenuComponent, FullScreenRestTimerComponent, NgLetDirective,
-    DragDropModule, BarbellCalculatorModalComponent, TranslateModule, SessionOverviewModalComponent
+    DragDropModule, BarbellCalculatorModalComponent, TranslateModule, SessionOverviewModalComponent, PressDirective
   ],
   templateUrl: './compact-workout-player.component.html',
   styleUrls: ['./compact-workout-player.component.scss'],
@@ -111,6 +113,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   protected unitService = inject(UnitsService);
   private translate = inject(TranslateService);
 
+  private toggledSetAnimation = signal<{ key: string, type: 'set' | 'round', state: 'completed' | 'incompleted' } | null>(null);
+  protected metricEnum = METRIC;
+
   isAddToSupersetModalOpen = signal(false);
   exerciseToSupersetIndex = signal<number | null>(null);
   expandedSets = signal(new Set<string>());
@@ -120,7 +125,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   lastExerciseIndex = signal<number>(-1);
   lastExerciseSetIndex = signal<number>(-1);
 
-  // +++ NEW: To hold reference to the last completed set for updating its rest time after the timer finishes
   private lastLoggedSetForRestUpdate: LoggedSet | null = null;
 
   protected getMenuMode(): MenuMode {
@@ -180,7 +184,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   restDuration = signal(0);
   restTimerMainText = signal(this.translate.instant('compactPlayer.rest'));
   restTimerNextUpText = signal<string | null>(this.translate.instant('compactPlayer.loading'));
-  // +++ NEW: Signal to hold detailed info for the next set for the rest timer screen
   restTimerNextSetDetails = signal<ExerciseTargetSetParams | null>(null);
 
   menuModeDropdown: boolean = false;
@@ -223,7 +226,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     completedSetsInSession: LoggedSet[];
   } | null>(null);
 
-  // +++ NEW: State management for EMOM timers +++
   // Key: "exIndex-roundIndex", Value: state object
   emomState = signal<{ [key: string]: { status: 'idle' | 'running' | 'paused' | 'completed', remainingTime: number } }>({});
   private emomTimerSub: Subscription | undefined;
@@ -250,9 +252,44 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private audioService = inject(AudioService);
   private lastBeepSecond: number | null = null;
 
-  // The constructor is now empty or can be removed if not used for anything else.
+
+  @ViewChildren('setCard') setCards!: QueryList<ElementRef<HTMLDivElement>>;
+  @ViewChildren('roundCard') roundCards!: QueryList<ElementRef<HTMLDivElement>>;
+
   constructor() {
-    // Preload the audio file when the component is created.
+    // --- START: ADDED SNIPPET (Part 2) ---
+    // Effect that runs when the animation signal changes
+    effect(() => {
+      const animationState = this.toggledSetAnimation();
+      if (!animationState) return;
+
+      const { key, type, state } = animationState;
+
+      // Use a timeout to ensure the DOM query runs after the current change detection cycle
+      setTimeout(() => {
+        const animationClass = state === 'completed' ? 'animate-bump-in' : 'animate-bump-out';
+
+        let cardElement: HTMLElement | undefined;
+
+        if (type === 'set') {
+          // Find the specific #setCard element
+          cardElement = this.setCards.find(card => card.nativeElement.getAttribute('data-set-index') === key.split('-')[1])?.nativeElement;
+        } else { // type === 'round'
+          // Find the specific #roundCard element
+          const roundIndex = key.split('-')[1];
+          cardElement = this.roundCards.find(card => card.nativeElement.getAttribute('data-round-index') === roundIndex)?.nativeElement;
+        }
+
+        if (cardElement) {
+          cardElement.classList.add(animationClass);
+          // Remove the class after the animation completes so it can be re-triggered
+          setTimeout(() => {
+            cardElement?.classList.remove(animationClass);
+          }, 300); // Duration should match the animation duration in CSS
+        }
+      }, 0);
+    });
+    // --- END: ADDED SNIPPET (Part 2) ---
   }
 
 
@@ -547,7 +584,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       startTime: this.workoutStartTime,
       date: format(new Date(), 'yyyy-MM-dd'),
       exercises: [],
-      notes: '', // +++ NEW: Initialize notes field
+      notes: '',
     });
 
     this._prefillPerformanceInputs();
@@ -687,7 +724,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  // +++ NEW: Method to update exercise-level notes
   updateExerciseNotes(exIndex: number, event: Event) {
     const value = (event.target as HTMLInputElement).value;
     this.routine.update(r => {
@@ -715,7 +751,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     });
   }
 
-  // +++ NEW: Method to open a prompt for session-level notes
   async editSessionNotes() {
     const result = await this.alertService.showPromptDialog(
       this.translate.instant('compactPlayer.alerts.sessionNotesTitle'),
@@ -898,7 +933,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  // +++ NEW: Signals and methods to toggle notes visibility for sets and exercises
   expandedExerciseNotes = signal<number | null>(null);
   expandedSetNotes = signal<string | null>(null); // Key will be "exIndex-setIndex"
   expandedRounds = signal(new Set<string>());
@@ -1141,7 +1175,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
           const key = `${exIndex}-${index}`;
 
-          if (!this.performanceInputValues()[key]){
+          if (!this.performanceInputValues()[key]) {
             this.fillPerformanceInputIfUndefined(exIndex, index);
           }
 
@@ -1198,7 +1232,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
           const userInputs = this.performanceInputValues()[key];
 
-          
+
 
           const weight = userInputs.weightUsed ?? lastSet.targetWeight ?? undefined;
           const reps = userInputs.repsAchieved ?? lastSet.targetReps ?? undefined;
@@ -1497,7 +1531,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     await this.selectExerciseToAddFromModal(newCustomExercise);
   }
 
-  // +++ NEW: Replaces old addExerciseToRoutine +++
   async selectExerciseToAddFromModal(selectedExercise: Exercise): Promise<void> {
     this.closeAddExerciseModal();
     const routine = this.routine();
@@ -1528,7 +1561,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       // If the routine doesn't exist, we can't add to it.
       if (!r) return r;
 
-      // Return a NEW routine object with a NEW exercises array.
       return {
         ...r,
         exercises: [...r.exercises, newWorkoutExercise]
@@ -2065,8 +2097,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
 
-  // +++ NEW HELPER METHOD: Add this new private method to the class +++
-
   /**
    * Smoothly scrolls the viewport to a specific set card within an exercise.
    * @param exIndex The index of the parent exercise.
@@ -2336,17 +2366,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (this.currentWorkoutLog().exercises && this.currentWorkoutLog().exercises!.length > 0 && this.sessionState() === SessionState.Playing) {
       this.savePausedSessionState();
       this.router.navigate(['/workout']);
-      // this.alertService.showConfirm("Exit Workout?", "You have an active workout. Are you sure you want to exit? Your progress might be lost unless you pause first")
-      //   .then(confirmation => {
-      //     if (confirmation?.data) {
-      //     }
-      //   });
     } else {
       this.router.navigate(['/workout']);
     }
   }
 
-  // +++ NEW: Reorders exercises to group supersets together visually +++
   private reorderExercisesForSupersets(exercises: WorkoutExercise[]): WorkoutExercise[] {
     const reorderedExercises: WorkoutExercise[] = [];
     const processedExerciseIds = new Set<string>();
@@ -2426,7 +2450,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return '';
   }
 
-  // +++ NEW: Method to complete all sets within a specific superset round +++
   async completeRoundOrSet(exercise: WorkoutExercise, setIndex: number, event: Event) {
     event.stopPropagation();
     const routine = this.routine();
@@ -2440,16 +2463,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       const exercisesInSuperset = this.getSupersetExercises(exercise.supersetId);
       const isAlreadyCompleted = this.isRoundCompleted(exIndex, roundIndex);
 
-      // If the round is already logged, confirm before un-logging it.
-      // if (isAlreadyCompleted) {
-      //   const confirm = await this.alertService.showConfirm(
-      //     'Un-log Round',
-      //     `Are you sure you want to remove the log data for Round ${roundIndex + 1}?`,
-      //     'Yes, Remove Log',
-      //     'Cancel'
-      //   );
-      //   if (!confirm?.data) return;
-      // }
+      const key = `${exIndex}-${roundIndex}`;
+      this.toggledSetAnimation.set({ key, type: 'round', state: isAlreadyCompleted ? 'incompleted' : 'completed' });
 
       // Toggle completion for every exercise set within that round.
       exercisesInSuperset.forEach(exInGroup => {
@@ -2473,6 +2488,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       const set = exercise.sets[setIndex];
       // Note: For standard sets, we might also want a confirmation to un-log,
       // but for now, we'll keep the original toggle behavior as requested.
+
       this.toggleSetCompletion(exercise, set, exIndex, setIndex, 0);
     }
   }
@@ -2481,30 +2497,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   areAllPropertiesFalsy(obj: any) {
     return Object.values(obj).every(value => !value);
   }
-
-  // async removeFromSuperset(exIndex: number) {
-  //   const routine = this.routine();
-  //   const loggedExercises = this.currentWorkoutLog().exercises || [];
-  //   if (!routine) return;
-
-  //   const result = await this.workoutService.removeFromSuperset(
-  //     routine,
-  //     exIndex,
-  //     loggedExercises,
-  //     this.alertService,
-  //     this.toastService
-  //   );
-
-  //   if (result) {
-  //     this.routine.set(result.updatedRoutine);
-  //     this.currentWorkoutLog.update(log => {
-  //       log.exercises = result.updatedLoggedExercises;
-  //       return { ...log };
-  //     });
-  //     this.savePausedSessionState();
-  //   }
-  // }
-
 
   isSuperSet(index: number): boolean {
     const exercises = this.routine()?.exercises;
@@ -2783,12 +2775,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
 
-/**
-   * --- OPTIMIZED ---
-   * Generates a display string for a set's planned target.
-   * It now reads from the pre-calculated `suggestedRoutine` signal, making it
-   * extremely fast and safe to call from the template.
-   */
+  /**
+     * --- OPTIMIZED ---
+     * Generates a display string for a set's planned target.
+     * It now reads from the pre-calculated `suggestedRoutine` signal, making it
+     * extremely fast and safe to call from the template.
+     */
   public getSetTargetDisplay(exIndex: number, setIndex: number, field: METRIC): string {
     // 1. Get the pre-calculated routine with all suggestions already applied.
     const routineWithSuggestions = this.suggestedRoutine();
@@ -2836,7 +2828,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  // +++ NEW: Helper to get all exercises in a superset group +++
   getSupersetExercises(supersetId: string): WorkoutExercise[] {
     const r = this.routine();
     if (!r) return [];
@@ -2846,12 +2837,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0));
   }
 
-  // +++ NEW: Helper to find the original index of an exercise from its ID +++
   getOriginalExIndex(exerciseId: string): number {
     return this.routine()?.exercises.findIndex(ex => ex.id === exerciseId) ?? -1;
   }
 
-  // +++ NEW: Check if all sets in a round are complete +++
   isRoundCompleted(exIndex: number, roundIndex: number): boolean {
     const firstExercise = this.routine()?.exercises[exIndex];
     if (!firstExercise?.supersetId) return false;
@@ -2878,7 +2867,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return allStates[key] || { status: 'idle', remainingTime: this.routine()?.exercises[exIndex].emomTimeSeconds ?? 60 };
   }
 
-  // +++ NEW: Central handler for the EMOM button clicks +++
   handleEmomAction(exIndex: number, roundIndex: number): void {
     const key = `${exIndex}-${roundIndex}`;
     const state = this.getEmomState(exIndex, roundIndex);
@@ -2917,7 +2905,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  // +++ NEW: Starts or resumes the EMOM timer for a specific round +++
   private startEmomTimer(exIndex: number, roundIndex: number, key: string): void {
     this.lastBeepSecond = null;
     const firstExercise = this.routine()!.exercises[exIndex];
@@ -2983,7 +2970,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     });
   }
 
-  // +++ NEW: Pauses the currently active EMOM timer +++
   private pauseEmomTimer(key: string): void {
     this.emomTimerSub?.unsubscribe();
     this.emomState.update(states => {
@@ -2994,7 +2980,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     });
   }
 
-  // +++ NEW: Logs all sets in an EMOM round and marks it as complete +++
   private logEmomRoundAsCompleted(exIndex: number, roundIndex: number, key: string): void {
     const firstExercise = this.routine()!.exercises[exIndex];
     const exercisesInGroup = this.getSupersetExercises(firstExercise.supersetId!);
@@ -3016,7 +3001,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.toastService.success(`EMOM Round ${roundIndex + 1} Complete!`);
   }
 
-  // +++ NEW: UI helpers for the EMOM button +++
   getEmomButtonText(exIndex: number, roundIndex: number): string {
     const state = this.getEmomState(exIndex, roundIndex);
     const textMap = { idle: 'START ROUND', running: 'PAUSE', paused: 'RESUME', completed: 'COMPLETED' };
@@ -3046,11 +3030,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return exercisesInGroup.map(ex => ex.exerciseName).join(' / ');
   }
 
-/**
-   * --- OPTIMIZED ---
-   * Formats the display string for the "Next Up" section of the rest timer.
-   * It also reads from the efficient `suggestedRoutine` signal.
-   */
+  /**
+     * --- OPTIMIZED ---
+     * Formats the display string for the "Next Up" section of the rest timer.
+     * It also reads from the efficient `suggestedRoutine` signal.
+     */
   private formatSetTargetForDisplay(set: ExerciseTargetSetParams, exercise: WorkoutExercise, exIndex: number, setIndex: number): string {
     // Get the pre-calculated set from the suggestedRoutine signal
     const setForDisplay = this.suggestedRoutine()?.exercises[exIndex]?.sets[setIndex] || set;
@@ -3095,7 +3079,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   performanceInputValues = signal<{ [key: string]: Partial<ExerciseCurrentExecutionSetParams> }>({});
- 
+
   /**
    * Determines the initial value for an input field.
    * 1. If the set is already logged, it shows the logged value.
@@ -3120,6 +3104,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         case 'distance': return (loggedSet.distanceAchieved ?? '').toString();
         case 'duration': return this.formatSecondsToTime(loggedSet.durationPerformed);
         case 'tempo': return (loggedSet.tempoUsed ?? '-').toString();
+        case 'rest': return this.formatSecondsToTime(loggedSet.restAfterSetUsed);
         case 'notes': return loggedSet.notes ?? '';
       }
     }
@@ -3131,6 +3116,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         case 'weight': if (userInputs.weightUsed !== undefined) return userInputs.weightUsed.toString(); break;
         case 'distance': if (userInputs.actualDistance !== undefined) return userInputs.actualDistance.toString(); break;
         case 'duration': if (userInputs.actualDuration !== undefined) return this.formatSecondsToTime(userInputs.actualDuration); break;
+        case 'rest': if (userInputs.restAfterSet !== undefined) return this.formatSecondsToTime(userInputs.restAfterSet); break;
         case 'tempo': if (userInputs.tempoUsed !== undefined) return userInputs.tempoUsed; break;
         case 'notes': if (userInputs.notes !== undefined) return userInputs.notes; break;
       }
@@ -3142,8 +3128,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       case 'reps':
         // Check if a range is defined for reps
         if (plannedSet.targetRepsMin != null && plannedSet.targetRepsMax != null) {
-            const midValue = Math.floor((plannedSet.targetRepsMin + plannedSet.targetRepsMax) / 2);
-            return midValue.toString();
+          const midValue = Math.floor((plannedSet.targetRepsMin + plannedSet.targetRepsMax) / 2);
+          return midValue.toString();
         }
         // Fallback to the single target value
         return (plannedSet.targetReps ?? '').toString();
@@ -3151,8 +3137,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       case 'weight':
         // Check if a range is defined for weight
         if (plannedSet.targetWeightMin != null && plannedSet.targetWeightMax != null) {
-            const midValue = Math.floor((plannedSet.targetWeightMin + plannedSet.targetWeightMax) / 2);
-            return midValue.toString();
+          const midValue = Math.floor((plannedSet.targetWeightMin + plannedSet.targetWeightMax) / 2);
+          return midValue.toString();
         }
         // Fallback to the single target value
         return (plannedSet.targetWeight ?? '').toString();
@@ -3160,8 +3146,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       case 'distance':
         // Check if a range is defined for distance
         if (plannedSet.targetDistanceMin != null && plannedSet.targetDistanceMax != null) {
-            const midValue = Math.floor((plannedSet.targetDistanceMin + plannedSet.targetDistanceMax) / 2);
-            return midValue.toString();
+          const midValue = Math.floor((plannedSet.targetDistanceMin + plannedSet.targetDistanceMax) / 2);
+          return midValue.toString();
         }
         // Fallback to the single target value
         return (plannedSet.targetDistance ?? '').toString();
@@ -3169,8 +3155,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       case 'duration':
         // Check if a range is defined for duration
         if (plannedSet.targetDurationMin != null && plannedSet.targetDurationMax != null) {
-            const midValue = Math.floor((plannedSet.targetDurationMin + plannedSet.targetDurationMax) / 2);
-            return this.formatSecondsToTime(midValue);
+          const midValue = Math.floor((plannedSet.targetDurationMin + plannedSet.targetDurationMax) / 2);
+          return this.formatSecondsToTime(midValue);
         }
         // Fallback to the single target value
         return this.formatSecondsToTime(plannedSet.targetDuration ?? 0);
@@ -3178,7 +3164,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       case 'notes':
         // Notes field does not have a range
         return plannedSet.notes ?? '';
-        
+
       case 'tempo':
         // Tempo does not have a range
         return plannedSet.targetTempo ?? '';
@@ -3215,6 +3201,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         case 'weight': newInputs[key].weightUsed = value === '' ? undefined : parseFloat(value); break;
         case 'distance': newInputs[key].actualDistance = parseFloat(value) || undefined; break;
         case 'duration': newInputs[key].actualDuration = this.parseTimeToSeconds(value); break;
+        case 'rest': newInputs[key].restAfterSet = this.parseTimeToSeconds(value); break;
         case 'notes': newInputs[key].notes = value; break;
         case 'tempo': newInputs[key].tempoUsed = value === '' ? undefined : value; break;
       }
@@ -3255,6 +3242,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const wasCompleted = !!this.getLoggedSet(exIndex, setIndex, roundIndex);
     const targetLoggedSetId = exercise.supersetId ? `${set.id}-round-${roundIndex}` : set.id;
     const key = `${exIndex}-${setIndex}`;
+
+    this.toggledSetAnimation.set({ key, type: 'set', state: wasCompleted ? 'incompleted' : 'completed' });
 
     if (wasCompleted) {
       this.audioService.playSound("untoggle");
@@ -3372,23 +3361,23 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         this.lastLoggedSetForRestUpdate = this.getLoggedSet(exIndex, setIndex, roundIndex) ?? null;
         this.startRestPeriod(set.restAfterSet, exIndex, setIndex);
       } else {
-        this.handleAutoExpandNextExercise();
+        setTimeout(() => { this.handleAutoExpandNextExercise(); }, 700);
         // this.autoCollapsePreviousSets();
       }
     }
   }
 
   fillPerformanceInputIfUndefined(exIndex: number, setIndex: number): void {
-     const key = `${exIndex}-${setIndex}`;
+    const key = `${exIndex}-${setIndex}`;
     const userInputs = this.performanceInputValues()[key];
-    if (userInputs) {return};
+    if (userInputs) { return };
 
-    const weight = this.getInitialInputValue(exIndex,setIndex,METRIC.weight) ? Number(this.getInitialInputValue(exIndex,setIndex,METRIC.weight)) : undefined;
-    const reps = this.getInitialInputValue(exIndex,setIndex,METRIC.reps) ? Number(this.getInitialInputValue(exIndex,setIndex,METRIC.reps)) : undefined;
-    const distance = this.getInitialInputValue(exIndex,setIndex,METRIC.distance) ? Number(this.getInitialInputValue(exIndex,setIndex,METRIC.distance)) : undefined;
-    const duration = this.getInitialInputValue(exIndex,setIndex,METRIC.duration) ? Number(this.getInitialInputValue(exIndex,setIndex,METRIC.duration)) : undefined;
-    const tempo = this.getInitialInputValue(exIndex,setIndex,METRIC.tempo) ? String(this.getInitialInputValue(exIndex,setIndex,METRIC.tempo)) : undefined;
-    const rest = this.getInitialInputValue(exIndex,setIndex,METRIC.rest) ? Number(this.getInitialInputValue(exIndex,setIndex,METRIC.rest)) : undefined;
+    const weight = this.getInitialInputValue(exIndex, setIndex, METRIC.weight) ? Number(this.getInitialInputValue(exIndex, setIndex, METRIC.weight)) : undefined;
+    const reps = this.getInitialInputValue(exIndex, setIndex, METRIC.reps) ? Number(this.getInitialInputValue(exIndex, setIndex, METRIC.reps)) : undefined;
+    const distance = this.getInitialInputValue(exIndex, setIndex, METRIC.distance) ? Number(this.getInitialInputValue(exIndex, setIndex, METRIC.distance)) : undefined;
+    const duration = this.getInitialInputValue(exIndex, setIndex, METRIC.duration) ? Number(this.getInitialInputValue(exIndex, setIndex, METRIC.duration)) : undefined;
+    const tempo = this.getInitialInputValue(exIndex, setIndex, METRIC.tempo) ? String(this.getInitialInputValue(exIndex, setIndex, METRIC.tempo)) : undefined;
+    const rest = this.getInitialInputValue(exIndex, setIndex, METRIC.rest) ? Number(this.getInitialInputValue(exIndex, setIndex, METRIC.rest)) : undefined;
 
     this.performanceInputValues()[key] = {
       'weightUsed': weight,
@@ -3419,7 +3408,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       return { [METRIC.weight]: false, [METRIC.reps]: false, [METRIC.distance]: false, [METRIC.duration]: false, [METRIC.rest]: false };
     }
 
-    return this.workoutService.getVisibleSetColumns(routine,exIndex, setIndex);
+    return this.workoutService.getVisibleSetColumns(routine, exIndex, setIndex);
   }
 
   public getFieldsForSet(exIndex: number, setIndex: number): { visible: string[], hidden: string[] } {
@@ -3456,7 +3445,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return fields.visible.length > 1;
   }
 
-public async promptRemoveField(exIndex: number, setIndex: number): Promise<void> {
+  public async promptRemoveField(exIndex: number, setIndex: number): Promise<void> {
     const currentRoutine = this.routine();
     if (!currentRoutine) return;
 
@@ -3910,11 +3899,11 @@ public async promptRemoveField(exIndex: number, setIndex: number): Promise<void>
     this.performanceInputValues.set(initialValues);
   }
 
-    /**
-   * A computed signal that creates a "display-ready" version of the routine.
-   * It pre-calculates the progressive overload suggestions for every set that needs one.
-   * This is highly efficient because it only re-runs when the routine or the log changes.
-   */
+  /**
+ * A computed signal that creates a "display-ready" version of the routine.
+ * It pre-calculates the progressive overload suggestions for every set that needs one.
+ * This is highly efficient because it only re-runs when the routine or the log changes.
+ */
   suggestedRoutine = computed<Routine | null | undefined>(() => {
     const routine = this.routine();
     const log = this.currentWorkoutLog(); // Dependency on the log is crucial
@@ -3951,6 +3940,98 @@ public async promptRemoveField(exIndex: number, setIndex: number): Promise<void>
     return newRoutine;
   });
 
-  protected metricEnum = METRIC;
 
+
+   private intervalId: any = null;
+
+  onShortPressIncrement(exIndex: number, setIndex: number, field: METRIC): void {
+    this.incrementValue(exIndex, setIndex, field);
+  }
+
+  onLongPressIncrement(exIndex: number, setIndex: number, field: METRIC): void {
+    this.intervalId = setInterval(() => this.incrementValue(exIndex, setIndex, field), 200);
+  }
+
+  onShortPressDecrement(exIndex: number, setIndex: number, field: METRIC): void {
+    this.decrementValue(exIndex, setIndex, field);
+  }
+
+  onLongPressDecrement(exIndex: number, setIndex: number, field: METRIC): void {
+    this.intervalId = setInterval(() => this.decrementValue(exIndex, setIndex, field), 200);
+  }
+
+  onPressRelease(): void {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+    }
+  }
+
+  private incrementValue(exIndex: number, setIndex: number, field: METRIC): void {
+    const settings = this.appSettingsService.getSettings();
+    const step = field === METRIC.weight ? (settings.weightStep || 0.5) : 1;
+    const key = `${exIndex}-${setIndex}`;
+    
+    this.performanceInputValues.update(currentInputs => {
+      const newInputs = { ...currentInputs };
+      if (!newInputs[key]) {
+        newInputs[key] = {};
+      }
+  
+      let currentValue = 0;
+      switch (field) {
+        case METRIC.weight: currentValue = newInputs[key]!.weightUsed ?? (parseFloat(this.getInitialInputValue(exIndex, setIndex, METRIC.weight)) || 0); break;
+        case METRIC.reps: currentValue = newInputs[key]!.repsAchieved ?? (parseInt(this.getInitialInputValue(exIndex, setIndex, METRIC.reps)) || 0); break;
+        case METRIC.distance: currentValue = newInputs[key]!.actualDistance ?? (parseInt(this.getInitialInputValue(exIndex, setIndex, METRIC.distance)) || 0); break;
+        case METRIC.duration: currentValue = newInputs[key]!.actualDuration ?? (parseInt(this.getInitialInputValue(exIndex, setIndex, METRIC.duration)) || 0); break;
+        case METRIC.rest: currentValue = newInputs[key]!.restAfterSet ?? (parseInt(this.getInitialInputValue(exIndex, setIndex, METRIC.rest)) || 0); break;
+      }
+      
+      const newValue = parseFloat((currentValue + step).toFixed(2));
+  
+      switch (field) {
+        case METRIC.weight: newInputs[key]!.weightUsed = newValue; break;
+        case METRIC.reps: newInputs[key]!.repsAchieved = newValue; break;
+        case METRIC.distance: newInputs[key]!.actualDistance = newValue; break;
+        case METRIC.duration: newInputs[key]!.actualDuration = newValue; break;
+        case METRIC.rest: newInputs[key]!.restAfterSet = newValue; break;
+      }
+  
+      return newInputs;
+    });
+  }
+  
+  private decrementValue(exIndex: number, setIndex: number, field: METRIC): void {
+    const settings = this.appSettingsService.getSettings();
+    const step = field === METRIC.weight ? (settings.weightStep || 0.5) : 1;
+    const key = `${exIndex}-${setIndex}`;
+  
+    this.performanceInputValues.update(currentInputs => {
+      const newInputs = { ...currentInputs };
+      if (!newInputs[key]) {
+        newInputs[key] = {};
+      }
+  
+      let currentValue = 0;
+      switch (field) {
+        case METRIC.weight: currentValue = newInputs[key]!.weightUsed ?? (parseFloat(this.getInitialInputValue(exIndex, setIndex, METRIC.weight)) || 0); break;
+        case METRIC.reps: currentValue = newInputs[key]!.repsAchieved ?? (parseInt(this.getInitialInputValue(exIndex, setIndex, METRIC.reps)) || 0); break;
+        case METRIC.distance: currentValue = newInputs[key]!.actualDistance ?? (parseInt(this.getInitialInputValue(exIndex, setIndex, METRIC.distance)) || 0); break;
+        case METRIC.duration: currentValue = newInputs[key]!.actualDuration ?? (parseInt(this.getInitialInputValue(exIndex, setIndex, METRIC.duration)) || 0); break;
+        case METRIC.rest: currentValue = newInputs[key]!.restAfterSet ?? (parseInt(this.getInitialInputValue(exIndex, setIndex, METRIC.rest)) || 0); break;
+      }
+  
+      const newValue = Math.max(0, parseFloat((currentValue - step).toFixed(2)));
+  
+      switch (field) {
+        case METRIC.weight: newInputs[key]!.weightUsed = newValue; break;
+        case METRIC.reps: newInputs[key]!.repsAchieved = newValue; break;
+        case METRIC.distance: newInputs[key]!.actualDistance = newValue; break;
+        case METRIC.duration: newInputs[key]!.actualDuration = newValue; break;
+        case METRIC.rest: newInputs[key]!.restAfterSet = newValue; break;
+      }
+  
+      return newInputs;
+    });
+  }
 }

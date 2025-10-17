@@ -241,7 +241,7 @@
                         </div>
                       </div>
 
-                      <app-icon name="hourglass" class="h-4 w-4 text-teal-500 ml-2" [strokeWidth]="2.5"></app-icon>
+                      <app-icon name="duration" class="h-4 w-4 text-teal-500 ml-2" [strokeWidth]="2.5"></app-icon>
                       <button
                         (click)="toggleSetCompletion(exercise, set, exIndex, setIndex, 0); $event.stopPropagation()"
                         [disabled]="!isSetDataValid(exIndex, setIndex)"
@@ -800,87 +800,6 @@
 <!-- NG-TEMPLATES for Reusable Set Inputs -->
 <!-- =================================================================== -->
 
-<!-- REPS INPUT TEMPLATE -->
-<ng-template #repsInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
-  <div>
-    <div class="flex items-center justify-center text-gray-500 dark:text-gray-300 ">
-      <app-icon name="reps" class="h-4 w-4 mr-1"></app-icon>
-      <label class="text-xs font-medium pb-1">
-        {{ 'compactPlayer.repsLabel' | translate }}
-      </label>
-    </div>
-    <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, metricEnum.reps)"
-      (change)="updateSetData(exIndex, setIndex, 0, metricEnum.reps, $event)"
-      class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
-    <div *ngIf="getSetTargetDisplay(exIndex, setIndex, metricEnum.reps) as target" class="target-class text-xs">
-      <span class="flex items-center justify-center">
-        <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>x{{ target }}
-      </span>
-    </div>
-  </div>
-</ng-template>
-
-<!-- WEIGHT INPUT TEMPLATE -->
-<ng-template #weightInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
-  <div>
-    <div class="flex items-center justify-center text-gray-500 dark:text-gray-300 ">
-      <app-icon name="weight" class="h-4 w-4 mr-1"></app-icon>
-      <label class="text-xs font-medium pb-1">
-        {{ 'compactPlayer.weightLabel' | translate:{unit: unitsService.getWeightUnitSuffix()} }}
-      </label>
-    </div>
-    <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, metricEnum.weight)"
-      (change)="updateSetData(exIndex, setIndex, 0, metricEnum.weight, $event)"
-      class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
-    <div *ngIf="getSetTargetDisplay(exIndex, setIndex, metricEnum.weight) as target" class="target-class text-xs">
-      <span class="flex items-center justify-center">
-        <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ target }}{{ unitsService.getWeightUnitSuffix() }}
-      </span>
-    </div>
-  </div>
-</ng-template>
-
-<!-- DISTANCE INPUT TEMPLATE -->
-<ng-template #distanceInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
-  <div>
-    <div class="flex items-center justify-center text-gray-500 dark:text-gray-300 ">
-      <app-icon name="distance" class="h-4 w-4 mr-1"></app-icon>
-      <label class="text-xs font-medium pb-1">
-        {{ 'compactPlayer.distanceLabel' | translate }}
-      </label>
-    </div>
-    <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, metricEnum.distance)"
-      (change)="updateSetData(exIndex, setIndex, 0, metricEnum.distance, $event)"
-      class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
-    <div *ngIf="getSetTargetDisplay(exIndex, setIndex, metricEnum.distance) as target" class="target-class text-xs">
-      <span class="flex items-center justify-center">
-        <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ target }} {{
-        unitsService.getDistanceMeasureUnitSuffix() }}
-      </span>
-    </div>
-  </div>
-</ng-template>
-
-<!-- DURATION INPUT TEMPLATE -->
-<ng-template #durationInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
-  <div>
-    <div class="flex items-center justify-center text-gray-500 dark:text-gray-300 ">
-      <app-icon name="hourglass" class="h-4 w-4 mr-1"></app-icon>
-      <label class="text-xs font-medium pb-1">
-        {{ 'compactPlayer.timeLabel' | translate }}
-      </label>
-    </div>
-    <input type="text" [ngModel]="getInitialInputValue(exIndex, setIndex, metricEnum.duration)"
-      (change)="updateSetData(exIndex, setIndex, 0, metricEnum.duration, $event)"
-      class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200"
-      [placeholder]="'compactPlayer.timePlaceholder' | translate">
-    <div *ngIf="getSetTargetDisplay(exIndex, setIndex, metricEnum.duration) as target" class="target-class text-xs">
-      <span class="flex items-center justify-center">
-        <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ formatSecondsToTime(target) }}
-      </span>
-    </div>
-  </div>
-</ng-template>
 
 <!-- TEMPO INPUT TEMPLATE -->
 <ng-template #tempoInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
@@ -902,23 +821,129 @@
   </div>
 </ng-template>
 
-<!-- REST INPUT TEMPLATE -->
-<ng-template #restInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
+<!-- REUSABLE INCREMENTER INPUT TEMPLATE -->
+<ng-template #incrementerInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-field="field" let-label="label" let-target="target">
   <div>
-    <div class="flex items-center justify-center text-gray-500 dark:text-gray-300 ">
-      <app-icon name="rest" class="h-4 w-4 mr-1"></app-icon>
-      <label class="text-xs font-medium pb-1">
-        {{ 'compactPlayer.rest' | translate }}
-      </label>
+    <!-- Label part (unchanged) -->
+    <div class="flex items-center justify-center text-gray-500 dark:text-gray-300">
+      <app-icon [name]="field" class="h-4 w-4 mr-1"></app-icon>
+      <label class="text-xs font-medium pb-1">{{ label }}</label>
     </div>
-    <input type="text" [ngModel]="getInitialInputValue(exIndex, setIndex, metricEnum.rest)"
-      (change)="updateSetData(exIndex, setIndex, 0, metricEnum.rest, $event)"
-      class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200"
-      [placeholder]="'compactPlayer.rest' | translate">
-    <div *ngIf="getSetTargetDisplay(exIndex, setIndex, metricEnum.rest) as target" class="target-class text-xs">
-      <span class="flex items-center justify-center">
-        <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ formatSecondsToTime(target) }}
-      </span>
+
+    <!-- Main wrapper for positioning the target below -->
+    <div class="relative flex flex-col items-center">
+        <!-- Input group: buttons and the input field -->
+        <div class="flex items-stretch w-full shadow-sm">
+            <!-- Decrement Button -->
+            <button type="button" appPress 
+                (shortPress)="onShortPressDecrement(exIndex, setIndex, field)"
+                (longPress)="onLongPressDecrement(exIndex, setIndex, field)" 
+                (pressRelease)="onPressRelease()"
+                class="p-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-l-xl border-y border-l border-gray-300 dark:border-gray-500 transition-colors">
+                
+                <!-- THE FIX: Make the icon ignore pointer events -->
+                <app-icon name="minus" class="h-5 w-5 pointer-events-none"></app-icon>
+
+            </button>
+            
+            <!-- Input Field -->
+            <input 
+                [type]="(field === metricEnum.duration || field === metricEnum.rest) ? 'text' : 'number'"
+                [ngModel]="getInitialInputValue(exIndex, setIndex, field)"
+                (change)="updateSetData(exIndex, setIndex, 0, field, $event)"
+                class="w-full p-1 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-300 dark:border-gray-500 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none focus:z-10 relative">
+            <!-- Increment Button -->
+            <button type="button" appPress 
+                (shortPress)="onShortPressIncrement(exIndex, setIndex, field)"
+                (longPress)="onLongPressIncrement(exIndex, setIndex, field)" 
+                (pressRelease)="onPressRelease()"
+                class="p-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-r-xl border-y border-r border-gray-300 dark:border-gray-500 transition-colors">
+
+                <!-- THE FIX: Make the icon ignore pointer events -->
+                <app-icon name="plus" class="h-5 w-5 pointer-events-none"></app-icon>
+                
+            </button>
+        </div>
+
+        <!-- Target Display -->
+        <div *ngIf="target && target !== '' && target !== '-'" 
+             class="relative -mt-1 z-10 px-4 py-0.5 bg-gray-400 dark:bg-gray-600 text-white dark:text-gray-100 rounded-b-lg text-xs font-semibold flex items-center gap-1 shadow-md">
+            <app-icon name="target" class="h-3 w-3"></app-icon>
+            <!-- THIS IS THE FIX: Conditionally format the target value based on the field type -->
+            <span>
+                {{ (field === metricEnum.duration || field === metricEnum.rest) ? formatSecondsToTime(target) : target }}
+            </span>
+        </div>
     </div>
   </div>
+</ng-template>
+
+<!-- WEIGHT INPUT TEMPLATE -->
+<ng-template #weightInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
+   <ng-container 
+    [ngTemplateOutlet]="incrementerInputTemplate"
+    [ngTemplateOutletContext]="{
+      exIndex: exIndex,
+      setIndex: setIndex,
+      field: metricEnum.weight,
+      label: ('compactPlayer.weightLabel' | translate:{unit: unitsService.getWeightUnitSuffix()}),
+      target: getSetTargetDisplay(exIndex, setIndex, metricEnum.weight) + unitsService.getWeightUnitSuffix()
+    }">
+  </ng-container>
+</ng-template>
+
+<!-- REPS INPUT TEMPLATE  -->
+<ng-template #repsInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
+  <ng-container 
+    [ngTemplateOutlet]="incrementerInputTemplate"
+    [ngTemplateOutletContext]="{
+      exIndex: exIndex,
+      setIndex: setIndex,
+      field: metricEnum.reps,
+      label: ('compactPlayer.repsLabel' | translate),
+      target: 'x' + getSetTargetDisplay(exIndex, setIndex, metricEnum.reps)
+    }">
+  </ng-container>
+</ng-template>
+
+<!-- DISTANCE INPUT TEMPLATE -->
+<ng-template #distanceInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
+  <ng-container 
+    [ngTemplateOutlet]="incrementerInputTemplate"
+    [ngTemplateOutletContext]="{
+      exIndex: exIndex,
+      setIndex: setIndex,
+      field: metricEnum.distance,
+      label: ('compactPlayer.distanceLabel' | translate),
+      target: getSetTargetDisplay(exIndex, setIndex, metricEnum.distance) + unitsService.getDistanceMeasureUnitSuffix()
+    }">
+  </ng-container>
+</ng-template>
+
+<!-- DURATION INPUT TEMPLATE -->
+<ng-template #durationInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
+  <ng-container 
+    [ngTemplateOutlet]="incrementerInputTemplate"
+    [ngTemplateOutletContext]="{
+      exIndex: exIndex,
+      setIndex: setIndex,
+      field: metricEnum.duration,
+      label: ('compactPlayer.timeLabel' | translate),
+      target: getSetTargetDisplay(exIndex, setIndex, metricEnum.duration)
+    }">
+  </ng-container>
+</ng-template>
+
+<!-- REST INPUT TEMPLATE -->
+<ng-template #restInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
+  <ng-container 
+    [ngTemplateOutlet]="incrementerInputTemplate"
+    [ngTemplateOutletContext]="{
+      exIndex: exIndex,
+      setIndex: setIndex,
+      field: metricEnum.rest,
+      label: ('compactPlayer.rest' | translate),
+      target: getSetTargetDisplay(exIndex, setIndex, metricEnum.rest)
+    }">
+  </ng-container>
 </ng-template>
