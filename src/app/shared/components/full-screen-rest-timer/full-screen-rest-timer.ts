@@ -1,13 +1,13 @@
+// full-screen-rest-timer.ts
+
 import { Component, Input, Output, EventEmitter, OnChanges, OnDestroy, SimpleChanges, ElementRef, ViewChild, AfterViewInit, ChangeDetectionStrategy, signal, computed, Signal, Injectable, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PressDirective } from '../../directives/press.directive';
-// +++ IMPORT ANIMATION FUNCTIONS +++
 import { trigger, style, animate, transition } from '@angular/animations';
 import { IconComponent } from '../icon/icon.component';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { AudioService } from '../../../core/services/audio.service';
-
+import { AUDIO_TYPES, AudioService } from '../../../core/services/audio.service';
 
 @Component({
   selector: 'app-full-screen-rest-timer',
@@ -17,7 +17,6 @@ import { AudioService } from '../../../core/services/audio.service';
   styleUrls: ['./full-screen-rest-timer.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [AudioService],
-  // +++ DEFINE THE ANIMATION TRIGGER +++
   animations: [
     trigger('fade', [
       transition(':enter', [
@@ -36,6 +35,11 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
   @Input() durationSeconds: number = 60;
   @Input() mainText: string = 'RESTING';
   @Input() nextUpText: string | null = null;
+  
+  // --- START: NEW INPUT AND OUTPUT ---
+  @Input() mode: 'timer' | 'stopwatch' = 'timer';
+  @Output() stopwatchStopped = new EventEmitter<number>(); // Emits elapsed seconds
+  // --- END: NEW INPUT AND OUTPUT ---
 
   @Output() timerFinished = new EventEmitter<void>();
   @Output() timerSkipped = new EventEmitter<number>();
@@ -50,7 +54,6 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
 
   private timerStartTime = 0;
   private targetEndTime = 0;
-
   private timerIntervalId: any;
   private readonly circleRadius = 90;
   private readonly circumference = 2 * Math.PI * this.circleRadius;
@@ -58,6 +61,9 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
 
   readonly remainingTime = signal(0);
   readonly initialDuration = signal(0);
+  // --- START: NEW SIGNAL FOR STOPWATCH ---
+  readonly elapsedTime = signal(0);
+  // --- END: NEW SIGNAL FOR STOPWATCH ---
 
   readonly strokeDashoffset = computed(() => {
     const initial = this.initialDuration();
@@ -67,7 +73,12 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
   });
 
   readonly displayTime = computed(() => {
-    const totalSecondsValue = Math.max(0, this.remainingTime());
+    // --- START: MODIFIED LOGIC ---
+    // Display is now based on the current mode
+    const timeSource = this.mode === 'timer' ? this.remainingTime() : this.elapsedTime();
+    const totalSecondsValue = Math.max(0, timeSource);
+    // --- END: MODIFIED LOGIC ---
+    
     const minutes = Math.floor(totalSecondsValue / 60);
     const seconds = Math.floor(totalSecondsValue % 60);
     if (minutes > 0) {
@@ -78,30 +89,37 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
   });
 
   readonly displayTentsTime = computed(() => {
-    const tenths = Math.floor(Math.max(0, this.remainingTime()) * 10) % 10;
+    const timeSource = this.mode === 'timer' ? this.remainingTime() : this.elapsedTime();
+    const tenths = Math.floor(Math.max(0, timeSource) * 10) % 10;
     return `.${tenths}`;
   });
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isVisible']) {
       if (this.isVisible) {
-        this.startTimer();
+        this.runTimerBasedOnMode();
       } else {
-        this.stopTimer();
+        this.stopAllTimers();
       }
     }
+    // If duration changes while timer is active, restart it
     if (changes['durationSeconds'] && this.isVisible) {
-      this.startTimer();
-    } else if (changes['durationSeconds'] && !this.isVisible) {
-      this.initialDuration.set(this.durationSeconds);
-      this.remainingTime.set(this.durationSeconds);
+      this.runTimerBasedOnMode();
     }
   }
 
   ngAfterViewInit(): void { }
 
+  private runTimerBasedOnMode(): void {
+    if (this.mode === 'timer') {
+      this.startTimer();
+    } else {
+      this.startStopwatch();
+    }
+  }
+
   private startTimer(): void {
-    this.stopTimer();
+    this.stopAllTimers();
     this.lastBeepSecond = null;
     this.initialDuration.set(this.durationSeconds);
     this.remainingTime.set(this.durationSeconds);
@@ -110,17 +128,13 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
       this.finishAndHideTimer();
       return;
     }
-
-    // --- MODIFIED: Set start and target end times ---
     this.timerStartTime = Date.now();
     this.targetEndTime = this.timerStartTime + this.durationSeconds * 1000;
 
     this.timerIntervalId = setInterval(() => {
-      // --- MODIFIED: Calculate remaining time from target end time ---
       const now = Date.now();
       const remainingMilliseconds = Math.max(0, this.targetEndTime - now);
       const newTimeInSeconds = remainingMilliseconds / 1000;
-
       this.remainingTime.set(newTimeInSeconds);
 
       const remainingSecondsFloored = Math.floor(newTimeInSeconds);
@@ -129,7 +143,7 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
         remainingSecondsFloored <= this.appSettingsService.countdownSoundSeconds() &&
         remainingSecondsFloored !== this.lastBeepSecond
       ) {
-        this.audioService.playSound('countdown');
+        this.audioService.playSound(AUDIO_TYPES.countdown);
         this.lastBeepSecond = remainingSecondsFloored;
       }
       if (newTimeInSeconds <= 0) {
@@ -138,56 +152,82 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
     }, this.timerUpdateIntervalMs);
   }
 
-  private stopTimer(): void {
+  // --- START: NEW METHOD ---
+  private startStopwatch(): void {
+    this.stopAllTimers();
+    this.elapsedTime.set(0);
+    this.timerStartTime = Date.now();
+
+    this.timerIntervalId = setInterval(() => {
+      const now = Date.now();
+      const elapsedMilliseconds = now - this.timerStartTime;
+      this.elapsedTime.set(elapsedMilliseconds / 1000);
+    }, this.timerUpdateIntervalMs);
+  }
+  // --- END: NEW METHOD ---
+
+  private stopAllTimers(): void {
     if (this.timerIntervalId) {
       clearInterval(this.timerIntervalId);
       this.timerIntervalId = null;
     }
   }
-
+  
   private finishAndHideTimer(): void {
     if (this.appSettingsService.enableTimerCountdownSound()) {
-      this.audioService.playSound('end');
+      this.audioService.playSound(AUDIO_TYPES.end);
     }
-    this.stopTimer();
+    this.stopAllTimers();
     this.timerFinished.emit();
-    this.hideTimer.emit();
   }
 
   adjustTimer(seconds: number): void {
-    // --- MODIFIED: Adjust the target end time directly ---
-    this.targetEndTime += seconds * 1000;
+    // This action only makes sense in timer mode
+    if (this.mode !== 'timer') return;
 
-    // --- MODIFIED: Recalculate remaining time based on the new target ---
+    this.targetEndTime += seconds * 1000;
     const now = Date.now();
     const newRemainingMs = Math.max(0, this.targetEndTime - now);
     const newRemainingSeconds = newRemainingMs / 1000;
-
     this.remainingTime.set(newRemainingSeconds);
 
     if (newRemainingSeconds <= 0) {
       this.finishAndHideTimer();
     }
-
-    // Adjust initial duration if we added time beyond the original, to keep the circle progress correct
     this.initialDuration.update(currentInitial => Math.max(currentInitial, newRemainingSeconds));
   }
+  
+  // --- START: NEW METHOD ---
+  /** Handles the main action button click, routing to the correct function based on mode. */
+  handleMainAction(): void {
+    if (this.mode === 'timer') {
+      this.skipTimer();
+    } else {
+      this.stopStopwatch();
+    }
+  }
+  
+  /** Switches the component's mode between timer and stopwatch. */
+  switchMode(): void {
+    this.mode = this.mode === 'timer' ? 'stopwatch' : 'timer';
+    this.runTimerBasedOnMode();
+  }
 
-  skipTimer(): void {
-    this.stopTimer();
+  private stopStopwatch(): void {
+    this.stopAllTimers();
+    this.stopwatchStopped.emit(this.elapsedTime());
+  }
+  // --- END: NEW METHOD ---
+
+  private skipTimer(): void {
+    this.stopAllTimers();
     this.timerSkipped.emit(this.remainingTime());
-    this.hideTimer.emit();
   }
 
   ngOnDestroy(): void {
-    this.stopTimer();
+    this.stopAllTimers();
   }
 
-  getCircleCircumference(): number {
-    return this.circumference;
-  }
-
-  getCircleRadius(): number {
-    return this.circleRadius;
-  }
+  getCircleCircumference(): number { return this.circumference; }
+  getCircleRadius(): number { return this.circleRadius; }
 }

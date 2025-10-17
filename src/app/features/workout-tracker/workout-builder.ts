@@ -44,6 +44,8 @@ import { NgLetDirective } from '../../shared/directives/ng-let.directive';
 import { GenerateWorkoutModalComponent } from './generate-workout-modal/generate-workout-modal.component';
 import { WorkoutGenerationOptions, WorkoutGeneratorService } from '../../core/services/workout-generator.service';
 import { PremiumFeature, SubscriptionService } from '../../core/services/subscription.service';
+import { PressDirective } from '../../shared/directives/press.directive';
+import { AUDIO_TYPES, AudioService } from '../../core/services/audio.service';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
@@ -55,6 +57,7 @@ type BuilderMode = 'routineBuilder' | 'manualLogEntry';
     LongPressDragDirective, AutoGrowDirective, ActionMenuComponent,
     ModalComponent, ClickOutsideDirective,
     ExerciseDetailComponent, IconComponent, ExerciseSelectionModalComponent, MillisecondsDatePipe, FabMenuComponent, TranslateModule, NgLetDirective,
+    PressDirective,
     GenerateWorkoutModalComponent],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
@@ -79,6 +82,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private translate = inject(TranslateService);
   private workoutGeneratorService = inject(WorkoutGeneratorService);
   private subscriptionService = inject(SubscriptionService);
+  protected audioService = inject(AudioService);
 
   @ViewChildren('setRepsInput') setRepsInputs!: QueryList<ElementRef<HTMLInputElement>>;
   @ViewChildren('expandedSetElement') expandedSetElements!: QueryList<ElementRef<HTMLDivElement>>;
@@ -1261,7 +1265,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         formGroupConfig['targetReps'] = [targetRepsValue ?? null, [Validators.min(0)]];
         formGroupConfig['targetRepsMin'] = [targetRepsMinValue ?? null, [Validators.min(0)]];
         formGroupConfig['targetRepsMax'] = [targetRepsMaxValue ?? null, [Validators.min(0)]];
-      } else if (setDataBk.targetReps){
+      } else if (setDataBk.targetReps) {
         formGroupConfig['targetReps'] = [targetRepsValue ?? null, [Validators.min(0)]];
         formGroupConfig['targetRepsMin'] = [targetRepsMinValue ?? null, [Validators.min(0)]];
         formGroupConfig['targetRepsMax'] = [targetRepsMaxValue ?? null, [Validators.min(0)]];
@@ -1271,7 +1275,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         formGroupConfig['targetWeight'] = [targetWeighValue != null ? this.unitService.convertWeight(targetWeighValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
         formGroupConfig['targetWeightMin'] = [targetWeightMinValue != null ? this.unitService.convertWeight(targetWeightMinValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
         formGroupConfig['targetWeightMax'] = [targetWeightMaxValue != null ? this.unitService.convertWeight(targetWeightMaxValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
-      } else if (setDataBk.targetWeight){
+      } else if (setDataBk.targetWeight) {
         formGroupConfig['targetWeight'] = [targetWeighValue != null ? this.unitService.convertWeight(targetWeighValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
         formGroupConfig['targetWeightMin'] = [targetWeightMinValue != null ? this.unitService.convertWeight(targetWeightMinValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
         formGroupConfig['targetWeightMax'] = [targetWeightMaxValue != null ? this.unitService.convertWeight(targetWeightMaxValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
@@ -1281,7 +1285,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         formGroupConfig['targetDuration'] = [targetDurationValue ?? null, [Validators.min(0)]];
         formGroupConfig['targetDurationMin'] = [targetDurationMinValue ?? null, [Validators.min(0)]];
         formGroupConfig['targetDurationMax'] = [targetDurationMaxValue ?? null, [Validators.min(0)]];
-      } else if (setDataBk.targetDuration){
+      } else if (setDataBk.targetDuration) {
         formGroupConfig['targetDuration'] = [targetDurationValue ?? null, [Validators.min(0)]];
         formGroupConfig['targetDurationMin'] = [targetDurationMinValue ?? null, [Validators.min(0)]];
         formGroupConfig['targetDurationMax'] = [targetDurationMaxValue ?? null, [Validators.min(0)]];
@@ -1292,7 +1296,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         formGroupConfig['targetDistance'] = [targetDistanceValue ?? null, [Validators.min(0)]];
         formGroupConfig['targetDistanceMin'] = [targetDistanceMinValue ?? null, [Validators.min(0)]];
         formGroupConfig['targetDistanceMax'] = [targetDistanceMaxValue ?? null, [Validators.min(0)]];
-      } else if (setDataBk.targetDistance){
+      } else if (setDataBk.targetDistance) {
         formGroupConfig['targetDistance'] = [targetDistanceValue ?? null, [Validators.min(0)]];
         formGroupConfig['targetDistanceMin'] = [targetDistanceMinValue ?? null, [Validators.min(0)]];
         formGroupConfig['targetDistanceMax'] = [targetDistanceMaxValue ?? null, [Validators.min(0)]];
@@ -1301,13 +1305,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
       if (setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.reps)) {
         formGroupConfig['targetTempo'] = [tempoValue || ''];
-      } else if (setDataBk.targetTempo){
+      } else if (setDataBk.targetTempo) {
         formGroupConfig['targetTempo'] = [tempoValue || ''];
       }
 
       if (setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.rest)) {
         formGroupConfig['restAfterSet'] = [restValue ?? 60, [Validators.required, Validators.min(0)]];
-      } else if (setDataBk.restAfterSet){
+      } else if (setDataBk.restAfterSet) {
         formGroupConfig['restAfterSet'] = [restValue ?? 60, [Validators.required, Validators.min(0)]];
       }
 
@@ -1548,6 +1552,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             this.recalculateSupersetOrders();
           }
           this.showUndoWithToast("Exercise removed from superset");
+          this.audioService.playSound(AUDIO_TYPES.whoosh);
         } else {
           return; // User cancelled
         }
@@ -1563,6 +1568,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         });
         actionTaken = true;
         this.showUndoWithToast("Round removed");
+        this.audioService.playSound(AUDIO_TYPES.whoosh);
       }
     }
     // --- CASE 2: It's a standard, non-superset exercise ---
@@ -1578,6 +1584,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           this.exercisesFormArray.removeAt(exerciseIndex);
           actionTaken = true;
           this.showUndoWithToast("Exercise removed");
+          this.audioService.playSound(AUDIO_TYPES.whoosh);
         } else {
           return; // User cancelled
         }
@@ -1586,6 +1593,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         setsArray.removeAt(setIndex);
         actionTaken = true;
         this.showUndoWithToast("Set removed");
+        this.audioService.playSound(AUDIO_TYPES.whoosh);
       }
     }
 
@@ -2051,6 +2059,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
     this.expandedSetPath.set(null); // Collapse if an exercise is removed
     this.showUndoWithToast("Exercise removed");
+    this.audioService.playSound(AUDIO_TYPES.whoosh);
   }
   errorMessage = signal<string | null>(null);
 
@@ -4936,7 +4945,89 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   protected metricEnum = METRIC;
 
   protected isGhostFieldVisible(fieldOrder: METRIC[], exIndex: number): boolean {
-    return !!(this.isEditableMode() && !this.isSuperSet(exIndex) && fieldOrder && fieldOrder.length !== undefined && ((fieldOrder.length <= 1) || (fieldOrder.length > 2 && fieldOrder.length%2==1)));
+    return !!(this.isEditableMode() && !this.isSuperSet(exIndex) && fieldOrder && fieldOrder.length !== undefined && ((fieldOrder.length <= 1) || (fieldOrder.length > 2 && fieldOrder.length % 2 == 1)));
+  }
+
+
+  private intervalId: any = null;
+
+  onShortPressIncrement(setControl: AbstractControl, field: METRIC): void {
+    this.incrementValue(setControl, field);
+  }
+
+  onLongPressIncrement(setControl: AbstractControl, field: METRIC): void {
+    this.intervalId = setInterval(() => this.incrementValue(setControl, field), 200);
+  }
+
+  onShortPressDecrement(setControl: AbstractControl, field: METRIC): void {
+    this.decrementValue(setControl, field);
+  }
+
+  onLongPressDecrement(setControl: AbstractControl, field: METRIC): void {
+    this.intervalId = setInterval(() => this.decrementValue(setControl, field), 200);
+  }
+
+  onPressRelease(): void {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+    }
+  }
+
+  private incrementValue(setControl: AbstractControl, field: METRIC): void {
+    const settings = this.appSettingsService.getSettings();
+    const isWeight = field === METRIC.weight;
+    const isTime = field === METRIC.duration || field === METRIC.rest;
+    const step = isWeight ? (settings.weightStep || 0.5) : 1;
+
+    const formControlName = this.getFormControlName(field);
+    const control = setControl.get(formControlName);
+    if (!control) return;
+
+    const initialValueStr = control.value?.toString() || '0';
+    let currentNumberValue = isTime ? (this.parseTimeToSeconds(initialValueStr) || 0) : (parseFloat(initialValueStr) || 0);
+
+    const newNumberValue = parseFloat((currentNumberValue + step).toFixed(2));
+
+    control.patchValue(newNumberValue);
+  }
+
+  private decrementValue(setControl: AbstractControl, field: METRIC): void {
+    const settings = this.appSettingsService.getSettings();
+    const isWeight = field === METRIC.weight;
+    const isTime = field === METRIC.duration || field === METRIC.rest;
+    const step = isWeight ? (settings.weightStep || 0.5) : 1;
+
+    const formControlName = this.getFormControlName(field);
+    const control = setControl.get(formControlName);
+    if (!control) return;
+
+    const initialValueStr = control.value?.toString() || '0';
+    let currentNumberValue = isTime ? (this.parseTimeToSeconds(initialValueStr) || 0) : (parseFloat(initialValueStr) || 0);
+
+    const newNumberValue = Math.max(0, parseFloat((currentNumberValue - step).toFixed(2)));
+
+    control.patchValue(newNumberValue);
+  }
+
+  protected getFormControlName(field: METRIC): string {
+    const isLogMode = this.mode === 'manualLogEntry';
+    switch (field) {
+      case METRIC.reps: return isLogMode ? 'repsAchieved' : 'targetReps';
+      case METRIC.weight: return isLogMode ? 'weightUsed' : 'targetWeight';
+      case METRIC.distance: return isLogMode ? 'distanceAchieved' : 'targetDistance';
+      case METRIC.duration: return isLogMode ? 'durationPerformed' : 'targetDuration';
+      case METRIC.rest: return 'restAfterSet'; // 'restAfterSet' is used in both modes for simplicity
+      case METRIC.tempo: return 'targetTempo';
+      default: return '';
+    }
+  }
+
+  // Helper to parse "mm:ss" strings from user input
+  parseTimeToSeconds(timeStr: string): number {
+    if (!timeStr) return 0;
+    const parts = timeStr.toString().split(':').map(part => parseInt(part, 10) || 0);
+    return parts.length === 2 ? (parts[0] * 60) + parts[1] : parts[0];
   }
 
 }

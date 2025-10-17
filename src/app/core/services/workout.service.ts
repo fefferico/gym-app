@@ -1295,6 +1295,10 @@ export class WorkoutService {
         setToUpdate.durationPerformed = numberValue;
         break;
       }
+      case METRIC.rest: {
+        setToUpdate.restAfterSet = numberValue;
+        break;
+      }
       case METRIC.tempo: {
         setToUpdate.targetTempo = stringValue;
         setToUpdate.tempoUsed = stringValue;

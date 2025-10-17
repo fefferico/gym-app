@@ -251,15 +251,18 @@
                       </button>
                     </div>
 
-                    <div *ngIf="isSetExpanded(exIndex, setIndex)" class="border-t border-white dark:border-gray-600/50">
+                    <div *ngIf="isSetExpanded(exIndex, setIndex)">
+                    <!-- <div *ngIf="isSetExpanded(exIndex, setIndex)" class="border-t border-white dark:border-gray-600/50"> -->
 
                       <!-- Set ADD/REMOVE METRICS - STANDARD SET -->
                       <div *ngIf="isSetExpanded(exIndex,setIndex)"
                         class="flex-shrink-0 flex flex-col items-center justify-center gap-1">
                         <div *ngIf="!isSetCompleted(exIndex, setIndex)" class="flex items-center">
-                          <div class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/50 p-1 px-2 rounded-full mt-1">
-                            <label class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">{{
-                                                                'workoutBuilder.set.metrics' | translate }}:</label>
+                          <div
+                            class="flex w-fit items-center justify-center gap-1 bg-gray-300 dark:bg-gray-900/50 p-1 px-2 rounded-full mt-1">
+                            <label
+                              class="flex items-center justify-between text-s font-medium text-white dark:text-gray-400">{{
+                              'workoutBuilder.set.metrics' | translate }}:</label>
                             <!-- Remove metric button -->
                             <button *ngIf="canRemoveAnyField(exIndex, setIndex)"
                               (click)="promptRemoveField(exIndex, setIndex); $event.stopPropagation()"
@@ -335,22 +338,25 @@
 
                 </ng-container>
                 <!-- Col 2: Set +/- Buttons STANDAR SET -->
-                 <div class="flex items-center justify-center">
-                  <div class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/50 p-1 px-2 rounded-full">
-                  <label class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">{{ 'compactPlayer.setLabel' | translate }}:</label>
-                  <button type="button" (click)="removeSet(exIndex, -1)"
-                    class="flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
-                    [aria-label]="'compactPlayer.removeLastSet' | translate">
-                    <app-icon name="minus-circle" class="h-5 w-5"></app-icon>
-                  </button>
-                  <button type="button" (click)="addSet(exIndex, 'standard'); $event.stopPropagation()"
-                    class="flex items-center gap-1 text-xs font-semibold text-green-500 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 p-1 rounded-full hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
-                    [aria-label]="'compactPlayer.addSet' | translate">
-                    <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
-                  </button>
+                <div class="flex items-center justify-center">
+                  <div
+                    class="flex w-fit items-center justify-center gap-1 bg-gray-300 dark:bg-gray-900/50 p-1 px-2 rounded-full">
+                    <label
+                      class="flex items-center justify-between text-s font-medium text-white dark:text-gray-400">{{
+                      'compactPlayer.setLabel' | translate }}:</label>
+                    <button type="button" (click)="removeSet(exIndex, -1)"
+                      class="flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
+                      [aria-label]="'compactPlayer.removeLastSet' | translate">
+                      <app-icon name="minus-circle" class="h-5 w-5"></app-icon>
+                    </button>
+                    <button type="button" (click)="addSet(exIndex, 'standard'); $event.stopPropagation()"
+                      class="flex items-center gap-1 text-xs font-semibold text-green-500 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 p-1 rounded-full hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
+                      [aria-label]="'compactPlayer.addSet' | translate">
+                      <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
+                    </button>
+                  </div>
                 </div>
-                 </div>
-                
+
               </ng-container>
 
               <!-- CASE 2: Superset (uses a similar card logic for each exercise within the round) -->
@@ -806,7 +812,7 @@
   <div>
     <div class="flex items-center justify-center text-gray-500 dark:text-gray-300 ">
       <app-icon name="tempo" class="h-4 w-4 mr-1"></app-icon>
-      <label class="text-xs font-medium pb-1">
+      <label class="text-xs font-medium py-1">
         {{ 'compactPlayer.tempoLabel' | translate }}
       </label>
     </div>
@@ -822,62 +828,62 @@
 </ng-template>
 
 <!-- REUSABLE INCREMENTER INPUT TEMPLATE -->
-<ng-template #incrementerInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-field="field" let-label="label" let-target="target">
+<ng-template #incrementerInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-field="field" let-label="label"
+  let-target="target">
   <div>
     <!-- Label part (unchanged) -->
     <div class="flex items-center justify-center text-gray-500 dark:text-gray-300">
       <app-icon [name]="field" class="h-4 w-4 mr-1"></app-icon>
-      <label class="text-xs font-medium pb-1">{{ label }}</label>
+      <label class="text-xs font-medium py-1">{{ label }}</label>
     </div>
 
-    <!-- Main wrapper for positioning the target below -->
-    <div class="relative flex flex-col items-center">
-        <!-- Input group: buttons and the input field -->
-        <div class="flex items-stretch w-full shadow-sm">
-            <!-- Decrement Button -->
-            <button type="button" appPress 
-                (shortPress)="onShortPressDecrement(exIndex, setIndex, field)"
-                (longPress)="onLongPressDecrement(exIndex, setIndex, field)" 
-                (pressRelease)="onPressRelease()"
-                class="p-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-l-xl border-y border-l border-gray-300 dark:border-gray-500 transition-colors">
-                <app-icon name="minus" class="h-5 w-5 pointer-events-none"></app-icon>
+    <!-- Main input group container -->
+    <div class="flex items-stretch w-full shadow-sm">
 
-            </button>
-            
-            <!-- Input Field -->
-            <input 
-                [type]="(field === metricEnum.duration || field === metricEnum.rest) ? 'text' : 'number'"
-                [ngModel]="getInitialInputValue(exIndex, setIndex, field)"
-                (change)="updateSetData(exIndex, setIndex, 0, field, $event)"
-                class="w-full p-1 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-300 dark:border-gray-500 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none focus:z-10 relative">
-            <!-- Increment Button -->
-            <button type="button" appPress 
-                (shortPress)="onShortPressIncrement(exIndex, setIndex, field)"
-                (longPress)="onLongPressIncrement(exIndex, setIndex, field)" 
-                (pressRelease)="onPressRelease()"
-                class="p-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-r-xl border-y border-r border-gray-300 dark:border-gray-500 transition-colors">
-                <app-icon name="plus" class="h-5 w-5 pointer-events-none"></app-icon>
-                
-            </button>
+      <!-- Column 1: Decrement Button -->
+      <button type="button" appPress (shortPress)="onShortPressDecrement(exIndex, setIndex, field)"
+        (longPress)="onLongPressDecrement(exIndex, setIndex, field)" (pressRelease)="onPressRelease()"
+        class="flex items-center px-3 py-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-l-xl border-y border-l border-gray-300 dark:border-gray-700 transition-colors">
+        <app-icon name="minus" class="h-5 w-5 pointer-events-none"></app-icon>
+      </button>
+
+      <!-- Column 2: The Input and its Target, stacked vertically -->
+      <div class="relative flex flex-col flex-grow">
+        <!-- Input Field -->
+        <div class="flex items-center justify-center bg-gray-300 dark:bg-gray-700">
+          <input [type]="(field === metricEnum.duration || field === metricEnum.rest) ? 'text' : 'number'"
+            [ngModel]="getInitialInputValue(exIndex, setIndex, field)"
+            (change)="updateSetData(exIndex, setIndex, 0, field, $event)"
+            class="w-full p-1 mt-1 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-50 dark:border-gray-800 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none focus:z-10 relative rounded-md">
+
         </div>
 
-        <!-- Target Display -->
-        <div *ngIf="target && target !== '' && target !== '-'" 
-             class="relative -mt-1 z-10 px-4 py-0.5 bg-gray-400 dark:bg-gray-600 text-white dark:text-gray-100 rounded-b-lg text-xs font-semibold flex items-center gap-1 shadow-md">
+        <!-- Target Display (now correctly aligned under the input) -->
+        <div *ngIf="target && target !== '' && target !== '-'"
+          class="relative z-0 bottom-0 w-full bg-gray-300 dark:bg-gray-700 border-gray-300 dark:border-gray-700">
+          <span
+            class="flex items-center justify-center gap-1 py-0.5 text-white dark:text-gray-100 text-xs font-semibold">
             <app-icon name="target" class="h-3 w-3"></app-icon>
             <span>
-                {{ (field === metricEnum.duration || field === metricEnum.rest) ? formatSecondsToTime(target) : target }}
+              {{ (field === metricEnum.duration || field === metricEnum.rest) ? formatSecondsToTime(target) : target }}
             </span>
+          </span>
         </div>
+      </div>
+
+      <!-- Column 3: Increment Button -->
+      <button type="button" appPress (shortPress)="onShortPressIncrement(exIndex, setIndex, field)"
+        (longPress)="onLongPressIncrement(exIndex, setIndex, field)" (pressRelease)="onPressRelease()"
+        class="flex items-center px-3 py-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-r-xl border-y border-r border-gray-300 dark:border-gray-700 transition-colors">
+        <app-icon name="plus" class="h-5 w-5 pointer-events-none"></app-icon>
+      </button>
     </div>
   </div>
 </ng-template>
 
 <!-- WEIGHT INPUT TEMPLATE -->
 <ng-template #weightInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
-   <ng-container 
-    [ngTemplateOutlet]="incrementerInputTemplate"
-    [ngTemplateOutletContext]="{
+  <ng-container [ngTemplateOutlet]="incrementerInputTemplate" [ngTemplateOutletContext]="{
       exIndex: exIndex,
       setIndex: setIndex,
       field: metricEnum.weight,
@@ -889,9 +895,7 @@
 
 <!-- REPS INPUT TEMPLATE  -->
 <ng-template #repsInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
-  <ng-container 
-    [ngTemplateOutlet]="incrementerInputTemplate"
-    [ngTemplateOutletContext]="{
+  <ng-container [ngTemplateOutlet]="incrementerInputTemplate" [ngTemplateOutletContext]="{
       exIndex: exIndex,
       setIndex: setIndex,
       field: metricEnum.reps,
@@ -903,9 +907,7 @@
 
 <!-- DISTANCE INPUT TEMPLATE -->
 <ng-template #distanceInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
-  <ng-container 
-    [ngTemplateOutlet]="incrementerInputTemplate"
-    [ngTemplateOutletContext]="{
+  <ng-container [ngTemplateOutlet]="incrementerInputTemplate" [ngTemplateOutletContext]="{
       exIndex: exIndex,
       setIndex: setIndex,
       field: metricEnum.distance,
@@ -917,9 +919,7 @@
 
 <!-- DURATION INPUT TEMPLATE -->
 <ng-template #durationInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
-  <ng-container 
-    [ngTemplateOutlet]="incrementerInputTemplate"
-    [ngTemplateOutletContext]="{
+  <ng-container [ngTemplateOutlet]="incrementerInputTemplate" [ngTemplateOutletContext]="{
       exIndex: exIndex,
       setIndex: setIndex,
       field: metricEnum.duration,
@@ -931,9 +931,7 @@
 
 <!-- REST INPUT TEMPLATE -->
 <ng-template #restInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
-  <ng-container 
-    [ngTemplateOutlet]="incrementerInputTemplate"
-    [ngTemplateOutletContext]="{
+  <ng-container [ngTemplateOutlet]="incrementerInputTemplate" [ngTemplateOutletContext]="{
       exIndex: exIndex,
       setIndex: setIndex,
       field: metricEnum.rest,

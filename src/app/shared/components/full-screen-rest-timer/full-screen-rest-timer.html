@@ -1,13 +1,22 @@
-<div *ngIf="isVisible"
-  class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/70 backdrop-blur-2xl transition-opacity duration-300 ease-in-out"
-  [class.opacity-100]="isVisible" [class.opacity-0]="!isVisible">
-  <!-- Top Section: Session Timer -->
-  <div class="w-full max-w-md mx-auto flex justify-center mb-5">
+<div *ngIf="isVisible" @fade
+  class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/70 backdrop-blur-2xl">
+
+  <!-- Top Section: Session Timer & Mode Switcher -->
+  <div class="w-full max-w-md mx-auto flex justify-between items-center mb-5 px-4">
+    <!-- Session Timer (unchanged) -->
     <div
       class="flex items-center gap-x-2 font-mono bg-black/40 px-4 py-2 rounded-full text-lg text-gray-200 border border-white/10">
       <app-icon name="clock" class="h-6 w-6 opacity-80"></app-icon>
       <span>{{ mainTimer() }}</span>
     </div>
+
+    <!-- START: NEW MODE SWITCH BUTTON -->
+    <button (click)="switchMode()"
+      [title]="mode === 'timer' ? ('restTimer.switchToStopwatch' | translate) : ('restTimer.switchToTimer' | translate)"
+      class="p-3 bg-black/40 rounded-full text-gray-200 border border-white/10 hover:bg-white/20 transition-colors">
+      <app-icon [name]="mode === 'timer' ? 'stopwatch' : 'hourglass'" class="h-6 w-6"></app-icon>
+    </button>
+    <!-- END: NEW MODE SWITCH BUTTON -->
   </div>
 
   <!-- Middle Section: Main Circular Timer -->
@@ -29,7 +38,8 @@
         {{ displayTime() }}<span class="text-4xl md:text-5xl opacity-60">{{ displayTentsTime() }}</span>
       </div>
       <div class="mt-1 text-lg md:text-xl font-semibold uppercase tracking-widest text-gray-300">
-        {{ mainText }}
+        <!-- Text changes based on mode -->
+        {{ mode === 'timer' ? mainText : ('restTimer.elapsed' | translate) }}
       </div>
     </div>
   </div>
@@ -38,12 +48,13 @@
   <div class="w-full max-w-md mx-auto flex flex-col items-center gap-6 p-1">
     <!-- Next Up Card -->
     <div *ngIf="nextUpText"
-  class="w-full p-2 bg-black/30 rounded-2xl border border-white/10 shadow-lg flex items-center space-x-4">
+      class="w-full p-2 bg-black/30 rounded-2xl border border-white/10 shadow-lg flex items-center space-x-4">
       <div class="bg-white/10 p-3 rounded-xl flex-shrink-0">
         <app-icon name="flame-2" class="h-12 w-12 text-yellow-400"></app-icon>
       </div>
       <div class="min-w-0 flex-1 overflow-y-auto max-h-40 pr-2 custom-scrollbar">
-        <h3 class="font-semibold text-gray-300 uppercase tracking-wider text-sm">{{ 'restTimer.nextUp' | translate }}</h3>
+        <h3 class="font-semibold text-gray-300 uppercase tracking-wider text-sm">{{ 'restTimer.nextUp' | translate }}
+        </h3>
 
         <!-- START: MODIFIED ELEMENT -->
         <!-- We use a div with [innerHTML] to render the line breaks and styles -->
@@ -57,18 +68,21 @@
 
     <!-- Timer Control Buttons -->
     <div class="flex items-center justify-center space-x-4">
-      <button (click)="adjustTimer(-15)"
+      <!-- -15s Button (Only shows in 'timer' mode) -->
+      <button *ngIf="mode === 'timer'" (click)="adjustTimer(-15)"
         class="h-16 w-16 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold rounded-full transition-colors duration-150 text-xl disabled:opacity-50"
         [disabled]="remainingTime() <= 0">
         -15
       </button>
 
-      <button appPress (shortPress)="skipTimer()"
+      <!-- Main Action Button (Text and action change based on mode) -->
+      <button appPress (shortPress)="handleMainAction()"
         class="py-4 px-12 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold rounded-full shadow-lg transition-transform duration-150 text-lg uppercase tracking-wider transform active:scale-95">
-        {{ 'restTimer.skip' | translate }}
+        {{ mode === 'timer' ? ('restTimer.skip' | translate) : ('restTimer.stop' | translate) }}
       </button>
 
-      <button (click)="adjustTimer(15)"
+      <!-- +15s Button (Only shows in 'timer' mode) -->
+      <button *ngIf="mode === 'timer'" (click)="adjustTimer(15)"
         class="h-16 w-16 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold rounded-full transition-colors duration-150 text-xl">
         +15
       </button>

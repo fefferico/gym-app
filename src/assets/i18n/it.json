@@ -764,7 +764,7 @@
     "switchExerciseTitle": "CAMBIA ESERCIZIO",
     "similarExercisesTitle": "ESERCIZI SIMILI",
     "searchPlaceholder": "Cerca un sostituto...",
-    "rest": "RIPOSO",
+    "rest": "Recupero",
     "workoutCompleteRest": "Allenamento Completato!",
     "insights": {
       "title": "Statistiche Performance",
@@ -982,7 +982,7 @@
       "generalHealth": "Salute generale e longevità",
       "sportSpecific": "Performance sport-specifica",
       "maintenance": "Mantenimento",
-      "rest": "Riposo",
+      "rest": "Recupero",
       "custom": "Personalizzato"
     },
     "routineBuilder": {
@@ -1156,7 +1156,7 @@
     },
     "alerts": {
       "tabataConvertTitle": "Convertire in Tabata?",
-      "tabataConvertMessage": "Questo convertirà tutti gli esercizi in un unico superset. Ogni turno sarà impostato su 20 secondi di lavoro e 10 secondi di riposo. Sei sicuro?",
+      "tabataConvertMessage": "Questo convertirà tutti gli esercizi in un unico superset. Ogni turno sarà impostato su 20 secondi di lavoro e 10 secondi di recupero. Sei sicuro?",
       "convert": "Converti",
       "removeLastRoundTitle": "Rimuovi Ultimo Turno",
       "removeLastRoundMessage": "Questo è l'ultimo turno del superset. Rimuovendolo si eliminerà l'intero superset dall'allenamento. Continuare?",
@@ -2180,7 +2180,7 @@
       "labels": {
         "exerciseName": "Nome Esercizio",
         "numSets": "Numero di Serie",
-        "rest": "Riposo tra le Serie (secondi)",
+        "rest": "Recupero tra le Serie (secondi)",
         "targetDistance": "Distanza Obiettivo ({{unit}})",
         "targetDuration": "Durata Obiettivo (secondi)",
         "numReps": "Numero di Ripetizioni",
