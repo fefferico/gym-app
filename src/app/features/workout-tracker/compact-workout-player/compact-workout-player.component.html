@@ -840,8 +840,6 @@
                 (longPress)="onLongPressDecrement(exIndex, setIndex, field)" 
                 (pressRelease)="onPressRelease()"
                 class="p-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-l-xl border-y border-l border-gray-300 dark:border-gray-500 transition-colors">
-                
-                <!-- THE FIX: Make the icon ignore pointer events -->
                 <app-icon name="minus" class="h-5 w-5 pointer-events-none"></app-icon>
 
             </button>
@@ -858,8 +856,6 @@
                 (longPress)="onLongPressIncrement(exIndex, setIndex, field)" 
                 (pressRelease)="onPressRelease()"
                 class="p-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-r-xl border-y border-r border-gray-300 dark:border-gray-500 transition-colors">
-
-                <!-- THE FIX: Make the icon ignore pointer events -->
                 <app-icon name="plus" class="h-5 w-5 pointer-events-none"></app-icon>
                 
             </button>
@@ -869,7 +865,6 @@
         <div *ngIf="target && target !== '' && target !== '-'" 
              class="relative -mt-1 z-10 px-4 py-0.5 bg-gray-400 dark:bg-gray-600 text-white dark:text-gray-100 rounded-b-lg text-xs font-semibold flex items-center gap-1 shadow-md">
             <app-icon name="target" class="h-3 w-3"></app-icon>
-            <!-- THIS IS THE FIX: Conditionally format the target value based on the field type -->
             <span>
                 {{ (field === metricEnum.duration || field === metricEnum.rest) ? formatSecondsToTime(target) : target }}
             </span>
