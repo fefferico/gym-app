@@ -108,15 +108,15 @@
                       <ng-container *ngFor="let set of round.sets">
                         <div class="text-center py-1">
                           <ng-container *ngIf="set; else noSetData">
-                            <strong [ngClass]="checkTextClass(set, 'reps')"
-                              [class.cursor-pointer]="isTargetDifferent(set, 'reps')"
-                              [class.hover:underline]="isTargetDifferent(set, 'reps')"
-                              (click)="showComparisonModal(set, 'reps')">{{ set.repsAchieved || '-' }}</strong>
-                            <span *ngIf="set.weightUsed != null" class="text-gray-600 dark:text-gray-400 text-sm"
-                              [class.cursor-pointer]="isTargetDifferent(set, 'weight')"
-                              [class.hover:underline]="isTargetDifferent(set, 'weight')"
-                              (click)="showComparisonModal(set, 'weight')">
-                              @ {{ set.weightUsed | weightUnit:'1.0-2' }}
+                            <strong [ngClass]="checkTextClass(set, metricEnum.reps)"
+                              [class.cursor-pointer]="isTargetDifferent(set, metricEnum.reps)"
+                              [class.hover:underline]="isTargetDifferent(set, metricEnum.reps)"
+                              (click)="showComparisonModal(set, metricEnum.reps)">{{ set.repsLogged || '-' }}</strong>
+                            <span *ngIf="set.weightLogged != null" class="text-gray-600 dark:text-gray-400 text-sm"
+                              [class.cursor-pointer]="isTargetDifferent(set, metricEnum.weight)"
+                              [class.hover:underline]="isTargetDifferent(set, metricEnum.weight)"
+                              (click)="showComparisonModal(set, metricEnum.weight)">
+                              @ {{ set.weightLogged | weightUnit:'1.0-2' }}
                             </span>
                           </ng-container>
                           <ng-template #noSetData><span class="text-gray-400">{{ 'logDetail.card.noSetData' | translate
@@ -180,10 +180,10 @@
                         </div>
                         <div *ngIf="loggedEx.sets.length > 0; else noSetData"
                           class="text-sm text-gray-700 dark:text-gray-200 font-semibold ml-auto text-right flex-shrink-0">
-                          {{ loggedEx.sets[0].repsAchieved || '-' }} reps
-                          <span *ngIf="loggedEx.sets[0].weightUsed != null"
+                          {{ loggedEx.sets[0].repsLogged || '-' }} reps
+                          <span *ngIf="loggedEx.sets[0].weightLogged != null"
                             class="font-normal text-gray-600 dark:text-gray-400">
-                            @ {{ loggedEx.sets[0].weightUsed | weightUnit:'1.0-2' }}
+                            @ {{ loggedEx.sets[0].weightLogged | weightUnit:'1.0-2' }}
                           </span>
                         </div>
                         <ng-template #noSetData><span class="text-gray-400 text-sm ml-auto">{{ 'logDetail.card.noSetData'
@@ -219,7 +219,7 @@
                         <p *ngIf="item.baseExercise?.category" class="truncate">{{ item.baseExercise?.category |
                           titlecase }}</p>
                         <p *ngIf="checkIfTimedExercise(item)">{{ 'logDetail.card.time' | translate }}:
-                          {{getSetDurationPerformed(item)}}</p>
+                          {{getSetdurationLogged(item)}}</p>
                         <p>{{ 'logDetail.card.set' | translate }}: {{item.sets.length}} <span
                             *ngIf="getSetReps(item) !== '0'">({{ 'logDetail.card.reps' | translate }}:
                             {{getSetReps(item)}})</span></p>
@@ -277,35 +277,35 @@
                       </div>
                     </div>
                     <!-- Reps -->
-                    <div *ngIf="hasPerformedReps(item)"><strong [ngClass]="checkTextClass(set, 'reps')"
+                    <div *ngIf="hasPerformedReps(item)"><strong [ngClass]="checkTextClass(set, metricEnum.reps)"
                         [class.cursor-pointer]="true"
-                        (click)="showComparisonModal(set, 'reps')">{{ set.repsAchieved || '-' }}</strong></div>
+                        (click)="showComparisonModal(set, metricEnum.reps)">{{ set.repsLogged || '-' }}</strong></div>
 
                     <!-- Weight -->
-                    <div *ngIf="checkIfWeightedExercise(item)"><strong [ngClass]="checkTextClass(set, 'weight')"
+                    <div *ngIf="checkIfWeightedExercise(item)"><strong [ngClass]="checkTextClass(set, metricEnum.weight)"
                         [class.cursor-pointer]="true"
-                        (click)="showComparisonModal(set, 'weight')">{{ getWeightDisplay(item, set) }}</strong></div>
+                        (click)="showComparisonModal(set, metricEnum.weight)">{{ getWeightDisplay(item, set) }}</strong></div>
 
                     <!-- Distance +++ -->
                     <div *ngIf="hasPerformedDistanceSets(item)">
-                      <strong [ngClass]="checkTextClass(set, 'distance')"
+                      <strong [ngClass]="checkTextClass(set, metricEnum.distance)"
                         [class.cursor-pointer]="true"
-                        (click)="showComparisonModal(set, 'distance')">{{ set.distanceAchieved ?? '-' }}</strong>
+                        (click)="showComparisonModal(set, metricEnum.distance)">{{set.distanceLogged ?? '-' }}</strong>
                     </div>
 
                     <!-- Time -->
-                    <div *ngIf="hasPerformedTimedSets(item)"><strong [ngClass]="checkTextClass(set, 'duration')"
+                    <div *ngIf="hasPerformedTimedSets(item)"><strong [ngClass]="checkTextClass(set, metricEnum.duration)"
                         [class.cursor-pointer]="true"
-                        (click)="showComparisonModal(set, 'duration')">{{ set.durationPerformed ?? '-' }}</strong></div>
+                        (click)="showComparisonModal(set, metricEnum.duration)">{{ set.durationLogged ?? '-' }}</strong></div>
 
                     <!-- Rest -->
-                    <div><strong [ngClass]="checkTextClass(set, 'rest')"
+                    <div><strong [ngClass]="checkTextClass(set, metricEnum.rest)"
                         [class.cursor-pointer]="true"
-                        (click)="showComparisonModal(set, 'rest')">{{ set.restAfterSetUsed ?? '-' }}</strong></div>
+                        (click)="showComparisonModal(set, metricEnum.rest)">{{ set.restLogged ?? '-' }}</strong></div>
 
                     <!-- Notes -->
                     <div *ngIf="set.notes" class="cursor-pointer dark:text-white">
-                      <app-icon name="schedule" (click)="showNotesModal(set.notes)" *ngIf="set.notes"
+                      <app-icon name="schedule" (click)="showNotesModal(set.notes, $event)" *ngIf="set.notes"
                         class="h-7 w-7"></app-icon>
                       <span class="text-gray-500" *ngIf="!set.notes">{{ 'logDetail.card.noNotes' | translate }}</span>
                     </div>

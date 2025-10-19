@@ -6,7 +6,6 @@ import { LastPerformanceSummary, LoggedSet, LoggedWorkoutExercise } from "./work
 export interface ExerciseTargetSetParams {
   id: string;
   targetTempo?: string;
-  restAfterSet: number; // For the set *within* an exercise. For supersets, this might be 0 for intermediate exercises.
   notes?: string;
   type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | 'tabata' | string; // More flexible
   _uiIsCompleted?: boolean;
@@ -40,9 +39,9 @@ export interface ExerciseCurrentExecutionSetParams {
   tempoUsed?: string;
   notes?: string;
   type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | 'tabata' | string; // More flexible
-  restAfterSet: number; // For the set *within* an exercise. For supersets, this might be 0 for intermediate exercises.
-  repsAchieved: number;
-  weightUsed: number;
+  actualRest: number; // For the set *within* an exercise. For supersets, this might be 0 for intermediate exercises.
+  actualReps: number;
+  actualWeight: number;
   actualDuration: number;
   actualDistance: number;
 }
@@ -52,7 +51,6 @@ export interface ExerciseTargetExecutionSetParams {
   tempo?: string;
   notes?: string;
   type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | 'tabata' | string; // More flexible
-  targetRestAfterSet?: number | null; // For the set *within* an exercise. For supersets, this might be 0 for intermediate exercises.
   targetReps?: number | null;
   targetRepsMin?: number | null;
   targetRepsMax?: number | null;
@@ -65,6 +63,9 @@ export interface ExerciseTargetExecutionSetParams {
   targetDistance?: number | null;
   targetDistanceMin?: number | null;
   targetDistanceMax?: number | null;
+  targetRest?: number | null;
+  targetRestMin?: number | null;
+  targetRestMax?: number | null;
 }
 
 export interface WorkoutExercise {
@@ -116,8 +117,7 @@ export enum METRIC {
   duration = "duration",
   distance = "distance",
   tempo = "tempo",
-  rest = "rest",
-  notes = "notes",
+  rest = "rest"
 }
 
 export interface Routine {

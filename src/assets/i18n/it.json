@@ -925,7 +925,8 @@
     "expand": "ESPANDI",
     "collapse": "RIDUCI",
     "ungroup": "SEPARA",
-    "makeEmom": "RENDI EMOM"
+    "makeEmom": "RENDI EMOM",
+    "timer": "TIMER"
   },
   "exerciseSelectionModal": {
     "filtersTitle": "Filtri e Ordinamento",

@@ -11,11 +11,12 @@ export interface LoggedSet {
   exerciseId: string;    // ID of the base Exercise performed
 
   // Actual performance data
-  repsAchieved: number;
-  weightUsed?: number | undefined;
-  durationPerformed?: number; // in seconds
-  distanceAchieved?: number; // in kilometers
+  repsLogged: number;
+  weightLogged?: number | undefined;
+  durationLogged?: number; // in seconds
+  distanceLogged?: number; // in kilometers
   tempoUsed?: string;     // Actual tempo used, if tracked by user.
+  restLogged?: number;
   // restTaken?: number;  // Actual rest taken before the next set (more complex to track accurately)
 
   // Target values (copied from the planned set in the routine at the time of performance)
@@ -36,8 +37,6 @@ export interface LoggedSet {
   targetDistanceMin?: number | null; // in kilometers
   targetDistanceMax?: number | null; // in kilometers
   targetTempo?: string; // Target tempo from the plan
-  targetRestAfterSet?: number; // Target rest after this set, if applicable
-  restAfterSetUsed?: number;
   notes?: string;         // User notes specific to this performed set (e.g., "Felt easy", "Form breakdown on last rep")
   // formRating?: 1 | 2 | 3 | 4 | 5; // Optional: User's perceived form rating for the set
   timestamp: string;       // ISO string of when this set was completed/logged.
@@ -103,10 +102,10 @@ export interface WorkoutLog {
 export interface PersonalBestSet extends LoggedSet {
   pbType: string; // e.g., "1RM", "5RM (estimated)", "Max Reps @ X kg"
   exerciseId: string;
-  repsAchieved: number;
-  weightUsed?: number | undefined;
+  repsLogged: number;
+  weightLogged?: number | undefined;
   volume?: number | undefined;
-  durationPerformed?: number; // In seconds
+  durationLogged?: number; // In seconds
   estimatedOneRepMax?: number | null;
   timestamp: string; // ISO date string of when this PB was achieved
   workoutLogId?: string; // <<<< ADD THIS if not present
@@ -131,9 +130,9 @@ export interface LastPerformanceSummary {
 
 
 export interface PBHistoryInstance {
-  weightUsed?: number | undefined;
-  repsAchieved: number; // Actual reps for this historical PB instance
-  durationPerformed?: number; // Actual duration for this historical PB instance
+  weightLogged?: number | undefined;
+  repsLogged: number; // Actual reps for this historical PB instance
+  durationLogged?: number; // Actual duration for this historical PB instance
   timestamp: string;    // ISO date string of when this historical PB was achieved
   workoutLogId?: string; // The log ID where this historical PB was achieved
 }

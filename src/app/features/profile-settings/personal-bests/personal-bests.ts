@@ -231,7 +231,7 @@ export class PersonalBestsComponent implements OnInit {
   // Updated formatPbValue method
   formatPbValue(
     // Item can be a DisplayPersonalBest (which has pbType) or PBHistoryInstance (which doesn't)
-    item: { weightUsed?: number; repsAchieved: number; durationPerformed?: number; pbType?: string },
+    item: { weightLogged?: number; repsLogged: number; durationLogged?: number; pbType?: string },
     // pbTypeForContext is used when 'item' is a PBHistoryInstance,
     // and it's the pbType of the main PB record (e.g., pb.pbType from the template).
     pbTypeForContext?: string
@@ -239,31 +239,31 @@ export class PersonalBestsComponent implements OnInit {
     let value = '';
     const effectivePbType = item.pbType || pbTypeForContext;
 
-    if (item.weightUsed !== undefined && item.weightUsed !== null) {
-      value += `${this.decimalPipe.transform(item.weightUsed, '1.0-2')}${this.unitsService.getWeightUnitSuffix()}`;
+    if (item.weightLogged !== undefined && item.weightLogged !== null) {
+      value += `${this.decimalPipe.transform(item.weightLogged, '1.0-2')}${this.unitsService.getWeightUnitSuffix()}`;
 
-      if (item.repsAchieved > 0) {
+      if (item.repsLogged > 0) {
         let showRepsSuffix = true;
         if (effectivePbType && effectivePbType.includes('RM (Actual)')) {
           // Extracts X from "XRM (Actual)"
           const rmValueString = effectivePbType.split('RM')[0];
           const rmValue = parseInt(rmValueString, 10);
-          if (!isNaN(rmValue) && item.repsAchieved === rmValue) {
+          if (!isNaN(rmValue) && item.repsLogged === rmValue) {
             showRepsSuffix = false; // Don't show "x 1" for "1RM (Actual)", etc.
           }
         }
         if (showRepsSuffix) {
-          value += ` x ${item.repsAchieved}`;
+          value += ` x ${item.repsLogged}`;
         }
       }
-    } else if (item.repsAchieved > 0 && effectivePbType?.includes('Max Reps')) {
-      value = `${item.repsAchieved} ${this.translate.instant('personalBests.units.reps')}`;
-    } else if (item.durationPerformed && item.durationPerformed > 0 && effectivePbType?.includes('Max Duration')) {
-      value = `${item.durationPerformed}${this.translate.instant('personalBests.units.seconds')}`;
-    } else if (item.repsAchieved > 0) { // Fallback if no weight and not a specific 'Max Reps' type
-      value = `${item.repsAchieved} ${this.translate.instant('personalBests.units.reps')}`;
-    } else if (item.durationPerformed && item.durationPerformed > 0) { // Fallback if no weight and not 'Max Duration'
-      value = `${item.durationPerformed}${this.translate.instant('personalBests.units.seconds')}`;
+    } else if (item.repsLogged > 0 && effectivePbType?.includes('Max Reps')) {
+      value = `${item.repsLogged} ${this.translate.instant('personalBests.units.reps')}`;
+    } else if (item.durationLogged && item.durationLogged > 0 && effectivePbType?.includes('Max Duration')) {
+      value = `${item.durationLogged}${this.translate.instant('personalBests.units.seconds')}`;
+    } else if (item.repsLogged > 0) { // Fallback if no weight and not a specific 'Max Reps' type
+      value = `${item.repsLogged} ${this.translate.instant('personalBests.units.reps')}`;
+    } else if (item.durationLogged && item.durationLogged > 0) { // Fallback if no weight and not 'Max Duration'
+      value = `${item.durationLogged}${this.translate.instant('personalBests.units.seconds')}`;
     }
 
     return value || 'N/A';

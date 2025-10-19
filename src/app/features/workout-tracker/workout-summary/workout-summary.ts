@@ -120,7 +120,7 @@ export class WorkoutSummaryComponent implements OnInit {
         map(baseEx => {
           let exerciseVolume = 0;
           loggedEx.sets.forEach(set => {
-            exerciseVolume += (set.repsAchieved || 0) * (set.weightUsed || 0);
+            exerciseVolume += (set.repsLogged || 0) * (set.weightLogged || 0);
           });
           return {
             ...loggedEx,
@@ -157,8 +157,8 @@ export class WorkoutSummaryComponent implements OnInit {
               // The `id` of a LoggedSet in a PB record *is* the id of the set that achieved it.
               if (pb.id === performedSet.id && // The set ID in PB matches this performed set ID
                 pb.timestamp === performedSet.timestamp && // And timestamp matches
-                performedSet.weightUsed === pb.weightUsed && // And values match
-                performedSet.repsAchieved === pb.repsAchieved) {
+                performedSet.weightLogged === pb.weightLogged && // And values match
+                performedSet.repsLogged === pb.repsLogged) {
 
                 achievedPBs.push({
                   exerciseName: loggedEx.exerciseName,
@@ -179,15 +179,15 @@ export class WorkoutSummaryComponent implements OnInit {
 
   formatPbValueForSummary(pb: PersonalBestSet): string {
     let value = '';
-    if (pb.weightUsed !== undefined && pb.weightUsed !== null && pb.weightUsed !== 0) {
-      value += `${pb.weightUsed}${this.unitsService.getWeightUnitSuffix()}`;
-      if (pb.repsAchieved > 0 && (pb.pbType.includes('Heaviest') || pb.repsAchieved > 1 && !pb.pbType.includes('RM'))) {
-        value += ` x ${pb.repsAchieved}`;
+    if (pb.weightLogged !== undefined && pb.weightLogged !== null && pb.weightLogged !== 0) {
+      value += `${pb.weightLogged}${this.unitsService.getWeightUnitSuffix()}`;
+      if (pb.repsLogged > 0 && (pb.pbType.includes('Heaviest') || pb.repsLogged > 1 && !pb.pbType.includes('RM'))) {
+        value += ` x ${pb.repsLogged}`;
       }
-    } else if (pb.repsAchieved > 0 && pb.pbType.includes('Max Reps')) {
-      value = `${pb.repsAchieved} ${this.translate.instant('workoutSummary.units.reps')}`;
-    } else if (pb.durationPerformed && pb.durationPerformed > 0 && pb.pbType.includes('Max Duration')) {
-      value = `${pb.durationPerformed}${this.translate.instant('workoutSummary.units.seconds')}`;
+    } else if (pb.repsLogged > 0 && pb.pbType.includes('Max Reps')) {
+      value = `${pb.repsLogged} ${this.translate.instant('workoutSummary.units.reps')}`;
+    } else if (pb.durationLogged && pb.durationLogged > 0 && pb.pbType.includes('Max Duration')) {
+      value = `${pb.durationLogged}${this.translate.instant('workoutSummary.units.seconds')}`;
     }
     return value || 'N/A';
   }

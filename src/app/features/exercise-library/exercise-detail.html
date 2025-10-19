@@ -241,9 +241,9 @@
                     <span>Set {{i + 1}}: <strong class="text-gray-800 dark:text-white">{{ formatSetDisplay(set)
                         }}</strong></span>
                     <!-- Hide 1RM for cardio sets -->
-                    <span *ngIf="ex.category !== 'cardio' && set.weightUsed && set.repsAchieved"
+                    <span *ngIf="ex.category !== 'cardio' && set.weightLogged && set.repsLogged"
                       class="font-mono text-xs text-gray-500">
-                      1RM: {{ (set.weightUsed ?? 0) * (36 / (37 - set.repsAchieved)) | number:'1.0-1' }}
+                      1RM: {{ (set.weightLogged ?? 0) * (36 / (37 - set.repsLogged)) | number:'1.0-1' }}
                     </span>
                   </li>
                   <!-- --- END: USE THE NEW HELPER FUNCTION --- -->

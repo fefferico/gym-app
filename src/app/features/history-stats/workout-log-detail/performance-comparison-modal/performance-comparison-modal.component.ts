@@ -262,11 +262,11 @@ export class PerformanceComparisonModalComponent {
         if (!sets || sets.length === 0) {
             return { setsCount: 0, totalReps: 0, totalVolume: 0, maxWeight: 0, totalDuration: 0, totalDistance: 0 };
         }
-        const totalReps = sets.reduce((sum, set) => sum + (set.repsAchieved || 0), 0);
-        const totalVolume = sets.reduce((sum, set) => sum + ((set.repsAchieved || 0) * (set.weightUsed || 0)), 0);
-        const maxWeight = Math.max(0, ...sets.map(set => set.weightUsed || 0));
-        const totalDuration = sets.reduce((sum, set) => sum + (set.durationPerformed || 0), 0);
-        const totalDistance = sets.reduce((sum, set) => sum + (set.distanceAchieved || 0), 0);
+        const totalReps = sets.reduce((sum, set) => sum + (set.repsLogged || 0), 0);
+        const totalVolume = sets.reduce((sum, set) => sum + ((set.repsLogged || 0) * (set.weightLogged || 0)), 0);
+        const maxWeight = Math.max(0, ...sets.map(set => set.weightLogged || 0));
+        const totalDuration = sets.reduce((sum, set) => sum + (set.durationLogged || 0), 0);
+        const totalDistance = sets.reduce((sum, set) => sum + (set.distanceLogged || 0), 0);
         return { setsCount: sets.length, totalReps, totalVolume, maxWeight, totalDuration, totalDistance };
     }
 

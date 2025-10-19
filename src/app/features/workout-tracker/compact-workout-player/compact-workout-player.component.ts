@@ -157,9 +157,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         type: (setData.type as 'standard' | 'warmup' | 'amrap' | 'custom') ?? 'standard',
         baseExerciseInfo: baseExerciseInfo,
         isCompleted: !!completedSetLog,
-        actualReps: completedSetLog?.repsAchieved,
-        actualWeight: completedSetLog?.weightUsed,
-        actualDuration: completedSetLog?.durationPerformed,
+        actualReps: completedSetLog?.repsLogged,
+        actualWeight: completedSetLog?.weightLogged,
+        actualDuration: completedSetLog?.durationLogged,
         notes: completedSetLog?.notes || setData?.notes,
       };
     }
@@ -507,7 +507,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
                 const wasSuccess = originalEx.sets.every((originalSet, setIndex) => {
                   if (originalSet.type === 'warmup') return true;
                   const loggedSet = loggedEx.sets[setIndex];
-                  return loggedSet && (loggedSet.repsAchieved ?? 0) >= (originalSet.targetReps ?? 0);
+                  return loggedSet && (loggedSet.repsLogged ?? 0) >= (originalSet.targetReps ?? 0);
                 });
 
                 if (!wasSuccess) {
@@ -530,10 +530,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
             exercise.sets.forEach((set, setIndex) => {
               const historicalSet = lastPerformance.sets[setIndex];
               if (historicalSet) {
-                set.targetReps = historicalSet.repsAchieved ?? set.targetReps;
-                set.targetWeight = historicalSet.weightUsed ?? set.targetWeight;
-                set.targetDuration = historicalSet.durationPerformed ?? set.targetDuration;
-                set.targetDistance = historicalSet.distanceAchieved ?? set.targetDistance;
+                set.targetReps = historicalSet.repsLogged ?? set.targetReps;
+                set.targetWeight = historicalSet.weightLogged ?? set.targetWeight;
+                set.targetDuration = historicalSet.durationLogged ?? set.targetDuration;
+                set.targetDistance = historicalSet.distanceLogged ?? set.targetDistance;
               }
             });
           }
@@ -642,8 +642,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const userInputs = this.performanceInputValues()[key] || {};
 
     // Prioritize user input, but fall back to the planned set target if the user hasn't typed anything.
-    const weightToValidate = userInputs.weightUsed ?? plannedSet.targetWeight;
-    const repsToValidate = userInputs.repsAchieved ?? plannedSet.targetReps;
+    const weightToValidate = userInputs.actualWeight ?? plannedSet.targetWeight;
+    const repsToValidate = userInputs.actualReps ?? plannedSet.targetReps;
     const distanceToValidate = userInputs.actualDistance ?? plannedSet.targetDistance;
     const durationToValidate = userInputs.actualDuration ?? plannedSet.targetDuration;
 
@@ -689,40 +689,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   isExerciseLogged(exIndex: number): boolean {
     return !!this.currentWorkoutLog()?.exercises?.find((e, index) => index === exIndex);
-  }
-
-  /**
-     * Finds the specific logged set for a given exercise, set, and round, and updates its data.
-     * This is called by `updateSetData` when a user edits an already-completed set.
-     */
-  private updateSetDataForRound(exercise: WorkoutExercise, setIndex: number, roundIndex: number, field: string, value: string): void {
-    const loggedSetToUpdate = this.getLoggedSet(this.routine()!.exercises.indexOf(exercise), setIndex, roundIndex);
-
-    if (loggedSetToUpdate) {
-      this.currentWorkoutLog.update(log => {
-        const exerciseLog = log.exercises?.find(e => e.id === exercise.id);
-        if (exerciseLog) {
-          const setLog = exerciseLog.sets.find(s => s.id === loggedSetToUpdate.id);
-          if (setLog) {
-            // Update the correct property on the logged set
-            switch (field) {
-              case METRIC.reps: setLog.repsAchieved = parseFloat(value) || 0; break;
-              case METRIC.weight: setLog.weightUsed = parseFloat(value) || undefined; break;
-              case METRIC.distance: setLog.distanceAchieved = parseFloat(value) || 0; break;
-              case METRIC.duration: setLog.durationPerformed = this.parseTimeToSeconds(value); break;
-              case METRIC.rest: setLog.restAfterSetUsed = this.parseTimeToSeconds(value); break;
-              case METRIC.tempo: setLog.tempoUsed = String(value); break;
-              case METRIC.notes: setLog.notes = value; break;
-            }
-          }
-        }
-        return { ...log };
-      });
-      // Provide user feedback that the already-logged data was changed
-      if (field !== 'notes') {
-        this.toastService.info("Logged set updated.", 1500);
-      }
-    }
   }
 
   updateExerciseNotes(exIndex: number, event: Event) {
@@ -1136,7 +1102,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const firstSet = exercise.sets[0];
     const newWarmupSet: ExerciseTargetSetParams = {
       id: uuidv4(), targetReps: 12, targetWeight: firstSet?.targetWeight ? parseFloat((firstSet.targetWeight / 2).toFixed(1)) : 0,
-      restAfterSet: 30, type: 'warmup'
+      targetRest: 30, type: 'warmup'
     };
     exercise.sets.unshift(newWarmupSet);
 
@@ -1169,7 +1135,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         const newSet: ExerciseTargetSetParams = {
           id: uuidv4(),
           type: 'standard',
-          restAfterSet: lastSet?.restAfterSet ?? 60,
+          targetRest: lastSet?.targetRest ?? 60,
         };
 
         // Conditionally copy properties only if they existed on the last set
@@ -1183,8 +1149,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
           const userInputs = this.performanceInputValues()[key];
 
-          const weight = userInputs.weightUsed ?? lastSet.targetWeight ?? undefined;
-          const reps = userInputs.repsAchieved ?? lastSet.targetReps ?? undefined;
+          const weight = userInputs.actualWeight ?? lastSet.targetWeight ?? undefined;
+          const reps = userInputs.actualReps ?? lastSet.targetReps ?? undefined;
           const distance = userInputs.actualDistance ?? lastSet.targetDistance ?? undefined;
           const duration = userInputs.actualDuration ?? lastSet.targetDuration ?? undefined;
           const tempo = userInputs.tempoUsed ?? lastSet.targetTempo ?? undefined;
@@ -1210,7 +1176,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       const newSet: ExerciseTargetSetParams = {
         id: uuidv4(),
         type: type,
-        restAfterSet: lastSet?.restAfterSet ?? 60,
+        targetRest: lastSet?.targetRest ?? 60,
       };
 
       if (type === 'warmup') {
@@ -1236,8 +1202,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
 
 
-          const weight = userInputs.weightUsed ?? lastSet.targetWeight ?? undefined;
-          const reps = userInputs.repsAchieved ?? lastSet.targetReps ?? undefined;
+          const weight = userInputs.actualWeight ?? lastSet.targetWeight ?? undefined;
+          const reps = userInputs.actualReps ?? lastSet.targetReps ?? undefined;
           const distance = userInputs.actualDistance ?? lastSet.targetDistance ?? undefined;
           const duration = userInputs.actualDuration ?? lastSet.targetDuration ?? undefined;
           const tempo = userInputs.tempoUsed ?? lastSet.targetTempo ?? undefined;
@@ -1622,13 +1588,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   formatPbValue(pb: PersonalBestSet): string {
-    if (pb.weightUsed != null && pb.weightUsed > 0) {
-      let value = this.weightUnitPipe.transform(pb.weightUsed);
-      if (pb.repsAchieved > 1) value += ` x ${pb.repsAchieved}`;
+    if (pb.weightLogged != null && pb.weightLogged > 0) {
+      let value = this.weightUnitPipe.transform(pb.weightLogged);
+      if (pb.repsLogged > 1) value += ` x ${pb.repsLogged}`;
       return value || 'N/A';
     }
-    if (pb.repsAchieved > 0) return `${pb.repsAchieved} reps`;
-    if (pb.durationPerformed) return `${pb.durationPerformed}s`;
+    if (pb.repsLogged > 0) return `${pb.repsLogged} reps`;
+    if (pb.durationLogged) return `${pb.durationLogged}s`;
     return 'N/A';
   }
 
@@ -1950,8 +1916,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
       let detailsLine = '';
       if (historicalSet) {
-        const weight = this.weightUnitPipe.transform(historicalSet.weightUsed);
-        detailsLine = `${this.translate.instant('restTimer.lastTime')}: ${weight} x ${historicalSet.repsAchieved} reps`;
+        const weight = this.weightUnitPipe.transform(historicalSet.weightLogged);
+        detailsLine = `${this.translate.instant('restTimer.lastTime')}: ${weight} x ${historicalSet.repsLogged} reps`;
       } else {
         // +++ MODIFIED: Pass all required indices to the formatting function +++
         detailsLine = this.formatSetTargetForDisplay(plannedSet, exercise, nextExIndex, nextSetIndex);
@@ -2165,7 +2131,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (exerciseLog) {
       const setLog = exerciseLog.sets.find(s => s.id === this.lastLoggedSetForRestUpdate!.id);
       if (setLog) {
-        setLog.restAfterSetUsed = actualRestTime;
+        setLog.restLogged = actualRestTime;
         this.currentWorkoutLog.set({ ...log });
         this.savePausedSessionState();
       }
@@ -2781,11 +2747,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           const originalPlannedSet = sessionExercise?.sets.find(s => s.id === loggedSet.plannedSetId);
           return {
             id: uuidv4(),
-            targetReps: loggedSet.repsAchieved, // Corrected mapping
-            targetWeight: loggedSet.weightUsed, // Corrected mapping
-            targetDuration: loggedSet.durationPerformed, // Corrected mapping
-            tempo: originalPlannedSet?.targetTempo || '1',
-            restAfterSet: originalPlannedSet?.restAfterSet || 60,
+            targetReps: loggedSet.repsLogged, // Corrected mapping
+            targetWeight: loggedSet.weightLogged, // Corrected mapping
+            targetDuration: loggedSet.durationLogged, // Corrected mapping
+            targetRest: loggedSet.restLogged, // Corrected mapping
+            targetTempo: loggedSet.tempoUsed, // Corrected mapping
             notes: loggedSet.notes,
             type: loggedSet.type as any,
           };
@@ -3108,7 +3074,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
    * 3. If a range is defined (e.g., 8-12 reps), it shows the middle value.
    * 4. Otherwise, it shows the planned single target value as the default.
    */
-  getInitialInputValue(exIndex: number, setIndex: number, field: METRIC): string {
+  getInitialInputValue(exIndex: number, setIndex: number, field: 'notes' | METRIC): string {
     const routine = this.routine();
     if (!routine) return '';
 
@@ -3119,27 +3085,31 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     // PRIORITY 1: Show already logged data if it exists.
     if (loggedSet) {
+      if (loggedSet.notes) {
+        return loggedSet.notes ?? '';
+      }
       switch (field) {
-        case METRIC.reps: return (loggedSet.repsAchieved ?? '').toString();
-        case METRIC.weight: return (loggedSet.weightUsed ?? '').toString();
-        case METRIC.distance: return (loggedSet.distanceAchieved ?? '').toString();
-        case METRIC.duration: return this.formatSecondsToTime(loggedSet.durationPerformed);
+        case METRIC.reps: return (loggedSet.repsLogged ?? '').toString();
+        case METRIC.weight: return (loggedSet.weightLogged ?? '').toString();
+        case METRIC.distance: return (loggedSet.distanceLogged ?? '').toString();
+        case METRIC.duration: return this.formatSecondsToTime(loggedSet.durationLogged);
         case METRIC.tempo: return (loggedSet.tempoUsed ?? '-').toString();
-        case METRIC.rest: return this.formatSecondsToTime(loggedSet.restAfterSetUsed);
-        case METRIC.notes: return loggedSet.notes ?? '';
+        case METRIC.rest: return this.formatSecondsToTime(loggedSet.restLogged);
       }
     }
 
     // PRIORITY 2: Show what the user has typed for this specific field if it exists.
     if (userInputs) {
       switch (field) {
-        case METRIC.reps: if (userInputs.repsAchieved !== undefined) return userInputs.repsAchieved.toString(); break;
-        case METRIC.weight: if (userInputs.weightUsed !== undefined) return userInputs.weightUsed.toString(); break;
+        case METRIC.reps: if (userInputs.actualReps !== undefined) return userInputs.actualReps.toString(); break;
+        case METRIC.weight: if (userInputs.actualWeight !== undefined) return userInputs.actualWeight.toString(); break;
         case METRIC.distance: if (userInputs.actualDistance !== undefined) return userInputs.actualDistance.toString(); break;
         case METRIC.duration: if (userInputs.actualDuration !== undefined) return this.formatSecondsToTime(userInputs.actualDuration); break;
-        case METRIC.rest: if (userInputs.restAfterSet !== undefined) return this.formatSecondsToTime(userInputs.restAfterSet); break;
+        case METRIC.rest: if (userInputs.actualRest !== undefined) return this.formatSecondsToTime(userInputs.actualRest); break;
         case METRIC.tempo: if (userInputs.tempoUsed !== undefined) return userInputs.tempoUsed; break;
-        case METRIC.notes: if (userInputs.notes !== undefined) return userInputs.notes; break;
+      }
+      if (userInputs.notes) {
+        return userInputs.notes ?? '';
       }
     }
 
@@ -3183,20 +3153,21 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         return this.formatSecondsToTime(plannedSet.targetDuration ?? 0);
 
       case METRIC.rest:
-        return this.formatSecondsToTime(plannedSet.restAfterSet ?? 0);
-
-      case METRIC.notes:
-        // Notes field does not have a range
-        return plannedSet.notes ?? '';
+        return this.formatSecondsToTime(plannedSet.targetRest ?? 0);
 
       case METRIC.tempo:
         // Tempo does not have a range
         return plannedSet.targetTempo ?? '';
 
+
       default:
         // Add a default case for safety
         return '';
     }
+    if (plannedSet.notes) {
+      return plannedSet.notes ?? '';
+    }
+
     // =================== END OF SNIPPET ===================
   }
 
@@ -3209,7 +3180,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
    * If the 'duration' field is changed for a set with an active timer, it now
    * automatically stops the old timer and starts a new one with the new value.
    */
-  updateSetData(exIndex: number, setIndex: number, roundIndex: number, field: METRIC, event: Event): void {
+  updateSetData(exIndex: number, setIndex: number, roundIndex: number, field: 'notes' | METRIC, event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     const key = `${exIndex}-${setIndex}`;
 
@@ -3220,13 +3191,17 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         newInputs[key] = {};
       }
 
+      if (field === 'notes') {
+        newInputs[key].notes = value;
+        return newInputs;
+
+      }
       switch (field) {
-        case METRIC.reps: newInputs[key].repsAchieved = parseFloat(value) || undefined; break;
-        case METRIC.weight: newInputs[key].weightUsed = value === '' ? undefined : parseFloat(value); break;
+        case METRIC.reps: newInputs[key].actualReps = parseFloat(value) || undefined; break;
+        case METRIC.weight: newInputs[key].actualWeight = value === '' ? undefined : parseFloat(value); break;
         case METRIC.distance: newInputs[key].actualDistance = parseFloat(value) || undefined; break;
         case METRIC.duration: newInputs[key].actualDuration = this.parseTimeToSeconds(value); break;
-        case METRIC.rest: newInputs[key].restAfterSet = this.parseTimeToSeconds(value); break;
-        case METRIC.notes: newInputs[key].notes = value; break;
+        case METRIC.rest: newInputs[key].actualRest = this.parseTimeToSeconds(value); break;
         case METRIC.tempo: newInputs[key].tempoUsed = value === '' ? undefined : value; break;
       }
       return newInputs;
@@ -3279,10 +3254,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           // Restore the unlogged values back into the temporary input state
           this.performanceInputValues.update(inputs => {
             inputs[key] = {
-              repsAchieved: unloggedSet.repsAchieved,
-              weightUsed: unloggedSet.weightUsed,
-              actualDuration: unloggedSet.durationPerformed,
-              actualDistance: unloggedSet.distanceAchieved,
+              actualReps: unloggedSet.repsLogged,
+              actualWeight: unloggedSet.weightLogged,
+              actualDuration: unloggedSet.durationLogged,
+              actualDistance: unloggedSet.distanceLogged,
               notes: unloggedSet.notes
             };
             return { ...inputs };
@@ -3305,33 +3280,33 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       const timerState = this.setTimerState()[key];
       // retrieve actual duration from timer if available considering target
       // Calculate actual duration performed if timerState and targetSetValues are available
-      let actualDurationPerformed: number | null = null;
+      let actualdurationLogged: number | null = null;
       const userDefinedDuration = userInputs.actualDuration;
 
       // PRIORITY 1: If a timer was ACTIVELY running or paused when the set was completed.
       // This captures the elapsed time accurately.
       if (timerState && timerState.remainingTime) {
         if (userDefinedDuration !== undefined && userDefinedDuration !== null) {
-          actualDurationPerformed = userDefinedDuration - timerState.remainingTime;
+          actualdurationLogged = userDefinedDuration - timerState.remainingTime;
         } else {
-          actualDurationPerformed = (targetSetValues.targetDuration ?? 0) - timerState.remainingTime;
+          actualdurationLogged = (targetSetValues.targetDuration ?? 0) - timerState.remainingTime;
         }
       } else {
         // PRIORITY 2: If no timer was active, check for a manual user input.
         if (userDefinedDuration !== undefined && userDefinedDuration !== null) {
-          actualDurationPerformed = userDefinedDuration;
+          actualdurationLogged = userDefinedDuration;
         }
       }
 
-      const userDefinedRest = userInputs.restAfterSet;
+      const userDefinedRest = userInputs.actualRest;
 
       if (userDefinedRest) {
-        set.restAfterSet = userDefinedRest;
+        set.targetRest = userDefinedRest;
       }
 
 
-      if (!actualDurationPerformed || actualDurationPerformed <= 0) {
-        actualDurationPerformed = userDefinedDuration ?? targetSetValues.targetDuration ?? 0;
+      if (!actualdurationLogged || actualdurationLogged <= 0) {
+        actualdurationLogged = userDefinedDuration ?? targetSetValues.targetDuration ?? 0;
       }
 
       // check if it was a timed set with an active timer, and stop it
@@ -3352,15 +3327,15 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         type: set.type,
         // --- THIS IS THE FIX ---
         // Performed values: Prioritize user input. If none, fall back to the planned target for the set.
-        repsAchieved: userInputs.repsAchieved ?? set.targetReps ?? 0,
-        weightUsed: userInputs.weightUsed ?? set.targetWeight ?? 0,
-        durationPerformed: actualDurationPerformed,
-        distanceAchieved: userInputs.actualDistance ?? set.targetDistance ?? 0,
+        repsLogged: userInputs.actualReps ?? set.targetReps ?? 0,
+        weightLogged: userInputs.actualWeight ?? set.targetWeight ?? 0,
+        durationLogged: actualdurationLogged,
+        distanceLogged: userInputs.actualDistance ?? set.targetDistance ?? 0,
         notes: userInputs.notes ?? set.notes,
         tempoUsed: userInputs.tempoUsed ?? set.targetTempo,
         timestamp: new Date().toISOString(),
         // Target values: Always come from the original, static snapshot
-        targetRestAfterSet: originalSet?.restAfterSet || targetSetValues?.targetRestAfterSet || 0,
+        targetRest: originalSet?.targetRest || targetSetValues?.targetRest || 0,
         targetReps: originalSet?.targetReps || targetSetValues?.targetReps || 0,
         targetWeight: originalSet?.targetWeight || targetSetValues?.targetWeight || 0,
         targetDuration: originalSet?.targetDuration || targetSetValues?.targetDuration || 0,
@@ -3384,12 +3359,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.workoutService.vibrate();
 
     if (!wasCompleted) {
-      const shouldStartRest = set.restAfterSet && set.restAfterSet > 0 &&
+      const shouldStartRest = set.targetRest && set.targetRest > 0 &&
         (!this.isSuperSet(exIndex) || (this.isSuperSet(exIndex) && this.isEndOfLastSupersetExercise(exIndex, setIndex)));
 
-      if (shouldStartRest) {
+      if (shouldStartRest && set.targetRest) {
         this.lastLoggedSetForRestUpdate = this.getLoggedSet(exIndex, setIndex, roundIndex) ?? null;
-        this.startRestPeriod(set.restAfterSet, exIndex, setIndex);
+        this.startRestPeriod(set.targetRest, exIndex, setIndex);
       } else {
         setTimeout(() => { this.handleAutoExpandNextExercise(); }, 800);
         // this.autoCollapsePreviousSets();
@@ -3410,12 +3385,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const rest = this.getInitialInputValue(exIndex, setIndex, METRIC.rest) ? Number(this.getInitialInputValue(exIndex, setIndex, METRIC.rest)) : undefined;
 
     this.performanceInputValues()[key] = {
-      'weightUsed': weight,
-      'repsAchieved': reps,
+      'actualWeight': weight,
+      'actualReps': reps,
       'actualDistance': distance,
       'actualDuration': duration,
       'tempoUsed': tempo,
-      'restAfterSet': rest,
+      'actualRest': rest,
     }
   }
 
@@ -3536,7 +3511,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         case METRIC.reps: setToUpdate.targetReps = undefined; break;
         case METRIC.distance: setToUpdate.targetDistance = undefined; break;
         case METRIC.duration: setToUpdate.targetDuration = undefined; break;
-        case METRIC.rest: setToUpdate.restAfterSet = 0; break;
+        case METRIC.rest: setToUpdate.targetRest = 0; break;
         case METRIC.tempo: setToUpdate.targetTempo = undefined; break;
       }
       return { ...r };
@@ -3552,11 +3527,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
         if (loggedSet) {
           switch (fieldToRemove) {
-            case METRIC.weight: loggedSet.weightUsed = undefined; break;
-            case METRIC.reps: loggedSet.repsAchieved = 0; break;
-            case METRIC.distance: loggedSet.distanceAchieved = undefined; break;
-            case METRIC.duration: loggedSet.durationPerformed = undefined; break;
-            case METRIC.rest: loggedSet.restAfterSetUsed = undefined; break;
+            case METRIC.weight: loggedSet.weightLogged = undefined; break;
+            case METRIC.reps: loggedSet.repsLogged = 0; break;
+            case METRIC.distance: loggedSet.distanceLogged = undefined; break;
+            case METRIC.duration: loggedSet.durationLogged = undefined; break;
+            case METRIC.rest: loggedSet.restLogged = undefined; break;
             case METRIC.tempo: loggedSet.tempoUsed = undefined; break;
           }
         }
@@ -3602,10 +3577,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     let parts: string[] = [];
 
-    const weight = loggedSet?.weightUsed ?? plannedSet.targetWeight;
-    const reps = loggedSet?.repsAchieved ?? plannedSet.targetReps;
-    const distance = loggedSet?.distanceAchieved ?? plannedSet.targetDistance;
-    const duration = loggedSet?.durationPerformed ?? plannedSet.targetDuration;
+    const weight = loggedSet?.weightLogged ?? plannedSet.targetWeight;
+    const reps = loggedSet?.repsLogged ?? plannedSet.targetReps;
+    const distance = loggedSet?.distanceLogged ?? plannedSet.targetDistance;
+    const duration = loggedSet?.durationLogged ?? plannedSet.targetDuration;
     const tempo = loggedSet?.targetTempo ?? plannedSet.targetTempo;
 
     if (weight !== undefined && weight !== null && weight > 0) {
@@ -3889,16 +3864,16 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
         // Reps
         if (plannedSet.targetRepsMin != null && plannedSet.targetRepsMax != null) {
-          setValues.repsAchieved = Math.floor((plannedSet.targetRepsMin + plannedSet.targetRepsMax) / 2);
+          setValues.actualReps = Math.floor((plannedSet.targetRepsMin + plannedSet.targetRepsMax) / 2);
         } else {
-          setValues.repsAchieved = plannedSet.targetReps ?? undefined;
+          setValues.actualReps = plannedSet.targetReps ?? undefined;
         }
 
         // Weight
         if (plannedSet.targetWeightMin != null && plannedSet.targetWeightMax != null) {
-          setValues.weightUsed = Math.floor((plannedSet.targetWeightMin + plannedSet.targetWeightMax) / 2);
+          setValues.actualWeight = Math.floor((plannedSet.targetWeightMin + plannedSet.targetWeightMax) / 2);
         } else {
-          setValues.weightUsed = plannedSet.targetWeight ?? undefined;
+          setValues.actualWeight = plannedSet.targetWeight ?? undefined;
         }
 
         // Distance
@@ -3916,10 +3891,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         }
 
         // Rest
-        if (plannedSet.restAfterSet != null) {
-          setValues.restAfterSet = plannedSet.restAfterSet;
+        if (plannedSet.targetRestMin != null && plannedSet.targetRestMax != null) {
+          setValues.actualRest = Math.floor((plannedSet.targetRestMin + plannedSet.targetRestMax) / 2);
         } else {
-          setValues.restAfterSet = plannedSet.restAfterSet ?? undefined;
+          setValues.actualRest = plannedSet.targetRest ?? undefined;
         }
 
         // Notes & Tempo
@@ -4027,11 +4002,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       const newNumberValue = parseFloat((currentNumberValue + step).toFixed(2));
 
       switch (field) {
-        case METRIC.weight: newInputs[key]!.weightUsed = newNumberValue; break;
-        case METRIC.reps: newInputs[key]!.repsAchieved = newNumberValue; break;
+        case METRIC.weight: newInputs[key]!.actualWeight = newNumberValue; break;
+        case METRIC.reps: newInputs[key]!.actualReps = newNumberValue; break;
         case METRIC.distance: newInputs[key]!.actualDistance = newNumberValue; break;
         case METRIC.duration: newInputs[key]!.actualDuration = newNumberValue; break;
-        case METRIC.rest: newInputs[key]!.restAfterSet = newNumberValue; break;
+        case METRIC.rest: newInputs[key]!.actualRest = newNumberValue; break;
       }
 
       return newInputs;
@@ -4051,21 +4026,21 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
       let currentValue = 0;
       switch (field) {
-        case METRIC.weight: currentValue = newInputs[key]!.weightUsed ?? (parseFloat(this.getInitialInputValue(exIndex, setIndex, METRIC.weight)) || 0); break;
-        case METRIC.reps: currentValue = newInputs[key]!.repsAchieved ?? (parseInt(this.getInitialInputValue(exIndex, setIndex, METRIC.reps)) || 0); break;
+        case METRIC.weight: currentValue = newInputs[key]!.actualWeight ?? (parseFloat(this.getInitialInputValue(exIndex, setIndex, METRIC.weight)) || 0); break;
+        case METRIC.reps: currentValue = newInputs[key]!.actualReps ?? (parseInt(this.getInitialInputValue(exIndex, setIndex, METRIC.reps)) || 0); break;
         case METRIC.distance: currentValue = newInputs[key]!.actualDistance ?? (parseInt(this.getInitialInputValue(exIndex, setIndex, METRIC.distance)) || 0); break;
         case METRIC.duration: currentValue = newInputs[key]!.actualDuration ?? (parseInt(this.getInitialInputValue(exIndex, setIndex, METRIC.duration)) || 0); break;
-        case METRIC.rest: currentValue = newInputs[key]!.restAfterSet ?? (parseInt(this.getInitialInputValue(exIndex, setIndex, METRIC.rest)) || 0); break;
+        case METRIC.rest: currentValue = newInputs[key]!.actualRest ?? (parseInt(this.getInitialInputValue(exIndex, setIndex, METRIC.rest)) || 0); break;
       }
 
       const newValue = Math.max(0, parseFloat((currentValue - step).toFixed(2)));
 
       switch (field) {
-        case METRIC.weight: newInputs[key]!.weightUsed = newValue; break;
-        case METRIC.reps: newInputs[key]!.repsAchieved = newValue; break;
+        case METRIC.weight: newInputs[key]!.actualWeight = newValue; break;
+        case METRIC.reps: newInputs[key]!.actualReps = newValue; break;
         case METRIC.distance: newInputs[key]!.actualDistance = newValue; break;
         case METRIC.duration: newInputs[key]!.actualDuration = newValue; break;
-        case METRIC.rest: newInputs[key]!.restAfterSet = newValue; break;
+        case METRIC.rest: newInputs[key]!.actualRest = newValue; break;
       }
 
       return newInputs;

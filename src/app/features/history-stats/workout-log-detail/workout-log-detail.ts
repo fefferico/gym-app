@@ -27,7 +27,7 @@ import { MenuMode } from '../../../core/models/app-settings.model';
 import { PerformanceComparisonModalComponent } from './performance-comparison-modal/performance-comparison-modal.component';
 import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { WorkoutExercise } from '../../../core/models/workout.model';
+import { METRIC, WorkoutExercise } from '../../../core/models/workout.model';
 
 export interface DisplayLoggedExercise extends LoggedWorkoutExercise {
   baseExercise?: Exercise | null;
@@ -74,7 +74,7 @@ interface EMOMDisplayBlock {
 type DisplayItem = DisplayLoggedExercise | SupersetDisplayBlock | EMOMDisplayBlock;
 
 interface TargetComparisonData {
-  metric: 'Reps' | 'Duration' | 'Weight' | 'Rest' | 'Distance';
+  metric: METRIC;
   targetValue: string;
   performedValue: string;
 }
@@ -184,7 +184,9 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
         set.targetWeight = set.targetWeight ?? routineExerciseSet?.targetWeight;
         set.targetWeightMin = set.targetWeightMin ?? routineExerciseSet?.targetWeightMin;
         set.targetWeightMax = set.targetWeightMax ?? routineExerciseSet?.targetWeightMax;
-        set.targetRestAfterSet = set.targetRestAfterSet ?? routineExerciseSet?.restAfterSet;
+        set.targetRest = set.targetRest ?? routineExerciseSet?.targetRest;
+        set.targetRestMin = set.targetRestMin ?? routineExerciseSet?.targetRestMin;
+        set.targetRestMax = set.targetRestMax ?? routineExerciseSet?.targetRestMax;
       });
     });
     this.workoutLog.set({ ...log });
@@ -325,7 +327,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
         achievedPbTypes.push(currentPb.pbType);
         continue;
       }
-      if (currentPb.history?.some(h => h.workoutLogId === set.workoutLogId && h.weightUsed === set.weightUsed && h.repsAchieved === set.repsAchieved)) {
+      if (currentPb.history?.some(h => h.workoutLogId === set.workoutLogId && h.weightLogged === set.weightLogged && h.repsLogged === set.repsLogged)) {
         achievedPbTypes.push(currentPb.pbType);
       }
     }
@@ -368,27 +370,27 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
 
 
   getSetWeightsUsed(loggedEx: LoggedWorkoutExercise): string {
-    let stringResult = loggedEx.sets.map(set => set.weightUsed).join(' - ');
+    let stringResult = loggedEx.sets.map(set => set.weightLogged).join(' - ');
     if (stringResult.length > 15) {
       stringResult = stringResult.substring(0, 15) + '...';
     }
     return stringResult;
   }
 
-  getSetDurationPerformed(loggedEx: LoggedWorkoutExercise): string {
-    return loggedEx.sets.map(set => set.durationPerformed).join(' - ');
+  getSetdurationLogged(loggedEx: LoggedWorkoutExercise): string {
+    return loggedEx.sets.map(set => set.durationLogged).join(' - ');
   }
 
   getSetReps(loggedEx: LoggedWorkoutExercise): string {
-    return loggedEx?.sets.map(set => set.repsAchieved).join(' - ');
+    return loggedEx?.sets.map(set => set.repsLogged).join(' - ');
   }
 
   checkIfTimedExercise(loggedEx: LoggedWorkoutExercise): boolean {
-    return loggedEx.sets.some(set => (set.durationPerformed !== undefined && set.durationPerformed !== null) && set.durationPerformed > 0);
+    return loggedEx.sets.some(set => (set.durationLogged !== undefined && set.durationLogged !== null) && set.durationLogged > 0);
   }
 
   checkIfWeightedExercise(loggedEx: LoggedWorkoutExercise): boolean {
-    return loggedEx?.sets.some(set => (set.weightUsed !== undefined && set.weightUsed !== null) && set.weightUsed >= 0);
+    return loggedEx?.sets.some(set => (set.weightLogged !== undefined && set.weightLogged !== null) && set.weightLogged >= 0);
   }
 
   protected checkRange(performed: number | string, min?: number | string | null, max?: number | string | null): string {
@@ -410,23 +412,23 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     return 'text-gray-800 dark:text-white';
   }
 
-  checkTextClass(set: LoggedSet, type: 'reps' | 'duration' | 'weight' | 'rest' | 'distance'): string {
+  checkTextClass(set: LoggedSet, type: METRIC): string {
     if (!set) return 'text-gray-700 dark:text-gray-300';
 
 
 
     if (type === 'reps' && (set.targetRepsMin != null || set.targetRepsMax != null)) {
-      return this.checkRange(set.repsAchieved ?? 0, set.targetRepsMin, set.targetRepsMax);
+      return this.checkRange(set.repsLogged ?? 0, set.targetRepsMin, set.targetRepsMax);
     }
     if (type === 'duration' && (set.targetDurationMin != null || set.targetDurationMax != null)) {
-      return this.checkRange(set.durationPerformed ?? 0, set.targetDurationMin, set.targetDurationMax);
+      return this.checkRange(set.durationLogged ?? 0, set.targetDurationMin, set.targetDurationMax);
     }
     if (type === 'distance' && (set.targetDistanceMin != null || set.targetDistanceMax != null)) {
-      return this.checkRange(set.distanceAchieved ?? 0, set.targetDistanceMin, set.targetDistanceMax);
+      return this.checkRange(set.distanceLogged ?? 0, set.targetDistanceMin, set.targetDistanceMax);
     }
 
-    const performed = type === 'reps' ? set.repsAchieved : type === 'duration' ? set.durationPerformed : type === 'weight' ? set.weightUsed : type === 'distance' ? set.distanceAchieved : set.restAfterSetUsed;
-    const target = type === 'reps' ? set.targetReps : type === 'duration' ? set.targetDuration : type === 'weight' ? set.targetWeight : type === 'distance' ? set.targetDistance : set.targetRestAfterSet;
+    const performed = type === 'reps' ? set.repsLogged : type === 'duration' ? set.durationLogged : type === 'weight' ? set.weightLogged : type === 'distance' ? set.distanceLogged : set.restLogged;
+    const target = type === 'reps' ? set.targetReps : type === 'duration' ? set.targetDuration : type === 'weight' ? set.targetWeight : type === 'distance' ? set.targetDistance : set.targetRest;
 
     if ((target ?? 0) >= 0) {
       if ((performed ?? 0) > target!) return 'text-green-500 dark:text-green-400';
@@ -435,7 +437,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     return 'text-gray-800 dark:text-white';
   }
 
-  showComparisonModal(set: LoggedSet, type: 'reps' | 'duration' | 'weight' | 'rest' | 'distance'): void {
+  showComparisonModal(set: LoggedSet, type: METRIC): void {
     if (!set) return;
 
     let modalData: TargetComparisonData | null = null;
@@ -455,41 +457,40 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
       (min != null && performed <= min) || (min == null && performed != (single ?? 0));
 
     switch (type) {
-      case 'reps':
-        const performedReps = set.repsAchieved;
+      case METRIC.reps:
+        const performedReps = set.repsLogged;
         // if (isDifferent(performedReps ?? 0, set.targetRepsMin, set.targetReps)) {
-        modalData = { metric: 'Reps', targetValue: createTargetDisplay(set.targetRepsMin, set.targetRepsMax, set.targetReps), performedValue: `${performedReps ?? '-'}` };
+        modalData = { metric: type, targetValue: createTargetDisplay(set.targetRepsMin, set.targetRepsMax, set.targetReps), performedValue: `${performedReps ?? '-'}` };
         // }
         break;
-      case 'duration':
-        const performedDuration = set.durationPerformed;
+      case METRIC.duration:
+        const performedDuration = set.durationLogged;
         // if (isDifferent(performedDuration ?? 0, set.targetDurationMin, set.targetDuration)) {
-        modalData = { metric: 'Duration', targetValue: createTargetDisplay(set.targetDurationMin, set.targetDurationMax, set.targetDuration, ' s'), performedValue: `${performedDuration ?? '-'} s` };
+        modalData = { metric: type, targetValue: createTargetDisplay(set.targetDurationMin, set.targetDurationMax, set.targetDuration, ' s'), performedValue: `${performedDuration ?? '-'} s` };
         // }
         break;
-      case 'weight':
-        const performedWeight = set.weightUsed;
+      case METRIC.weight:
+        const performedWeight = set.weightLogged;
         // if ((performedWeight ?? 0) < (set.targetWeight ?? 0)) {
-        modalData = { metric: 'Weight', targetValue: `${set.targetWeight ?? '-'} ${unitLabel}`, performedValue: `${performedWeight ?? '-'} ${unitLabel}` };
+        modalData = { metric: type, targetValue: `${set.targetWeight ?? '-'} ${unitLabel}`, performedValue: `${performedWeight ?? '-'} ${unitLabel}` };
         // }
         break;
-      case 'rest':
-        const performedRest = set.restAfterSetUsed;
-        // if ((performedRest ?? 0) < (set.targetRestAfterSet ?? 0)) {
-        modalData = { metric: 'Rest', targetValue: `${set.targetRestAfterSet ?? '-'} s`, performedValue: `${performedRest ?? '0'} s` };
+      case METRIC.rest:
+        const performedRest = set.restLogged;
+        modalData = { metric: type, targetValue: `${set.targetRest ?? '-'} s`, performedValue: `${performedRest ?? '0'} s` };
         // }
         break;
-      case 'distance':
-        const performedDistance = set.distanceAchieved;
+      case METRIC.distance:
+        const performedDistance = set.distanceLogged;
         // if (isDifferent(performedDistance ?? 0, set.targetDistanceMin, set.targetDistance)) {
-        modalData = { metric: 'Distance', targetValue: createTargetDisplay(set.targetDistanceMin, set.targetDistanceMax, set.targetDistance, ` ${distUnitLabel}`), performedValue: `${performedDistance ?? '-'} ${distUnitLabel}` };
+        modalData = { metric: type, targetValue: createTargetDisplay(set.targetDistanceMin, set.targetDistanceMax, set.targetDistance, ` ${distUnitLabel}`), performedValue: `${performedDistance ?? '-'} ${distUnitLabel}` };
         // }
         break;
     }
     if (modalData) this.comparisonModalData.set(modalData);
   }
 
-  protected isTargetDifferent(set: LoggedSet, type: 'reps' | 'duration' | 'weight' | 'rest' | 'distance'): boolean {
+  protected isTargetDifferent(set: LoggedSet, type: METRIC): boolean {
     if (!set) return false;
 
     // A reusable helper function to handle the logic for any metric.
@@ -524,22 +525,23 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     // Use the helper for each metric type.
     switch (type) {
       case 'reps':
-        return check(set.repsAchieved, set.targetReps, set.targetRepsMin, set.targetRepsMax);
+        return check(set.repsLogged, set.targetReps, set.targetRepsMin, set.targetRepsMax);
       case 'duration':
-        return check(set.durationPerformed, set.targetDuration, set.targetDurationMin, set.targetDurationMax);
+        return check(set.durationLogged, set.targetDuration, set.targetDurationMin, set.targetDurationMax);
       case 'distance':
-        return check(set.distanceAchieved, set.targetDistance, set.targetDistanceMin, set.targetDistanceMax);
+        return check(set.distanceLogged, set.targetDistance, set.targetDistanceMin, set.targetDistanceMax);
       case 'weight':
         // Weight and Rest are treated as single-value targets.
-        return check(set.weightUsed, set.targetWeight, null, null);
+        return check(set.weightLogged, set.targetWeight, null, null);
       case 'rest':
-        return check(set.restAfterSetUsed, set.targetRestAfterSet, null, null);
+        return check(set.restLogged, set.targetRest, set.targetRestMin, set.targetRestMax);
       default:
         return false;
     }
   }
 
-  showNotesModal(notes: string): void {
+  showNotesModal(notes: string, event?: Event): void {
+    event?.stopPropagation();
     this.notesModalsData.set(notes);
   }
 
@@ -661,11 +663,11 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   }
 
   protected hasPerformedTimedSets(loggedEx: DisplayLoggedExercise): boolean {
-    return loggedEx?.sets?.some(set => (set.durationPerformed ?? 0) > 0) ?? false;
+    return loggedEx?.sets?.some(set => (set.durationLogged ?? 0) > 0) ?? false;
   }
 
   protected hasPerformedReps(loggedEx: DisplayLoggedExercise): boolean {
-    return loggedEx?.sets?.some(set => (set.repsAchieved ?? 0) > 0) ?? false;
+    return loggedEx?.sets?.some(set => (set.repsLogged ?? 0) > 0) ?? false;
   }
 
   protected emomLabel(exercise: EMOMDisplayBlock): string {
@@ -765,7 +767,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
 
   // +++ NEW: Helper method specifically for distance +++
   protected hasPerformedDistanceSets(loggedEx: DisplayLoggedExercise): boolean {
-    return loggedEx?.sets?.some(set => (set.distanceAchieved ?? 0) > 0) ?? false;
+    return loggedEx?.sets?.some(set => (set.distanceLogged ?? 0) > 0) ?? false;
   }
 
   protected hasNotes(loggedEx: DisplayLoggedExercise): boolean {
@@ -869,4 +871,6 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
   }
+
+  protected metricEnum = METRIC;
 }

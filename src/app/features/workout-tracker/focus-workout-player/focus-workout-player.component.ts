@@ -119,7 +119,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
   currentSetForm!: FormGroup;
   lastPerformanceForCurrentExercise: LastPerformanceSummary | null = null;
-  editingTarget: 'reps' | 'weight' | 'duration' | null = null;
+  editingTarget: METRIC | null = null;
   editingTargetValue: number | string = '';
   routineId: string | null = null;
 
@@ -354,9 +354,9 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         type: (setData.type as 'standard' | 'warmup' | 'amrap' | 'custom') ?? 'standard',
         baseExerciseInfo: baseExerciseInfo,
         isCompleted: !!completedSetLog,
-        actualReps: completedSetLog?.repsAchieved,
-        actualWeight: completedSetLog?.weightUsed,
-        actualDuration: completedSetLog?.durationPerformed,
+        actualReps: completedSetLog?.repsLogged,
+        actualWeight: completedSetLog?.weightLogged,
+        actualDuration: completedSetLog?.durationLogged,
         notes: completedSetLog?.notes || setData?.notes,
       };
     }
@@ -581,11 +581,11 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const exerciseSet = exercise?.sets[0];
     return {
       id: uuidv4(),
-      targetReps: exerciseSet && exerciseSet.targetReps ? exerciseSet.repsAchieved : 1,
-      targetWeight: exerciseSet && exerciseSet.weightUsed ? exerciseSet.weightUsed : 1,
+      targetReps: exerciseSet && exerciseSet.targetReps ? exerciseSet.repsLogged : 1,
+      targetWeight: exerciseSet && exerciseSet.weightLogged ? exerciseSet.weightLogged : 1,
       targetDuration: exerciseSet && exerciseSet.targetDuration ? exerciseSet.targetDuration : 0,
+      targetRest: superSetOrder !== null && superSetOrder !== undefined && exercise && exercise.sets.length && superSetOrder < exercise.sets.length - 1 ? 0 : this.getLastExerciseOfSuperset(supersetId, loggedExercises).targetRest,
       targetTempo: '1',
-      restAfterSet: superSetOrder !== null && superSetOrder !== undefined && exercise && exercise.sets.length && superSetOrder < exercise.sets.length - 1 ? 0 : this.getLastExerciseOfSuperset(supersetId, loggedExercises).restAfterSet,
       notes: exerciseSet && exerciseSet.notes ? exerciseSet.notes : '',
       type: exerciseSet && exerciseSet.type ? 'superset' : 'standard',
     };
@@ -600,7 +600,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       targetWeight: exerciseSet && exerciseSet.targetWeight ? exerciseSet.targetWeight : 1,
       targetDuration: exerciseSet && exerciseSet.targetDuration ? exerciseSet.targetDuration : 1,
       targetTempo: '1',
-      restAfterSet: exerciseSet && exerciseSet.targetRestAfterSet ? exerciseSet.targetRestAfterSet : 60,
+      targetRest: exerciseSet && exerciseSet.targetRest ? exerciseSet.targetRest : 60,
       notes: exerciseSet && exerciseSet.notes ? exerciseSet.notes : '',
       type: exerciseSet && exerciseSet.type ? 'superset' : 'standard',
     };
@@ -621,11 +621,11 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
           const originalPlannedSet = sessionExercise?.sets.find(s => s.id === loggedSet.plannedSetId);
           return {
             id: uuidv4(),
-            targetReps: loggedSet.targetReps ?? loggedSet.repsAchieved,
-            targetWeight: loggedSet.targetWeight ?? loggedSet.weightUsed,
-            targetDuration: loggedSet.targetDuration ?? loggedSet.durationPerformed,
+            targetReps: loggedSet.targetReps ?? loggedSet.repsLogged,
+            targetWeight: loggedSet.targetWeight ?? loggedSet.weightLogged,
+            targetDuration: loggedSet.targetDuration ?? loggedSet.durationLogged,
+            targetRest: originalPlannedSet?.targetRest || 60,
             tempo: loggedSet.targetTempo || originalPlannedSet?.targetTempo,
-            restAfterSet: originalPlannedSet?.restAfterSet || 60,
             notes: loggedSet.notes,
             type: loggedSet.type as 'standard' | 'warmup' | 'amrap' | 'custom' | string,
           };
@@ -1079,14 +1079,16 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     this.patchActualsFormBasedOnSessionTargets();
   }
 
-  startEditTarget(field: 'reps' | 'weight' | 'duration'): void {
+  startEditTarget(field: METRIC): void {
     const activeInfo = this.activeSetInfo();
     if (!activeInfo) return;
     this.editingTarget = field;
     switch (field) {
-      case 'reps': this.editingTargetValue = activeInfo.setData.targetReps ?? ''; break;
-      case 'weight': this.editingTargetValue = activeInfo.setData.targetWeight ?? ''; break;
-      case 'duration': this.editingTargetValue = activeInfo.setData.targetDuration ?? ''; break;
+      case METRIC.reps: this.editingTargetValue = activeInfo.setData.targetReps ?? ''; break;
+      case METRIC.weight: this.editingTargetValue = activeInfo.setData.targetWeight ?? ''; break;
+      case METRIC.duration: this.editingTargetValue = activeInfo.setData.targetDuration ?? ''; break;
+      case METRIC.distance: this.editingTargetValue = activeInfo.setData.targetDistance ?? ''; break;
+      case METRIC.rest: this.editingTargetValue = activeInfo.setData.targetRest ?? ''; break;
     }
   }
 
@@ -1097,15 +1099,15 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
   formatPbValue(pb: PersonalBestSet): string {
     let value = '';
-    if (pb.weightUsed !== undefined && pb.weightUsed !== null) {
-      value += `${pb.weightUsed}${this.unitService.getWeightUnitSuffix()}`;
-      if (pb.repsAchieved > 1 && !pb.pbType.includes('RM (Actual)')) {
-        value += ` x ${pb.repsAchieved}`;
+    if (pb.weightLogged !== undefined && pb.weightLogged !== null) {
+      value += `${pb.weightLogged}${this.unitService.getWeightUnitSuffix()}`;
+      if (pb.repsLogged > 1 && !pb.pbType.includes('RM (Actual)')) {
+        value += ` x ${pb.repsLogged}`;
       }
-    } else if (pb.repsAchieved > 0 && pb.pbType.includes('Max Reps')) {
-      value = `${pb.repsAchieved} reps`;
-    } else if (pb.durationPerformed && pb.durationPerformed > 0 && pb.pbType.includes('Max Duration')) {
-      value = `${pb.durationPerformed}s`;
+    } else if (pb.repsLogged > 0 && pb.pbType.includes('Max Reps')) {
+      value = `${pb.repsLogged} reps`;
+    } else if (pb.durationLogged && pb.durationLogged > 0 && pb.pbType.includes('Max Duration')) {
+      value = `${pb.durationLogged}s`;
     }
     return value || 'N/A';
   }
@@ -1182,10 +1184,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         if (historicalSetPerformance && currentExerciseData.exerciseName && currentExerciseData.exerciseName.toLowerCase().indexOf('kb') < 0) {
           finalSetParamsForSession = {
             ...plannedSetForSuggestions,
-            targetReps: historicalSetPerformance.repsAchieved || plannedSetForSuggestions.targetReps || 0,
-            targetWeight: historicalSetPerformance.weightUsed || plannedSetForSuggestions.targetWeight || 0,
-            targetDuration: historicalSetPerformance.durationPerformed || plannedSetForSuggestions.targetDuration || 0,
-            restAfterSet: plannedSetForSuggestions.restAfterSet || 0
+            targetReps: historicalSetPerformance.repsLogged || plannedSetForSuggestions.targetReps || 0,
+            targetWeight: historicalSetPerformance.weightLogged || plannedSetForSuggestions.targetWeight || 0,
+            targetDuration: historicalSetPerformance.durationLogged || plannedSetForSuggestions.targetDuration || 0,
+            targetRest: plannedSetForSuggestions.targetRest || 0
           };
         } else {
           finalSetParamsForSession = {
@@ -1193,7 +1195,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
             targetReps: plannedSetForSuggestions.targetReps || 0,
             targetWeight: plannedSetForSuggestions.targetWeight || 0,
             targetDuration: plannedSetForSuggestions.targetDuration || 0,
-            restAfterSet: plannedSetForSuggestions.restAfterSet || 0
+            targetRest: plannedSetForSuggestions.targetRest || 0
           };
         }
       }
@@ -1295,11 +1297,11 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     let initialActualDuration = activeInfo.setData.targetDurationMin ?? activeInfo.setData.targetDuration ?? null;
 
     if (completedSetLogThisSession) {
-      if (completedSetLogThisSession.durationPerformed !== undefined) {
-        initialActualDuration = completedSetLogThisSession.durationPerformed;
+      if (completedSetLogThisSession.durationLogged !== undefined) {
+        initialActualDuration = completedSetLogThisSession.durationLogged;
       }
-      if (completedSetLogThisSession.repsAchieved !== undefined) {
-        initialActualReps = completedSetLogThisSession.repsAchieved;
+      if (completedSetLogThisSession.repsLogged !== undefined) {
+        initialActualReps = completedSetLogThisSession.repsLogged;
       }
     }
 
@@ -1316,8 +1318,8 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
       if (previousLoggedSetsInSessionForThisExercise.length > 0) {
         const lastActualPrevSet = previousLoggedSetsInSessionForThisExercise[previousLoggedSetsInSessionForThisExercise.length - 1];
-        if (lastActualPrevSet.weightUsed !== null && lastActualPrevSet.weightUsed !== undefined) {
-          weightForForm = lastActualPrevSet.weightUsed;
+        if (lastActualPrevSet.weightLogged !== null && lastActualPrevSet.weightLogged !== undefined) {
+          weightForForm = lastActualPrevSet.weightLogged;
         }
       } else if (activeInfo.type === 'warmup' && (activeInfo.setData.targetWeight === null || activeInfo.setData.targetWeight === undefined)) {
         weightForForm = activeInfo.setData.targetWeight ?? null;
@@ -1326,8 +1328,8 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
     if (completedSetLogThisSession) {
       this.currentSetForm.patchValue({
-        actualReps: completedSetLogThisSession.repsAchieved,
-        actualWeight: completedSetLogThisSession.weightUsed,
+        actualReps: completedSetLogThisSession.repsLogged,
+        actualWeight: completedSetLogThisSession.weightLogged,
         actualDuration: initialActualDuration,
         setNotes: completedSetLogThisSession.notes ?? '',
         rpe: completedSetLogThisSession.rpe
@@ -1493,9 +1495,9 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         : activeInfo.setData.id,
       exerciseId: activeInfo.exerciseData.exerciseId,
       type: activeInfo.setData.type,
-      repsAchieved: formValues.actualReps ?? (activeInfo.setData.type === 'warmup' ? 0 : activeInfo.setData.targetReps ?? 0),
-      weightUsed: formValues.actualWeight ?? (activeInfo.setData.type === 'warmup' ? null : activeInfo.setData.targetWeight),
-      durationPerformed: durationToLog,
+      repsLogged: formValues.actualReps ?? (activeInfo.setData.type === 'warmup' ? 0 : activeInfo.setData.targetReps ?? 0),
+      weightLogged: formValues.actualWeight ?? (activeInfo.setData.type === 'warmup' ? null : activeInfo.setData.targetWeight),
+      durationLogged: durationToLog,
       rpe: formValues.rpe ?? undefined,
       targetReps: activeInfo.setData.targetReps,
       targetRepsMin: activeInfo.setData.targetRepsMin,
@@ -1505,7 +1507,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       targetDurationMin: activeInfo.setData.targetDurationMin,
       targetDurationMax: activeInfo.setData.targetDurationMax,
       targetTempo: activeInfo.setData.targetTempo,
-      targetRestAfterSet: activeInfo.setData.restAfterSet,
+      targetRest: activeInfo.setData.targetRest,
       notes: formValues.setNotes?.trim() || undefined,
       timestamp: new Date().toISOString(),
     };
@@ -1831,7 +1833,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       // Insert a new warmup exercise before the superset block
       const newWarmupSet: ExerciseTargetSetParams = {
         id: `warmup-${uuidv4()}`, type: 'warmup', targetReps: 8, targetWeight: 0,
-        targetDuration: undefined, restAfterSet: 30, notes: 'Warm-up set'
+        targetDuration: undefined, targetRest: 30, notes: 'Warm-up set'
       };
       const updatedRoutineForSession = JSON.parse(JSON.stringify(currentRoutineVal)) as Routine;
 
@@ -1865,7 +1867,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     }
     const newWarmupSet: ExerciseTargetSetParams = {
       id: `warmup-${uuidv4()}`, type: 'warmup', targetReps: 8, targetWeight: 0, // Default weight 0 for warm-up
-      targetDuration: undefined, restAfterSet: 30, notes: 'Warm-up set'
+      targetDuration: undefined, targetRest: 30, notes: 'Warm-up set'
     };
     const updatedRoutineForSession = JSON.parse(JSON.stringify(currentRoutineVal)) as Routine;
     const exerciseToUpdate = updatedRoutineForSession.exercises[activeInfo.exerciseIndex];
@@ -2909,7 +2911,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
                     return originalEx.sets.every((originalSet, setIndex) => {
                       if (originalSet.type === 'warmup') return true;
                       const loggedSet = loggedEx.sets[setIndex];
-                      return loggedSet && (loggedSet.repsAchieved ?? 0) >= (originalSet.targetReps ?? 0);
+                      return loggedSet && (loggedSet.repsLogged ?? 0) >= (originalSet.targetReps ?? 0);
                     });
                   });
                   if (allSessionsSuccessful) {
@@ -2923,10 +2925,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
                 exercise.sets.forEach((set, setIndex) => {
                   const historicalSet = lastPerformance.sets[setIndex];
                   if (historicalSet) {
-                    set.targetReps = historicalSet.repsAchieved ?? set.targetReps;
-                    set.targetWeight = historicalSet.weightUsed ?? set.targetWeight;
-                    set.targetDuration = historicalSet.durationPerformed ?? set.targetDuration;
-                    set.targetDistance = historicalSet.distanceAchieved ?? set.targetDistance;
+                    set.targetReps = historicalSet.repsLogged ?? set.targetReps;
+                    set.targetWeight = historicalSet.weightLogged ?? set.targetWeight;
+                    set.targetDuration = historicalSet.durationLogged ?? set.targetDuration;
+                    set.targetDistance = historicalSet.distanceLogged ?? set.targetDistance;
                   }
                 });
               }
@@ -3373,7 +3375,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         // Find the rest period defined on the LAST exercise of the block.
         const blockExercises = this.activeSupersetBlock();
         const lastExerciseInBlock = blockExercises ? blockExercises[blockExercises.length - 1] : null;
-        const restDuration = lastExerciseInBlock?.sets[0]?.restAfterSet ?? 0;
+        const restDuration = lastExerciseInBlock?.sets[0]?.targetRest ?? 0;
 
         if (restDuration > 0) {
           this.startRestPeriod(restDuration);
@@ -3434,7 +3436,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
     }
 
-    const restDurationAfterCompletedSet = completedActiveInfo.setData.restAfterSet;
+    const restDurationAfterCompletedSet = completedActiveInfo.setData.targetRest ?? 0;
     if (restDurationAfterCompletedSet > 0 && !forceAdvanceExerciseBlock) {
       this.startRestPeriod(restDurationAfterCompletedSet);
     } else {
@@ -3504,8 +3506,8 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     // --- THIS IS THE CORRECTED LOGIC WITH HISTORICAL DATA ---
     let detailsLine = '';
     if (historicalSetPerformance) {
-      const weight = this.weightUnitPipe.transform(historicalSetPerformance.weightUsed);
-      detailsLine = `Last time: ${weight} x ${historicalSetPerformance.repsAchieved} reps`;
+      const weight = this.weightUnitPipe.transform(historicalSetPerformance.weightLogged);
+      detailsLine = `Last time: ${weight} x ${historicalSetPerformance.repsLogged} reps`;
     } else {
       const repsDisplay = this.getSetTargetDisplay(setData, this.metricEnum.reps);
       const weightDisplay = this.workoutService.getWeightDisplay(setData, exerciseData);
@@ -3595,10 +3597,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         const routineExerciseSet = this.routine()?.exercises.find(ex => ex.id === justLoggedExercise.id)?.sets.find(set => set.id === justLoggedExerciseSet.plannedSetId);
         if (timeSkipped && this.restDuration()) {
           const actualRestingTime = Math.ceil(this.restDuration() - timeSkipped);
-          justLoggedExerciseSet.restAfterSetUsed = actualRestingTime;
+          justLoggedExerciseSet.restLogged = actualRestingTime;
         } else {
-          const actualRestingTime = routineExerciseSet?.restAfterSet ?? 60;
-          justLoggedExerciseSet.restAfterSetUsed = actualRestingTime;
+          const actualRestingTime = routineExerciseSet?.targetRest ?? 60;
+          justLoggedExerciseSet.restLogged = actualRestingTime;
         }
       }
     }
@@ -4157,9 +4159,9 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         type: (setData.type as 'standard' | 'warmup' | 'amrap' | 'custom') ?? 'standard',
         baseExerciseInfo: undefined,
         isCompleted: !!completedSetLog,
-        actualReps: completedSetLog?.repsAchieved,
-        actualWeight: completedSetLog?.weightUsed,
-        actualDuration: completedSetLog?.durationPerformed,
+        actualReps: completedSetLog?.repsLogged,
+        actualWeight: completedSetLog?.weightLogged,
+        actualDuration: completedSetLog?.durationLogged,
         notes: completedSetLog?.notes, // This is the logged note for this specific set completion
       };
     }
@@ -4814,8 +4816,8 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         plannedSetId: `${templateSet.id}-round-${roundToLog - 1}`,
         exerciseId: exerciseInBlock.exerciseId,
         type: 'emom',
-        repsAchieved: templateSet.targetReps ?? 0,
-        weightUsed: templateSet.targetWeight ?? 0,
+        repsLogged: templateSet.targetReps ?? 0,
+        weightLogged: templateSet.targetWeight ?? 0,
         timestamp: new Date().toISOString(),
       };
       this.addLoggedSetToCurrentLog(exerciseInBlock, loggedSetData);

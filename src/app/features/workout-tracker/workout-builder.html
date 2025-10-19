@@ -436,25 +436,49 @@
                                                         (click)="openModal(exerciseControl.value, $event)"></app-icon>
                                                 </div>
                                                 <div class="text-md text-gray-500 dark:text-gray-400 truncate">
-                                                    <ng-container
+                                                     <ng-container
                                                         *ngIf="getUniformSetValues(exerciseControl) as uniformValues; else detailedSetView">
-                                                        <!-- UNIFORM VIEW: Shows when all sets have the same reps/weight -->
-                                                        <p>
-                                                            <span>{{ (!isSuperSet(exIndex) ? ('workoutBuilder.set.set' |
-                                                                translate) + ': ' :
-                                                                ('workoutBuilder.superset.rounds' | translate) + ':') +
-                                                                ' ' +
-                                                                exerciseControl.get('sets')?.value?.length
-                                                                }}</span>
-                                                            <!-- Case 1: Weighted Exercise (e.g., 3 sets (10 x 50kg)) -->
-                                                            <span *ngIf="uniformValues.weight !== null">
-                                                                ( {{ uniformValues.reps }} x {{ uniformValues.weight }}
-                                                                {{ unitService.getWeightUnitSuffix() }} )
+                                                        <!-- UNIFORM VIEW: Dynamically shows all uniform metrics -->
+                                                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                            <!-- Part 1: Sets/Rounds Count -->
+                                                            <span>
+                                                                {{ (!isSuperSet(exIndex) ? ('workoutBuilder.set.totalSets' | translate) + ': ' : ('workoutBuilder.superset.rounds' | translate) + ': ') + exerciseControl.get('sets')?.value?.length }}
                                                             </span>
-                                                            <!-- Case 2: Bodyweight Exercise (e.g., 3 sets (Reps: 15)) -->
-                                                            <span *ngIf="uniformValues.weight === null">
-                                                                ( {{ 'workoutBuilder.set.reps' | translate }}: {{
-                                                                uniformValues.reps }} )
+
+                                                            <!-- Part 2: Uniform metrics displayed inside parentheses -->
+                                                            <span class="ml-1">
+                                                                (
+                                                                <!-- Reps/Weight Section -->
+                                                                <ng-container *ngIf="uniformValues.reps || uniformValues.weight">
+                                                                    <span *ngIf="uniformValues.reps && uniformValues.weight">{{ uniformValues.reps }} x {{ uniformValues.weight }} {{ unitService.getWeightUnitSuffix() }}</span>
+                                                                    <span *ngIf="uniformValues.reps && !uniformValues.weight">{{ 'workoutBuilder.set.reps' | translate }}: {{ uniformValues.reps }}</span>
+                                                                    <span *ngIf="!uniformValues.reps && uniformValues.weight">{{ uniformValues.weight }} {{ unitService.getWeightUnitSuffix() }}</span>
+                                                                </ng-container>
+
+                                                                <!-- Separator 1: Between strength and cardio metrics -->
+                                                                <span *ngIf="(uniformValues.reps || uniformValues.weight) && (uniformValues.distance || uniformValues.duration)" class="mx-2">|</span>
+
+                                                                <!-- Distance/Duration Section -->
+                                                                <ng-container *ngIf="uniformValues.distance || uniformValues.duration">
+                                                                    <span *ngIf="uniformValues.distance">{{ uniformValues.distance }} {{ unitService.getDistanceMeasureUnitSuffix() }}</span>
+                                                                    <span *ngIf="uniformValues.distance && uniformValues.duration" class="mx-1">/</span>
+                                                                    <span *ngIf="uniformValues.duration" class="inline-flex items-center">
+                                                                        <app-icon name="duration" class="h-4 w-4 mr-1"></app-icon>
+                                                                        {{ workoutService.formatSecondsToTime(uniformValues.duration) }}
+                                                                    </span>
+                                                                </ng-container>
+
+                                                                <!-- Separator 2: Before the rest metric -->
+                                                                <span *ngIf="(uniformValues.reps || uniformValues.weight || uniformValues.distance || uniformValues.duration) && uniformValues.rest" class="mx-2">|</span>
+
+                                                                <!-- Rest Section -->
+                                                                <ng-container *ngIf="uniformValues.rest">
+                                                                    <span class="inline-flex items-center">
+                                                                        <app-icon name="rest" class="h-4 w-4 mr-1"></app-icon>
+                                                                        {{ workoutService.formatSecondsToTime(uniformValues.rest) }}
+                                                                    </span>
+                                                                </ng-container>
+                                                                )
                                                             </span>
                                                         </p>
                                                     </ng-container>
@@ -550,7 +574,7 @@
                                     <!-- EXPANDED Only VIEW MODE - START -->
                                     <div *ngIf="shouldShowExpandedExercise(exIndex) && isViewMode"
                                         class="gap-x-2 gap-y-2 px-2 py-2 bg-white rounded-md rounded-t-none dark:bg-gray-800 text-gray-900 dark:text-white "
-                                        [ngClass]="getGridColsForExercise(exerciseControl)">
+                                        [ngClass]="getGridColsForViewExercise(exerciseControl)">
 
                                         <!-- === GRID HEADER === -->
                                         <div
@@ -629,11 +653,6 @@
                                                 class="flex items-center justify-center">
                                                 <strong>{{ getSetTargetDisplay(set, metricEnum.rest) || '-'
                                                     }}</strong>
-                                            </div>
-
-                                            <div *ngIf="checkIfRestIsVisible(set) && !isEmom(exerciseControl)"
-                                                class="flex items-center justify-center">
-                                                <strong>{{ getSetTargetDisplay(set, metricEnum.rest) || '-' }}</strong>
                                             </div>
 
                                             <!-- Notes Data Cell -->
@@ -778,11 +797,11 @@
                                                             <div *ngIf="visibleCols[metricEnum.reps]"
                                                                 class="w-16 text-center">{{
                                                                 mode === 'manualLogEntry' ?
-                                                                ('workoutBuilder.set.repsAchieved' | translate) :
+                                                                ('workoutBuilder.set.repsLogged' | translate) :
                                                                 ('workoutBuilder.set.reps' | translate) }}</div>
                                                             <div *ngIf="visibleCols[metricEnum.weight]"
                                                                 class="w-20 text-center truncate">{{ mode ===
-                                                                'manualLogEntry' ? ('workoutBuilder.set.weightUsed' |
+                                                                'manualLogEntry' ? ('workoutBuilder.set.weightLogged' |
                                                                 translate) : ('workoutBuilder.set.weight' | translate)
                                                                 }}</div>
                                                             <div *ngIf="visibleCols[metricEnum.distance]"
@@ -829,19 +848,19 @@
                                                                         {{ mode === 'routineBuilder' ?
                                                                         getSetDisplayValue(setControl, metricEnum.reps)
                                                                         :
-                                                                        (setControl.get('repsAchieved')?.value ?? '-')
+                                                                        (setControl.get('repsLogged')?.value ?? '-')
                                                                         }}
                                                                     </div>
                                                                     <div *ngIf="visibleCols[metricEnum.weight]"
                                                                         class="w-20 text-s text-center truncate">
                                                                         {{ (setControl.get(mode === 'manualLogEntry' ?
-                                                                        'weightUsed' : 'targetWeight')?.value) |
+                                                                        'weightLogged' : 'targetWeight')?.value) |
                                                                         weightUnit:'1.0-2' }}
                                                                     </div>
                                                                     <div *ngIf="visibleCols[metricEnum.distance]"
                                                                         class="w-20 text-s text-center truncate">
                                                                         {{ (setControl.get(mode === 'manualLogEntry' ?
-                                                                        'distanceAchieved' : 'targetDistance')?.value)
+                                                                        'distanceLogged' : 'targetDistance')?.value)
                                                                         ?? '-' }}
                                                                     </div>
                                                                     <div id="duration"
@@ -853,8 +872,8 @@
                                                                         getSetDisplayValue(setControl,
                                                                         metricEnum.duration) + 's'
                                                                         : '-') :
-                                                                        ((setControl.get('durationPerformed')?.value) ?
-                                                                        (setControl.get('durationPerformed')?.value +
+                                                                        ((setControl.get('durationLogged')?.value) ?
+                                                                        (setControl.get('durationLogged')?.value +
                                                                         's') : '-') }}
                                                                     </div>
                                                                     <div id="rest" *ngIf="visibleCols[metricEnum.rest]"
@@ -865,22 +884,17 @@
                                                                         getSetDisplayValue(setControl, metricEnum.rest)
                                                                         + 's'
                                                                         : '-') :
-                                                                        ((setControl.get('restAfterSet')?.value) ?
-                                                                        (setControl.get('restAfterSet')?.value +
+                                                                        ((setControl.get('targetRest')?.value) ?
+                                                                        (setControl.get('targetRest')?.value +
                                                                         's') : '-') }}
                                                                     </div>
                                                                     <div id="notes"
-                                                                        *ngIf="visibleCols[metricEnum.notes]"
+                                                                        *ngIf="setControl?.value?.notes"
                                                                         class="w-16 text-s text-center truncate">
                                                                         {{ mode === 'routineBuilder' ?
-                                                                        (getSetDisplayValue(setControl,
-                                                                        metricEnum.notes) ?
-                                                                        getSetDisplayValue(setControl, metricEnum.notes)
-                                                                        + 's'
-                                                                        : '-') :
                                                                         ((setControl.get('notes')?.value) ?
-                                                                        (setControl.get('notes')?.value +
-                                                                        's') : '-') }}
+                                                                        (setControl.get('notes')?.value) : '-') : ''
+                                                                         }}
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1023,6 +1037,18 @@
 
 
 
+                                                    </div>
+                                                    <!-- Expanded set - SET NOTES -->
+                                                     <div *ngIf="setControl.get('notes')?.value">
+                                                        <label [for]="'setNotes-' + exIndex + setIndex"
+                                                            class="block text-s font-medium text-gray-600 dark:text-gray-400 mb-0.5">
+                                                            {{ (mode === 'routineBuilder' ? 'workoutBuilder.set.notes' :
+                                                            'workoutBuilder.set.notes') | translate }}
+                                                        </label>
+                                                        <textarea [id]="'setNotes-' + exIndex + setIndex" formControlName="notes" rows="1"
+                                                            appAutoGrow
+                                                            class="mt-0.5 mb-2 block w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200"
+                                                            [readonly]="isViewMode"></textarea>
                                                     </div>
                                                 </div>
 
@@ -1316,13 +1342,13 @@
             class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
             <span>{{ 'workoutBuilder.set.rest' | translate }} (s) {{ mode === 'manualLogEntry' ? '(Performed)' :
                 ''}}</span>
-            <!-- <button *ngIf="mode === 'routineBuilder'" type="button" (click)="toggleDurationMode(setControl, $event)"
+            <button *ngIf="mode === 'routineBuilder'" type="button" (click)="toggleRestMode(setControl, $event)"
                 [title]="'workoutBuilder.set.toggleRange' | translate"
                 class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
                 {{ (isRangeMode(setControl, metricEnum.rest) ? 'workoutBuilder.set.useSingle' :
                 'workoutBuilder.set.useRange') |
                 translate }}
-            </button> -->
+            </button>
         </label>
         <!-- ROUTINE BUILDER - REST -->
         <ng-container *ngIf="mode === 'routineBuilder'">
@@ -1343,13 +1369,13 @@
                     {{ 'workoutBuilder.set.rangeError' | translate }}
                 </div>
             </div>
-            <input *ngIf="!isRangeMode(setControl, metricEnum.rest)" type="number" formControlName="restAfterSet"
+            <input *ngIf="!isRangeMode(setControl, metricEnum.rest)" type="number" formControlName="targetRest"
                 min="1" [placeholder]="'workoutBuilder.set.rest' | translate" [readonly]="isViewMode"
                 class="mt-0.5 w-full p-1.5 text-m font-bold border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
         </ng-container>
         <!-- LOG ENTRY - SINGLE REST PERFORMED -->
         <input *ngIf="mode === 'manualLogEntry'" type="number" [id]="'rest-exp-' + exIndex + '-' + setIndex"
-            formControlName="restAfterSet" [placeholder]="'workoutBuilder.set.rest' | translate" [readonly]="isViewMode"
+            formControlName="restLogged" [placeholder]="'workoutBuilder.set.rest' | translate" [readonly]="isViewMode"
             class="mt-0.5 w-full p-1.5 text-m font-bold border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
     </div>
 </ng-template>
@@ -1370,7 +1396,8 @@
             </button>
 
             <div class="flex items-center w-full p-0.5 justify-center bg-gray-200 dark:bg-gray-700">
-                <input [type]="(field === metricEnum.duration || field === metricEnum.rest) ? 'text' : 'number'"
+                <!-- <input [type]="(field === metricEnum.duration || field === metricEnum.rest) ? 'text' : 'number'" -->
+                <input [type]="'number'"
                     [formControlName]="getFormControlName(field)" [readonly]="isViewMode"
                     class="w-full p-1.5 text-center text-m font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-md">
 

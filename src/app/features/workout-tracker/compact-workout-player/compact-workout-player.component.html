@@ -326,8 +326,8 @@
                       </div>
                       <!-- Set Notes Textarea (if visible) -->
                       <div *ngIf="expandedSetNotes() === (exIndex + '-' + setIndex)" class="px-2 pb-1">
-                        <textarea [ngModel]="getInitialInputValue(exIndex, setIndex, metricEnum.notes)"
-                          (change)="updateSetData(exIndex, setIndex, 0, metricEnum.notes, $event)"
+                        <textarea [ngModel]="getInitialInputValue(exIndex, setIndex, 'notes')"
+                          (change)="updateSetData(exIndex, setIndex, 0, 'notes', $event)"
                           [placeholder]="'compactPlayer.setNotesPlaceholder' | translate"
                           class="w-full text-xs bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
                       </div>
@@ -429,8 +429,8 @@
                     </div>
                     <!-- Set Notes Textarea (if visible) -->
                     <div *ngIf="expandedSetNotes() === (exIndex + '-' + roundIndex)" class="px-2 pb-1">
-                      <textarea [ngModel]="getInitialInputValue(exIndex, roundIndex, metricEnum.notes)"
-                        (change)="updateSetData(exIndex, roundIndex, 0,metricEnum.notes, $event)"
+                      <textarea [ngModel]="getInitialInputValue(exIndex, roundIndex, 'notes')"
+                        (change)="updateSetData(exIndex, roundIndex, 0,'notes', $event)"
                         [placeholder]="'compactPlayer.roundNotesPlaceholder' | translate"
                         class="w-full text-xs bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
                     </div>
@@ -704,19 +704,19 @@
                 {{ 'compactPlayer.setLabel' | translate }} #{{ i + 1 }}:
               </p>
               <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
-                <span *ngIf="setLog.repsAchieved">{{ 'compactPlayer.repsLabel' | translate }}: <strong
-                    class="dark:text-gray-100">{{ setLog.repsAchieved
+                <span *ngIf="setLog.repsLogged">{{ 'compactPlayer.repsLabel' | translate }}: <strong
+                    class="dark:text-gray-100">{{ setLog.repsLogged
                     }}</strong></span>
-                <span *ngIf="setLog.weightUsed != null">{{ 'compactPlayer.weightLabel' | translate:{unit: ''} }}:
-                  <strong class="dark:text-gray-100">{{ setLog.weightUsed
+                <span *ngIf="setLog.weightLogged != null">{{ 'compactPlayer.weightLabel' | translate:{unit: ''} }}:
+                  <strong class="dark:text-gray-100">{{ setLog.weightLogged
                     |
                     weightUnit }}</strong></span>
-                <span *ngIf="setLog.distanceAchieved">{{ 'compactPlayer.distanceLabel' | translate }}: <strong
+                <span *ngIf="setLog.distanceLogged">{{ 'compactPlayer.distanceLabel' | translate }}: <strong
                     class="dark:text-gray-100">{{
-                    setLog.distanceAchieved }} km</strong></span>
-                <span *ngIf="setLog.durationPerformed">{{ 'compactPlayer.timeLabel' | translate }}: <strong
+                    setLog.distanceLogged }} km</strong></span>
+                <span *ngIf="setLog.durationLogged">{{ 'compactPlayer.timeLabel' | translate }}: <strong
                     class="dark:text-gray-100">{{
-                    formatSecondsToTime(setLog.durationPerformed) }}</strong></span>
+                    formatSecondsToTime(setLog.durationLogged) }}</strong></span>
               </div>
             </div>
             <div *ngIf="data.completedSetsInSession.length === 0"
@@ -741,19 +741,19 @@
               <p class="font-semibold text-gray-700 dark:text-gray-200 mb-1">{{ 'compactPlayer.setLabel' | translate }}
                 #{{ i + 1 }}:</p>
               <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
-                <span *ngIf="setLog.repsAchieved">{{ 'compactPlayer.repsLabel' | translate }}: <strong
-                    class="dark:text-gray-100">{{ setLog.repsAchieved
+                <span *ngIf="setLog.repsLogged">{{ 'compactPlayer.repsLabel' | translate }}: <strong
+                    class="dark:text-gray-100">{{ setLog.repsLogged
                     }}</strong></span>
-                <span *ngIf="setLog.weightUsed != null">{{ 'compactPlayer.weightLabel' | translate:{unit: ''} }}:
-                  <strong class="dark:text-gray-100">{{ setLog.weightUsed
+                <span *ngIf="setLog.weightLogged != null">{{ 'compactPlayer.weightLabel' | translate:{unit: ''} }}:
+                  <strong class="dark:text-gray-100">{{ setLog.weightLogged
                     |
                     weightUnit }}</strong></span>
-                <span *ngIf="setLog.distanceAchieved">{{ 'compactPlayer.distanceLabel' | translate }}: <strong
+                <span *ngIf="setLog.distanceLogged">{{ 'compactPlayer.distanceLabel' | translate }}: <strong
                     class="dark:text-gray-100">{{
-                    setLog.distanceAchieved }} km</strong></span>
-                <span *ngIf="setLog.durationPerformed">{{ 'compactPlayer.timeLabel' | translate }}: <strong
+                    setLog.distanceLogged }} km</strong></span>
+                <span *ngIf="setLog.durationLogged">{{ 'compactPlayer.timeLabel' | translate }}: <strong
                     class="dark:text-gray-100">{{
-                    formatSecondsToTime(setLog.durationPerformed) }}</strong></span>
+                    formatSecondsToTime(setLog.durationLogged) }}</strong></span>
               </div>
             </div>
           </div>

@@ -287,7 +287,7 @@ export const sessionNotesBtn = {
 }
 
 export const timerBtn = {
-    label: 'actionButtons.sessionNotes',
+    label: 'actionButtons.timer',
     actionKey: 'timer',
     iconName: 'stopwatch',
     buttonClass: ' hover:bg-cyan-600 ',

@@ -47,7 +47,7 @@ export class StatsService {
   constructor() { }
 
   calculateSetVolume(set: LoggedSet): number {
-    return (set.repsAchieved || 0) * (set.weightUsed || 0);
+    return (set.repsLogged || 0) * (set.weightLogged || 0);
   }
 
   calculateWorkoutVolume(log: WorkoutLog): number {
@@ -102,7 +102,7 @@ export class StatsService {
   calculateTotalVolume(log: WorkoutLog): number {
     return log.exercises.reduce((total, exercise) => {
       const exerciseVolume = exercise.sets.reduce((setTotal, set) => {
-        return setTotal + ((set.weightUsed ?? 0) * (set.repsAchieved ?? 0));
+        return setTotal + ((set.weightLogged ?? 0) * (set.repsLogged ?? 0));
       }, 0);
       return total + exerciseVolume;
     }, 0);

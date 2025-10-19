@@ -292,19 +292,19 @@ export class WorkoutService {
 
     // --- MAIN PROGRESSION LOGIC ---
     // Definition of success: meeting or exceeding any of the planned targets for that set.
-    // Note: This assumes cardio duration is logged in 'repsAchieved' and distance in 'weightUsed'.
+    // Note: This assumes cardio duration is logged in 'repsLogged' and distance in 'weightLogged'.
     const wasSuccessful = (
       // Reps check
-      (plannedSet.targetReps && lastPerformedSet.repsAchieved >= plannedSet.targetReps) ||
-      (plannedSet.targetRepsMin && lastPerformedSet.repsAchieved >= plannedSet.targetRepsMin) ||
+      (plannedSet.targetReps && lastPerformedSet.repsLogged >= plannedSet.targetReps) ||
+      (plannedSet.targetRepsMin && lastPerformedSet.repsLogged >= plannedSet.targetRepsMin) ||
 
-      // Duration check (uses repsAchieved from log)
-      (plannedSet.targetDuration && lastPerformedSet.repsAchieved >= plannedSet.targetDuration) ||
-      (plannedSet.targetDurationMin && lastPerformedSet.repsAchieved >= plannedSet.targetDurationMin) ||
+      // Duration check (uses repsLogged from log)
+      (plannedSet.targetDuration && lastPerformedSet.repsLogged >= plannedSet.targetDuration) ||
+      (plannedSet.targetDurationMin && lastPerformedSet.repsLogged >= plannedSet.targetDurationMin) ||
 
-      // Distance check (uses weightUsed from log)
-      (plannedSet.targetDistance && lastPerformedSet.weightUsed && lastPerformedSet.weightUsed >= plannedSet.targetDistance) ||
-      (plannedSet.targetDistanceMin && lastPerformedSet.weightUsed && lastPerformedSet.weightUsed >= plannedSet.targetDistanceMin)
+      // Distance check (uses weightLogged from log)
+      (plannedSet.targetDistance && lastPerformedSet.weightLogged && lastPerformedSet.weightLogged >= plannedSet.targetDistance) ||
+      (plannedSet.targetDistanceMin && lastPerformedSet.weightLogged && lastPerformedSet.weightLogged >= plannedSet.targetDistanceMin)
     );
 
     if (wasSuccessful) {
@@ -314,23 +314,23 @@ export class WorkoutService {
       poSettings.strategies.forEach(strategy => {
         switch (strategy) {
           case ProgressiveOverloadStrategy.WEIGHT:
-            if (poSettings.weightIncrement && lastPerformedSet.weightUsed != null) {
-              suggestedParams.targetWeight = parseFloat((lastPerformedSet.weightUsed + poSettings.weightIncrement).toFixed(2));
+            if (poSettings.weightIncrement && lastPerformedSet.weightLogged != null) {
+              suggestedParams.targetWeight = parseFloat((lastPerformedSet.weightLogged + poSettings.weightIncrement).toFixed(2));
             }
             break;
           case ProgressiveOverloadStrategy.REPS:
-            if (poSettings.repsIncrement && lastPerformedSet.repsAchieved != null) {
-              suggestedParams.targetReps = (suggestedParams.targetReps || lastPerformedSet.repsAchieved) + poSettings.repsIncrement;
+            if (poSettings.repsIncrement && lastPerformedSet.repsLogged != null) {
+              suggestedParams.targetReps = (suggestedParams.targetReps || lastPerformedSet.repsLogged) + poSettings.repsIncrement;
             }
             break;
           case ProgressiveOverloadStrategy.DURATION:
-            if (poSettings.durationIncrement && lastPerformedSet.repsAchieved != null) {
-              suggestedParams.targetDuration = (suggestedParams.targetDuration || lastPerformedSet.repsAchieved) + poSettings.durationIncrement;
+            if (poSettings.durationIncrement && lastPerformedSet.repsLogged != null) {
+              suggestedParams.targetDuration = (suggestedParams.targetDuration || lastPerformedSet.repsLogged) + poSettings.durationIncrement;
             }
             break;
           case ProgressiveOverloadStrategy.DISTANCE:
-            if (poSettings.distanceIncrement && lastPerformedSet.weightUsed != null) {
-              suggestedParams.targetDistance = parseFloat(((suggestedParams.targetDistance || lastPerformedSet.weightUsed) + poSettings.distanceIncrement).toFixed(2));
+            if (poSettings.distanceIncrement && lastPerformedSet.weightLogged != null) {
+              suggestedParams.targetDistance = parseFloat(((suggestedParams.targetDistance || lastPerformedSet.weightLogged) + poSettings.distanceIncrement).toFixed(2));
             }
             break;
         }
@@ -359,6 +359,7 @@ export class WorkoutService {
    * Merges imported routine data with the current data.
    * - If an imported routine has an ID that already exists, it will be updated.
    * - If an imported routine has a new ID, it will be added.
+   * - **This method now migrates legacy properties before merging.**
    * - After merging, the entire list is re-sorted and saved.
    *
    * @param newRoutines The array of Routine objects to merge.
@@ -374,10 +375,13 @@ export class WorkoutService {
       return;
     }
 
-    // 2. Get current state
+    // 2. *** THE FIX IS HERE: Migrate the imported data first ***
+    const migratedRoutines = this._migrateRoutines(newRoutines);
+
+    // 3. Get current state
     const currentRoutines = this.routinesSubject.getValue();
 
-    // 3. Create a map of current routines for efficient lookup and update
+    // 4. Create a map of current routines for efficient lookup and update
     const routineMap = new Map<string, Routine>(
       currentRoutines.map(p => [p.id, p])
     );
@@ -385,8 +389,8 @@ export class WorkoutService {
     let updatedCount = 0;
     let addedCount = 0;
 
-    // 4. Iterate over the imported routines and merge them into the map
-    newRoutines.forEach(importedRoutine => {
+    // 5. Iterate over the MIGRATED routines and merge them into the map
+    migratedRoutines.forEach(importedRoutine => {
       if (!importedRoutine.id || !importedRoutine.name) {
         console.warn('Skipping invalid routine during import:', importedRoutine);
         return;
@@ -401,14 +405,13 @@ export class WorkoutService {
       routineMap.set(importedRoutine.id, importedRoutine);
     });
 
-    // 5. Convert the map back to an array
+    // 6. Convert the map back to an array
     const mergedRoutines = Array.from(routineMap.values());
 
-    // 6. *** THE FIX IS HERE ***
-    // Pass the newly merged array through the sorting function before saving.
+    // 7. Pass the newly merged array through the sorting function before saving.
     this._saveRoutinesToStorage(this._sortRoutines(mergedRoutines));
 
-    // 7. Provide user feedback
+    // 8. Provide user feedback
     console.log(`WorkoutService: Merged imported routines. Updated: ${updatedCount}, Added: ${addedCount}`);
     this.toastService.success(
       this.translate.instant('workoutService.toasts.importSuccessMessage', { updatedCount, addedCount }),
@@ -507,13 +510,13 @@ export class WorkoutService {
    * --- FUNCTION 2 ---
    * Extracts the "resting time" for a single set in seconds.
    * 
-   * This is straightforward as it's directly defined by `restAfterSet`.
+   * This is straightforward as it's directly defined by `targetRest`.
    *
    * @param set The ExerciseSetParams object for a single set.
    * @returns The planned resting time in seconds after the set is completed.
    */
   public getRestTimeForSet(set: ExerciseTargetSetParams): number {
-    return set.restAfterSet || 0;
+    return set.targetRest || 0;
   }
 
 
@@ -701,11 +704,11 @@ export class WorkoutService {
     const kbRelated = selectedExercise.category === 'kettlebells';
 
     // Determine default values based on the last logged set or general defaults
-    const defaultWeight = kbRelated && lastLoggedSet ? (lastLoggedSet.targetWeight ?? lastLoggedSet.weightUsed) : (this.unitsService.currentWeightUnit() === 'kg' ? 10 : 22.2);
+    const defaultWeight = kbRelated && lastLoggedSet ? (lastLoggedSet.targetWeight ?? lastLoggedSet.weightLogged) : (this.unitsService.currentWeightUnit() === 'kg' ? 10 : 22.2);
     const defaultDuration = isCardioOnly ? 60 : undefined;
     const defaultDistance = isCardioOnly ? 1 : undefined;
     const defaultRest = kbRelated ? 45 : 60;
-    const defaultReps = kbRelated && lastLoggedSet ? (lastLoggedSet.targetReps ?? lastLoggedSet.repsAchieved) : 10;
+    const defaultReps = kbRelated && lastLoggedSet ? (lastLoggedSet.targetReps ?? lastLoggedSet.repsLogged) : 10;
     const defaultSets = 3;
 
     const baseParams: AlertInput[] = [
@@ -754,7 +757,7 @@ export class WorkoutService {
         targetWeight: isCardioOnly ? undefined : weight,
         targetDistance: isCardioOnly ? distance : undefined,
         targetDuration: isCardioOnly ? duration : undefined,
-        restAfterSet: rest,
+        targetRest: rest,
         type: 'standard',
         notes: ''
       });
@@ -880,7 +883,7 @@ export class WorkoutService {
 
         const templateSet = targetExercise.sets.length > 0
           ? { ...targetExercise.sets[0] }
-          : { id: uuidv4(), targetReps: 8, targetWeight: 10, restAfterSet: 60, type: 'standard' };
+          : { id: uuidv4(), targetReps: 8, targetWeight: 10, targetRest: 60, type: 'standard' };
 
         targetExercise.sets = [];
         targetExercise.supersetId = newSupersetId;
@@ -971,7 +974,7 @@ export class WorkoutService {
 
     const newSize = existingInSuperset.length + 1;
     const rounds = existingInSuperset[0].sets.length || 1;
-    const templateSet = targetExercise.sets[0] || { id: uuidv4(), targetReps: 8, targetWeight: 10, restAfterSet: 60, type: 'standard' };
+    const templateSet = targetExercise.sets[0] || { id: uuidv4(), targetReps: 8, targetWeight: 10, targetRest: 60, type: 'standard' };
 
     targetExercise.sets = Array.from({ length: rounds }, () => ({ ...templateSet, id: uuidv4() }));
     targetExercise.supersetId = String(chosenSupersetId);
@@ -1076,7 +1079,9 @@ export class WorkoutService {
         single = set.targetDuration || 0;
         break;
       case METRIC.rest:
-        single = set.restAfterSet || 0;
+        min = set.targetRestMin || 0;
+        max = set.targetRestMax || 0;
+        single = set.targetRest || 0;
         break;
       case METRIC.weight:
         min = set.targetWeightMin || 0;
@@ -1113,7 +1118,7 @@ export class WorkoutService {
 
   /**
    * Determines the appropriate weight string to display for a set.
-   * It prioritizes the actual performed weight ('weightUsed') from a LoggedSet
+   * It prioritizes the actual performed weight ('weightLogged') from a LoggedSet
    * but falls back to the 'targetWeight' for planned sets. It also handles
    * special display cases for different exercise categories.
    *
@@ -1122,9 +1127,9 @@ export class WorkoutService {
    * @returns A formatted string for display (e.g., "100 kg", "Bodyweight", "N/A").
    */
   getWeightDisplay(set: ExerciseTargetSetParams | LoggedSet, exercise: Exercise | WorkoutExercise): string {
-    // The 'set' object could be a LoggedSet, which has a 'weightUsed' property.
+    // The 'set' object could be a LoggedSet, which has a 'weightLogged' property.
     // We check for this property to determine which value to prioritize.
-    const performedWeight = (set as any).weightUsed;
+    const performedWeight = (set as any).weightLogged;
 
     // Use the performed weight if it's a valid number (not null/undefined).
     // Otherwise, fall back to the target weight from the plan.
@@ -1168,9 +1173,9 @@ export class WorkoutService {
 
   /**
    * Helper to migrate old ExerciseSetParams fields to new 'target' fields.
+   * This now includes logic to map legacy rest properties.
    */
   private _migrateSetParams(set: any): ExerciseTargetSetParams {
-    // const newSet: ExerciseSetParams = { ...set };
     const newSet: any = { ...set };
 
     // Migrate 'reps' to 'targetReps' if 'reps' exists and 'targetReps' does not
@@ -1196,6 +1201,20 @@ export class WorkoutService {
       newSet.targetDistance = set.distance;
       delete newSet[METRIC.distance];
     }
+    
+    // --- MIGRATION LOGIC FOR REST ---
+    // Handles mapping 'restAfterSet' or 'targetRestAfterSet' to the new 'targetRest' property.
+    if (newSet.targetRest === undefined || newSet.targetRest === null) {
+      if (typeof newSet.targetRestAfterSet === 'number') {
+        newSet.targetRest = newSet.targetRestAfterSet;
+      } else if (typeof newSet.restAfterSet === 'number') {
+        newSet.targetRest = newSet.restAfterSet;
+      }
+    }
+    
+    // Clean up the old, now-migrated properties from the object.
+    delete newSet.targetRestAfterSet;
+    delete newSet.restAfterSet;
 
     // Ensure 'id' exists for all sets
     if (!newSet.id) {
@@ -1214,6 +1233,7 @@ export class WorkoutService {
     }
     return routines.map(routine => {
       const updatedExercises = routine.exercises.map(exercise => {
+        // By calling _migrateSetParams here, the logic is applied to every set.
         const updatedSets = exercise.sets.map(set => this._migrateSetParams(set));
         return { ...exercise, sets: updatedSets };
       });
@@ -1277,26 +1297,27 @@ export class WorkoutService {
     switch (fieldToAdd) {
       case METRIC.weight: {
         setToUpdate.targetWeight = numberValue;
-        setToUpdate.weightUsed = numberValue;
+        setToUpdate.weightLogged = numberValue;
         break;
       }
       case METRIC.reps: {
         setToUpdate.targetReps = numberValue;
-        setToUpdate.repsAchieved = numberValue;
+        setToUpdate.repsLogged = numberValue;
         break;
       }
       case METRIC.distance: {
         setToUpdate.targetDistance = numberValue;
-        setToUpdate.distanceAchieved = numberValue;
+        setToUpdate.distanceLogged = numberValue;
         break;
       }
       case METRIC.duration: {
         setToUpdate.targetDuration = numberValue;
-        setToUpdate.durationPerformed = numberValue;
+        setToUpdate.durationLogged = numberValue;
         break;
       }
       case METRIC.rest: {
-        setToUpdate.restAfterSet = numberValue;
+        setToUpdate.targetRest = numberValue;
+        setToUpdate.restLogged = numberValue;
         break;
       }
       case METRIC.tempo: {
@@ -1325,7 +1346,7 @@ export class WorkoutService {
       [METRIC.reps]: wkEx.sets.some(set => (set.targetReps ?? 0) > 0 || (set.targetRepsMin ?? 0) > 0) || wkExFromLog.sets.some(set => (set.targetReps ?? 0) > 0) || !!(wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.reps)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.reps))),
       [METRIC.distance]: wkEx.sets.some(set => (set.targetDistance ?? 0) > 0 || (set.targetDistanceMin ?? 0) > 0) || wkExFromLog.sets.some(set => (set.targetDistance ?? 0) > 0) || !!(wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.distance)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.distance))),
       [METRIC.duration]: wkEx.sets.some(set => (set.targetDuration ?? 0) > 0 || (set.targetDurationMin ?? 0) > 0) || wkExFromLog.sets.some(set => (set.targetDuration ?? 0) > 0) || !!(wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.duration)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.duration))),
-      [METRIC.rest]: wkEx.sets.some(set => (set.restAfterSet ?? 0) > 0) || !!(wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.rest)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.rest))),
+      [METRIC.rest]: wkEx.sets.some(set => (set.targetRest ?? 0) > 0) || !!(wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.rest)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.rest))),
       [METRIC.tempo]: wkEx.sets.some(set => !!set.targetTempo && set.targetTempo.trim().length > 0) || wkExFromLog.sets.some(set => !!set.targetTempo && set.targetTempo.trim().length > 0) || !!(wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.tempo)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.tempo))),
     };
 
@@ -1346,12 +1367,12 @@ export class WorkoutService {
     if (this.isLoggedSet(set)) {
       // It's a LoggedSet, so we check the performance fields.
       visibleSetFieldsObj = {
-        weight: !!((set.weightUsed ?? 0) > 0 || set.fieldOrder?.includes(METRIC.weight)),
-        reps: !!((set.repsAchieved ?? 0) > 0 || set.fieldOrder?.includes(METRIC.reps)),
-        distance: !!((set.distanceAchieved ?? 0) > 0 || set.fieldOrder?.includes(METRIC.distance)),
-        duration: !!((set.durationPerformed ?? 0) > 0 || set.fieldOrder?.includes(METRIC.duration)),
+        weight: !!((set.weightLogged ?? 0) > 0 || set.fieldOrder?.includes(METRIC.weight)),
+        reps: !!((set.repsLogged ?? 0) > 0 || set.fieldOrder?.includes(METRIC.reps)),
+        distance: !!((set.distanceLogged ?? 0) > 0 || set.fieldOrder?.includes(METRIC.distance)),
+        duration: !!((set.durationLogged ?? 0) > 0 || set.fieldOrder?.includes(METRIC.duration)),
         tempo: !!(set.targetTempo?.trim() || set.fieldOrder?.includes(METRIC.tempo)),
-        rest: !!((set.restAfterSetUsed ?? 0) > 0 || set.fieldOrder?.includes(METRIC.rest)),
+        rest: !!((set.restLogged ?? 0) > 0 || set.fieldOrder?.includes(METRIC.rest)),
       };
     } else {
       // It's an ExerciseTargetSetParams, so we check the target fields.
@@ -1362,7 +1383,7 @@ export class WorkoutService {
         distance: !!((plannedSet.targetDistance ?? 0) > 0 || (plannedSet.targetDistanceMin ?? 0) > 0 || plannedSet.fieldOrder?.includes(METRIC.distance)),
         duration: !!((plannedSet.targetDuration ?? 0) > 0 || (plannedSet.targetDurationMin ?? 0) > 0 || plannedSet.fieldOrder?.includes(METRIC.duration)),
         tempo: !!(plannedSet.targetTempo?.trim() || plannedSet.fieldOrder?.includes(METRIC.tempo)),
-        rest: !!((plannedSet.restAfterSet ?? 0) > 0 || plannedSet.fieldOrder?.includes(METRIC.rest)),
+        rest: !!((plannedSet.targetRest ?? 0) > 0 || plannedSet.fieldOrder?.includes(METRIC.rest)),
       };
     }
     return visibleSetFieldsObj;
@@ -1606,10 +1627,10 @@ export class WorkoutService {
   public isLoggedSet(set: any): set is LoggedSet {
     // A LoggedSet will have performance fields. We check for the existence of these keys.
     return set && set.workoutLogId && (
-      typeof set.repsAchieved !== 'undefined' ||
-      typeof set.weightUsed !== 'undefined' ||
-      typeof set.durationPerformed !== 'undefined' ||
-      typeof set.distanceAchieved !== 'undefined' ||
+      typeof set.repsLogged !== 'undefined' ||
+      typeof set.weightLogged !== 'undefined' ||
+      typeof set.durationLogged !== 'undefined' ||
+      typeof set.distanceLogged !== 'undefined' ||
       typeof set.tempoUsed !== 'undefined'
     );
   }
@@ -1633,11 +1654,11 @@ export class WorkoutService {
     // CASE 1: The set is a LOGGED set, so we display the actual performance values.
     if (this.isLoggedSet(exSet)) {
       switch (field) {
-        case METRIC.reps: return (exSet.repsAchieved ?? '-').toString();
-        case METRIC.weight: return exSet.weightUsed != null ? exSet.weightUsed.toString() : '-';
-        case METRIC.distance: return (exSet.distanceAchieved ?? '-').toString();
-        case METRIC.duration: return this.formatSecondsToTime(exSet.durationPerformed);
-        case METRIC.rest: return this.formatSecondsToTime(exSet.restAfterSetUsed);
+        case METRIC.reps: return (exSet.repsLogged ?? '-').toString();
+        case METRIC.weight: return exSet.weightLogged != null ? exSet.weightLogged.toString() : '-';
+        case METRIC.distance: return (exSet.distanceLogged ?? '-').toString();
+        case METRIC.duration: return this.formatSecondsToTime(exSet.durationLogged);
+        case METRIC.rest: return this.formatSecondsToTime(exSet.restLogged);
         case METRIC.tempo: return exSet.tempoUsed || '-';
         default: return '-';
       }
@@ -1674,7 +1695,7 @@ export class WorkoutService {
           }
           return this.formatSecondsToTime(plannedSet.targetDuration ?? undefined);
         case METRIC.rest:
-          return this.formatSecondsToTime(plannedSet.restAfterSet ?? undefined);
+          return this.formatSecondsToTime(plannedSet.targetRest ?? undefined);
 
         case METRIC.tempo:
           return plannedSet.targetTempo || '-';

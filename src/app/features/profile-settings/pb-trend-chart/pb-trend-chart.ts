@@ -200,7 +200,7 @@ export class PbTrendChartComponent implements OnInit {
             seriesData.push({
                 name: new Date(pb.timestamp),
                 value: currentValue,
-                extra: { reps: pb.repsAchieved, notes: pb.notes, workoutLogId: pb.workoutLogId }
+                extra: { reps: pb.repsLogged, notes: pb.notes, workoutLogId: pb.workoutLogId }
             });
         }
 
@@ -211,7 +211,7 @@ export class PbTrendChartComponent implements OnInit {
                     seriesData.push({
                         name: new Date(histInstance.timestamp),
                         value: histValue,
-                        extra: { reps: histInstance.repsAchieved, notes: undefined, workoutLogId: histInstance.workoutLogId }
+                        extra: { reps: histInstance.repsLogged, notes: undefined, workoutLogId: histInstance.workoutLogId }
                     });
                 }
             });
@@ -239,19 +239,19 @@ export class PbTrendChartComponent implements OnInit {
     }
 
     private extractValueForChart(
-        item: { weightUsed?: number | null; repsAchieved: number; durationPerformed?: number | null },
+        item: { weightLogged?: number | null; repsLogged: number; durationLogged?: number | null },
         pbType: string
     ): number | null {
         if (pbType.includes('RM') || pbType.includes('Heaviest Lifted')) {
-            return item.weightUsed ?? null;
+            return item.weightLogged ?? null;
         } else if (pbType.includes('Max Reps')) {
-            return item.repsAchieved ?? null;
+            return item.repsLogged ?? null;
         } else if (pbType.includes('Max Duration')) {
-            return item.durationPerformed ?? null;
+            return item.durationLogged ?? null;
         }
-        if (item.weightUsed && item.weightUsed > 0) return item.weightUsed;
-        if (item.repsAchieved > 0) return item.repsAchieved;
-        if (item.durationPerformed && item.durationPerformed > 0) return item.durationPerformed;
+        if (item.weightLogged && item.weightLogged > 0) return item.weightLogged;
+        if (item.repsLogged > 0) return item.repsLogged;
+        if (item.durationLogged && item.durationLogged > 0) return item.durationLogged;
         return null;
     }
 

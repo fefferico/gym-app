@@ -369,7 +369,7 @@ export class WorkoutGeneratorService {
             type: 'standard',
             targetRepsMin: repRange.min,
             targetRepsMax: repRange.max,
-            restAfterSet: rest,
+            targetRest: rest,
         }));
 
         // Attach the full exercise object so the builder can reference its properties (like `equipment`).
@@ -397,7 +397,7 @@ export class WorkoutGeneratorService {
             id: uuidv4(),
             type: 'standard',
             targetReps: 10,
-            restAfterSet: 60,
+            targetRest: 60,
         }));
 
         return {

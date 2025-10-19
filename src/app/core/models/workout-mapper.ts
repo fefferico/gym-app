@@ -29,15 +29,14 @@ export function mapLoggedExercisesToRoutineSnapshot(
 
                 // The values of the new "plan" should be what the user actually achieved.
                 targetRpe: loggedSet.rpe,
-                targetWeight: loggedSet.weightUsed,
-                targetDuration: loggedSet.durationPerformed,
-                targetDistance: loggedSet.distanceAchieved,
-                targetReps: loggedSet.repsAchieved, // <<< UPDATED to include reps
+                targetWeight: loggedSet.weightLogged,
+                targetDuration: loggedSet.durationLogged,
+                targetDistance: loggedSet.distanceLogged,
+                targetReps: loggedSet.repsLogged,
+                targetRest: loggedSet.restLogged ?? loggedSet.targetRest ?? 60,
                 notes: loggedSet.notes,
                 type: loggedSet.type,
 
-                // The 'restAfterSet' is required. Prioritize what was used, then the target, then a default.
-                restAfterSet: loggedSet.restAfterSetUsed ?? loggedSet.targetRestAfterSet ?? 60,
 
                 // Carry over target values if they exist, in case they are needed.
             };
@@ -112,7 +111,6 @@ export function mapRoutineSnapshotToLoggedExercises(
 
 
 /**
- * --- NEW ---
  * Maps a legacy LoggedSet object to the current model.
  * This function is self-contained and used by the mapper below.
  * @param set The potentially legacy LoggedSet object.
@@ -140,12 +138,35 @@ function mapLegacyLoggedSet(set: any): LoggedSet {
         delete newSet.distance;
     }
 
+     // --- NEW: MIGRATE REST PROPERTIES ---
+    // Migrate planned rest values if the new property doesn't exist
+    if (newSet.targetRest === undefined || newSet.targetRest === null) {
+      if (typeof newSet.targetRestAfterSet === 'number') {
+        newSet.targetRest = newSet.targetRestAfterSet;
+      } else if (typeof newSet.restAfterSet === 'number') {
+        newSet.targetRest = newSet.restAfterSet;
+      }
+    }
+
+    // Migrate performed rest value if the new property doesn't exist
+    if (newSet.restLogged === undefined || newSet.restLogged === null) {
+      if (typeof newSet.restLogged === 'number') {
+        newSet.restLogged = newSet.restLogged;
+      }else if (typeof newSet.targetRestAfterSet === 'number') {
+        newSet.restLogged = newSet.targetRestAfterSet;
+      }
+    }
+
+    // Clean up old legacy properties to standardize the object
+    delete newSet.targetRestAfterSet;
+    delete newSet.restAfterSet;
+    // --- END NEW ---
+
     return newSet;
 }
 
 
 /**
- * --- NEW ---
  * Maps an array of potentially legacy logged exercises to the current data model.
  * This is crucial for importing old workout logs where target properties might have
  * different names (e.g., 'reps' instead of 'targetReps').
@@ -176,7 +197,6 @@ export function mapExerciseTargetSetParamsToExerciseExecutedSetParams(exerciseTa
 ): ExerciseTargetExecutionSetParams {
     return {
         id: exerciseTargetSetParams.id,
-        targetRestAfterSet: exerciseTargetSetParams.restAfterSet,
         type: exerciseTargetSetParams.type,
         targetReps: exerciseTargetSetParams.targetReps || 0,
         targetRepsMin: exerciseTargetSetParams.targetRepsMin || 0,
@@ -190,6 +210,9 @@ export function mapExerciseTargetSetParamsToExerciseExecutedSetParams(exerciseTa
         targetDuration: exerciseTargetSetParams.targetDuration || 0,
         targetDurationMin: exerciseTargetSetParams.targetDurationMin || 0,
         targetDurationMax: exerciseTargetSetParams.targetDurationMax || 0,
+        targetRest: exerciseTargetSetParams.targetRest || 0,
+        targetRestMin: exerciseTargetSetParams.targetRestMin || 0,
+        targetRestMax: exerciseTargetSetParams.targetRestMax || 0,
         notes: exerciseTargetSetParams.notes || '',
         tempo: exerciseTargetSetParams.targetTempo
     } as ExerciseTargetExecutionSetParams;
@@ -281,10 +304,11 @@ export function mapLoggedSetToExerciseTargetSetParams(loggedSet: LoggedSet): Exe
 
         // --- Core Mapping Logic ---
         // The user's actual performance becomes the target for the new plan.
-        targetReps: loggedSet.repsAchieved,
-        targetWeight: loggedSet.weightUsed,
-        targetDuration: loggedSet.durationPerformed,
-        targetDistance: loggedSet.distanceAchieved,
+        targetReps: loggedSet.repsLogged,
+        targetWeight: loggedSet.weightLogged,
+        targetDuration: loggedSet.durationLogged,
+        targetDistance: loggedSet.distanceLogged,
+        targetRest: loggedSet.restLogged,
         targetRpe: loggedSet.rpe,
             targetTempo: loggedSet.tempoUsed,
 
@@ -298,6 +322,8 @@ export function mapLoggedSetToExerciseTargetSetParams(loggedSet: LoggedSet): Exe
         targetDurationMax: null,
         targetDistanceMin: null,
         targetDistanceMax: null,
+        targetRestMin: null,
+        targetRestMax: null,
         dropToWeight: null,
         amrapTimeLimit: null,
 
@@ -307,6 +333,5 @@ export function mapLoggedSetToExerciseTargetSetParams(loggedSet: LoggedSet): Exe
         fieldOrder: loggedSet.fieldOrder,
 
         // Use the actual rest time used, with fallbacks to the original target or a default value.
-        restAfterSet: loggedSet.restAfterSetUsed ?? loggedSet.targetRestAfterSet ?? 60,
     };
 }

@@ -506,15 +506,15 @@
               Set #{{ i + 1 }}:
             </p>
             <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
-              <span *ngIf="setLog.repsAchieved">Reps: <strong class="dark:text-gray-100">{{ setLog.repsAchieved
+              <span *ngIf="setLog.repsLogged">Reps: <strong class="dark:text-gray-100">{{ setLog.repsLogged
                   }}</strong></span>
-              <span *ngIf="setLog.weightUsed != null">Weight: <strong class="dark:text-gray-100">{{ setLog.weightUsed
+              <span *ngIf="setLog.weightLogged != null">Weight: <strong class="dark:text-gray-100">{{ setLog.weightLogged
                   |
                   weightUnit }}</strong></span>
-              <span *ngIf="setLog.distanceAchieved">Distance: <strong class="dark:text-gray-100">{{
-                  setLog.distanceAchieved }} km</strong></span>
-              <span *ngIf="setLog.durationPerformed">Time: <strong class="dark:text-gray-100">{{
-                  formatSecondsToTime(setLog.durationPerformed) }}</strong></span>
+              <span *ngIf="setLog.distanceLogged">Distance: <strong class="dark:text-gray-100">{{
+                  setLog.distanceLogged }} km</strong></span>
+              <span *ngIf="setLog.durationLogged">Time: <strong class="dark:text-gray-100">{{
+                  formatSecondsToTime(setLog.durationLogged) }}</strong></span>
             </div>
           </div>
           <div *ngIf="data.completedSetsInSession.length === 0"
@@ -536,15 +536,15 @@
             class="text-xs p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm border border-gray-200 dark:border-gray-600">
             <p class="font-semibold text-gray-700 dark:text-gray-200 mb-1">Set #{{ i + 1 }}:</p>
             <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
-              <span *ngIf="setLog.repsAchieved">Reps: <strong class="dark:text-gray-100">{{ setLog.repsAchieved
+              <span *ngIf="setLog.repsLogged">Reps: <strong class="dark:text-gray-100">{{ setLog.repsLogged
                   }}</strong></span>
-              <span *ngIf="setLog.weightUsed != null">Weight: <strong class="dark:text-gray-100">{{ setLog.weightUsed
+              <span *ngIf="setLog.weightLogged != null">Weight: <strong class="dark:text-gray-100">{{ setLog.weightLogged
                   |
                   weightUnit }}</strong></span>
-              <span *ngIf="setLog.distanceAchieved">Distance: <strong class="dark:text-gray-100">{{
-                  setLog.distanceAchieved }} km</strong></span>
-              <span *ngIf="setLog.durationPerformed">Time: <strong class="dark:text-gray-100">{{
-                  formatSecondsToTime(setLog.durationPerformed) }}</strong></span>
+              <span *ngIf="setLog.distanceLogged">Distance: <strong class="dark:text-gray-100">{{
+                  setLog.distanceLogged }} km</strong></span>
+              <span *ngIf="setLog.durationLogged">Time: <strong class="dark:text-gray-100">{{
+                  formatSecondsToTime(setLog.durationLogged) }}</strong></span>
             </div>
           </div>
         </div>

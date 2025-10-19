@@ -351,8 +351,8 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     return log.exercises.reduce((totalVolume, exercise) => {
       const exerciseVolume = exercise.sets.reduce((volume, set) => {
         // Ensure both reps and weight are valid numbers for calculation
-        if (typeof set.repsAchieved === 'number' && typeof set.weightUsed === 'number') {
-          return Math.ceil(volume + (set.repsAchieved * set.weightUsed));
+        if (typeof set.repsLogged === 'number' && typeof set.weightLogged === 'number') {
+          return Math.ceil(volume + (set.repsLogged * set.weightLogged));
         }
         return volume;
       }, 0);
@@ -410,13 +410,13 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
             // More robust check: The PB data in TrackingService's PB set will contain the *exact* set that achieved it.
             // So, we just need to see if the current log's ID and the set's timestamp match the global PB's record.
             if (isSameLogAndSet &&
-              existingGlobalPb.weightUsed === set.weightUsed &&
-              existingGlobalPb.repsAchieved === set.repsAchieved &&
-              existingGlobalPb.durationPerformed === set.durationPerformed) {
+              existingGlobalPb.weightLogged === set.weightLogged &&
+              existingGlobalPb.repsLogged === set.repsLogged &&
+              existingGlobalPb.durationLogged === set.durationLogged) {
               isNewGlobalBest = true;
             }
-            // For estimated 1RM, the `weightUsed` could be slightly different due to float precision,
-            // so a direct comparison on original values might be needed if `weightUsed` is the calculated e1RM.
+            // For estimated 1RM, the `weightLogged` could be slightly different due to float precision,
+            // so a direct comparison on original values might be needed if `weightLogged` is the calculated e1RM.
             // The safest is to check against the PB's own workoutLogId and timestamp.
           }
 
@@ -439,11 +439,11 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
         // --- PB Type Checks ---
         // Bodyweight or duration-based PBs
-        if (!candidateSet.weightUsed) {
-          if (candidateSet.repsAchieved > 0) {
+        if (!candidateSet.weightLogged) {
+          if (candidateSet.repsLogged > 0) {
             checkForAndAddPb('Max Reps (Bodyweight)', candidateSet);
           }
-          if (candidateSet.durationPerformed && candidateSet.durationPerformed > 0) {
+          if (candidateSet.durationLogged && candidateSet.durationLogged > 0) {
             checkForAndAddPb('Max Duration', candidateSet);
           }
           return; // Move to the next set
@@ -451,23 +451,23 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
         // Weight-based PBs
         checkForAndAddPb('Heaviest Lifted', candidateSet);
-        if (candidateSet.repsAchieved === 1) {
+        if (candidateSet.repsLogged === 1) {
           checkForAndAddPb('1RM (Actual)', candidateSet);
         }
-        if (candidateSet.repsAchieved === 3) {
+        if (candidateSet.repsLogged === 3) {
           checkForAndAddPb('3RM (Actual)', candidateSet);
         }
-        if (candidateSet.repsAchieved === 5) {
+        if (candidateSet.repsLogged === 5) {
           checkForAndAddPb('5RM (Actual)', candidateSet);
         }
 
         // Estimated 1RM
-        if (candidateSet.repsAchieved > 1) {
-          const e1RM = candidateSet.weightUsed * (1 + candidateSet.repsAchieved / 30);
+        if (candidateSet.repsLogged > 1) {
+          const e1RM = candidateSet.weightLogged * (1 + candidateSet.repsLogged / 30);
           const e1RMSet: LoggedSet = {
             ...candidateSet,
-            repsAchieved: 1, // The result is for 1 rep
-            weightUsed: parseFloat(e1RM.toFixed(2)), // The calculated weight
+            repsLogged: 1, // The result is for 1 rep
+            weightLogged: parseFloat(e1RM.toFixed(2)), // The calculated weight
           };
           // For estimated 1RM, the check needs to be against the calculated value
           checkForAndAddPb('1RM (Estimated)', e1RMSet, true);
@@ -495,15 +495,15 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     let isBetter = false;
     if (pbType.includes('Max Reps')) {
-      if (candidateSet.repsAchieved > existingBest.repsAchieved) isBetter = true;
+      if (candidateSet.repsLogged > existingBest.repsLogged) isBetter = true;
     } else if (pbType.includes('Max Duration')) {
-      if ((candidateSet.durationPerformed ?? 0) > (existingBest.durationPerformed ?? 0)) isBetter = true;
+      if ((candidateSet.durationLogged ?? 0) > (existingBest.durationLogged ?? 0)) isBetter = true;
     } else { // All other PBs are weight-based
-      if ((candidateSet.weightUsed ?? 0) > (existingBest.weightUsed ?? 0)) {
+      if ((candidateSet.weightLogged ?? 0) > (existingBest.weightLogged ?? 0)) {
         isBetter = true;
       } else if (
-        (candidateSet.weightUsed ?? 0) === (existingBest.weightUsed ?? 0) &&
-        candidateSet.repsAchieved > existingBest.repsAchieved
+        (candidateSet.weightLogged ?? 0) === (existingBest.weightLogged ?? 0) &&
+        candidateSet.repsLogged > existingBest.repsLogged
       ) {
         // This logic is for 'Heaviest Lifted' where higher reps at same weight is better
         isBetter = true;

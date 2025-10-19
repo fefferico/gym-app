@@ -260,25 +260,25 @@ export class TrackingService {
           // exerciseId is already set during addWorkoutLog
         };
 
-        if (candidateSet.weightUsed === undefined || candidateSet.weightUsed === null || candidateSet.weightUsed === 0) {
-          if (candidateSet.repsAchieved > 0) this.updateSpecificPB(exercisePBsList, candidateSet, `Max Reps (Bodyweight)`);
-          if (candidateSet.durationPerformed && candidateSet.durationPerformed > 0) this.updateSpecificPB(exercisePBsList, candidateSet, `Max Duration`);
-          if (candidateSet.distanceAchieved && candidateSet.distanceAchieved > 0) this.updateSpecificPB(exercisePBsList, candidateSet, `Max Distance`);
+        if (candidateSet.weightLogged === undefined || candidateSet.weightLogged === null || candidateSet.weightLogged === 0) {
+          if (candidateSet.repsLogged > 0) this.updateSpecificPB(exercisePBsList, candidateSet, `Max Reps (Bodyweight)`);
+          if (candidateSet.durationLogged && candidateSet.durationLogged > 0) this.updateSpecificPB(exercisePBsList, candidateSet, `Max Duration`);
+          if (candidateSet.distanceLogged && candidateSet.distanceLogged > 0) this.updateSpecificPB(exercisePBsList, candidateSet, `Max Distance`);
           return;
         }
 
-        if (candidateSet.repsAchieved === 1) this.updateSpecificPB(exercisePBsList, candidateSet, `1RM (Actual)`);
-        if (candidateSet.repsAchieved === 3) this.updateSpecificPB(exercisePBsList, candidateSet, `3RM (Actual)`);
-        if (candidateSet.repsAchieved === 5) this.updateSpecificPB(exercisePBsList, candidateSet, `5RM (Actual)`);
+        if (candidateSet.repsLogged === 1) this.updateSpecificPB(exercisePBsList, candidateSet, `1RM (Actual)`);
+        if (candidateSet.repsLogged === 3) this.updateSpecificPB(exercisePBsList, candidateSet, `3RM (Actual)`);
+        if (candidateSet.repsLogged === 5) this.updateSpecificPB(exercisePBsList, candidateSet, `5RM (Actual)`);
         this.updateSpecificPB(exercisePBsList, candidateSet, `Heaviest Lifted`);
-        if (candidateSet.repsAchieved > 1) {
-          const e1RM = candidateSet.weightUsed * (1 + candidateSet.repsAchieved / 30);
-          const e1RMSet: LoggedSet = { ...candidateSet, repsAchieved: 1, weightUsed: parseFloat(e1RM.toFixed(2)) };
+        if (candidateSet.repsLogged > 1) {
+          const e1RM = candidateSet.weightLogged * (1 + candidateSet.repsLogged / 30);
+          const e1RMSet: LoggedSet = { ...candidateSet, repsLogged: 1, weightLogged: parseFloat(e1RM.toFixed(2)) };
           this.updateSpecificPB(exercisePBsList, e1RMSet, `1RM (Estimated)`);
         }
       });
       // Sort for this exercise (mainly for internal consistency, display sorts separately)
-      currentPBs[loggedEx.exerciseId] = exercisePBsList.sort((a, b) => (b.weightUsed ?? 0) - (a.weightUsed ?? 0));
+      currentPBs[loggedEx.exerciseId] = exercisePBsList.sort((a, b) => (b.weightLogged ?? 0) - (a.weightLogged ?? 0));
     });
     this.savePBsToStorage(currentPBs);
     // console.log('Personal Bests updated incrementally:', currentPBs);
@@ -312,15 +312,15 @@ export class TrackingService {
 
       let isBetter = false;
       if (pbType.includes('Max Reps')) {
-        if (candidateSet.repsAchieved > existingPb.repsAchieved) isBetter = true;
-        else if (candidateSet.repsAchieved === existingPb.repsAchieved && (candidateSet.weightUsed ?? -1) > (existingPb.weightUsed ?? -1)) isBetter = true;
+        if (candidateSet.repsLogged > existingPb.repsLogged) isBetter = true;
+        else if (candidateSet.repsLogged === existingPb.repsLogged && (candidateSet.weightLogged ?? -1) > (existingPb.weightLogged ?? -1)) isBetter = true;
       } else if (pbType.includes('Max Duration')) {
-        if ((candidateSet.durationPerformed ?? 0) > (existingPb.durationPerformed ?? 0)) isBetter = true;
+        if ((candidateSet.durationLogged ?? 0) > (existingPb.durationLogged ?? 0)) isBetter = true;
       } else { // Weight-based (XRM, Heaviest Lifted)
-        if ((candidateSet.weightUsed ?? -1) > (existingPb.weightUsed ?? -1)) {
+        if ((candidateSet.weightLogged ?? -1) > (existingPb.weightLogged ?? -1)) {
           isBetter = true;
         }
-        if ((candidateSet.weightUsed ?? -1) >= (existingPb.weightUsed ?? -1) && (candidateSet.repsAchieved ?? -1) > (existingPb.repsAchieved ?? -1)) {
+        if ((candidateSet.weightLogged ?? -1) >= (existingPb.weightLogged ?? -1) && (candidateSet.repsLogged ?? -1) > (existingPb.repsLogged ?? -1)) {
           isBetter = true;
         }
       }
@@ -330,9 +330,9 @@ export class TrackingService {
         oldPbToDemote = { ...existingPb }; // Capture the state of the PB being replaced for history
         // Prepare history for the new PB: new history item + old PB's history
         const historyInstance: PBHistoryInstance = {
-          weightUsed: oldPbToDemote.weightUsed,
-          repsAchieved: oldPbToDemote.repsAchieved,
-          durationPerformed: oldPbToDemote.durationPerformed,
+          weightLogged: oldPbToDemote.weightLogged,
+          repsLogged: oldPbToDemote.repsLogged,
+          durationLogged: oldPbToDemote.durationLogged,
           timestamp: oldPbToDemote.timestamp,
           workoutLogId: oldPbToDemote.workoutLogId,
         };
@@ -389,29 +389,29 @@ export class TrackingService {
             exerciseId: originalSet.exerciseId || loggedEx.exerciseId, // Prefer set's exerciseId
           };
 
-          if (candidateSet.weightUsed === undefined || candidateSet.weightUsed === null || candidateSet.weightUsed === 0) {
-            if (candidateSet.repsAchieved > 0) {
+          if (candidateSet.weightLogged === undefined || candidateSet.weightLogged === null || candidateSet.weightLogged === 0) {
+            if (candidateSet.repsLogged > 0) {
               this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Max Reps (Bodyweight)`);
             }
-            if (candidateSet.durationPerformed && candidateSet.durationPerformed > 0) {
+            if (candidateSet.durationLogged && candidateSet.durationLogged > 0) {
               this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Max Duration`);
             }
             return;
           }
 
-          if (candidateSet.repsAchieved === 1) {
+          if (candidateSet.repsLogged === 1) {
             this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `1RM (Actual)`);
           }
-          if (candidateSet.repsAchieved === 3) {
+          if (candidateSet.repsLogged === 3) {
             this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `3RM (Actual)`);
           }
-          if (candidateSet.repsAchieved === 5) {
+          if (candidateSet.repsLogged === 5) {
             this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `5RM (Actual)`);
           }
           this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Heaviest Lifted`);
-          if (candidateSet.repsAchieved > 1) {
-            const e1RM = candidateSet.weightUsed * (1 + candidateSet.repsAchieved / 30);
-            const e1RMSet: LoggedSet = { ...candidateSet, repsAchieved: 1, weightUsed: parseFloat(e1RM.toFixed(2)) };
+          if (candidateSet.repsLogged > 1) {
+            const e1RM = candidateSet.weightLogged * (1 + candidateSet.repsLogged / 30);
+            const e1RMSet: LoggedSet = { ...candidateSet, repsLogged: 1, weightLogged: parseFloat(e1RM.toFixed(2)) };
             this.updateSpecificPB(exercisePBsListForRecalc, e1RMSet, `1RM (Estimated)`);
           }
         });
@@ -422,7 +422,7 @@ export class TrackingService {
     // After processing all logs, sort PBs within each exercise (optional, as display component sorts)
     for (const exId in newPBsMaster) {
       if (newPBsMaster.hasOwnProperty(exId)) {
-        newPBsMaster[exId].sort((a, b) => (b.weightUsed ?? 0) - (a.weightUsed ?? 0));
+        newPBsMaster[exId].sort((a, b) => (b.weightLogged ?? 0) - (a.weightLogged ?? 0));
       }
     }
 
@@ -469,13 +469,13 @@ export class TrackingService {
           log.exercises.forEach(loggedEx => {
             if (loggedEx.exerciseId === exerciseId) {
               loggedEx.sets.forEach(set => {
-                if (set.weightUsed !== undefined && set.weightUsed !== null) {
-                  if (maxWeightThisSession === undefined || set.weightUsed > maxWeightThisSession) {
-                    maxWeightThisSession = set.weightUsed;
-                    repsAtMaxWeight = set.repsAchieved;
-                  } else if (set.weightUsed === maxWeightThisSession) {
-                    if (repsAtMaxWeight === undefined || (set.repsAchieved > repsAtMaxWeight)) {
-                      repsAtMaxWeight = set.repsAchieved;
+                if (set.weightLogged !== undefined && set.weightLogged !== null) {
+                  if (maxWeightThisSession === undefined || set.weightLogged > maxWeightThisSession) {
+                    maxWeightThisSession = set.weightLogged;
+                    repsAtMaxWeight = set.repsLogged;
+                  } else if (set.weightLogged === maxWeightThisSession) {
+                    if (repsAtMaxWeight === undefined || (set.repsLogged > repsAtMaxWeight)) {
+                      repsAtMaxWeight = set.repsLogged;
                     }
                   }
                 }
@@ -606,18 +606,18 @@ export class TrackingService {
         const exercisePBsListForRecalc: PersonalBestSet[] = newPBsMaster[loggedEx.exerciseId];
         loggedEx.sets.forEach(originalSet => {
           const candidateSet: LoggedSet = { ...originalSet, timestamp: originalSet.timestamp || logTimestamp, workoutLogId: originalSet.workoutLogId || log.id, exerciseId: originalSet.exerciseId || loggedEx.exerciseId, };
-          if (candidateSet.weightUsed === undefined || candidateSet.weightUsed === null || candidateSet.weightUsed === 0) {
-            if (candidateSet.repsAchieved > 0) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Max Reps (Bodyweight)`);
-            if (candidateSet.durationPerformed && candidateSet.durationPerformed > 0) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Max Duration`);
+          if (candidateSet.weightLogged === undefined || candidateSet.weightLogged === null || candidateSet.weightLogged === 0) {
+            if (candidateSet.repsLogged > 0) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Max Reps (Bodyweight)`);
+            if (candidateSet.durationLogged && candidateSet.durationLogged > 0) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Max Duration`);
             return;
           }
-          if (candidateSet.repsAchieved === 1) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `1RM (Actual)`);
-          if (candidateSet.repsAchieved === 3) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `3RM (Actual)`);
-          if (candidateSet.repsAchieved === 5) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `5RM (Actual)`);
+          if (candidateSet.repsLogged === 1) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `1RM (Actual)`);
+          if (candidateSet.repsLogged === 3) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `3RM (Actual)`);
+          if (candidateSet.repsLogged === 5) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `5RM (Actual)`);
           this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Heaviest Lifted`);
-          if (candidateSet.repsAchieved > 1) {
-            const e1RM = candidateSet.weightUsed * (1 + candidateSet.repsAchieved / 30);
-            const e1RMSet: LoggedSet = { ...candidateSet, repsAchieved: 1, weightUsed: parseFloat(e1RM.toFixed(2)) };
+          if (candidateSet.repsLogged > 1) {
+            const e1RM = candidateSet.weightLogged * (1 + candidateSet.repsLogged / 30);
+            const e1RMSet: LoggedSet = { ...candidateSet, repsLogged: 1, weightLogged: parseFloat(e1RM.toFixed(2)) };
             this.updateSpecificPB(exercisePBsListForRecalc, e1RMSet, `1RM (Estimated)`);
           }
         });

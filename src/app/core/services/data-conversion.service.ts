@@ -40,8 +40,8 @@ export class DataConversionService {
     logs.forEach(log => {
       log.exercises.forEach(ex => {
         ex.sets.forEach(set => {
-          if (set.weightUsed != null) {
-            set.weightUsed = this.unitsService.convertWeight(set.weightUsed, fromUnit, toUnit);
+          if (set.weightLogged != null) {
+            set.weightLogged = this.unitsService.convertWeight(set.weightLogged, fromUnit, toUnit);
           }
           if (set.targetWeight != null) {
             set.targetWeight = this.unitsService.convertWeight(set.targetWeight, fromUnit, toUnit);
@@ -224,8 +224,8 @@ export class DataConversionService {
       log.exercises.forEach(ex => {
         ex.sets.forEach(set => {
           // Convert the actual distance performed
-          if (set.distanceAchieved != null) {
-            set.distanceAchieved = this.unitsService.convertDistance(set.distanceAchieved, fromUnit, toUnit);
+          if (set.distanceLogged != null) {
+            set.distanceLogged = this.unitsService.convertDistance(set.distanceLogged, fromUnit, toUnit);
           }
           // Convert the target distance, if one was set
           if (set.targetDistance != null) {
