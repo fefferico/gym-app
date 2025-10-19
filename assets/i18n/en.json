@@ -929,7 +929,8 @@
     "expand": "EXPAND",
     "collapse": "COLLAPSE",
     "ungroup": "Ungroup",
-    "makeEmom": "Make EMOM"
+    "makeEmom": "Make EMOM",
+    "timer": "TIMER"
   },
   "exerciseSelectionModal": {
     "filtersTitle": "Filters & Sorting",
