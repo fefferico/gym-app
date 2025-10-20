@@ -2734,7 +2734,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       // STATE 2: THE EXERCISE IS COLLAPSED (OR STANDALONE)
       // Apply the normal start, middle, and end classes for visual grouping.
       classes['border-t-2 rounded-t-md'] = this.isSupersetStart(index);
-      classes['border-b-0 rounded-none'] = this.isSupersetMiddle(index); // This correctly removes bottom border for middle items
+      classes['border-b-0 rounded-none'] = this.isSupersetMiddle(index) && !this.isSupersetEnd(index); // This correctly removes bottom border for middle items
+      classes['border-b-2'] = this.isSuperSet(index);
       classes['rounded-b-md mb-4'] = true;
     }
 

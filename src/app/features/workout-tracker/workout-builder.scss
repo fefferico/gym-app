@@ -115,11 +115,11 @@ $breakpoint-md: 768px; // Matching Tailwind's default 'md' breakpoint
 }
 
 .input_number_class {
-  @apply w-full p-1.5 text-center font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-md disabled:opacity-70 disabled:cursor-not-allowed;
+  @apply w-full p-1.5 text-center font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl disabled:opacity-70 disabled:cursor-not-allowed;
 }
 
 .wrapper_ranged_input_number_class {
-  @apply flex items-center w-full p-0.5 justify-center bg-gray-200 dark:bg-gray-700 rounded-md;
+  @apply flex items-center w-full p-0.5 justify-center bg-gray-200 dark:bg-gray-700 rounded-xl;
 }
 .input_number_class_separator {
   @apply text-gray-500 dark:text-gray-400 font-bold mx-1;

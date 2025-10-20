@@ -116,10 +116,10 @@
             <div *ngFor="let pb of displayPersonalBests()"
                 class="flex flex-col border dark:border-none bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1">
                 <div class="p-3 flex-grow">
-                    <div class="flex justify-between items-start mb-1">
+                    <!-- Exercise Name & Category -->
+                    <div class="flex justify-between items-start">
                         <div>
-                            <h2 class="text-md font-semibold text-primary dark:text-primary-light truncate"
-                                [title]="pb.exerciseName">
+                            <h2 class="text-md font-semibold text-primary dark:text-primary-light truncate" [title]="pb.exerciseName">
                                 {{ pb.exerciseName }}
                             </h2>
                             <p class="text-xs text-gray-500 dark:text-gray-400">
@@ -128,25 +128,32 @@
                         </div>
                     </div>
 
-                    <div class="mb-2">
-                        <span class="text-xl font-bold text-gray-900 dark:text-white">{{ formatPbValue(pb) }}</span>
+                    <!-- PB Type (Now a prominent element) -->
+                    <div class="mt-2">
+                        <p class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ pb.pbType }}</p>
                     </div>
 
-                    <div class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 mb-2">
-                        <span>{{ pb.pbType }}</span>
+                    <!-- PB Value -->
+                    <div class="mb-2">
+                        <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatPbValue(pb) }}</span>
+                    </div>
+
+                    <!-- Date (Now right-aligned by itself) -->
+                    <div class="flex justify-end items-center text-xs text-gray-500 dark:text-gray-400 mb-2">
                         <span>{{ pb.timestamp | date:'dd/MM/yy' }}</span>
                     </div>
 
-                    <div *ngIf="pb.history && pb.history.length > 0"
+                    <!-- History (if available) -->
+                    <div *ngIf="getPreviousPb(pb) as prevPb"
                         class="mt-2 pt-1 border-t border-gray-200 dark:border-gray-600 text-xs text-gray-500 dark:text-gray-400">
-                        <span class="font-medium">{{ 'personalBests.card.previous' | translate }}</span>
-                        <span *ngFor="let prevPb of pb.history.slice(0,1); let isLast = last">
-                            {{ formatPbValue(prevPb, pb.pbType) }} ({{ prevPb.timestamp | date:'dd/MM/yy' }}){{ !isLast
-                            ? ', ' : '' }}
+                        <span class="font-medium">{{ 'personalBests.card.previous' | translate }}: </span>
+                        <span>
+                            {{ formatPbValue(prevPb, pb.pbType) }} ({{ prevPb.timestamp | date:'dd/MM/yy' }})
                         </span>
-                        <span *ngIf="pb.history.length > 1"> ...</span>
+                        <span *ngIf="countPreviousPbs(pb) > 1"> ...</span>
                     </div>
 
+                    <!-- Notes (if available) -->
                     <div *ngIf="pb.notes" class="pt-1 border-t border-gray-200 dark:border-gray-600"
                         [class.mt-2]="pb.history && pb.history.length > 0"
                         [class.mt-1]="!(pb.history && pb.history.length > 0)">

@@ -2434,28 +2434,28 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         'border-teal-500 dark:border-teal-400 border-r-2 border-l-2': true,
         'bg-teal-50 dark:bg-teal-900/10': !isSelected,
         'bg-teal-100 dark:bg-teal-800/50': isSelected,
-        'rounded-md border-4': isSingle,
+        'rounded-xl border-4': isSingle,
         'mb-2': isSingle || isLast,
         'mt-4': isSingle || isFirst,
-        'rounded-t-md border-x-2 border-t-2': isFirst && !isSingle,
+        'rounded-t-xl border-x-2 border-t-2': isFirst && !isSingle,
         'border-x-2': !isFirst, // <-- Always apply for non-master EMOM exercises
-        'rounded-b-md border-b-2': isLast || isSingle,
+        'rounded-b-xl border-b-2': isLast || isSingle,
       };
     } else if (isStandardSuperset) {
       classes = {
         'border-primary border-r-2 border-l-2': true,
         'bg-orange-100 dark:bg-orange-900/10': !isSelected,
         'bg-orange-200 dark:bg-orange-800/50': isSelected,
-        'rounded-t-md border-x-2 border-t-2 mt-2': isFirst,
+        'rounded-t-xl border-x-2 border-t-2 mt-2': isFirst,
         'border-x-2': !isFirst, // <-- ALWAYS apply for non-master superset exercises
-        'rounded-b-md border-b-2 mb-2': isLast,
+        'rounded-b-xl border-b-2 mb-2': isLast,
       };
 
     } else {
       // This is a standard, non-superset exercise
 
       classes = {
-        'border rounded-md mb-2': true,
+        'border rounded-xl mb-2': true,
         'bg-blue-50 dark:bg-blue-900/40 border-blue-400': isWarmup && !isSelected,
         'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600': !isWarmup && !isSelected,
         'mt-5': this.isEditableMode() && this.selectedExerciseIndicesForSuperset().length >= 2 && exIndex === this.firstSelectedExerciseIndexForSuperset,
@@ -3651,7 +3651,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   protected standarSuperSetOrEmomClass(exerciseControl: AbstractControl, isExpanded: boolean = false): string {
-    const standardCardClass = ' absolute -left-2 top-2 text-white text-xs font-bold rounded-md shadow-lg z-10 transform translate-x-3 -translate-y-6 p-1';
+    const standardCardClass = ' absolute -left-2 top-2 text-white text-xs font-bold rounded-xl shadow-lg z-10 transform translate-x-3 -translate-y-6 p-1';
     if (exerciseControl.get('supersetType')?.value == 'emom') {
       return !isExpanded ? standardCardClass + ' bg-teal-400 text-white' : 'font-bold text-teal-600 dark:text-teal-400';
     } else if (exerciseControl.get('supersetType')?.value !== 'emom') {
@@ -3662,7 +3662,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   protected setLabelClass(exerciseControl: AbstractControl): string {
-    const standardCardClass = 'flex text-white text-md font-bold rounded-md shadow-lg z-10 p-1 w-full bg-primary justify-between items-center';
+    const standardCardClass = 'flex text-white text-xl font-bold rounded-xl shadow-lg z-10 p-1 w-full bg-primary justify-between items-center';
     if (exerciseControl.get('supersetType')?.value == 'emom') {
       return standardCardClass + ' bg-teal-400 text-white';
     } else if (exerciseControl.get('supersetType')?.value !== 'emom') {

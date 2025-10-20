@@ -1837,6 +1837,7 @@
       "weight": "Weight ({{unit}})",
       "reps": "Repetitions",
       "duration": "Duration (seconds)",
+      "distance": "Distance ({{unit}})",
       "value": "Value"
     }
   },

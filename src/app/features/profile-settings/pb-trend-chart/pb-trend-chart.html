@@ -68,6 +68,7 @@
                 class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {{ yAxisLabel() }}
               </th>
+              <!-- Conditionally show Reps header ONLY for weight-based PBs -->
               <th scope="col" *ngIf="currentPbType?.includes('RM') || currentPbType?.includes('Heaviest Lifted')"
                 class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {{ 'pbTrend.history.repsHeader' | translate }}
@@ -83,8 +84,10 @@
                 {{ record.name | date:'mediumDate' }}
               </td>
               <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                {{ record.value }}
+                <!-- Use the new formatter method for the main value -->
+                {{ formatTableValue(record) }}
               </td>
+              <!-- Conditionally show Reps data cell -->
               <td *ngIf="currentPbType?.includes('RM') || currentPbType?.includes('Heaviest Lifted')"
                 class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                 {{ record.extra?.reps }}

@@ -255,26 +255,33 @@ export class TrackingService {
         // Ensure set has all necessary context for PB processing
         const candidateSet: LoggedSet = {
           ...setFromLog,
-          // timestamp is already set during addWorkoutLog
-          // workoutLogId is already set during addWorkoutLog
-          // exerciseId is already set during addWorkoutLog
+          timestamp: setFromLog.timestamp || new Date(log.startTime).toISOString(),
+          workoutLogId: setFromLog.workoutLogId || log.id,
+          exerciseId: setFromLog.exerciseId || loggedEx.exerciseId,
         };
 
-        if (candidateSet.weightLogged === undefined || candidateSet.weightLogged === null || candidateSet.weightLogged === 0) {
-          if (candidateSet.repsLogged > 0) this.updateSpecificPB(exercisePBsList, candidateSet, `Max Reps (Bodyweight)`);
-          if (candidateSet.durationLogged && candidateSet.durationLogged > 0) this.updateSpecificPB(exercisePBsList, candidateSet, `Max Duration`);
-          if (candidateSet.distanceLogged && candidateSet.distanceLogged > 0) this.updateSpecificPB(exercisePBsList, candidateSet, `Max Distance`);
-          return;
+        // Check for non-weight based PBs
+        if (candidateSet.repsLogged > 0 && (candidateSet.weightLogged === undefined || candidateSet.weightLogged === null || candidateSet.weightLogged === 0)) {
+          this.updateSpecificPB(exercisePBsList, candidateSet, `Max Reps (Bodyweight)`);
+        }
+        if (candidateSet.durationLogged && candidateSet.durationLogged > 0) {
+          this.updateSpecificPB(exercisePBsList, candidateSet, `Max Duration`);
+        }
+        if (candidateSet.distanceLogged && candidateSet.distanceLogged > 0) {
+          this.updateSpecificPB(exercisePBsList, candidateSet, `Max Distance`);
         }
 
-        if (candidateSet.repsLogged === 1) this.updateSpecificPB(exercisePBsList, candidateSet, `1RM (Actual)`);
-        if (candidateSet.repsLogged === 3) this.updateSpecificPB(exercisePBsList, candidateSet, `3RM (Actual)`);
-        if (candidateSet.repsLogged === 5) this.updateSpecificPB(exercisePBsList, candidateSet, `5RM (Actual)`);
-        this.updateSpecificPB(exercisePBsList, candidateSet, `Heaviest Lifted`);
-        if (candidateSet.repsLogged > 1) {
-          const e1RM = candidateSet.weightLogged * (1 + candidateSet.repsLogged / 30);
-          const e1RMSet: LoggedSet = { ...candidateSet, repsLogged: 1, weightLogged: parseFloat(e1RM.toFixed(2)) };
-          this.updateSpecificPB(exercisePBsList, e1RMSet, `1RM (Estimated)`);
+        // Check for weight-based PBs (these are not mutually exclusive with the ones above)
+        if (candidateSet.weightLogged !== undefined && candidateSet.weightLogged !== null && candidateSet.weightLogged > 0) {
+          if (candidateSet.repsLogged === 1) this.updateSpecificPB(exercisePBsList, candidateSet, `1RM (Actual)`);
+          if (candidateSet.repsLogged === 3) this.updateSpecificPB(exercisePBsList, candidateSet, `3RM (Actual)`);
+          if (candidateSet.repsLogged === 5) this.updateSpecificPB(exercisePBsList, candidateSet, `5RM (Actual)`);
+          this.updateSpecificPB(exercisePBsList, candidateSet, `Heaviest Lifted`);
+          if (candidateSet.repsLogged > 1) {
+            const e1RM = candidateSet.weightLogged * (1 + candidateSet.repsLogged / 30);
+            const e1RMSet: LoggedSet = { ...candidateSet, repsLogged: 1, weightLogged: parseFloat(e1RM.toFixed(2)) };
+            this.updateSpecificPB(exercisePBsList, e1RMSet, `1RM (Estimated)`);
+          }
         }
       });
       // Sort for this exercise (mainly for internal consistency, display sorts separately)
@@ -316,6 +323,8 @@ export class TrackingService {
         else if (candidateSet.repsLogged === existingPb.repsLogged && (candidateSet.weightLogged ?? -1) > (existingPb.weightLogged ?? -1)) isBetter = true;
       } else if (pbType.includes('Max Duration')) {
         if ((candidateSet.durationLogged ?? 0) > (existingPb.durationLogged ?? 0)) isBetter = true;
+      } else if (pbType.includes('Max Distance')) {
+        if ((candidateSet.distanceLogged ?? 0) > (existingPb.distanceLogged ?? 0)) isBetter = true;
       } else { // Weight-based (XRM, Heaviest Lifted)
         if ((candidateSet.weightLogged ?? -1) > (existingPb.weightLogged ?? -1)) {
           isBetter = true;
@@ -333,8 +342,10 @@ export class TrackingService {
           weightLogged: oldPbToDemote.weightLogged,
           repsLogged: oldPbToDemote.repsLogged,
           durationLogged: oldPbToDemote.durationLogged,
+          distanceLogged: oldPbToDemote.distanceLogged,
           timestamp: oldPbToDemote.timestamp,
           workoutLogId: oldPbToDemote.workoutLogId,
+          pbType: oldPbToDemote.pbType, // <-- THE CRUCIAL FIX
         };
         newPbData.history = [historyInstance, ...(oldPbToDemote.history || [])].slice(0, MAX_PB_HISTORY_LENGTH);
         exercisePBsList[existingPbIndex] = newPbData;
@@ -389,30 +400,28 @@ export class TrackingService {
             exerciseId: originalSet.exerciseId || loggedEx.exerciseId, // Prefer set's exerciseId
           };
 
-          if (candidateSet.weightLogged === undefined || candidateSet.weightLogged === null || candidateSet.weightLogged === 0) {
-            if (candidateSet.repsLogged > 0) {
-              this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Max Reps (Bodyweight)`);
-            }
-            if (candidateSet.durationLogged && candidateSet.durationLogged > 0) {
-              this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Max Duration`);
-            }
-            return;
+          // Check for non-weight based PBs
+          if (candidateSet.repsLogged > 0 && (candidateSet.weightLogged === undefined || candidateSet.weightLogged === null || candidateSet.weightLogged === 0)) {
+            this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Max Reps (Bodyweight)`);
+          }
+          if (candidateSet.durationLogged && candidateSet.durationLogged > 0) {
+            this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Max Duration`);
+          }
+          if (candidateSet.distanceLogged && candidateSet.distanceLogged > 0) {
+            this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Max Distance`);
           }
 
-          if (candidateSet.repsLogged === 1) {
-            this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `1RM (Actual)`);
-          }
-          if (candidateSet.repsLogged === 3) {
-            this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `3RM (Actual)`);
-          }
-          if (candidateSet.repsLogged === 5) {
-            this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `5RM (Actual)`);
-          }
-          this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Heaviest Lifted`);
-          if (candidateSet.repsLogged > 1) {
-            const e1RM = candidateSet.weightLogged * (1 + candidateSet.repsLogged / 30);
-            const e1RMSet: LoggedSet = { ...candidateSet, repsLogged: 1, weightLogged: parseFloat(e1RM.toFixed(2)) };
-            this.updateSpecificPB(exercisePBsListForRecalc, e1RMSet, `1RM (Estimated)`);
+          // Check for weight-based PBs
+          if (candidateSet.weightLogged !== undefined && candidateSet.weightLogged !== null && candidateSet.weightLogged > 0) {
+            if (candidateSet.repsLogged === 1) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `1RM (Actual)`);
+            if (candidateSet.repsLogged === 3) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `3RM (Actual)`);
+            if (candidateSet.repsLogged === 5) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `5RM (Actual)`);
+            this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Heaviest Lifted`);
+            if (candidateSet.repsLogged > 1) {
+              const e1RM = candidateSet.weightLogged * (1 + candidateSet.repsLogged / 30);
+              const e1RMSet: LoggedSet = { ...candidateSet, repsLogged: 1, weightLogged: parseFloat(e1RM.toFixed(2)) };
+              this.updateSpecificPB(exercisePBsListForRecalc, e1RMSet, `1RM (Estimated)`);
+            }
           }
         });
         // newPBsMaster[loggedEx.exerciseId] is already updated by reference via exercisePBsListForRecalc

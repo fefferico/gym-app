@@ -120,29 +120,58 @@ export class AlertComponent implements OnInit {
   }
 
   ngAfterViewInit(): void {
-    // Focus the button initially if there are no inputs to autofocus
+    // If there are no inputs at all, fall back to focusing a button.
     if (!this.options?.inputs || this.inputElements.length === 0) {
       this.focusButton();
-    } else {
-      // If there are inputs, focus the specific autofocus input
-      const focusIndex = this.options.inputs.findIndex(input => input.autofocus);
-      if (focusIndex > -1) {
-        setTimeout(() => {
-          const inputToFocus = this.inputElements.get(focusIndex);
-          if (inputToFocus) {
-            inputToFocus.nativeElement.focus();
-            inputToFocus.nativeElement.select();
-          }
-        }, 0);
-      } else {
-        // If no specific input is marked autofocus, but inputs exist,
-        // we might still want to focus the first input or defer to button if no inputs are primary.
-        // For now, if inputs exist but none are autofocus, no button will be focused.
-        // If you want the first input to be focused by default, you can add that here:
-        if (this.inputElements.first) {
-          setTimeout(() => this.inputElements.first.nativeElement.focus(), 0);
+      return; // Exit early
+    }
+
+    // A small delay helps ensure mobile keyboards have time to animate in.
+    const focusDelay = 100;
+
+    // --- PRIORITY 1: Explicit Autofocus ---
+    // Always honor an input that is explicitly marked with `autofocus: true`.
+    const focusIndex = this.options.inputs.findIndex(input => input.autofocus);
+    if (focusIndex > -1) {
+      setTimeout(() => {
+        const inputToFocus = this.inputElements.get(focusIndex);
+        if (inputToFocus) {
+          inputToFocus.nativeElement.focus();
+          inputToFocus.nativeElement.select(); // Select the text
+        }
+      }, focusDelay);
+      return; // High-priority task is done, so we exit.
+    }
+
+    // =================== START OF MODIFICATION ===================
+    // --- PRIORITY 2: Mobile-specific Number Input ---
+    // If no explicit autofocus is set, check for the mobile-number-input case.
+    if (isPlatformBrowser(this.platformId)) {
+      const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+      if (isMobile) {
+        const firstNumberInputIndex = this.options.inputs.findIndex(input => input.type === 'number');
+
+        if (firstNumberInputIndex > -1) {
+          setTimeout(() => {
+            const numberInput = this.inputElements.get(firstNumberInputIndex);
+            if (numberInput) {
+              numberInput.nativeElement.focus();
+              numberInput.nativeElement.select(); // The key action for this request
+            }
+          }, focusDelay);
+          return; // Mobile-specific task is done, exit.
         }
       }
+    }
+    // =================== END OF MODIFICATION ===================
+
+    // --- PRIORITY 3: Fallback ---
+    // If none of the above conditions were met, just focus the first input without selecting it.
+    if (this.inputElements.first) {
+      setTimeout(() => {
+        this.inputElements.first.nativeElement.focus();
+      }, focusDelay);
     }
   }
 

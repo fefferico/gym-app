@@ -133,8 +133,10 @@ export interface PBHistoryInstance {
   weightLogged?: number | undefined;
   repsLogged: number; // Actual reps for this historical PB instance
   durationLogged?: number; // Actual duration for this historical PB instance
+  distanceLogged?: number; // Actual duration for this historical PB instance
   timestamp: string;    // ISO date string of when this historical PB was achieved
   workoutLogId?: string; // The log ID where this historical PB was achieved
+  pbType?: string;
 }
 
 

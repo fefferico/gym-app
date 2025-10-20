@@ -1103,7 +1103,7 @@
       "restPlaceholder": "Recupero",
       "notesPlaceholder": "es. Buona forma",
       "collapse": "Comprimi serie",
-      "removeSet":"Rimuovi Serie",
+      "removeSet": "Rimuovi Serie",
       "metrics": "Metriche"
     },
     "restDayMessage": "Questa è una scheda di riposo. Non sono necessari esercizi",
@@ -1847,6 +1847,7 @@
       "weight": "Peso ({{unit}})",
       "reps": "Ripetizioni",
       "duration": "Durata (secondi)",
+      "distance": "Distanza ({{unit}})",
       "value": "Valore"
     }
   },
@@ -2354,6 +2355,52 @@
       "toasts": {
         "invalidForm": "Compila tutti i campi obbligatori."
       }
+    }
+  },
+  "exerciseDetail": {
+    "tabs": {
+      "description": "Descrizione",
+      "history": "Cronologia",
+      "graphs": "Grafici",
+      "records": "Record"
+    },
+    "charts": {
+      "xAxisLabel": "Data",
+      "yAxisLabel": "Peso massimo sollevato ({{unit}})",
+      "est1rmSeries": "1RM stimato",
+      "maxWeightSeries": "Peso massimo",
+      "totalVolumeSeries": "Volume totale",
+      "maxDurationSeries": "Durata massima (s)",
+      "maxDistanceSeries": "Distanza massima ({{unit}})"
+    },
+    "delete": {
+      "confirmTitle": "Conferma eliminazione",
+      "confirmMessage": "Sei sicuro di voler eliminare l'esercizio \"{{name}}\"? Se questo esercizio fa parte di registri di allenamenti passati, verrà rimosso da tali registri. Se un registro si svuota di conseguenza, l'intero registro potrebbe essere eliminato. Questa azione non può essere annullata.",
+      "successTitle": "Successo",
+      "successMessage": "Esercizio \"{{name}}\" eliminato con successo",
+      "errorTitle": "Errore",
+      "errorMessage": "Impossibile eliminare l'esercizio: {{error}}"
+    },
+    "actions": {
+      "edit": "MODIFICA",
+      "delete": "ELIMINA"
+    },
+    "records": {
+      "maxDistance": "Distanza massima",
+      "maxDuration": "Durata massima",
+      "est1rm": "1RM stimato",
+      "maxVolume": "Volume massimo",
+      "maxWeight": "Peso massimo"
+    },
+    "historyDisplay": {
+      "bodyweight": "Peso corporeo",
+      "noData": "Dati del set non registrati",
+      "reps": "ripetizioni"
+    },
+    "general": {
+      "cancel": "Annulla",
+      "delete": "Elimina esercizio",
+      "notApplicable": "N/D"
     }
   }
 }

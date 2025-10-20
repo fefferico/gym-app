@@ -8,13 +8,13 @@ import { switchMap, map, catchError, take } from 'rxjs/operators';
 
 import { TrackingService } from '../../../core/services/tracking.service';
 import { ExerciseService } from '../../../core/services/exercise.service';
-import { PersonalBestSet, PBHistoryInstance } from '../../../core/models/workout-log.model';
+import { PersonalBestSet } from '../../../core/models/workout-log.model';
 import { UnitsService } from '../../../core/services/units.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { AppSettingsService } from '../../../core/services/app-settings.service';
 import { ThemeService } from '../../../core/services/theme.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { WorkoutService } from '../../../core/services/workout.service';
 
 interface ChartSeriesPoint {
     name: Date;
@@ -60,6 +60,7 @@ export class PbTrendChartComponent implements OnInit {
     private renderer = inject(Renderer2);
     private el = inject(ElementRef);
     private translate = inject(TranslateService);
+    private workoutService = inject(WorkoutService);
     private themeSubscription: Subscription | undefined;
 
     chartData = signal<ChartData[] | null>(null);
@@ -180,13 +181,15 @@ export class PbTrendChartComponent implements OnInit {
         this.renderer.setStyle(this.el.nativeElement, '--ngx-charts-text-color', textColor);
     }
 
-    private setYAxisLabel(pbType: string): void {
+private setYAxisLabel(pbType: string): void {
         if (pbType.includes('RM') || pbType.includes('Heaviest Lifted')) {
             this.yAxisLabel.set(this.translate.instant('pbTrend.yAxis.weight', { unit: this.unitsService.getWeightUnitSuffix() }));
         } else if (pbType.includes('Max Reps')) {
             this.yAxisLabel.set(this.translate.instant('pbTrend.yAxis.reps'));
         } else if (pbType.includes('Max Duration')) {
             this.yAxisLabel.set(this.translate.instant('pbTrend.yAxis.duration'));
+        } else if (pbType.includes('Max Distance')) { // <-- ADD THIS BLOCK
+            this.yAxisLabel.set(this.translate.instant('pbTrend.yAxis.distance', { unit: this.unitsService.getDistanceMeasureUnitSuffix() }));
         } else {
             this.yAxisLabel.set(this.translate.instant('pbTrend.yAxis.value'));
         }
@@ -239,7 +242,7 @@ export class PbTrendChartComponent implements OnInit {
     }
 
     private extractValueForChart(
-        item: { weightLogged?: number | null; repsLogged: number; durationLogged?: number | null },
+        item: { weightLogged?: number | null; repsLogged?: number; durationLogged?: number | null; distanceLogged?: number | null }, // <-- Add distanceLogged
         pbType: string
     ): number | null {
         if (pbType.includes('RM') || pbType.includes('Heaviest Lifted')) {
@@ -248,10 +251,14 @@ export class PbTrendChartComponent implements OnInit {
             return item.repsLogged ?? null;
         } else if (pbType.includes('Max Duration')) {
             return item.durationLogged ?? null;
+        } else if (pbType.includes('Max Distance')) { // <-- ADD THIS BLOCK
+            return item.distanceLogged ?? null;
         }
+        // Fallback logic
         if (item.weightLogged && item.weightLogged > 0) return item.weightLogged;
-        if (item.repsLogged > 0) return item.repsLogged;
+        if (item.repsLogged && item.repsLogged > 0) return item.repsLogged;
         if (item.durationLogged && item.durationLogged > 0) return item.durationLogged;
+        if (item.distanceLogged && item.distanceLogged > 0) return item.distanceLogged; // <-- Add distance fallback
         return null;
     }
 
@@ -273,5 +280,19 @@ export class PbTrendChartComponent implements OnInit {
             const target = event.target as Window;
             this.view = [target.innerWidth > 768 ? 700 : target.innerWidth - 40, 400];
         }
+    }
+
+    /**
+     * Formats the value for the history table based on the current PB type.
+     * @param record The chart data point for the table row.
+     * @returns A formatted string for display.
+     */
+    public formatTableValue(record: ChartSeriesPoint): string {
+        // If the PB is for duration, format the value as mm:ss
+        if (this.currentPbType?.includes('Max Duration')) {
+            return this.workoutService.formatSecondsToTime(record.value) || record.value.toString();
+        }
+        // Otherwise, return the value as a standard string
+        return record.value.toString();
     }
 }

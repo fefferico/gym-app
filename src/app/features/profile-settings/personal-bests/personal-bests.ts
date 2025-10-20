@@ -196,6 +196,7 @@ export class PersonalBestsComponent implements OnInit {
     if (pbType.includes('Heaviest Lifted')) return 4;
     if (pbType.includes('Max Reps (Bodyweight)')) return 5;
     if (pbType.includes('Max Duration')) return 6;
+    if (pbType.includes('Max Distance')) return 7;
     return 100;
   }
 
@@ -230,43 +231,65 @@ export class PersonalBestsComponent implements OnInit {
 
   // Updated formatPbValue method
   formatPbValue(
-    // Item can be a DisplayPersonalBest (which has pbType) or PBHistoryInstance (which doesn't)
-    item: { weightLogged?: number; repsLogged: number; durationLogged?: number; pbType?: string },
-    // pbTypeForContext is used when 'item' is a PBHistoryInstance,
-    // and it's the pbType of the main PB record (e.g., pb.pbType from the template).
+    // Item can be a DisplayPersonalBest or a history instance
+    item: { weightLogged?: number; repsLogged?: number; durationLogged?: number; distanceLogged?: number; pbType?: string },
+    // This is passed for history items that don't have their own pbType
     pbTypeForContext?: string
   ): string {
-    let value = '';
+    if (!item) return 'N/A';
+
     const effectivePbType = item.pbType || pbTypeForContext;
 
-    if (item.weightLogged !== undefined && item.weightLogged !== null) {
-      value += `${this.decimalPipe.transform(item.weightLogged, '1.0-2')}${this.unitsService.getWeightUnitSuffix()}`;
-
-      if (item.repsLogged > 0) {
-        let showRepsSuffix = true;
-        if (effectivePbType && effectivePbType.includes('RM (Actual)')) {
-          // Extracts X from "XRM (Actual)"
-          const rmValueString = effectivePbType.split('RM')[0];
-          const rmValue = parseInt(rmValueString, 10);
-          if (!isNaN(rmValue) && item.repsLogged === rmValue) {
-            showRepsSuffix = false; // Don't show "x 1" for "1RM (Actual)", etc.
+    // --- Priority 1: Format based on the specific PB Type ---
+    if (effectivePbType) {
+      if (effectivePbType.includes('RM') || effectivePbType.includes('Heaviest')) {
+        if (item.weightLogged != null) {
+          let value = `${this.decimalPipe.transform(item.weightLogged, '1.0-2')}${this.unitsService.getWeightUnitSuffix()}`;
+          // Only show reps if it's not a 1RM (e.g., for a 5RM)
+          if (item.repsLogged != null && item.repsLogged > 1) {
+            value += ` x ${item.repsLogged}`;
           }
-        }
-        if (showRepsSuffix) {
-          value += ` x ${item.repsLogged}`;
+          return value;
         }
       }
-    } else if (item.repsLogged > 0 && effectivePbType?.includes('Max Reps')) {
-      value = `${item.repsLogged} ${this.translate.instant('personalBests.units.reps')}`;
-    } else if (item.durationLogged && item.durationLogged > 0 && effectivePbType?.includes('Max Duration')) {
-      value = `${item.durationLogged}${this.translate.instant('personalBests.units.seconds')}`;
-    } else if (item.repsLogged > 0) { // Fallback if no weight and not a specific 'Max Reps' type
-      value = `${item.repsLogged} ${this.translate.instant('personalBests.units.reps')}`;
-    } else if (item.durationLogged && item.durationLogged > 0) { // Fallback if no weight and not 'Max Duration'
-      value = `${item.durationLogged}${this.translate.instant('personalBests.units.seconds')}`;
+      if (effectivePbType.includes('Max Reps')) {
+        if (item.repsLogged != null) {
+          return `${item.repsLogged} ${this.translate.instant('personalBests.units.reps')}`;
+        }
+      }
+      if (effectivePbType.includes('Max Duration')) {
+        if (item.durationLogged != null) {
+          // Use the consistent time formatter from the workout service
+          return this.workoutService.formatSecondsToTime(item.durationLogged);
+        }
+      }
+      if (effectivePbType.includes('Max Distance')) {
+        if (item.distanceLogged != null) {
+          return `${item.distanceLogged} ${this.unitsService.getDistanceMeasureUnitSuffix()}`;
+        }
+      }
     }
 
-    return value || 'N/A';
+    // --- Priority 2: Fallback for items without a clear type (like history) ---
+    // This constructs the most logical display string from the available data.
+    if (item.weightLogged != null && item.weightLogged > 0) {
+      let fallbackValue = `${this.decimalPipe.transform(item.weightLogged, '1.0-2')}${this.unitsService.getWeightUnitSuffix()}`;
+      if (item.repsLogged != null && item.repsLogged > 0) {
+        fallbackValue += ` x ${item.repsLogged}`;
+      }
+      return fallbackValue;
+    }
+    if (item.repsLogged != null && item.repsLogged > 0) {
+      return `${item.repsLogged} ${this.translate.instant('personalBests.units.reps')}`;
+    }
+    if (item.durationLogged != null && item.durationLogged > 0) {
+      return this.workoutService.formatSecondsToTime(item.durationLogged);
+    }
+    if (item.distanceLogged != null && item.distanceLogged > 0) {
+      return `${item.distanceLogged} ${this.unitsService.getDistanceMeasureUnitSuffix()}`;
+    }
+
+    return 'N/A';
   }
 
   navigateToLogDetail(workoutLogId: string | undefined, event?: Event): void {
@@ -315,4 +338,29 @@ export class PersonalBestsComponent implements OnInit {
 
     fabMenuItems: FabAction[] = [];
 
+
+    /**
+   * Finds the most recent historical PB that matches the type of the main PB.
+   * @param pb The main PersonalBestSet object.
+   * @returns The first matching history instance, or undefined.
+   */
+  getPreviousPb(pb: DisplayPersonalBest): PBHistoryInstance | undefined {
+    if (!pb.history || pb.history.length === 0) {
+      return undefined;
+    }
+    // Find the first history item that has the same pbType as the current record.
+    return pb.history.find(hist => hist.pbType === pb.pbType);
+  }
+
+  /**
+   * Counts how many historical PBs of the same type exist.
+   * @param pb The main PersonalBestSet object.
+   * @returns The total count of matching history items.
+   */
+  countPreviousPbs(pb: DisplayPersonalBest): number {
+    if (!pb.history || pb.history.length === 0) {
+      return 0;
+    }
+    return pb.history.filter(hist => hist.pbType === pb.pbType).length;
+  }
 }
