@@ -57,6 +57,18 @@ export interface UniformSetValues {
   rest?: string;
 }
 
+export enum SET_TYPE {
+  standard = 'standard',
+  warmup = 'warmup',
+  superset = 'superset',
+  amrap = 'amrap',
+  dropset = 'dropset',
+  failure = 'failure',
+  myorep = 'myorep',
+  restpause = 'restpause',
+  custom = 'custom',
+}
+
 @Component({
   selector: 'app-workout-builder',
   standalone: true,
@@ -143,15 +155,15 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   });
 
   availableSetTypes: { value: string, label: string }[] = [
-    { value: 'standard', label: this.translate.instant('workoutBuilder.setTypes.standard') },
-    { value: 'warmup', label: this.translate.instant('workoutBuilder.setTypes.warmup') },
-    { value: 'superset', label: this.translate.instant('workoutBuilder.setTypes.superset') },
-    { value: 'amrap', label: this.translate.instant('workoutBuilder.setTypes.amrap') },
-    { value: 'dropset', label: this.translate.instant('workoutBuilder.setTypes.dropset') },
-    { value: 'failure', label: this.translate.instant('workoutBuilder.setTypes.failure') },
-    { value: 'myorep', label: this.translate.instant('workoutBuilder.setTypes.myorep') },
-    { value: 'restpause', label: this.translate.instant('workoutBuilder.setTypes.restpause') },
-    { value: 'custom', label: this.translate.instant('workoutBuilder.setTypes.custom') }
+    { value: SET_TYPE.standard, label: this.translate.instant('workoutBuilder.setTypes.standard') },
+    { value: SET_TYPE.warmup, label: this.translate.instant('workoutBuilder.setTypes.warmup') },
+    { value: SET_TYPE.superset, label: this.translate.instant('workoutBuilder.setTypes.superset') },
+    { value: SET_TYPE.amrap, label: this.translate.instant('workoutBuilder.setTypes.amrap') },
+    { value: SET_TYPE.dropset, label: this.translate.instant('workoutBuilder.setTypes.dropset') },
+    { value: SET_TYPE.failure, label: this.translate.instant('workoutBuilder.setTypes.failure') },
+    { value: SET_TYPE.myorep, label: this.translate.instant('workoutBuilder.setTypes.myorep') },
+    { value: SET_TYPE.restpause, label: this.translate.instant('workoutBuilder.setTypes.restpause') },
+    { value: SET_TYPE.custom, label: this.translate.instant('workoutBuilder.setTypes.custom') }
   ];
   routineGoals: { value: Routine['goal'], label: string }[] = [
     { value: 'hypertrophy', label: this.translate.instant('workoutBuilder.goals.hypertrophy') }, { value: 'strength', label: this.translate.instant('workoutBuilder.goals.strength') },
@@ -1408,16 +1420,29 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     selectedExercises.forEach(exerciseFromLibrary => {
 
       const isCardio = this.isExerciseCardioOnly(exerciseFromLibrary.id);
+
+      let fieldOrder = [];
+      if (isCardio){
+        fieldOrder = [
+          METRIC.duration, METRIC.distance, METRIC.rest
+        ];
+      } else {
+         fieldOrder = [
+          METRIC.reps, METRIC.weight, METRIC.rest
+        ];
+      }
+
       const baseSet = {
         id: this.workoutService.generateExerciseSetId(),
         type: 'standard',
-        targetReps: isCardio ? 0 : 8,
-        targetWeight: 10,
+        fieldOrder: fieldOrder,
+        targetReps: isCardio ? undefined : 8,
+        targetWeight: isCardio ? undefined : 10,
         targetRest: 60,
         targetDuration: isCardio ? 60 : undefined,
         targetDistance: isCardio ? 1 : undefined,
-        targetTempo: '',
-        notes: ''
+        targetTempo: undefined,
+        notes: undefined
       } as ExerciseTargetSetParams;
 
       const workoutExercise: WorkoutExercise = {
@@ -2014,12 +2039,24 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         }
       }
       // For EMOMs, restForThisExercise remains 0, as rest is implicit.
+      let fieldOrder = [];
+
+      if (targetReps) {
+        fieldOrder.push(METRIC.weight);
+      }
+      if (targetWeightKg) {
+        fieldOrder.push(METRIC.reps);
+      }
+      if (restForThisExercise) {
+        fieldOrder.push(METRIC.rest);
+      }
 
       const templateSetData: ExerciseTargetSetParams = {
         id: uuidv4(),
         type: 'superset',
         targetReps: targetReps,
         targetWeight: targetWeightKg,
+        fieldOrder: fieldOrder,
         targetRest: restForThisExercise // Apply the correctly determined rest value
       };
 
@@ -2489,7 +2526,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         this.toastService.error("Invalid input for custom exercise", 0, "Error"); return;
       }
       const newExerciseSets: ExerciseTargetSetParams[] = Array.from({ length: numSets }, () => ({
-        id: `custom-adhoc-set-${uuidv4()}`, targetReps: 8, targetWeight: null, targetDuration: undefined, targetRest: 60, type: 'standard', notes: '',
+        id: `custom-adhoc-set-${uuidv4()}`, 
+        fieldOrder: [METRIC.reps, METRIC.weight, METRIC.rest],
+        targetReps: 8, 
+        targetWeight: 10, 
+        targetDuration: undefined, 
+        targetRest: 60, type: 
+        'standard', 
+        notes: '',
       }));
       const slug = exerciseName.trim().toLowerCase().replace(/\s+/g, '-');
       const newExercise: Exercise = {
@@ -3499,7 +3543,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // 1. Update the top-level superset properties for the exercise
       exerciseFg.patchValue({
         supersetType: type,
-        emomTimeSeconds: emomTime
+        emomTimeSeconds: emomTime,
       }, { emitEvent: false });
 
       // 2. Determine the correct rest value based on the new type and exercise position
@@ -3512,7 +3556,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       const setsArray = this.getSetsFormArray(exerciseFg);
       setsArray.controls.forEach(setControl => {
         setControl.patchValue({
-          targetRest: correctRestValue
+          targetRest: correctRestValue,
         }, { emitEvent: false }); // Use silent update inside the loop
       });
     });
@@ -3618,7 +3662,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   protected setLabelClass(exerciseControl: AbstractControl): string {
-    const standardCardClass = 'flex text-white text-md font-bold rounded-md shadow-lg z-10 p-1 w-full bg-primary justify-between';
+    const standardCardClass = 'flex text-white text-md font-bold rounded-md shadow-lg z-10 p-1 w-full bg-primary justify-between items-center';
     if (exerciseControl.get('supersetType')?.value == 'emom') {
       return standardCardClass + ' bg-teal-400 text-white';
     } else if (exerciseControl.get('supersetType')?.value !== 'emom') {
@@ -4313,13 +4357,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             patchData['weightLogged'] = weightInCurrentUnit;
             patchData['durationLogged'] = historicalSet.durationLogged;
             patchData['distanceLogged'] = historicalSet.distanceLogged;
-            patchData['tempoUsed'] = historicalSet.tempoUsed;
+            patchData['tempoLogged'] = historicalSet.tempoLogged;
           } else { // 'routineBuilder' mode
             patchData['targetReps'] = historicalSet.repsLogged;
             patchData['targetWeight'] = weightInCurrentUnit;
             patchData['targetDuration'] = historicalSet.durationLogged;
             patchData['targetDistance'] = historicalSet.distanceLogged;
-            patchData['targetTempo'] = historicalSet.tempoUsed;
+            patchData['targetTempo'] = historicalSet.tempoLogged;
           }
 
           // Patch the form group for the individual set
@@ -4994,7 +5038,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.expandedSetAllPanel.set(null);
     this.tempoToSetForAll.set(null);
 
-    this.toastService.success(`Applied values to all ${setsArray.length} sets.`);
+    this.toastService.success(`Applied values to all ${setsArray.length} sets/rounds.`);
   }
 
 

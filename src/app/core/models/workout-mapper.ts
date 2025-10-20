@@ -310,7 +310,7 @@ export function mapLoggedSetToExerciseTargetSetParams(loggedSet: LoggedSet): Exe
         targetDistance: loggedSet.distanceLogged,
         targetRest: loggedSet.restLogged,
         targetRpe: loggedSet.rpe,
-            targetTempo: loggedSet.tempoUsed,
+            targetTempo: loggedSet.tempoLogged,
 
         // Set other optional target values to null as they are not explicitly tracked
         // in the single performance log entry. These can be refined in the routine editor.

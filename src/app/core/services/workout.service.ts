@@ -885,14 +885,26 @@ export class WorkoutService {
           ? { ...targetExercise.sets[0] }
           : { id: uuidv4(), targetReps: 8, targetWeight: 10, targetRest: 60, type: 'standard' };
 
+        // 1. Define the fieldOrder for this exercise's sets
+        const isLastExerciseInGroup = originalIndex === selectedOriginalIndices[selectedOriginalIndices.length - 1];
+        const fieldOrder = [METRIC.weight, METRIC.reps];
+        if (isLastExerciseInGroup) {
+          fieldOrder.push(METRIC.rest);
+        }
+
+        // 2. Update exercise properties
         targetExercise.sets = [];
         targetExercise.supersetId = newSupersetId;
         targetExercise.supersetOrder = currentOrder++;
-        targetExercise.type = 'superset';
+        targetExercise.type = 'superset'; // Ensure type is correctly set
 
+        // 3. Create the new sets, now including the correct fieldOrder
         for (let i = 1; i <= rounds; i++) {
-          targetExercise.sets.push({ ...templateSet, id: uuidv4() });
-          // targetExercise.sets.push({ ...templateSet, id: uuidv4(), supersetRound: i });
+          targetExercise.sets.push({
+            ...templateSet,
+            id: uuidv4(),
+            fieldOrder: fieldOrder // Add the fieldOrder to each new set
+          });
         }
       }
     }
@@ -972,14 +984,40 @@ export class WorkoutService {
       return null;
     }
 
-    const newSize = existingInSuperset.length + 1;
-    const rounds = existingInSuperset[0].sets.length || 1;
-    const templateSet = targetExercise.sets[0] || { id: uuidv4(), targetReps: 8, targetWeight: 10, targetRest: 60, type: 'standard' };
+    // =================== START OF FIX ===================
 
-    targetExercise.sets = Array.from({ length: rounds }, () => ({ ...templateSet, id: uuidv4() }));
+    // 1. Forcefully remove METRIC.rest from ALL exercises CURRENTLY in the superset.
+    // This ensures a clean state before adding the new exercise.
+    existingInSuperset.forEach(groupEx => {
+      const exerciseToUpdate = updatedRoutine.exercises.find(ex => ex.id === groupEx.id);
+      if (exerciseToUpdate) {
+        exerciseToUpdate.sets.forEach(set => {
+          if (set.fieldOrder) {
+            set.fieldOrder = set.fieldOrder.filter(field => field !== METRIC.rest);
+          }
+        });
+      }
+    });
+
+    // 2. Prepare the new exercise that will be added.
+    const rounds = existingInSuperset[0].sets.length || 1;
+    const templateSet = targetExercise.sets[0] || { id: uuidv4(), targetReps: 8, targetWeight: 10, targetRest: 60, type: 'superset' };
+
+    // 3. Define the fieldOrder for the NEW exercise, which is now the last one.
+    // This is the ONLY place where METRIC.rest should be added.
+    const newLastExerciseFieldOrder = [METRIC.weight, METRIC.reps, METRIC.rest];
+
+    // 4. Update the new exercise's properties and create its sets with the correct fieldOrder.
+    targetExercise.sets = Array.from({ length: rounds }, () => ({
+      ...templateSet,
+      id: uuidv4(),
+      fieldOrder: newLastExerciseFieldOrder
+    }));
     targetExercise.supersetId = String(chosenSupersetId);
-    targetExercise.supersetOrder = existingInSuperset.length;
+    targetExercise.supersetOrder = existingInSuperset.length; // It becomes the new last item.
     targetExercise.type = 'superset';
+
+    // =================== END OF FIX ===================
 
     updatedRoutine.exercises = this.reorderExercisesForSupersets(updatedRoutine.exercises);
     toastService.success(`${targetExercise.exerciseName} added to the superset.`);
@@ -1058,7 +1096,7 @@ export class WorkoutService {
 
     if (field === METRIC.tempo) {
       if (this.isLoggedSet(set)) {
-        return set.tempoUsed || '-';
+        return set.tempoLogged || '-';
       }
       return set.targetTempo || '-';
     }
@@ -1322,7 +1360,7 @@ export class WorkoutService {
       }
       case METRIC.tempo: {
         setToUpdate.targetTempo = stringValue;
-        setToUpdate.tempoUsed = stringValue;
+        setToUpdate.tempoLogged = stringValue;
         break;
       }
     }
@@ -1367,23 +1405,23 @@ export class WorkoutService {
     if (this.isLoggedSet(set)) {
       // It's a LoggedSet, so we check the performance fields.
       visibleSetFieldsObj = {
-        weight: !!((set.weightLogged ?? 0) > 0 || set.fieldOrder?.includes(METRIC.weight)),
-        reps: !!((set.repsLogged ?? 0) > 0 || set.fieldOrder?.includes(METRIC.reps)),
-        distance: !!((set.distanceLogged ?? 0) > 0 || set.fieldOrder?.includes(METRIC.distance)),
-        duration: !!((set.durationLogged ?? 0) > 0 || set.fieldOrder?.includes(METRIC.duration)),
-        tempo: !!(set.targetTempo?.trim() || set.fieldOrder?.includes(METRIC.tempo)),
-        rest: !!((set.restLogged ?? 0) > 0 || set.fieldOrder?.includes(METRIC.rest)),
+        [METRIC.weight]: !!((set.weightLogged ?? 0) > 0 || set.fieldOrder?.includes(METRIC.weight)),
+        [METRIC.reps]: !!((set.repsLogged ?? 0) > 0 || set.fieldOrder?.includes(METRIC.reps)),
+        [METRIC.distance]: !!((set.distanceLogged ?? 0) > 0 || set.fieldOrder?.includes(METRIC.distance)),
+        [METRIC.duration]: !!((set.durationLogged ?? 0) > 0 || set.fieldOrder?.includes(METRIC.duration)),
+        [METRIC.tempo]: !!(set.targetTempo?.trim() || set.fieldOrder?.includes(METRIC.tempo)),
+        [METRIC.rest]: !!((set.restLogged ?? 0) > 0 || set.fieldOrder?.includes(METRIC.rest)),
       };
     } else {
       // It's an ExerciseTargetSetParams, so we check the target fields.
       const plannedSet = set as ExerciseTargetSetParams; // We can now safely cast it.
       visibleSetFieldsObj = {
-        weight: !!((plannedSet.targetWeight ?? 0) > 0 || (plannedSet.targetWeightMin ?? 0) > 0 || plannedSet.fieldOrder?.includes(METRIC.weight)),
-        reps: !!((plannedSet.targetReps ?? 0) > 0 || (plannedSet.targetRepsMin ?? 0) > 0 || plannedSet.fieldOrder?.includes(METRIC.reps)),
-        distance: !!((plannedSet.targetDistance ?? 0) > 0 || (plannedSet.targetDistanceMin ?? 0) > 0 || plannedSet.fieldOrder?.includes(METRIC.distance)),
-        duration: !!((plannedSet.targetDuration ?? 0) > 0 || (plannedSet.targetDurationMin ?? 0) > 0 || plannedSet.fieldOrder?.includes(METRIC.duration)),
-        tempo: !!(plannedSet.targetTempo?.trim() || plannedSet.fieldOrder?.includes(METRIC.tempo)),
-        rest: !!((plannedSet.targetRest ?? 0) > 0 || plannedSet.fieldOrder?.includes(METRIC.rest)),
+        [METRIC.weight]: !!((plannedSet.targetWeight ?? 0) > 0 || (plannedSet.targetWeightMin ?? 0) > 0 || plannedSet.fieldOrder?.includes(METRIC.weight)),
+        [METRIC.reps]: !!((plannedSet.targetReps ?? 0) > 0 || (plannedSet.targetRepsMin ?? 0) > 0 || plannedSet.fieldOrder?.includes(METRIC.reps)),
+        [METRIC.distance]: !!((plannedSet.targetDistance ?? 0) > 0 || (plannedSet.targetDistanceMin ?? 0) > 0 || plannedSet.fieldOrder?.includes(METRIC.distance)),
+        [METRIC.duration]: !!((plannedSet.targetDuration ?? 0) > 0 || (plannedSet.targetDurationMin ?? 0) > 0 || plannedSet.fieldOrder?.includes(METRIC.duration)),
+        [METRIC.tempo]: !!(plannedSet.targetTempo?.trim() || plannedSet.fieldOrder?.includes(METRIC.tempo)),
+        [METRIC.rest]: !!((plannedSet.targetRest ?? 0) > 0 || plannedSet.fieldOrder?.includes(METRIC.rest)),
       };
     }
     return visibleSetFieldsObj;
@@ -1631,7 +1669,7 @@ export class WorkoutService {
       typeof set.weightLogged !== 'undefined' ||
       typeof set.durationLogged !== 'undefined' ||
       typeof set.distanceLogged !== 'undefined' ||
-      typeof set.tempoUsed !== 'undefined'
+      typeof set.tempoLogged !== 'undefined'
     );
   }
 
@@ -1659,7 +1697,7 @@ export class WorkoutService {
         case METRIC.distance: return (exSet.distanceLogged ?? '-').toString();
         case METRIC.duration: return this.formatSecondsToTime(exSet.durationLogged);
         case METRIC.rest: return this.formatSecondsToTime(exSet.restLogged);
-        case METRIC.tempo: return exSet.tempoUsed || '-';
+        case METRIC.tempo: return exSet.tempoLogged || '-';
         default: return '-';
       }
     }

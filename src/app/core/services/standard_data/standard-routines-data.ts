@@ -1,5 +1,6 @@
-import { Routine } from "../../models/workout.model";
+import { METRIC, Routine } from "../../models/workout.model";
 
+const metricENUM = METRIC;
 export const ROUTINES_DATA: Routine[] = [
     {
         "id": "f4f6e3c1-4b7e-4b1e-8c3b-2f1a6e9a0b1d",
@@ -15,6 +16,11 @@ export const ROUTINES_DATA: Routine[] = [
                     {
                         "id": "s1a",
                         "targetReps": 3,
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetWeight": 71,
                         "targetRest": 60,
                         "type": "standard"
@@ -22,6 +28,11 @@ export const ROUTINES_DATA: Routine[] = [
                     {
                         "id": "s2a",
                         "targetReps": 3,
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetWeight": 71,
                         "targetRest": 60,
                         "type": "standard"
@@ -29,6 +40,11 @@ export const ROUTINES_DATA: Routine[] = [
                     {
                         "id": "s3a",
                         "targetReps": 3,
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetWeight": 71,
                         "targetRest": 60,
                         "type": "standard"
@@ -46,6 +62,11 @@ export const ROUTINES_DATA: Routine[] = [
                     {
                         "id": "s1b",
                         "targetDuration": 50,
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.duration,
+                            metricENUM.rest
+                        ],
                         "notes": "Distance: 50 ft.",
                         "targetWeight": 71,
                         "targetRest": 60,
@@ -54,6 +75,11 @@ export const ROUTINES_DATA: Routine[] = [
                     {
                         "id": "s2b",
                         "targetDuration": 50,
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.duration,
+                            metricENUM.rest
+                        ],
                         "notes": "Distance: 50 ft.",
                         "targetWeight": 71,
                         "targetRest": 60,
@@ -61,6 +87,11 @@ export const ROUTINES_DATA: Routine[] = [
                     },{
                         "id": "s3b",
                         "targetDuration": 50,
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.duration,
+                            metricENUM.rest
+                        ],
                         "notes": "Distance: 50 ft.",
                         "targetWeight": 71,
                         "targetRest": 60,
@@ -79,6 +110,11 @@ export const ROUTINES_DATA: Routine[] = [
                     {
                         "id": "s1c",
                         "targetReps": 6,
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetWeight": 10,
                         "targetRest": 60,
                         "type": "standard"
@@ -86,6 +122,11 @@ export const ROUTINES_DATA: Routine[] = [
                     {
                         "id": "s2c",
                         "targetReps": 6,
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetWeight": 10,
                         "targetRest": 60,
                         "type": "standard"
@@ -93,6 +134,11 @@ export const ROUTINES_DATA: Routine[] = [
                     {
                         "id": "s3c",
                         "targetReps": 6,
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetWeight": 10,
                         "targetRest": 60,
                         "type": "standard"
@@ -110,6 +156,11 @@ export const ROUTINES_DATA: Routine[] = [
                     {
                         "id": "s1d",
                         "targetDuration": 50,
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.duration,
+                            metricENUM.rest
+                        ],
                         "notes": "Distance: 50 ft.",
                         "targetWeight": 71,
                         "targetRest": 60,
@@ -118,6 +169,11 @@ export const ROUTINES_DATA: Routine[] = [
                     {
                         "id": "s2d",
                         "targetDuration": 50,
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.duration,
+                            metricENUM.rest
+                        ],
                         "notes": "Distance: 50 ft.",
                         "targetWeight": 71,
                         "targetRest": 60,
@@ -126,6 +182,11 @@ export const ROUTINES_DATA: Routine[] = [
                     {
                         "id": "s3d",
                         "targetDuration": 50,
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.duration,
+                            metricENUM.rest
+                        ],
                         "notes": "Distance: 50 ft.",
                         "targetWeight": 71,
                         "targetRest": 60,
@@ -144,6 +205,11 @@ export const ROUTINES_DATA: Routine[] = [
                     {
                         "id": "s1e",
                         "targetReps": 6,
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetWeight": 71,
                         "targetRest": 150,
                         "type": "standard"
@@ -151,6 +217,11 @@ export const ROUTINES_DATA: Routine[] = [
                     {
                         "id": "s2e",
                         "targetReps": 6,
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetWeight": 71,
                         "targetRest": 150,
                         "type": "standard"
@@ -158,6 +229,11 @@ export const ROUTINES_DATA: Routine[] = [
                     {
                         "id": "s3e",
                         "targetReps": 6,
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetWeight": 71,
                         "targetRest": 150,
                         "type": "standard"

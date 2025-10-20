@@ -15,7 +15,7 @@ export interface LoggedSet {
   weightLogged?: number | undefined;
   durationLogged?: number; // in seconds
   distanceLogged?: number; // in kilometers
-  tempoUsed?: string;     // Actual tempo used, if tracked by user.
+  tempoLogged?: string;     // Actual tempo used, if tracked by user.
   restLogged?: number;
   // restTaken?: number;  // Actual rest taken before the next set (more complex to track accurately)
 

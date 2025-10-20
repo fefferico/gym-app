@@ -1,5 +1,6 @@
-import { Routine } from "../models/workout.model";
+import { METRIC, Routine } from "../models/workout.model";
 
+const metricENUM = METRIC;
 export const ROUTINES_DATA: Routine[] = [
     {
         "id": "beginner-workout-v1-a",
@@ -14,6 +15,11 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "bwa-ex1-s1",
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetReps": 10,
                         "targetWeight": 10,
                         "targetRest": 120,
@@ -22,6 +28,11 @@ export const ROUTINES_DATA: Routine[] = [
                     },
                     {
                         "id": "bwa-ex1-s2",
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetReps": 10,
                         "targetWeight": 10,
                         "targetRest": 120,
@@ -30,6 +41,11 @@ export const ROUTINES_DATA: Routine[] = [
                     },
                     {
                         "id": "bwa-ex1-s3",
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetReps": 10,
                         "targetWeight": 10,
                         "targetRest": 120,
@@ -48,6 +64,11 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "bwa-ex2-s1",
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetReps": 10,
                         "targetWeight": 10,
                         "targetRest": 120,
@@ -56,6 +77,11 @@ export const ROUTINES_DATA: Routine[] = [
                     },
                     {
                         "id": "bwa-ex2-s2",
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetReps": 10,
                         "targetWeight": 10,
                         "targetRest": 120,
@@ -64,6 +90,11 @@ export const ROUTINES_DATA: Routine[] = [
                     },
                     {
                         "id": "bwa-ex2-s3",
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetReps": 10,
                         "targetWeight": 10,
                         "targetRest": 120,
@@ -82,6 +113,11 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "bwa-ex3-s1",
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetReps": 10,
                         "targetWeight": 10,
                         "targetRest": 120,
@@ -90,6 +126,11 @@ export const ROUTINES_DATA: Routine[] = [
                     },
                     {
                         "id": "bwa-ex3-s2",
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetReps": 10,
                         "targetWeight": 10,
                         "targetRest": 120,
@@ -98,6 +139,11 @@ export const ROUTINES_DATA: Routine[] = [
                     },
                     {
                         "id": "bwa-ex3-s3",
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetReps": 10,
                         "targetWeight": 10,
                         "targetRest": 120,
@@ -124,6 +170,11 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "bwb-ex1-s1",
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetReps": 8,
                         "targetWeight": 10,
                         "targetRest": 120,
@@ -132,6 +183,11 @@ export const ROUTINES_DATA: Routine[] = [
                     },
                     {
                         "id": "bwb-ex1-s2",
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetReps": 8,
                         "targetWeight": 10,
                         "targetRest": 120,
@@ -140,6 +196,11 @@ export const ROUTINES_DATA: Routine[] = [
                     },
                     {
                         "id": "bwb-ex1-s3",
+                        "fieldOrder":[
+                            metricENUM.weight,
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetReps": 8,
                         "targetWeight": 10,
                         "targetRest": 120,
@@ -158,6 +219,10 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "bwb-ex2-s1",
+                        "fieldOrder":[
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetReps": 10,
                         "targetWeight": null,
                         "targetRest": 120,
@@ -166,6 +231,10 @@ export const ROUTINES_DATA: Routine[] = [
                     },
                     {
                         "id": "bwb-ex2-s2",
+                        "fieldOrder":[
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetReps": 10,
                         "targetWeight": null,
                         "targetRest": 120,
@@ -174,6 +243,10 @@ export const ROUTINES_DATA: Routine[] = [
                     },
                     {
                         "id": "bwb-ex2-s3",
+                        "fieldOrder":[
+                            metricENUM.reps,
+                            metricENUM.rest
+                        ],
                         "targetReps": 10,
                         "targetWeight": null,
                         "targetRest": 120,
@@ -192,6 +265,11 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "bwb-ex3-s1",
+                        "fieldOrder":[
+                            metricENUM.reps,
+                            metricENUM.weight,
+                            metricENUM.rest
+                        ],
                         "targetReps": 10,
                         "targetWeight": 10,
                         "targetRest": 120,
@@ -200,6 +278,11 @@ export const ROUTINES_DATA: Routine[] = [
                     },
                     {
                         "id": "bwb-ex3-s2",
+                        "fieldOrder":[
+                            metricENUM.reps,
+                            metricENUM.weight,
+                            metricENUM.rest
+                        ],
                         "targetReps": 10,
                         "targetWeight": 10,
                         "targetRest": 120,
@@ -208,6 +291,11 @@ export const ROUTINES_DATA: Routine[] = [
                     },
                     {
                         "id": "bwb-ex3-s3",
+                        "fieldOrder":[
+                            metricENUM.reps,
+                            metricENUM.weight,
+                            metricENUM.rest
+                        ],
                         "targetReps": 10,
                         "targetWeight": 10,
                         "targetRest": 120,

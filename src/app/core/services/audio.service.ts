@@ -110,7 +110,7 @@ export class AudioService {
         osc2.stop(now + 0.7);
         break;
       case AUDIO_TYPES.untoggle:
-        gainNode.gain.setValueAtTime(0.5, now);
+        gainNode.gain.setValueAtTime(0.3, now);
         gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 1); // Very short fade
 
         oscillator.type = 'triangle'; // Softer than a square wave
