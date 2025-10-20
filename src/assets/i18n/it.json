@@ -5,7 +5,7 @@
   "HYPERTROPHY_GOAL": "Ipertrofia (Massa)",
   "STRENGTH_GOAL": "Forza",
   "ENDURANCE_GOAL": "Resistenza",
-  "GENERATE_CUSTOM_WORKOUT": "Genera Allenamento Personalizzato",
+  "GENERATE_CUSTOM_WORKOUT": "GENERA SCHEDA",
   "SURPRISE_ME": "Sorprendimi!",
   "home": {
     "welcomeBack": "Bentornato, {{name}}!",
@@ -358,7 +358,9 @@
       "removedFromFavourites": "Scheda \"{{name}}\" rimossa dai preferiti",
       "generationFailed": "Impossibile generare un allenamento con i criteri selezionati. Riprova.",
       "generationFailedTitle": "Generazione Fallita",
-      "retryFailed": "Impossibile generare un nuovo allenamento. Prova a modificare le opzioni."
+      "retryFailed": "Impossibile generare un nuovo allenamento. Prova a modificare le opzioni.",
+      "filteredByMuscle": "Schede filtrate per gruppo muscolare '{{muscle}}'",
+      "filteredByGoal": "Schede filtrate per obiettivo '{{goal}}'"
     },
     "alerts": {
       "editRunningTitle": "Info",
@@ -1232,6 +1234,9 @@
       "ungroup": "Separa",
       "makeEmom": "Crea EMOM",
       "switch": "Sostituisci Esercizio"
+    },
+    "buttons": {
+      "regenButton": "RIGENERA SCHEDA"
     }
   },
   "fab": {
@@ -2264,7 +2269,7 @@
     "searchPlaceholder": "Cerca attrezzatura...",
     "excludedListLabel": "Attrezzatura Esclusa",
     "fab": {
-      "detailed": "GENERA ALLENAMENTO PERSONALIZZATO",
+      "detailed": "GENERA SCHEDA",
       "quick": "SORPRENDIMI!"
     }
   },
@@ -2362,45 +2367,112 @@
       "description": "Descrizione",
       "history": "Cronologia",
       "graphs": "Grafici",
-      "records": "Record"
+      "records": "Record",
+      "primaryMuscleGroup": "Gruppo Muscolare Primario",
+      "otherMuscleGroup": "Altri Gruppi Muscolari",
+      "equipment": "Attrezzatura Necessaria",
+      "notes": "Note e Suggerimenti"
+    },
+    "actions": {
+      "watchVideo": "Guarda Video",
+      "edit": "Modifica Esercizio",
+      "delete": "Elimina Esercizio"
+    },
+    "delete": {
+      "confirmTitle": "Elimina Esercizio",
+      "confirmMessage": "Sei sicuro di voler eliminare \"{{name}}\"? Verrà rimosso da tutte le routine e dai registri storici. Questa azione non può essere annullata.",
+      "successTitle": "Esercizio Eliminato",
+      "successMessage": "\"{{name}}\" è stato eliminato con successo.",
+      "errorTitle": "Eliminazione Fallita",
+      "errorMessage": "Impossibile eliminare l'esercizio: {{error}}"
+    },
+    "records": {
+      "title": "I Tuoi Record Personali",
+      "achievedOn": "Ottenuto il",
+      "notes": "Note",
+      "maxDistance": "Distanza Massima",
+      "maxDuration": "Durata Massima",
+      "est1rm": "1RM Stimato",
+      "maxVolume": "Volume Massimo",
+      "maxWeight": "Peso Massimo Sollevato",
+      "noRecords": "Nessun record personale è stato ancora stabilito per questo esercizio."
+    },
+    "repRecords": {
+      "repsHeader": "Ripetizioni",
+      "bestHeader": "Migliore Performance",
+      "est1rmHeader": "1RM Stimato",
+      "notApplicable": "I record basati sulle ripetizioni non sono applicabili per questo esercizio cardio."
     },
     "charts": {
       "xAxisLabel": "Data",
-      "yAxisLabel": "Peso massimo sollevato ({{unit}})",
-      "est1rmSeries": "1RM stimato",
-      "maxWeightSeries": "Peso massimo",
-      "totalVolumeSeries": "Volume totale",
-      "maxDurationSeries": "Durata massima (s)",
-      "maxDistanceSeries": "Distanza massima ({{unit}})"
-    },
-    "delete": {
-      "confirmTitle": "Conferma eliminazione",
-      "confirmMessage": "Sei sicuro di voler eliminare l'esercizio \"{{name}}\"? Se questo esercizio fa parte di registri di allenamenti passati, verrà rimosso da tali registri. Se un registro si svuota di conseguenza, l'intero registro potrebbe essere eliminato. Questa azione non può essere annullata.",
-      "successTitle": "Successo",
-      "successMessage": "Esercizio \"{{name}}\" eliminato con successo",
-      "errorTitle": "Errore",
-      "errorMessage": "Impossibile eliminare l'esercizio: {{error}}"
-    },
-    "actions": {
-      "edit": "MODIFICA",
-      "delete": "ELIMINA"
-    },
-    "records": {
-      "maxDistance": "Distanza massima",
-      "maxDuration": "Durata massima",
-      "est1rm": "1RM stimato",
-      "maxVolume": "Volume massimo",
-      "maxWeight": "Peso massimo"
+      "yAxisLabel": "Peso ({{unit}})",
+      "est1rmSeries": "1RM Stimato",
+      "maxWeightSeries": "Peso Massimo Sollevato",
+      "totalVolumeSeries": "Volume Totale",
+      "maxDurationSeries": "Durata Massima (secondi)",
+      "maxDistanceSeries": "Distanza Massima ({{unit}})",
+      "maxDurationTitle": "Durata Massima (secondi)",
+      "maxDistanceTitle": "Distanza Massima ({{unit}})",
+      "noData": "Dati insufficienti per creare un grafico. Registra almeno due sessioni per vedere i tuoi progressi."
     },
     "historyDisplay": {
-      "bodyweight": "Peso corporeo",
-      "noData": "Dati del set non registrati",
-      "reps": "ripetizioni"
+      "bodyweight": "Corpo Libero",
+      "reps": "rip",
+      "noData": "Nessun dato registrato per questa serie.",
+      "noHistory": "Nessuna cronologia di allenamento trovata per questo esercizio."
+    }
+  },
+  "exerciseList": {
+    "title": "Esercizi",
+    "toggleFilters": "Mostra/Nascondi Filtri",
+    "loading": "Caricamento esercizi...",
+    "backToTop": "Torna su",
+    "filters": {
+      "title": "Filtra Esercizi",
+      "categoryLabel": "Categoria",
+      "allCategories": "Tutte le Categorie",
+      "muscleLabel": "Muscolo Primario",
+      "allMuscles": "Tutti i Gruppi Muscolari",
+      "searchLabel": "Cerca",
+      "searchPlaceholder": "Cerca per nome o descrizione...",
+      "showHidden": "Mostra Esercizi Nascosti",
+      "clearButton": "Pulisci Filtri"
     },
-    "general": {
-      "cancel": "Annulla",
-      "delete": "Elimina esercizio",
-      "notApplicable": "N/D"
+    "showingCount": "Mostrando {{count}} esercizi",
+    "badges": {
+      "hidden": "Nascosto",
+      "custom": "Personalizzato"
+    },
+    "card": {
+      "category": "Categoria",
+      "equipment": "Attrezzatura",
+      "none": "Nessuna",
+      "muscles": "Muscoli",
+      "lastUsed": "Ultimo utilizzo",
+      "lastUpdated": "Ultimo aggiornamento",
+      "created": "Creato il"
+    },
+    "noResults": {
+      "title": "Nessun esercizio trovato che corrisponda ai tuoi criteri",
+      "message": "Prova a modificare i filtri o il termine di ricerca"
+    },
+    "empty": {
+      "title": "La tua Libreria Esercizi è vuota",
+      "message": "Inizia a costruire la tua raccolta aggiungendo il tuo primo esercizio",
+      "addButton": "Aggiungi il Tuo Primo Esercizio"
+    },
+    "fab": {
+      "openMenu": "Apri menu di creazione",
+      "create": "Crea Esercizio"
+    },
+    "delete": {
+      "notFound": "Esercizio non trovato",
+      "confirmTitle": "Elimina Esercizio",
+      "confirmMessage": "Sei sicuro di voler eliminare \"{{name}}\"? Verrà rimosso da tutte le routine e dai registri storici. Questa azione non può essere annullata.",
+      "deleting": "Eliminazione esercizio in corso...",
+      "success": "\"{{name}}\" è stato eliminato con successo.",
+      "successTitle": "Eliminato",
+      "error": "Impossibile eliminare l'esercizio. Potrebbe essere in uso."
     }
   }
 }

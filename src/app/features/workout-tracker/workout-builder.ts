@@ -305,6 +305,15 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         this.isNewMode = data['isNew'] === true; // True if creating new (Routine or Log)
         console.log(`Builder ngOnInit: Mode=${this.mode}, isNewMode=${this.isNewMode}`);
 
+        // Check for the query parameter to auto-open the generator modal.
+        const openGenerator = this.route.snapshot.queryParamMap.get('openGenerator');
+        if (openGenerator === 'true' && this.isNewMode && this.mode === 'routineBuilder') {
+          // Use a small timeout to ensure the main view has initialized before the modal opens.
+          setTimeout(() => {
+            this.openWorkoutGenerator();
+          }, 150); 
+        }
+
         this.currentRoutineId = this.route.snapshot.paramMap.get('routineId'); // For editing/viewing a Routine, or prefilling a Log
         this.currentLogId = this.route.snapshot.paramMap.get('logId');         // For editing a WorkoutLog or creating a routine from a log
         this.currentProgramId = this.route.snapshot.queryParamMap.get('programId');

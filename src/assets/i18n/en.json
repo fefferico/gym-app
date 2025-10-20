@@ -410,7 +410,9 @@
       "removedFromFavourites": "Routine \"{{name}}\" removed from favourites",
       "generationFailed": "Could not generate a workout with the selected criteria. Please try again.",
       "generationFailedTitle": "Generation Failed",
-      "retryFailed": "Failed to generate a new workout. Please try adjusting your options."
+      "retryFailed": "Failed to generate a new workout. Please try adjusting your options.",
+      "filteredByMuscle": "Filtered routines by muscle '{{muscle}}'",
+      "filteredByGoal": "Filtered routines by muscle '{{goal}}'"
     },
     "alerts": {
       "editRunningTitle": "Info",
@@ -1248,6 +1250,9 @@
         "message": "Enter the target value for this set.",
         "applyButton": "Apply Target"
       }
+    },
+    "buttons": {
+      "regenButton": "REGENERATE WORKOUT"
     }
   },
   "fab": {
@@ -2232,45 +2237,59 @@
       "description": "Description",
       "history": "History",
       "graphs": "Graphs",
-      "records": "Records"
+      "records": "Records",
+      "primaryMuscleGroup": "Primary Muscle Group",
+      "otherMuscleGroup": "Other Muscle Groups",
+      "equipment": "Equipment Needed",
+      "notes": "Notes & Tips"
+    },
+    "actions": {
+      "watchVideo": "Watch Video",
+      "edit": "Edit Exercise",
+      "delete": "Delete Exercise"
+    },
+    "delete": {
+      "confirmTitle": "Delete Exercise",
+      "confirmMessage": "Are you sure you want to delete \"{{name}}\"? This will remove it from all routines and historical logs. This action cannot be undone.",
+      "successTitle": "Exercise Deleted",
+      "successMessage": "\"{{name}}\" was successfully deleted.",
+      "errorTitle": "Deletion Failed",
+      "errorMessage": "Could not delete the exercise: {{error}}"
+    },
+    "records": {
+      "title": "Your Personal Bests",
+      "achievedOn": "Achieved on",
+      "notes": "Notes",
+      "maxDistance": "Max Distance",
+      "maxDuration": "Max Duration",
+      "est1rm": "Est. 1RM",
+      "maxVolume": "Max Volume",
+      "maxWeight": "Heaviest Lifted",
+      "noRecords": "No personal records have been set for this exercise yet."
+    },
+    "repRecords": {
+      "repsHeader": "Reps",
+      "bestHeader": "Best Performance",
+      "est1rmHeader": "Estimated 1RM",
+      "notApplicable": "Rep-based records are not applicable for this cardio exercise."
     },
     "charts": {
       "xAxisLabel": "Date",
-      "yAxisLabel": "Max Weight Lifted ({{unit}})",
-      "est1rmSeries": "Est. 1RM",
-      "maxWeightSeries": "Max Weight",
+      "yAxisLabel": "Weight ({{unit}})",
+      "est1rmSeries": "Estimated 1RM",
+      "maxWeightSeries": "Max Weight Lifted",
       "totalVolumeSeries": "Total Volume",
-      "maxDurationSeries": "Max Duration (s)",
-      "maxDistanceSeries": "Max Distance ({{unit}})"
-    },
-    "delete": {
-      "confirmTitle": "Confirm Deletion",
-      "confirmMessage": "Are you sure you want to delete the exercise \"{{name}}\"? If this exercise is part of any past workout logs, it will be removed from those logs. If a log becomes empty as a result, the entire log might be deleted. This action cannot be undone.",
-      "successTitle": "Success",
-      "successMessage": "Exercise \"{{name}}\" deleted successfully",
-      "errorTitle": "Error",
-      "errorMessage": "Failed to delete exercise: {{error}}"
-    },
-    "actions": {
-      "edit": "EDIT",
-      "delete": "DELETE"
-    },
-    "records": {
-      "maxDistance": "Max distance",
-      "maxDuration": "Max duration",
-      "est1rm": "1RM estimated",
-      "maxVolume": "Max volume",
-      "maxWeight": "Max weight"
+      "maxDurationSeries": "Max Duration (seconds)",
+      "maxDistanceSeries": "Max Distance ({{unit}})",
+      "maxDurationTitle": "Max Duration (seconds)",
+      "maxDistanceTitle": "Max Distance ({{unit}})",
+      "noData": "Not enough data to create a chart. Log at least two sessions to see your progress."
     },
     "historyDisplay": {
       "bodyweight": "Bodyweight",
-      "noData": "Set data not recorded",
-      "reps": "reps"
-    },
-    "general": {
-      "cancel": "Cancel",
-      "delete": "Delete Exercise",
-      "notApplicable": "N/A"
+      "reps": "reps",
+      "noData": "No data logged for this set.",
+      "noHistory": "No workout history found for this exercise."
     }
   },
   "navigation": {
@@ -2398,6 +2417,59 @@
       "toasts": {
         "invalidForm": "Please fill out all required fields."
       }
+    }
+  },
+  "exerciseList": {
+    "title": "Exercises",
+    "toggleFilters": "Toggle Filters",
+    "loading": "Loading exercises...",
+    "backToTop": "Back to Top",
+    "filters": {
+      "title": "Filter Exercises",
+      "categoryLabel": "Category",
+      "allCategories": "All Categories",
+      "muscleLabel": "Primary Muscle",
+      "allMuscles": "All Muscle Groups",
+      "searchLabel": "Search",
+      "searchPlaceholder": "Search by name or description...",
+      "showHidden": "Show Hidden Exercises",
+      "clearButton": "Clear Filters"
+    },
+    "showingCount": "Showing {{count}} exercises",
+    "badges": {
+      "hidden": "Hidden",
+      "custom": "Custom"
+    },
+    "card": {
+      "category": "Category",
+      "equipment": "Equipment",
+      "none": "None",
+      "muscles": "Muscles",
+      "lastUsed": "Last used",
+      "lastUpdated": "Last updated",
+      "created": "Created"
+    },
+    "noResults": {
+      "title": "No exercises found matching your criteria",
+      "message": "Try adjusting your filters or search term"
+    },
+    "empty": {
+      "title": "Your Exercise Library is Empty",
+      "message": "Start building your collection by adding your first exercise",
+      "addButton": "Add Your First Exercise"
+    },
+    "fab": {
+      "openMenu": "Open creation menu",
+      "create": "Create Exercise"
+    },
+    "delete": {
+      "notFound": "Exercise not found",
+      "confirmTitle": "Delete Exercise",
+      "confirmMessage": "Are you sure you want to delete \"{{name}}\"? This will remove it from all routines and historical logs. This action cannot be undone.",
+      "deleting": "Deleting exercise...",
+      "success": "\"{{name}}\" was successfully deleted.",
+      "successTitle": "Deleted",
+      "error": "Failed to delete exercise. It might be in use."
     }
   }
 }

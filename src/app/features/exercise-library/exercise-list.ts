@@ -1,8 +1,8 @@
 // src/app/features/exercises/exercise-list/exercise-list.ts
-import { Component, inject, OnInit, signal, computed, effect, PLATFORM_ID, HostListener } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, effect, PLATFORM_ID, HostListener, OnDestroy } from '@angular/core';
 import { AsyncPipe, CommonModule, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { combineLatest, Observable } from 'rxjs';
+import { combineLatest, Observable, Subscription } from 'rxjs';
 import { Exercise } from '../../core/models/exercise.model';
 import { ExerciseService } from '../../core/services/exercise.service';
 import { animate, state, style, transition, trigger } from '@angular/animations';
@@ -18,11 +18,12 @@ import { MenuMode } from '../../core/models/app-settings.model';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { deleteBtn, editBtn, hideBtn, unhideBtn, viewBtn } from '../../core/services/buttons-data';
 import { TrackingService } from '../../core/services/tracking.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-exercise-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, AsyncPipe, TitleCasePipe, PressDirective, ActionMenuComponent, IconComponent],
+  imports: [CommonModule, RouterLink, AsyncPipe, TitleCasePipe, PressDirective, ActionMenuComponent, IconComponent, TranslateModule],
   templateUrl: './exercise-list.html',
   styleUrl: './exercise-list.scss',
   animations: [
@@ -73,7 +74,7 @@ import { TrackingService } from '../../core/services/tracking.service';
     ])
   ]
 })
-export class ExerciseListComponent implements OnInit {
+export class ExerciseListComponent implements OnInit, OnDestroy {
   public exerciseService = inject(ExerciseService);
   private router = inject(Router);
   private alertService = inject(AlertService);
@@ -83,6 +84,11 @@ export class ExerciseListComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private appSettingsService = inject(AppSettingsService);
   private trackingService = inject(TrackingService);
+  private translate = inject(TranslateService);
+
+  // This will hold the raw, untranslated data
+  private staticExercises: Exercise[] = [];
+  private langChangeSub?: Subscription;
 
   categories$: Observable<string[]> | undefined;
   primaryMuscleGroups$: Observable<string[]> | undefined;
@@ -164,14 +170,20 @@ export class ExerciseListComponent implements OnInit {
     this.menuModeCompact = this.appSettingsService.isMenuModeCompact();
     this.menuModeModal = this.appSettingsService.isMenuModeModal();
 
-    // =================== START OF REVERT ===================
-    // The subscription is now simple again. It only fetches the raw exercise list.
-    // The modal will handle adding the usage counts.
-    this.exerciseService.exercises$.subscribe(exercises => {
-      this.allExercises.set(exercises);
+    // 1. Get the static, untranslated exercises ONCE
+    this.exerciseService.getExercises().subscribe(staticExercises => {
+      this.staticExercises = staticExercises;
+      this.translateAllExercises(); // Perform the initial translation
     });
-    // =================== END OF REVERT ===================
+
+    // 2. Subscribe to language changes to re-translate the list
+    this.langChangeSub = this.translate.onLangChange.subscribe(() => {
+      this.translateAllExercises();
+    });
+
+    // this.refreshFabMenuItems();
   }
+
 
   onCategoryChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
@@ -215,26 +227,27 @@ export class ExerciseListComponent implements OnInit {
     this.actionsVisibleId.set(null);
   }
 
+  // Update dynamic strings in your methods to use the translation service
   async deleteExercise(exerciseId: string): Promise<void> {
     this.actionsVisibleId.set(null);
     const exerciseToDelete = this.allExercises().find(ex => ex.id === exerciseId);
     if (!exerciseToDelete) {
-      this.toastService.error("Exercise not found", 0);
+      this.toastService.error(this.translate.instant('exerciseList.delete.notFound'), 0, "Error");
       return;
     }
     const confirm = await this.alertService.showConfirm(
-      'Delete Exercise',
-      `Are you sure you want to delete the exercise "${exerciseToDelete.name}"? This action cannot be undone.`,
-      'Delete'
+      this.translate.instant('exerciseList.delete.confirmTitle'),
+      this.translate.instant('exerciseList.delete.confirmMessage', { name: exerciseToDelete.name }),
+      this.translate.instant('common.delete')
     );
     if (confirm && confirm.data) {
       try {
-        this.spinnerService.show("Deleting exercise..");
+        this.spinnerService.show(this.translate.instant('exerciseList.delete.deleting'));
         await this.exerciseService.deleteExercise(exerciseId);
-        this.toastService.success(`Exercise "${exerciseToDelete.name}" deleted successfully.`, 3000, "Deleted");
+        this.toastService.success(this.translate.instant('exerciseList.delete.success', { name: exerciseToDelete.name }), 3000, this.translate.instant('exerciseList.delete.successTitle'));
       } catch (error) {
         console.error("Error deleting exercise:", error);
-        this.toastService.error("Failed to delete exercise. It might be in use", 0, "Error");
+        this.toastService.error(this.translate.instant('exerciseList.delete.error'), 0, "Error");
       } finally {
         this.spinnerService.hide();
       }
@@ -363,5 +376,26 @@ export class ExerciseListComponent implements OnInit {
 
   onCloseActionMenu() {
     this.activeExerciseIdActions.set(null);
+  }
+
+
+  /**
+   * Merges the static exercise data with the current language translations.
+   */
+  private translateAllExercises(): void {
+    // Get the entire 'exercises' block from the current language's JSON file
+    this.translate.get('exercises').subscribe(translations => {
+      const translatedList = this.staticExercises.map(ex => ({
+        ...ex, // Keep all static data (id, category, images, etc.)
+        name: translations[ex.id]?.name || ex.name, // Use translated name, or fallback to static
+        description: translations[ex.id]?.description || ex.description, // Fallback for description
+      }));
+      this.allExercises.set(translatedList);
+    });
+  }
+
+  ngOnDestroy(): void {
+    // Unsubscribe to prevent memory leaks
+    this.langChangeSub?.unsubscribe();
   }
 }

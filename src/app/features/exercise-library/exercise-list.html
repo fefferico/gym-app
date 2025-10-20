@@ -1,6 +1,6 @@
 <div class="container mx-auto p-2 sm:p-4">
   <header class="flex justify-between items-center pb-2">
-    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Exercises</h1>
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">{{ 'exerciseList.title' | translate }}</h1>
     <!-- Filter Accordion Toggle Button -->
     <button (click)="toggleFilterAccordion()" type="button"
       class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light transition-all duration-300 ease-in-out">
@@ -11,7 +11,7 @@
         <path stroke-linecap="round" stroke-linejoin="round"
           d="M9 5a1 1 0 1 0 0 2 1 1 0 0 0 0-2zM6.17 5a3.001 3.001 0 0 1 5.66 0H19a1 1 0 1 1 0 2h-7.17a3.001 3.001 0 0 1-5.66 0H5a1 1 0 0 1 0-2h1.17zM15 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-2.83 0a3.001 3.001 0 0 1 5.66 0H19a1 1 0 1 1 0 2h-1.17a3.001 3.001 0 0 1-5.66 0H5a1 1 0 1 1 0-2h7.17zM9 17a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-2.83 0a3.001 3.001 0 0 1 5.66 0H19a1 1 0 1 1 0 2h-7.17a3.001 3.001 0 0 1-5.66 0H5a1 1 0 1 1 0-2h1.17z" />
       </svg>
-      <span class="sr-only">Toggle Filters</span>
+      <span class="sr-only">{{ 'exerciseList.toggleFilters' | translate }}</span>
     </button>
   </header>
 
@@ -19,33 +19,33 @@
   <div class="overflow-y-auto transition-all duration-500 ease-in-out rounded-md"
     [style.maxHeight]="isFilterAccordionOpen() ? '600px' : '0px'" [class.mb-8]="isFilterAccordionOpen()">
     <div class="p-4 bg-white dark:bg-gray-700 rounded-md shadow-md border dark:border-gray-600">
-      <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Filter Exercises</h2>
+      <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">{{ 'exerciseList.filters.title' | translate }}</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
         <!-- Category Filter -->
         <div>
           <label for="category-filter"
-            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ 'exerciseList.filters.categoryLabel' | translate }}</label>
           <select id="category-filter" (change)="onCategoryChange($event)" [value]="selectedCategory() || ''"
             class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
-            <option value="">All Categories</option>
+            <option value="">{{ 'exerciseList.filters.allCategories' | translate }}</option>
             <option *ngFor="let category of categories$ | async" [value]="category">{{ category | titlecase }}</option>
           </select>
         </div>
         <!-- Muscle Group Filter -->
         <div>
           <label for="muscle-group-filter"
-            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Primary Muscle</label>
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ 'exerciseList.filters.muscleLabel' | translate }}</label>
           <select id="muscle-group-filter" (change)="onMuscleGroupChange($event)" [value]="selectedMuscleGroup() || ''"
             class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
-            <option value="">All Muscle Groups</option>
+            <option value="">{{ 'exerciseList.filters.allMuscles' | translate }}</option>
             <option *ngFor="let group of primaryMuscleGroups$ | async" [value]="group">{{ group | titlecase }}</option>
           </select>
         </div>
         <!-- Search Filter -->
         <div>
           <label for="search-term"
-            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
-          <input type="text" id="search-term" placeholder="Search by name or description..." [value]="searchTerm()"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ 'exerciseList.filters.searchLabel' | translate }}</label>
+          <input type="text" id="search-term" [placeholder]="'exerciseList.filters.searchPlaceholder' | translate" [value]="searchTerm()"
             (input)="onSearchTermChange($event)"
             class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
         </div>
@@ -58,7 +58,7 @@
               class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
             </div>
             <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-              Show Hidden Exercises
+              {{ 'exerciseList.filters.showHidden' | translate }}
             </span>
           </label>
         </div>
@@ -67,16 +67,11 @@
       <div class="mt-4 flex justify-between items-center">
         <button appPress (shortPress)="clearFilters()"
           class="flex px-4 py-2 bg-yellow-200 dark:bg-yellow-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-yellow-300 dark:hover:bg-yellow-500 text-sm items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-            stroke="currentColor" class="size-5 mr-2">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-          </svg>
-          CLEAR FILTERS
+          <app-icon name="trash"></app-icon>
+          {{ 'exerciseList.filters.clearButton' | translate | uppercase }}
         </button>
         <div *ngIf="allExercises().length > 0" class="text-sm text-gray-600 dark:text-gray-400">
-          Showing <strong class="text-gray-800 dark:text-gray-200">{{ filteredExercises().length }}</strong>
-          exercises
+          {{ 'exerciseList.showingCount' | translate:{count: filteredExercises().length} }}
         </div>
       </div>
     </div>
@@ -105,55 +100,49 @@
             <span *ngIf="exercise.isHidden"
               class="inline-flex items-center gap-x-1.5 rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-700 dark:bg-yellow-800/50 dark:text-yellow-400">
               <app-icon name="eye-off"></app-icon>
-              Hidden </span>
+              {{ 'exerciseList.badges.hidden' | translate }}
+            </span>
             <span *ngIf="exercise.isCustom"
               class="inline-flex items-center gap-x-1.5 rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-800/50 dark:text-blue-400">
               <app-icon name="favourite"></app-icon>
-              Custom
+              {{ 'exerciseList.badges.custom' | translate }}
             </span>
           </div>
           <!-- End Badges -->
 
-          <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1 capitalize">Category: {{ exercise.category
-            |
-            titlecase }}</p>
+          <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1 capitalize"><span class="font-medium">{{ 'exerciseList.card.category' | translate }}:</span> {{ exercise.category | titlecase }}</p>
           <p *ngIf='exercise.equipmentNeeded'
             class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1 capitalize">
             <span class="font-medium">
-              Equipment:
+              {{ 'exerciseList.card.equipment' | translate }}:
             </span>
             <span>
-              {{ (exercise.equipmentNeeded.join(', ') || 'None') | titlecase }}
+              {{ (exercise.equipmentNeeded.join(', ') || ('exerciseList.card.none' | translate)) | titlecase }}
             </span>
           </p>
 
           <div *ngIf="exercise.primaryMuscleGroup"
             class="flex items-center text-xs text-gray-500 dark:text-gray-300 mb-2 flex gap-1">
             <app-icon name="muscle" class="h-5 w-5"></app-icon>
-            <span class="font-medium">Muscles:</span>
+            <span class="font-medium">{{ 'exerciseList.card.muscles' | translate }}:</span>
             <span
               class="text-center text-xs bg-purple-100 text-purple-700 dark:bg-purple-700 dark:text-purple-200 px-1.5 py-0.5 rounded-full mx-1 inline-block">
               {{ exercise.primaryMuscleGroup| titlecase }}
             </span>
           </div>
 
-
-
-
           <p *ngIf="exercise.description"
             class="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-3"
             [title]="exercise.description">{{ exercise.description }}</p>
-          <!-- last time used -->
+
           <p *ngIf="exercise.lastUsedAt" class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 italic">
-            Last used: {{ exercise.lastUsedAt | date:'dd-MM-yyyy':'UTC' }}
+            {{ 'exerciseList.card.lastUsed' | translate }}: {{ exercise.lastUsedAt | date:'dd-MM-yyyy':'UTC' }}
           </p>
-          <!-- last updated -->
           <p *ngIf="exercise.updatedAt" class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 italic">
-            Last updated: {{ exercise.updatedAt | date: 'short' }}
+            {{ 'exerciseList.card.lastUpdated' | translate }}: {{ exercise.updatedAt | date: 'short' }}
           </p>
-          <!-- last updated -->
           <p *ngIf="exercise.createdAt" class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 italic">
-            Created: {{ exercise.createdAt | date: 'short' }}
+            {{ 'exerciseList.card.created' | translate }}: {{ exercise.createdAt | date: 'short' }}
           </p>
         </div>
 
@@ -182,8 +171,8 @@
     </div>
     <ng-template #noExercisesAfterFilter>
       <div class="text-center py-10">
-        <p class="text-xl text-gray-600 dark:text-gray-400">No exercises found matching your criteria</p>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Try adjusting your filters or search term</p>
+        <p class="text-xl text-gray-600 dark:text-gray-400">{{ 'exerciseList.noResults.title' | translate }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">{{ 'exerciseList.noResults.message' | translate }}</p>
       </div>
     </ng-template>
   </div>
@@ -192,83 +181,60 @@
     <div *ngIf="!allExercises() || allExercises().length === 0" class="text-center py-10">
       <div *ngIf="exerciseService.isLoadingExercises$ | async" class="text-center py-10">
         <app-icon name="loading"></app-icon>
-        <p class="text-lg text-gray-600 dark:text-gray-400 mt-3">Loading exercises...</p>
+        <p class="text-lg text-gray-600 dark:text-gray-400 mt-3">{{ 'exerciseList.loading' | translate }}</p>
       </div>
       <div *ngIf="!(exerciseService.isLoadingExercises$ | async) && (!allExercises() || allExercises().length === 0)"
         class="text-center py-12 px-6 bg-white dark:bg-gray-700 rounded-md shadow-md">
         <app-icon name="alert-filled"></app-icon>
-        <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Your Exercise Library is Empty</h3>
-        <p class="text-gray-500 dark:text-gray-400 mb-6">Start building your collection by adding your first exercise
-        </p>
+        <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">{{ 'exerciseList.empty.title' | translate }}</h3>
+        <p class="text-gray-500 dark:text-gray-400 mb-6">{{ 'exerciseList.empty.message' | translate }}</p>
         <button routerLink="/library/new"
           class="bg-primary hover:bg-primary-dark text-white font-semibold py-2.5 px-6 rounded-md shadow-md hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-opacity-75">
-          Add Your First Exercise
+          {{ 'exerciseList.empty.addButton' | translate }}
         </button>
       </div>
     </div>
   </ng-template>
 </div>
 
-
-<!-- ========================================================== -->
-<!-- NEW: Main Floating Button Container (Bottom Right) -->
-<!-- This container holds both the Back to Top and the FAB group -->
-<!-- ========================================================== -->
+<!-- Main Floating Button Container (Bottom Right) -->
 <div class="fixed bottom-20 right-6 z-40 flex flex-col items-center gap-4">
-
-  <!-- 1. "Back to Top" Button -->
-  <!-- It's now inside the container, so we remove its individual `fixed` positioning. -->
-  <!-- It will appear only when the condition is met, stacked on top due to flex-col. -->
+  <!-- "Back to Top" Button -->
   <button *ngIf="showBackToTopButton()" appPress (shortPress)="scrollToTop()" type="button"
     class="bg-primary dark:bg-primary text-white rounded-full p-3 shadow-lg hover:bg-primary-dark dark:hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-focus dark:focus:ring-offset-gray-900 transition-opacity animate-fade-in">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"
-      class="w-6 h-6">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
       <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
     </svg>
-    <span class="sr-only">Back to Top</span>
+    <span class="sr-only">{{ 'exerciseList.backToTop' | translate }}</span>
   </button>
 
-
-  <!-- 2. Floating Action Button Group -->
-  <!-- We remove its `fixed` positioning and place it here. -->
-  <!-- `flex-col-reverse` ensures its own actions expand upwards. -->
-  <div class="flex flex-col-reverse items-center gap-4" (mouseenter)="handleFabMouseEnter()"
-    (mouseleave)="handleFabMouseLeave()">
-
+  <!-- Floating Action Button Group -->
+  <div class="flex flex-col-reverse items-center gap-4" (mouseenter)="handleFabMouseEnter()" (mouseleave)="handleFabMouseLeave()">
     <!-- Main FAB (The "Plus" button) -->
     <button appPress (shortPress)="handleFabClick()" type="button"
       class="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl transition-all duration-300 hover:bg-primary-dark hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-focus focus:ring-offset-2 dark:ring-offset-gray-900">
-      <!-- Icon rotates to an "X" when open -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 transition-transform duration-300"
-        [class.rotate-45]="isFabActionsOpen()" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 transition-transform duration-300" [class.rotate-45]="isFabActionsOpen()" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
       </svg>
-      <span class="sr-only">Open creation menu</span>
+      <span class="sr-only">{{ 'exerciseList.fab.openMenu' | translate }}</span>
     </button>
 
-    <!-- Action Buttons Container (Appears when FAB is open) -->
+    <!-- Action Buttons Container -->
     <div *ngIf="isFabActionsOpen()" @fabSlideUp class="flex flex-col items-center gap-4">
-
-      <!-- Action 1: Create Routine -->
       <div class="group relative flex items-center">
         <span
           class="absolute right-full md:hidden whitespace-nowrap rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white group-hover:block"
           style="margin-right: -10px;">
-          CREATE EXERCISE
+          {{ 'exerciseList.fab.create' | translate | uppercase }}
         </span>
         <button appPress (shortPress)="navigateToCreateExercise()" type="button"
           class="flex h-14 w-14 items-center justify-center rounded-full bg-blue-500 text-white shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:ring-offset-gray-900">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-7 w-7">
-            <path
-              d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+            <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
           </svg>
-          <span class="sr-only">CREATE EXERCISE</span>
+          <span class="sr-only">{{ 'exerciseList.fab.create' | translate | uppercase }}</span>
         </button>
       </div>
     </div>
   </div>
-
 </div>
-<!-- ========================================================== -->
-<!-- END: Main Floating Button Container -->
-<!-- ========================================================== -->

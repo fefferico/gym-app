@@ -929,7 +929,7 @@ const totalRoutines = this.allRoutinesForList() ? this.allRoutinesForList().leng
       target.value = goal;
       this.clearFilters();
       this.onRoutineGoalChange(event);
-      this.toastService.info(this.translate.instant('Filtered routines by goal \'{{goal}}\'', { goal: goal }));
+      this.toastService.info(this.translate.instant('routineList.toasts.filteredByGoal', { goal: goal }));
     }
   }
 
@@ -940,7 +940,7 @@ const totalRoutines = this.allRoutinesForList() ? this.allRoutinesForList().leng
       target.value = muscle;
       this.clearFilters();
       this.onRoutineMuscleGroupChange(event);
-      this.toastService.info(this.translate.instant('Filtered routines by muscle {{muscle}}', { muscle: muscle }));
+      this.toastService.info(this.translate.instant('routineList.toasts.filteredByMuscle', { muscle: muscle }));
     }
   }
 
@@ -980,7 +980,6 @@ const totalRoutines = this.allRoutinesForList() ? this.allRoutinesForList().leng
   }
 
   // --- NEW SIGNALS FOR MODAL CONTROL ---
-  isGenerateModalOpen = signal(false);
   isSummaryModalOpen = signal(false);
   generatedRoutine = signal<Routine | null>(null);
   private lastGenerationOptions = signal<WorkoutGenerationOptions | null>(null);
@@ -991,29 +990,7 @@ const totalRoutines = this.allRoutinesForList() ? this.allRoutinesForList().leng
 
   openGenerateWorkoutModal() {
     this.isFabActionsOpen.set(false);
-    this.isGenerateModalOpen.set(true);
-  }
-
-  async handleWorkoutGenerated(options: WorkoutGenerationOptions | 'quick') {
-    this.isGenerateModalOpen.set(false);
-
-    let routine: Routine | null = null;
-    if (options === 'quick') {
-      // For a quick workout, we don't have detailed options to save for a retry,
-      // so we'll just re-run the quick generator if they retry.
-      this.lastGenerationOptions.set(null); // Mark as quick
-      routine = await this.workoutGeneratorService.generateQuickWorkout();
-    } else {
-      this.lastGenerationOptions.set(options); // Save options for retry
-      routine = await this.workoutGeneratorService.generateWorkout(options);
-    }
-
-    if (routine && routine.exercises.length > 0) {
-      this.generatedRoutine.set(routine);
-      this.isSummaryModalOpen.set(true);
-    } else {
-      this.toastService.warning(this.translate.instant('routineList.toasts.generationFailed'), 5000, this.translate.instant('routineList.toasts.generationFailedTitle'));
-    }
+          this.router.navigate(['/workout/routine/new'], { queryParams: { openGenerator: 'true' } });
   }
 
   /**
@@ -1075,24 +1052,11 @@ const totalRoutines = this.allRoutinesForList() ? this.allRoutinesForList().leng
   }
 
   /**
-   * Handles the 'Back' button from the summary modal.
-   * Closes the summary and re-opens the generation modal with the last used options.
-   */
-  handleBackToGenerator(): void {
-    this.isSummaryModalOpen.set(false);
-    // Don't clear the generatedRoutine or lastGenerationOptions here
-    setTimeout(() => {
-      this.isGenerateModalOpen.set(true);
-    }, 50); // Timeout for smooth animation transition
-  }
-
-  /**
   * --- NEW: A dedicated method to fully cancel the generation flow ---
   * Called when the user closes the generation modal.
   */
   cancelGenerationFlow(): void {
     this.isSummaryModalOpen.set(false);
-    this.isGenerateModalOpen.set(false);
     this.generatedRoutine.set(null);
     this.lastGenerationOptions.set(null);
   }

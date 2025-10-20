@@ -20,7 +20,7 @@ import { MuscleHighlight } from '../../core/services/muscle-map.service';
 import { MuscleMapComponent } from '../../shared/components/muscle-map/muscle-map.component';
 import { WeightUnitPipe } from '../../shared/pipes/weight-unit-pipe';
 import { animate, group, query, style, transition, trigger } from '@angular/animations';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 type RepRecord = {
   reps: number;
@@ -42,7 +42,7 @@ type TopLevelRecord = {
   selector: 'app-exercise-detail',
   standalone: true,
   providers: [DecimalPipe],
-  imports: [CommonModule, RouterLink, DatePipe, NgxChartsModule, ActionMenuComponent, IconComponent, MuscleMapComponent, WeightUnitPipe], // Added DatePipe, NgxChartsModule
+  imports: [CommonModule, RouterLink, DatePipe, NgxChartsModule, ActionMenuComponent, IconComponent, MuscleMapComponent, WeightUnitPipe, TranslateModule], // Added DatePipe, NgxChartsModule
   templateUrl: './exercise-detail.html',
   styleUrl: './exercise-detail.scss',
   animations: [
@@ -92,7 +92,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   protected trackingService = inject(TrackingService);
   private alertService = inject(AlertService); 
   unitService = inject(UnitsService); 
-  private translate = inject(TranslateService);
+  protected translate = inject(TranslateService);
 
   // Using a signal for the exercise data
   exercise = signal<Exercise | undefined | null>(undefined);

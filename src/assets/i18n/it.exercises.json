@@ -1,0 +1,436 @@
+{
+  "exercises": {
+    "push-up": {
+      "name": "Piegamento (Flessione)",
+      "description": "Un classico esercizio a corpo libero che allena petto, spalle e tricipiti. Mantenere il corpo dritto e il core contratto."
+    },
+    "pull-up": {
+      "name": "Trazione alla sbarra (presa prona)",
+      "description": "Un esercizio avanzato a corpo libero che mira a schiena e bicipiti usando una presa prona (palmi in avanti)."
+    },
+    "chin-up": {
+      "name": "Trazione alla sbarra (presa supina)",
+      "description": "Un esercizio a corpo libero che mira a schiena e bicipiti usando una presa supina, spesso enfatizzando i bicipiti più delle trazioni prone."
+    },
+    "bodyweight-squat": {
+      "name": "Squat a corpo libero",
+      "description": "Un esercizio fondamentale per la parte inferiore del corpo che coinvolge quadricipiti, glutei e femorali senza pesi esterni."
+    },
+    "lunge": {
+      "name": "Affondo",
+      "description": "Un esercizio unilaterale per le gambe che migliora equilibrio, stabilità e rafforza quadricipiti, glutei e femorali."
+    },
+    "plank": {
+      "name": "Plank",
+      "description": "Un esercizio isometrico per la forza del core che consiste nel mantenere una posizione simile a un piegamento per il maggior tempo possibile."
+    },
+    "burpee": {
+      "name": "Burpee",
+      "description": "Un esercizio ad alta intensità per tutto il corpo che combina squat, piegamento e salto."
+    },
+    "dip-bar": {
+      "name": "Dip alle parallele",
+      "description": "Un esercizio composto a corpo libero che mira principalmente a tricipiti e petto, eseguito su barre parallele."
+    },
+    "barbell-bench-press": {
+      "name": "Panca piana con bilanciere",
+      "description": "Un esercizio composto fondamentale per la forza della parte superiore del corpo, che mira principalmente a petto, spalle e tricipiti."
+    },
+    "barbell-back-squat": {
+      "name": "Squat con bilanciere (posteriore)",
+      "description": "Un esercizio fondamentale per la forza che mira a quadricipiti, glutei, femorali e schiena bassa, eseguito con un bilanciere sulla parte alta della schiena."
+    },
+    "barbell-deadlift": {
+      "name": "Stacco da terra con bilanciere (convenzionale)",
+      "description": "Un esercizio composto per tutto il corpo che consiste nel sollevare un bilanciere da terra fino a una posizione eretta, coinvolgendo gambe, schiena e core."
+    },
+    "overhead-press-barbell": {
+      "name": "Overhead Press (con bilanciere)",
+      "description": "Un esercizio composto per le spalle che consiste nello spingere un bilanciere sopra la testa da una posizione seduta o in piedi."
+    },
+    "bent-over-row-barbell": {
+      "name": "Rematore con bilanciere",
+      "description": "Un esercizio composto per la schiena in cui un bilanciere viene tirato verso il busto mentre si è piegati sui fianchi."
+    },
+    "barbell-bicep-curl": {
+      "name": "Curl per bicipiti con bilanciere",
+      "description": "Un esercizio di isolamento per i bicipiti che utilizza un bilanciere."
+    },
+    "barbell-romanian-deadlift": {
+      "name": "Stacco rumeno con bilanciere (RDL)",
+      "description": "Mira a femorali e glutei piegandosi sui fianchi con una leggera flessione delle ginocchia, mantenendo il bilanciere vicino alle gambe."
+    },
+    "dumbbell-bench-press": {
+      "name": "Panca piana con manubri",
+      "description": "Un esercizio composto che mira a petto, spalle e tricipiti usando manubri su una panca, consentendo un maggiore raggio di movimento."
+    },
+    "dumbbell-shoulder-press": {
+      "name": "Shoulder Press con manubri",
+      "description": "Un esercizio composto per le spalle che consiste nello spingere i manubri sopra la testa, consentendo un movimento indipendente delle braccia."
+    },
+    "dumbbell-row": {
+      "name": "Rematore con manubrio (braccio singolo)",
+      "description": "Un esercizio unilaterale per la schiena che mira a dorsali, romboidi e bicipiti, tipicamente eseguito con un ginocchio e una mano su una panca."
+    },
+    "dumbbell-bicep-curl": {
+      "name": "Curl per bicipiti con manubri",
+      "description": "Un esercizio di isolamento per i bicipiti con manubri, che consente la supinazione (rotazione del polso)."
+    },
+    "dumbbell-tricep-extension-overhead": {
+      "name": "Estensione tricipiti sopra la testa con manubrio",
+      "description": "Un esercizio di isolamento per i tricipiti, eseguito estendendo un manubrio sopra la testa."
+    },
+    "dumbbell-lunge": {
+      "name": "Affondi con manubri",
+      "description": "Affondi eseguiti tenendo dei manubri, aggiungendo resistenza alla parte inferiore del corpo."
+    },
+    "dumbbell-romanian-deadlift": {
+      "name": "Stacco rumeno con manubri (RDL)",
+      "description": "Mira a femorali e glutei usando manubri, concentrandosi sul movimento di flessione dell'anca."
+    },
+    "goblet-squat": {
+      "name": "Goblet Squat",
+      "description": "Una variante dello squat tenendo un singolo manubrio o kettlebell a livello del petto, promuovendo un busto eretto."
+    },
+    "dumbbell-lateral-raise": {
+      "name": "Alzate laterali con manubri",
+      "description": "Un esercizio di isolamento per i deltoidi mediali (laterali), sollevando i manubri lateralmente."
+    },
+    "dumbbell-front-raise": {
+      "name": "Alzate frontali con manubri",
+      "description": "Un esercizio di isolamento per i deltoidi anteriori (frontali), sollevando i manubri in avanti."
+    },
+    "kettlebell-swing": {
+      "name": "Kettlebell Swing (a due mani)",
+      "description": "Un esercizio dinamico ed esplosivo che mira alla catena posteriore (glutei, femorali, schiena) e migliora la potenza."
+    },
+    "kettlebell-goblet-squat": {
+      "name": "Goblet Squat con Kettlebell",
+      "description": "Uno squat tenendo un kettlebell per le 'corna' a livello del petto, eccellente per la forma e il coinvolgimento del core."
+    },
+    "kettlebell-clean-and-press": {
+      "name": "Kettlebell Clean and Press",
+      "description": "Un movimento composto per tutto il corpo che prevede di portare un kettlebell in posizione 'rack' per poi spingerlo sopra la testa."
+    },
+    "turkish-get-up": {
+      "name": "Turkish Get-Up (TGU)",
+      "description": "Un esercizio complesso per tutto il corpo che prevede la transizione dalla posizione sdraiata a quella in piedi, mantenendo un kettlebell sopra la testa. Migliora stabilità, mobilità e forza."
+    },
+    "farmers-walk": {
+      "name": "Farmer's Walk (Camminata del contadino)",
+      "description": "Un esercizio per tutto il corpo che consiste nel camminare per una certa distanza tenendo pesi elevati. Migliora la forza della presa, la stabilità del core e la condizione generale."
+    },
+    "kettlebell-single-arm-row": {
+      "name": "Rematore con kettlebell (braccio singolo)",
+      "description": "Un esercizio unilaterale per la schiena che mira a dorsali, romboidi e bicipiti, eseguito tirando un kettlebell verso il busto, spesso con una mano e un ginocchio appoggiati su una panca."
+    },
+    "kettlebell-deadlift": {
+      "name": "Stacco da terra con kettlebell",
+      "description": "Un esercizio di forza fondamentale che utilizza uno o due kettlebell per mirare alla catena posteriore, concentrandosi sul movimento di flessione dell'anca."
+    },
+    "kettlebell-strict-press": {
+      "name": "Strict Press con kettlebell (braccio singolo)",
+      "description": "Un esercizio di spinta sopra la testa per la forza di spalle e tricipiti, eseguito con un singolo kettlebell dalla posizione 'rack' senza usare la spinta delle gambe."
+    },
+    "kettlebell-rack-lunge": {
+      "name": "Affondo con kettlebell (in posizione rack)",
+      "description": "Un esercizio unilaterale per le gambe che sviluppa forza, stabilità e coinvolgimento del core, eseguito tenendo uno o due kettlebell in posizione 'front rack'."
+    },
+    "kettlebell-windmill": {
+      "name": "Kettlebell Windmill",
+      "description": "Un esercizio complesso che migliora la stabilità delle spalle, la mobilità dell'anca e la forza del core, piegandosi lateralmente sui fianchi mantenendo un kettlebell bloccato sopra la testa."
+    },
+    "kettlebell-russian-twist": {
+      "name": "Russian Twist con kettlebell",
+      "description": "Un esercizio per il core che mira agli obliqui e al retto dell'addome, eseguito seduti con le ginocchia piegate e i piedi sollevati (opzionale), torcendo il busto da un lato all'altro tenendo un kettlebell."
+    },
+    "kettlebell-high-pull": {
+      "name": "High Pull con kettlebell",
+      "description": "Un esercizio esplosivo che sviluppa potenza in fianchi, schiena e spalle. Consiste nel tirare il kettlebell da una posizione di swing (o da terra) fino all'altezza del mento, mantenendo il gomito alto."
+    },
+    "kettlebell-figure-8": {
+      "name": "Figure 8 con kettlebell",
+      "description": "Un esercizio dinamico che migliora coordinazione, stabilità del core e forza della presa, passando il kettlebell tra e intorno alle gambe in un movimento a forma di otto."
+    },
+    "kettlebell-suitcase-carry": {
+      "name": "Suitcase Carry con kettlebell",
+      "description": "Un esercizio di trasporto unilaterale che sfida la stabilità del core, la forza della presa e la postura, trasportando un kettlebell pesante in una mano, come una valigia."
+    },
+    "kettlebell-thruster": {
+      "name": "Thruster con kettlebell",
+      "description": "Un esercizio composto per tutto il corpo che combina un front squat con kettlebell con una spinta sopra la testa in un unico movimento fluido. Può essere eseguito con uno o due kettlebell."
+    },
+    "lat-pulldown-machine": {
+      "name": "Lat Pulldown (alla macchina)",
+      "description": "Un esercizio alla macchina che mira ai muscoli gran dorsali tirando una sbarra verso il petto."
+    },
+    "seated-row-machine": {
+      "name": "Rematore seduto (alla macchina)",
+      "description": "Un esercizio alla macchina per lo spessore della schiena, che mira ai muscoli della parte centrale della schiena tirando le maniglie verso il busto."
+    },
+    "leg-press-machine": {
+      "name": "Leg Press (alla macchina)",
+      "description": "Un esercizio composto per la parte inferiore del corpo eseguito su una macchina, spingendo via una piattaforma con peso con le gambe."
+    },
+    "leg-extension-machine": {
+      "name": "Leg Extension (alla macchina)",
+      "description": "Un esercizio di isolamento per i quadricipiti, estendendo la parte inferiore delle gambe contro una resistenza."
+    },
+    "leg-curl-machine": {
+      "name": "Leg Curl (alla macchina - sdraiato o seduto)",
+      "description": "Un esercizio di isolamento per i femorali, piegando la parte inferiore delle gambe verso i glutei contro una resistenza."
+    },
+    "chest-press-machine": {
+      "name": "Chest Press (alla macchina)",
+      "description": "Un esercizio composto alla macchina per il petto, simile a una panca piana ma con un percorso di movimento fisso."
+    },
+    "shoulder-press-machine": {
+      "name": "Shoulder Press (alla macchina)",
+      "description": "Un esercizio alla macchina per le spalle, spingendo le maniglie sopra la testa con un movimento guidato."
+    },
+    "pec-deck-fly-machine": {
+      "name": "Pec Deck Fly (alla macchina)",
+      "description": "Un esercizio di isolamento per il petto, unendo le braccia in un movimento a croce utilizzando una macchina."
+    },
+    "reverse-pec-deck-machine": {
+      "name": "Reverse Pec Deck (Alzate posteriori per deltoidi)",
+      "description": "Un esercizio alla macchina che mira ai deltoidi posteriori e ai muscoli della parte superiore della schiena."
+    },
+    "calf-raise-machine": {
+      "name": "Calf Raise (alla macchina - in piedi o seduto)",
+      "description": "Un esercizio di isolamento per i muscoli del polpaccio (gastrocnemio e soleo)."
+    },
+    "cable-tricep-pushdown": {
+      "name": "Pushdown per tricipiti ai cavi (corda o sbarra)",
+      "description": "Un esercizio di isolamento per i tricipiti che utilizza una macchina ai cavi con una corda o una sbarra."
+    },
+    "cable-bicep-curl": {
+      "name": "Curl per bicipiti ai cavi (sbarra o maniglie)",
+      "description": "Un esercizio di isolamento per i bicipiti che utilizza una macchina ai cavi, fornendo una tensione costante."
+    },
+    "cable-face-pull": {
+      "name": "Face Pull ai cavi",
+      "description": "Un esercizio eccellente per i deltoidi posteriori, la salute della cuffia dei rotatori e la postura della parte superiore della schiena."
+    },
+    "cable-fly": {
+      "name": "Croci ai cavi (in piedi - alto, medio o basso)",
+      "description": "Un esercizio di isolamento per il petto che utilizza una macchina ai cavi, consentendo vari angoli per mirare a diverse parti del petto."
+    },
+    "cable-lateral-raise": {
+      "name": "Alzate laterali ai cavi",
+      "description": "Un esercizio di isolamento per i deltoidi mediali che utilizza un cavo, fornendo una tensione costante durante tutto il movimento."
+    },
+    "cable-woodchop": {
+      "name": "Woodchop (taglialegna) ai cavi",
+      "description": "Un esercizio di rotazione del core che coinvolge gli obliqui e l'addome trasverso."
+    },
+    "resistance-band-bicep-curl": {
+      "name": "Curl per bicipiti con banda elastica",
+      "description": "Curl per bicipiti eseguiti con una banda di resistenza, che fornisce una resistenza variabile."
+    },
+    "resistance-band-tricep-pushdown": {
+      "name": "Pushdown per tricipiti con banda elastica",
+      "description": "Pushdown per tricipiti utilizzando una banda di resistenza ancorata sopra la testa o tenuta."
+    },
+    "resistance-band-pull-apart": {
+      "name": "Pull-Apart con banda elastica",
+      "description": "Un ottimo esercizio per la salute delle spalle, che mira ai deltoidi posteriori e ai muscoli della parte superiore della schiena."
+    },
+    "resistance-band-squat": {
+      "name": "Squat con banda elastica",
+      "description": "Squat eseguiti con una banda di resistenza sotto i piedi e avvolta sopra le spalle o tenuta, aggiungendo resistenza."
+    },
+    "resistance-band-glute-bridge": {
+      "name": "Ponte per glutei con banda elastica",
+      "description": "Ponti per glutei con una banda di resistenza attorno alle cosce per un'attivazione aggiuntiva del gluteo medio."
+    },
+    "box-jump": {
+      "name": "Box Jump (Salto sul box)",
+      "description": "Un esercizio pliometrico che consiste nel saltare su una piattaforma elevata, sviluppando potenza esplosiva nella parte inferiore del corpo."
+    },
+    "medicine-ball-slam": {
+      "name": "Slam con palla medica",
+      "description": "Un esercizio di potenza per tutto il corpo che consiste nel sollevare una palla medica sopra la testa e sbatterla con forza a terra."
+    },
+    "glute-bridge": {
+      "name": "Ponte per glutei",
+      "description": "Un esercizio a corpo libero che mira a glutei e femorali sollevando i fianchi da terra."
+    },
+    "superman-exercise": {
+      "name": "Superman",
+      "description": "Un esercizio a corpo libero che rafforza la schiena bassa, i glutei e i femorali sollevando contemporaneamente braccia e gambe da terra in posizione prona."
+    },
+    "mountain-climbers": {
+      "name": "Mountain Climbers",
+      "description": "Un esercizio dinamico per tutto il corpo che sviluppa resistenza cardiovascolare, forza del core e agilità, imitando il movimento della scalata."
+    },
+    "bench-dips": {
+      "name": "Dip su panca (per tricipiti)",
+      "description": "Un esercizio a corpo libero che mira ai tricipiti, eseguito utilizzando una panca o una sedia."
+    },
+    "bodyweight-calf-raise": {
+      "name": "Calf Raise a corpo libero",
+      "description": "Un esercizio semplice ma efficace a corpo libero per rafforzare i muscoli del polpaccio."
+    },
+    "barbell-hip-thrust": {
+      "name": "Hip Thrust con bilanciere",
+      "description": "Un potente esercizio per i glutei eseguito spingendo i fianchi verso l'alto con un bilanciere sul bacino, tipicamente con la parte superiore della schiena appoggiata su una panca."
+    },
+    "barbell-front-squat": {
+      "name": "Front Squat con bilanciere",
+      "description": "Una variante dello squat in cui il bilanciere è tenuto sulla parte anteriore delle spalle, enfatizzando i quadricipiti e la stabilità del core."
+    },
+    "barbell-good-morning": {
+      "name": "Good Morning con bilanciere",
+      "description": "Un esercizio che mira alla catena posteriore (femorali, glutei, schiena bassa) piegandosi sui fianchi con un bilanciere sulla parte alta della schiena."
+    },
+    "dumbbell-incline-press": {
+      "name": "Panca inclinata con manubri",
+      "description": "Mira alla parte superiore del petto, alle spalle e ai tricipiti spingendo i manubri su una panca inclinata."
+    },
+    "dumbbell-fly": {
+      "name": "Croci con manubri",
+      "description": "Un esercizio di isolamento per il petto, eseguito aprendo e chiudendo le braccia in un movimento ad arco tenendo i manubri."
+    },
+    "dumbbell-hammer-curl": {
+      "name": "Curl a martello con manubri",
+      "description": "Una variante del curl per bicipiti con una presa neutra (palmi uno di fronte all'altro), che mira al brachiale e al brachioradiale oltre ai bicipiti."
+    },
+    "dumbbell-tricep-kickback": {
+      "name": "Kickback per tricipiti con manubrio",
+      "description": "Un esercizio di isolamento per i tricipiti, eseguito estendendo il braccio all'indietro mentre si è piegati sui fianchi."
+    },
+    "dumbbell-bulgarian-split-squat": {
+      "name": "Split Squat bulgaro con manubri",
+      "description": "Un esercizio unilaterale per le gambe con il piede posteriore sollevato, che mira a quadricipiti, glutei e femorali migliorando l'equilibrio."
+    },
+    "dumbbell-pullover": {
+      "name": "Pullover con manubrio",
+      "description": "Un esercizio che allena petto e dorsali, eseguito sdraiati su una panca abbassando un manubrio dietro la testa."
+    },
+    "kettlebell-snatch": {
+      "name": "Snatch con kettlebell",
+      "description": "Un esercizio esplosivo per tutto il corpo in cui il kettlebell viene oscillato da tra le gambe a una posizione bloccata sopra la testa in un unico movimento fluido."
+    },
+    "kettlebell-halo": {
+      "name": "Halo con kettlebell",
+      "description": "Un esercizio per la mobilità e la stabilità delle spalle che consiste nel far girare un kettlebell attorno alla testa."
+    },
+    "hack-squat-machine": {
+      "name": "Hack Squat (alla macchina)",
+      "description": "Una variante dello squat alla macchina che mira ai quadricipiti, spesso con un focus sui quadricipiti esterni."
+    },
+    "seated-calf-raise-machine": {
+      "name": "Calf Raise seduto (alla macchina)",
+      "description": "Un esercizio di isolamento per il muscolo soleo del polpaccio, eseguito su una macchina da seduti."
+    },
+    "abdominal-crunch-machine": {
+      "name": "Crunch addominale (alla macchina)",
+      "description": "Un esercizio alla macchina per isolare i muscoli del retto dell'addome."
+    },
+    "back-extension-machine": {
+      "name": "Estensione della schiena (macchina per iperestensioni)",
+      "description": "Rafforza la schiena bassa, i glutei e i femorali utilizzando una panca o una macchina per iperestensioni."
+    },
+    "cable-overhead-tricep-extension": {
+      "name": "Estensione tricipiti sopra la testa ai cavi (corda)",
+      "description": "Mira al capo lungo del tricipite utilizzando una macchina ai cavi e una corda."
+    },
+    "cable-pull-through": {
+      "name": "Pull-Through ai cavi",
+      "description": "Un esercizio di flessione dell'anca che mira a glutei e femorali utilizzando una macchina ai cavi."
+    },
+    "cable-reverse-fly": {
+      "name": "Croci inverse ai cavi",
+      "description": "Mira ai deltoidi posteriori e ai muscoli della parte superiore della schiena utilizzando una macchina ai cavi con doppie pulegge."
+    },
+    "cable-torso-twist": {
+      "name": "Torsione del busto ai cavi (in piedi)",
+      "description": "Un esercizio per il core che mira agli obliqui attraverso un movimento rotatorio contro la resistenza dei cavi."
+    },
+    "resistance-band-chest-press": {
+      "name": "Chest Press con banda elastica",
+      "description": "Una variante della chest press che utilizza bande di resistenza, può essere eseguita in piedi o sdraiati."
+    },
+    "resistance-band-row": {
+      "name": "Rematore con banda elastica (seduto o in piedi)",
+      "description": "Mira ai muscoli della schiena utilizzando una banda di resistenza, che può essere ancorata o tenuta."
+    },
+    "resistance-band-deadlift": {
+      "name": "Stacco da terra con banda elastica",
+      "description": "Una variante dello stacco da terra che utilizza bande di resistenza, ottima per imparare la forma o per giorni più leggeri."
+    },
+    "resistance-band-lateral-walk": {
+      "name": "Camminata laterale con banda elastica",
+      "description": "Mira al gluteo medio e agli abduttori dell'anca, eseguita camminando lateralmente con una banda attorno alle caviglie o alle ginocchia."
+    },
+    "hamstring-stretch": {
+      "name": "Stretching per femorali (in piedi/seduto)",
+      "description": "Uno stretching statico per migliorare la flessibilità dei muscoli femorali."
+    },
+    "quadriceps-stretch": {
+      "name": "Stretching per quadricipiti (in piedi)",
+      "description": "Uno stretching statico per i quadricipiti, tipicamente eseguito tirando il tallone verso i glutei."
+    },
+    "chest-stretch-doorway": {
+      "name": "Stretching per il petto (sulla porta)",
+      "description": "Uno stretching statico per i muscoli pettorali utilizzando una porta come supporto."
+    },
+    "triceps-stretch": {
+      "name": "Stretching per tricipiti (sopra la testa)",
+      "description": "Uno stretching statico per i tricipiti, eseguito portando un braccio sopra la testa e piegando il gomito."
+    },
+    "cat-cow-stretch": {
+      "name": "Stretching Gatto-Mucca",
+      "description": "Uno stretching dinamico che migliora la mobilità della colonna vertebrale e allevia la tensione nella schiena e nel core."
+    },
+    "childs-pose": {
+      "name": "Posizione del bambino",
+      "description": "Una posa di riposo delicata che calma la mente e aiuta ad alleviare stress e fatica. Allunga dolcemente fianchi, cosce e caviglie."
+    },
+    "jumping-jacks": {
+      "name": "Jumping Jacks",
+      "description": "Un classico esercizio calistenico per tutto il corpo che funge da buon riscaldamento o picco cardio."
+    },
+    "high-knees": {
+      "name": "Ginocchia alte",
+      "description": "Un esercizio cardio-intensivo che consiste nel correre sul posto sollevando le ginocchia il più in alto possibile."
+    },
+    "running-jogging": {
+      "name": "Corsa/Jogging",
+      "description": "Un efficace esercizio cardiovascolare che migliora la resistenza e brucia calorie."
+    },
+    "cycling": {
+      "name": "Ciclismo",
+      "description": "Un esercizio cardiovascolare a basso impatto che allena principalmente i muscoli delle gambe."
+    },
+    "jump-rope": {
+      "name": "Salto della corda",
+      "description": "Un esercizio cardiovascolare altamente efficace che migliora coordinazione, agilità e brucia una notevole quantità di calorie."
+    },
+    "elliptical-trainer": {
+      "name": "Ellittica",
+      "description": "Una macchina cardio a basso impatto che simula la salita delle scale, la camminata o la corsa senza causare eccessiva pressione sulle articolazioni."
+    },
+    "stair-climbing": {
+      "name": "Salita delle scale",
+      "description": "Un vigoroso esercizio cardiovascolare che mira a glutei, quadricipiti e femorali."
+    },
+    "sled-push": {
+      "name": "Spinta della slitta",
+      "description": "Un esercizio di forza e condizionamento per tutto il corpo che consiste nello spingere una slitta con peso."
+    },
+    "sled-pull": {
+      "name": "Tirata della slitta",
+      "description": "Un esercizio di forza e condizionamento per tutto il corpo che consiste nel tirare una slitta con peso usando cinghie o un'imbracatura."
+    },
+    "tire-flip": {
+      "name": "Ribaltamento del pneumatico",
+      "description": "Un potente esercizio per tutto il corpo comune nell'allenamento strongman, che consiste nel ribaltare un grande pneumatico."
+    },
+    "battle-ropes": {
+      "name": "Corde da battaglia (Battle Ropes)",
+      "description": "Un esercizio ad alta intensità e basso impatto che allena la parte superiore del corpo, il core e fornisce una sfida cardiovascolare."
+    }
+  }
+}

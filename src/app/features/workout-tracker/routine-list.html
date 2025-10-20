@@ -443,15 +443,4 @@
 
 </div>
 
-
-<app-generate-workout-modal #workoutGeneratorModal [isOpen]="isGenerateModalOpen()" (close)="cancelGenerationFlow()"
-    (generate)="handleWorkoutGenerated($event)">
-</app-generate-workout-modal>
-
-<!-- NEW: Replace the old overview modal with the new summary component -->
-<app-generated-workout-summary [isOpen]="isSummaryModalOpen()" [generatedRoutineSignal]="generatedRoutine"
-    (back)="handleBackToGenerator()" (close)="cancelGenerationFlow()" (start)="startGeneratedWorkout($event)"
-    (routineUpdated)="handleRoutineUpdate($event)" (retry)="handleRetryGeneration()">
-</app-generated-workout-summary>
-
 <app-fab-menu [actions]="fabMenuItems" (actionClicked)="onFabAction($event)"></app-fab-menu>

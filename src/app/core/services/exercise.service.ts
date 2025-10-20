@@ -794,36 +794,32 @@ export class ExerciseService {
    * @param exercise The base Exercise object with default (English) text.
    * @returns An Observable that emits a single, translated Exercise object.
    */
-  public getTranslatedExercise(exercise: Exercise): Observable<Exercise> {
+    /**
+   * Takes a static Exercise object and returns an Observable of that
+   * exercise with its 'name' and 'description' fields translated to the
+   * currently active language.
+   *
+   * @param exercise The static Exercise object to translate.
+   * @returns An Observable<Exercise> that emits the fully translated exercise.
+   */
+  getTranslatedExercise(exercise: Exercise): Observable<Exercise> {
     if (!exercise || !exercise.id) {
-      return of(exercise); // Return the original object if it's invalid
+      return of(exercise); // Return original if invalid
     }
 
-    // 1. Define the keys for the properties we want to translate.
-    const translationKeys = [
-      `exercises.${exercise.id}.name`,
-      `exercises.${exercise.id}.description`,
-      `exercises.${exercise.id}.notes`
-    ];
+    // 1. Construct the translation key for this specific exercise
+    const translationKey = `exercises.${exercise.id}`;
 
-    // 2. Use the translate service to get all translations in one batch.
-    return this.translate.get(translationKeys).pipe(
+    // 2. Use ngx-translate to fetch the translation object for this key
+    return this.translate.get(translationKey).pipe(
       map(translations => {
-        // 3. Create a new exercise object with the translated values.
-        const translatedExercise: Exercise = {
-          ...exercise,
-          name: translations[translationKeys[0]] !== translationKeys[0]
-            ? translations[translationKeys[0]]
-            : exercise.name,
-          description: translations[translationKeys[1]] !== translationKeys[1]
-            ? translations[translationKeys[1]]
-            : exercise.description,
-          notes: translations[translationKeys[2]] !== translationKeys[2]
-            ? translations[translationKeys[2]]
-            : exercise.notes,
+        // 3. Create a new object, merging the original static data
+        //    with the fetched translated name and description.
+        return {
+          ...exercise, // Spread all original properties (id, category, images, etc.)
+          name: translations.name || exercise.name, // Fallback to original name if translation is missing
+          description: translations.description || exercise.description, // Fallback to original description
         };
-
-        return translatedExercise;
       })
     );
   }

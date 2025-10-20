@@ -37,6 +37,7 @@ import localePr from '@angular/common/locales/pt';
 import localeAr from '@angular/common/locales/ar';
 import { isPlatformBrowser, registerLocaleData } from '@angular/common';
 import { LanguageService } from './core/services/language.service';
+import { MultiHttpLoader } from './core/services/multi-http-loader';
 
 // Register the locale data
 registerLocaleData(localeEn);
@@ -101,7 +102,14 @@ export const appConfig: ApplicationConfig = {
       TranslateModule.forRoot({
         loader: {
           provide: TranslateLoader,
-          useFactory: createTranslateLoader,
+          // useFactory: createTranslateLoader,
+          useFactory: (http: HttpClient) => {
+            // 3. Provide the paths to ALL your translation files
+            return new MultiHttpLoader(http, [
+              { prefix: './assets/i18n/', suffix: '.json' },
+              { prefix: './assets/i18n/', suffix: '.exercises.json' },
+            ]);
+          },
           deps: [HttpClient]
         }
       })

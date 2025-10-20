@@ -4,7 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Exercise, ExerciseCategory } from '../models/exercise.model';
-import { Routine, WorkoutExercise, ExerciseTargetSetParams } from '../models/workout.model';
+import { Routine, WorkoutExercise, ExerciseTargetSetParams, METRIC } from '../models/workout.model';
 import { ExerciseService } from './exercise.service';
 import { PersonalGymService } from './personal-gym.service';
 import { WorkoutService } from './workout.service'; // Import WorkoutService
@@ -53,7 +53,7 @@ export class WorkoutGeneratorService {
             equipment: [],
             excludeEquipment: []
         };
-        
+
         // 'Chest', 'Quadriceps', 'Core','Arms','Back'
         // The cast to WorkoutGenerationOptions is no longer needed as the object is complete.
         const availableExercises = await this.getSelectableExercises(optionsForFiltering);
@@ -225,10 +225,10 @@ export class WorkoutGeneratorService {
         }
     }
 
-     /**
-     * --- CORRECTED METHOD ---
-     * Builds a workout from a PRE-FILTERED list of exercises, ensuring variety and respecting all constraints.
-     */
+    /**
+    * --- CORRECTED METHOD ---
+    * Builds a workout from a PRE-FILTERED list of exercises, ensuring variety and respecting all constraints.
+    */
     private buildExerciseList(
         allValidExercises: Exercise[],
         options: WorkoutGenerationOptions
@@ -270,7 +270,7 @@ export class WorkoutGeneratorService {
             if (unmetEquipment) {
                 // Find a random valid exercise that satisfies this equipment goal.
                 const potentialMatches = this.shuffleArray(
-                    remainingExercises.filter(ex => 
+                    remainingExercises.filter(ex =>
                         (ex.equipment?.toLowerCase() === unmetEquipment) || (ex.equipmentNeeded?.map(e => e.toLowerCase()).includes(unmetEquipment)))
                 );
 
@@ -302,11 +302,11 @@ export class WorkoutGeneratorService {
             if (currentMuscleCount >= 3) {
                 continue; // Skip, this muscle is over-represented.
             }
-            
+
             // Constraint: Duration. Check if adding it would exceed the target time.
             const tempWorkoutExercise = this.createWorkoutExercise(exerciseToAdd, options.goal);
             const exerciseDuration = this.workoutService.getEstimatedRoutineDuration({ exercises: [tempWorkoutExercise] } as Routine) * 60;
-            
+
             if (totalEstimatedSeconds + exerciseDuration > targetSeconds + 120) { // Allow a 2-minute buffer
                 continue; // Skip, adding this exercise would make the workout too long.
             }
@@ -344,6 +344,7 @@ export class WorkoutGeneratorService {
         let numSets = 3;
         let repRange = { min: 8, max: 12 };
         let rest = 60;
+        let duration = 300; // Default duration for cardio/endurance
 
         switch (goal) {
             case 'strength':
@@ -355,6 +356,7 @@ export class WorkoutGeneratorService {
                 numSets = 3;
                 repRange = { min: 15, max: 20 };
                 rest = 45;
+                duration = 600; // Longer duration for endurance goal
                 break;
             case 'hypertrophy':
             default:
@@ -364,16 +366,40 @@ export class WorkoutGeneratorService {
                 break;
         }
 
+        let templateSet: Partial<ExerciseTargetSetParams> = {};
+
+        // =================== START OF NEW LOGIC ===================
+        if (exercise.category === 'cardio') {
+            templateSet = {
+                fieldOrder: [METRIC.duration, METRIC.distance, METRIC.rest],
+                targetDuration: duration,
+                targetDistance: 1,
+            };
+        } else if (exercise.category === 'bodyweight/calisthenics') {
+            templateSet = {
+                fieldOrder: [METRIC.reps, METRIC.rest],
+                targetRepsMin: repRange.min,
+                targetRepsMax: repRange.max,
+                targetWeight: null,
+            };
+        } else { // Default for strength-based exercises
+            templateSet = {
+                fieldOrder: [METRIC.reps, METRIC.weight, METRIC.rest],
+                targetRepsMin: repRange.min,
+                targetRepsMax: repRange.max,
+                targetWeight: 10, // Default placeholder weight
+            };
+        }
+        // =================== END OF NEW LOGIC ===================
+
         const sets: ExerciseTargetSetParams[] = Array.from({ length: numSets }, () => ({
             id: uuidv4(),
             type: 'standard',
-            targetRepsMin: repRange.min,
-            targetRepsMax: repRange.max,
             targetRest: rest,
-        }));
+            ...templateSet, // Spread the category-specific properties
+        } as ExerciseTargetSetParams));
 
-        // Attach the full exercise object so the builder can reference its properties (like `equipment`).
-        // We cast to `any` to allow this temporary property which is only used during generation.
+
         const workoutExercise: any = {
             id: uuidv4(),
             exerciseId: exercise.id,
@@ -382,23 +408,51 @@ export class WorkoutGeneratorService {
             supersetId: null,
             supersetOrder: null,
             type: 'standard',
-            exercise: exercise 
+            exercise: exercise
         };
-        
+
         return workoutExercise as WorkoutExercise;
     }
 
     /**
-     * --- NEW HELPER METHOD ---
-     * Creates a WorkoutExercise with a simple, standard set/rep scheme.
-     */
+   * Creates a WorkoutExercise with a simple, standard set/rep scheme
+   * that is appropriate for the exercise's category.
+   */
     private createSimpleWorkoutExercise(exercise: Exercise): WorkoutExercise {
-        const sets: ExerciseTargetSetParams[] = Array.from({ length: 3 }, () => ({
-            id: uuidv4(),
-            type: 'standard',
-            targetReps: 10,
-            targetRest: 60,
-        }));
+        let sets: ExerciseTargetSetParams[];
+        const numSets = 3;
+
+        if (exercise.category === 'cardio') {
+            // Cardio exercises get duration and distance
+            sets = Array.from({ length: numSets }, () => ({
+                id: uuidv4(),
+                type: 'standard',
+                fieldOrder: [METRIC.duration, METRIC.distance, METRIC.rest],
+                targetDuration: 300, // Default to 5 minutes
+                targetDistance: 1,   // Default to 1 km/mi
+                targetRest: 90,
+            }));
+        } else if (exercise.category === 'bodyweight/calisthenics') {
+            // Bodyweight exercises get reps but no weight
+            sets = Array.from({ length: numSets }, () => ({
+                id: uuidv4(),
+                type: 'standard',
+                fieldOrder: [METRIC.reps, METRIC.rest],
+                targetReps: 12,
+                targetWeight: null, // Explicitly no weight
+                targetRest: 60,
+            }));
+        } else {
+            // Default for strength, hypertrophy, etc.
+            sets = Array.from({ length: numSets }, () => ({
+                id: uuidv4(),
+                type: 'standard',
+                fieldOrder: [METRIC.reps, METRIC.weight, METRIC.rest],
+                targetReps: 10,
+                targetWeight: 10, // A placeholder default weight
+                targetRest: 60,
+            }));
+        }
 
         return {
             id: uuidv4(),
@@ -419,11 +473,11 @@ export class WorkoutGeneratorService {
         console.log("Starting workout generation with options:", options);
 
         let generatedExercises = await this.tryGenerateWithCriteria(options);
-        
+
         if (!generatedExercises || generatedExercises.length < 2) {
             console.warn("Generation failed with strict criteria. Fallback 1: Ignoring equipment constraints.");
             this.toastService.info("Not enough specific exercises found. Broadening search...", 3000, "Expanding Search");
-            
+
             const relaxedOptions = { ...options, usePersonalGym: false, equipment: [] };
             generatedExercises = await this.tryGenerateWithCriteria(relaxedOptions);
         }
@@ -431,7 +485,7 @@ export class WorkoutGeneratorService {
         if (!generatedExercises || generatedExercises.length < 2) {
             console.warn("Generation failed after relaxing equipment. Fallback 2: Ignoring target muscle constraints.");
             this.toastService.info("Still not enough. Ignoring specific muscle targets...", 3000, "Expanding Further");
-            
+
             const finalOptions = { ...options, targetMuscles: [] };
             generatedExercises = await this.tryGenerateWithCriteria(finalOptions);
         }
