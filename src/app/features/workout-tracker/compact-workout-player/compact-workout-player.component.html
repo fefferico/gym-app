@@ -213,7 +213,8 @@
                         (click)="toggleSetCompletion(exercise, set, exIndex, setIndex, 0); $event.stopPropagation()"
                         [disabled]="!isSetDataValid(exIndex, setIndex)"
                         class="h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 ease-in-out transform active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
-                        [ngClass]="isSetCompleted(exIndex, setIndex, 0) ? 'bg-green-500 text-white shadow-lg' : 'bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-300'"><app-icon
+                        [ngClass]="isSetCompleted(exIndex, setIndex, 0) ? 'bg-green-500 text-white shadow-lg' : 'bg-primary/60 text-white'">
+                        <app-icon
                           name="done" class="h-6 w-6"></app-icon>
                       </button>
 
@@ -253,7 +254,7 @@
                         (click)="toggleSetCompletion(exercise, set, exIndex, setIndex, 0); $event.stopPropagation()"
                         [disabled]="!isSetDataValid(exIndex, setIndex)"
                         class="ml-2 px-2 h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 ease-in-out transform active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
-                        [ngClass]="isSetCompleted(exIndex, setIndex, 0) ? 'bg-green-500 text-white shadow-lg' : 'bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-300'">
+                        [ngClass]="isSetCompleted(exIndex, setIndex, 0) ? 'bg-green-500 text-white shadow-lg' : 'bg-primary/60 text-white'">
                         <app-icon name="done" class="h-6 w-6"></app-icon>
                       </button>
                     </div>
@@ -360,7 +361,7 @@
                         (click)="toggleSetCompletion(exercise, set, exIndex, setIndex, 0); $event.stopPropagation()"
                         [disabled]="!isSetDataValid(exIndex, setIndex)"
                         class="py-2 px-4 rounded-full flex items-center font-semibold justify-center transition-all duration-200 ease-in-out transform active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
-                        [ngClass]="isSetCompleted(exIndex, setIndex, 0) ? 'bg-green-500 text-white shadow-lg' : 'bg-primary text-white'"><app-icon
+                        [ngClass]="isSetCompleted(exIndex, setIndex, 0) ? 'bg-green-500 text-white shadow-lg' : 'bg-primary/60 text-white'"><app-icon
                           name="done" class="h-6 w-6 mr-1"></app-icon>
                           <span>
                             {{isSetCompleted(exIndex, setIndex, 0) ? 'SET COMPLETED' : 'COMPLETE SET'}}
