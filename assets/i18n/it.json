@@ -738,6 +738,7 @@
     "notesPlaceholder": "Note per questo esercizio...",
     "toggleNotes": "Mostra/Nascondi note esercizio",
     "logPerformance": "Registra performance",
+    "loggedPerformance": "Performance registrata",
     "markAsUndone": "Segna come non fatto per modificare",
     "addMetric": "Aggiungi Metrica",
     "weightLabel": "Peso ({{unit}})",
