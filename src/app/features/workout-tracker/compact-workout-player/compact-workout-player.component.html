@@ -241,8 +241,8 @@
                     <div
                       *ngIf="isTimedSet(exIndex, setIndex) && getSetTimerState(exIndex, setIndex).status === 'running'"
                       class="relative flex items-center px-2 py-1 mt-2 transition-all">
-                      <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div class="bg-teal-400 h-2 rounded-full"
+                      <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+                        <div class="bg-teal-400 h-2 rounded-full my-1 mx-1"
                           [style.width.%]="(((performanceInputValues()[exIndex + '-' + setIndex]?.actualDuration ?? set.targetDuration) || 1) - getSetTimerState(exIndex, setIndex).remainingTime) / ((performanceInputValues()[exIndex + '-' + setIndex]?.actualDuration ?? set.targetDuration) || 1) * 100">
                         </div>
                       </div>

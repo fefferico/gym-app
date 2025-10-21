@@ -265,13 +265,13 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     let value = '';
     if (pb.weightLogged !== undefined && pb.weightLogged !== null) {
       value += `${pb.weightLogged}${this.unitService.getWeightUnitSuffix()}`;
-      if (pb.repsLogged > 1 && !pb.pbType.includes('RM (Actual)') && !pb.pbType.includes('RM (Estimated)')) {
+      if (pb.repsLogged && pb.repsLogged > 1 && !pb.pbType.includes('RM (Actual)') && !pb.pbType.includes('RM (Estimated)')) {
         // Show reps for "Heaviest Lifted" if reps > 1, but not for explicit 1RMs where reps is 1 by definition
         value += ` x ${pb.repsLogged}`;
-      } else if (pb.repsLogged > 1 && pb.pbType === "Heaviest Lifted") {
+      } else if (pb.repsLogged && pb.repsLogged > 1 && pb.pbType === "Heaviest Lifted") {
         value += ` x ${pb.repsLogged}`;
       }
-    } else if (pb.repsLogged > 0 && pb.pbType.includes('Max Reps')) {
+    } else if (pb.repsLogged && pb.pbType.includes('Max Reps')) {
       value = `${pb.repsLogged} reps`;
     } else if (pb.durationLogged && pb.durationLogged > 0 && pb.pbType.includes('Max Duration')) {
       value = `${this.formatDurationForRecord(pb.durationLogged)}s`;
@@ -495,7 +495,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
         for (const set of exerciseLog.sets) {
           const reps = set.repsLogged;
           const weight = set.weightLogged ?? 0;
-          if (reps > 0 && weight > 0) {
+          if (reps && weight > 0) {
             if (!bestsByRep[reps] || weight > bestsByRep[reps].weight) {
               bestsByRep[reps] = { weight, reps, date: log.startTime };
             }
@@ -561,10 +561,10 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
           let bestSetFor1RM: { weight: number, reps: number } | null = null;
           exerciseLog.sets.forEach(set => {
             const weight = set.weightLogged ?? 0;
-            totalVolume += weight * set.repsLogged;
+            totalVolume += weight * (set.repsLogged ?? 0);
             if (weight > maxWeight) maxWeight = weight;
             if (weight > 0 && (!bestSetFor1RM || weight > bestSetFor1RM.weight)) {
-              bestSetFor1RM = { weight, reps: set.repsLogged };
+              bestSetFor1RM = { weight, reps: set.repsLogged ?? 0 };
             }
           });
           if (bestSetFor1RM) {
@@ -670,11 +670,11 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     const parts: string[] = [];
     if (set.weightLogged != null && set.weightLogged > 0) {
       parts.push(`${this.decimalPipe.transform(set.weightLogged, '1.0-2')} ${this.unitService.getWeightUnitSuffix()}`);
-    } else if ((set.weightLogged === 0 || set.weightLogged === null) && set.repsLogged > 0) {
+    } else if ((set.weightLogged === 0 || set.weightLogged === null) && set.repsLogged) {
       parts.push(this.translate.instant('exerciseDetail.historyDisplay.bodyweight'));
     }
 
-    if (set.repsLogged > 0) parts.push(`${set.repsLogged} ${this.translate.instant('exerciseDetail.historyDisplay.reps')}`);
+    if (set.repsLogged) parts.push(`${set.repsLogged} ${this.translate.instant('exerciseDetail.historyDisplay.reps')}`);
     if (set.distanceLogged && set.distanceLogged > 0) parts.push(`${this.decimalPipe.transform(set.distanceLogged, '1.0-2')} ${this.unitService.getDistanceMeasureUnitSuffix()}`);
     if (set.durationLogged && set.durationLogged > 0) parts.push(this.formatDurationForRecord(set.durationLogged));
 

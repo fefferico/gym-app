@@ -11,12 +11,12 @@ export interface LoggedSet {
   exerciseId: string;    // ID of the base Exercise performed
 
   // Actual performance data
-  repsLogged: number;
+  repsLogged?: number | undefined;
   weightLogged?: number | undefined;
-  durationLogged?: number; // in seconds
-  distanceLogged?: number; // in kilometers
-  tempoLogged?: string;     // Actual tempo used, if tracked by user.
-  restLogged?: number;
+  durationLogged?: number | undefined; // in seconds
+  distanceLogged?: number | undefined; // in kilometers
+  tempoLogged?: string | undefined;     // Actual tempo used, if tracked by user.
+  restLogged?: number | undefined;
   // restTaken?: number;  // Actual rest taken before the next set (more complex to track accurately)
 
   // Target values (copied from the planned set in the routine at the time of performance)
@@ -102,7 +102,7 @@ export interface WorkoutLog {
 export interface PersonalBestSet extends LoggedSet {
   pbType: string; // e.g., "1RM", "5RM (estimated)", "Max Reps @ X kg"
   exerciseId: string;
-  repsLogged: number;
+  repsLogged?: number | undefined;
   weightLogged?: number | undefined;
   volume?: number | undefined;
   durationLogged?: number; // In seconds
@@ -131,9 +131,9 @@ export interface LastPerformanceSummary {
 
 export interface PBHistoryInstance {
   weightLogged?: number | undefined;
-  repsLogged: number; // Actual reps for this historical PB instance
-  durationLogged?: number; // Actual duration for this historical PB instance
-  distanceLogged?: number; // Actual duration for this historical PB instance
+  repsLogged?: number | undefined; // Actual reps for this historical PB instance
+  durationLogged?: number | undefined; // Actual duration for this historical PB instance
+  distanceLogged?: number | undefined; // Actual duration for this historical PB instance
   timestamp: string;    // ISO date string of when this historical PB was achieved
   workoutLogId?: string; // The log ID where this historical PB was achieved
   pbType?: string;

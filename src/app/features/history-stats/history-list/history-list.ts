@@ -440,7 +440,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
         // --- PB Type Checks ---
         // Bodyweight or duration-based PBs
         if (!candidateSet.weightLogged) {
-          if (candidateSet.repsLogged > 0) {
+          if (candidateSet.repsLogged) {
             checkForAndAddPb('Max Reps (Bodyweight)', candidateSet);
           }
           if (candidateSet.durationLogged && candidateSet.durationLogged > 0) {
@@ -462,7 +462,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
         }
 
         // Estimated 1RM
-        if (candidateSet.repsLogged > 1) {
+        if (candidateSet.repsLogged && candidateSet.repsLogged > 1) {
           const e1RM = candidateSet.weightLogged * (1 + candidateSet.repsLogged / 30);
           const e1RMSet: LoggedSet = {
             ...candidateSet,
@@ -495,7 +495,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     let isBetter = false;
     if (pbType.includes('Max Reps')) {
-      if (candidateSet.repsLogged > existingBest.repsLogged) isBetter = true;
+      if (candidateSet.repsLogged && existingBest.repsLogged && candidateSet.repsLogged > existingBest.repsLogged) isBetter = true;
     } else if (pbType.includes('Max Duration')) {
       if ((candidateSet.durationLogged ?? 0) > (existingBest.durationLogged ?? 0)) isBetter = true;
     } else { // All other PBs are weight-based
@@ -503,7 +503,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
         isBetter = true;
       } else if (
         (candidateSet.weightLogged ?? 0) === (existingBest.weightLogged ?? 0) &&
-        candidateSet.repsLogged > existingBest.repsLogged
+        candidateSet.repsLogged && existingBest.repsLogged && candidateSet.repsLogged > existingBest.repsLogged
       ) {
         // This logic is for 'Heaviest Lifted' where higher reps at same weight is better
         isBetter = true;

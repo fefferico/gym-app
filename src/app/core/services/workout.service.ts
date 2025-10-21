@@ -295,12 +295,12 @@ export class WorkoutService {
     // Note: This assumes cardio duration is logged in 'repsLogged' and distance in 'weightLogged'.
     const wasSuccessful = (
       // Reps check
-      (plannedSet.targetReps && lastPerformedSet.repsLogged >= plannedSet.targetReps) ||
-      (plannedSet.targetRepsMin && lastPerformedSet.repsLogged >= plannedSet.targetRepsMin) ||
+      (plannedSet.targetReps && lastPerformedSet.repsLogged && lastPerformedSet.repsLogged >= plannedSet.targetReps) ||
+      (plannedSet.targetRepsMin && lastPerformedSet.repsLogged && lastPerformedSet.repsLogged >= plannedSet.targetRepsMin) ||
 
       // Duration check (uses repsLogged from log)
-      (plannedSet.targetDuration && lastPerformedSet.repsLogged >= plannedSet.targetDuration) ||
-      (plannedSet.targetDurationMin && lastPerformedSet.repsLogged >= plannedSet.targetDurationMin) ||
+      (plannedSet.targetDuration && lastPerformedSet.repsLogged && lastPerformedSet.repsLogged >= plannedSet.targetDuration) ||
+      (plannedSet.targetDurationMin && lastPerformedSet.repsLogged && lastPerformedSet.repsLogged >= plannedSet.targetDurationMin) ||
 
       // Distance check (uses weightLogged from log)
       (plannedSet.targetDistance && lastPerformedSet.weightLogged && lastPerformedSet.weightLogged >= plannedSet.targetDistance) ||

@@ -1101,10 +1101,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     let value = '';
     if (pb.weightLogged !== undefined && pb.weightLogged !== null) {
       value += `${pb.weightLogged}${this.unitService.getWeightUnitSuffix()}`;
-      if (pb.repsLogged > 1 && !pb.pbType.includes('RM (Actual)')) {
+      if (pb.repsLogged && pb.repsLogged > 1 && !pb.pbType.includes('RM (Actual)')) {
         value += ` x ${pb.repsLogged}`;
       }
-    } else if (pb.repsLogged > 0 && pb.pbType.includes('Max Reps')) {
+    } else if (pb.repsLogged && pb.pbType.includes('Max Reps')) {
       value = `${pb.repsLogged} reps`;
     } else if (pb.durationLogged && pb.durationLogged > 0 && pb.pbType.includes('Max Duration')) {
       value = `${pb.durationLogged}s`;

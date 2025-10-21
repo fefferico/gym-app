@@ -161,6 +161,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         actualReps: completedSetLog?.repsLogged,
         actualWeight: completedSetLog?.weightLogged,
         actualDuration: completedSetLog?.durationLogged,
+        actualDistance: completedSetLog?.distanceLogged,
+        actualRest: completedSetLog?.restLogged,
         notes: completedSetLog?.notes || setData?.notes,
       };
     }
@@ -593,6 +595,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     if (this.routine()) {
       this.toggleExerciseExpansion(0);
+      this.scrollToSet(0, 0);
     }
   }
 
@@ -1182,6 +1185,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           newSet.targetReps = userInputs.actualReps ?? lastSet.targetReps;
           newSet.targetDistance = userInputs.actualDistance ?? lastSet.targetDistance;
           newSet.targetDuration = userInputs.actualDuration ?? lastSet.targetDuration;
+          newSet.targetRest = userInputs.actualRest ?? lastSet.targetRest;
           newSet.targetTempo = userInputs.tempoLogged ?? lastSet.targetTempo;
           
           // Also carry over the fieldOrder to the new set
@@ -1234,6 +1238,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           newSet.targetReps = userInputs.actualReps ?? lastSet.targetReps;
           newSet.targetDistance = userInputs.actualDistance ?? lastSet.targetDistance;
           newSet.targetDuration = userInputs.actualDuration ?? lastSet.targetDuration;
+          newSet.targetRest = userInputs.actualRest ?? lastSet.targetRest;
           newSet.targetTempo = userInputs.tempoLogged ?? lastSet.targetTempo;
 
         } else {
@@ -1612,10 +1617,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   formatPbValue(pb: PersonalBestSet): string {
     if (pb.weightLogged != null && pb.weightLogged > 0) {
       let value = this.weightUnitPipe.transform(pb.weightLogged);
-      if (pb.repsLogged > 1) value += ` x ${pb.repsLogged}`;
+      if (pb.repsLogged && pb.repsLogged > 1) value += ` x ${pb.repsLogged}`;
       return value || 'N/A';
     }
-    if (pb.repsLogged > 0) return `${pb.repsLogged} reps`;
+    if (pb.repsLogged) return `${pb.repsLogged} reps`;
     if (pb.durationLogged) return `${pb.durationLogged}s`;
     return 'N/A';
   }
@@ -3145,15 +3150,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (!routine) return '';
 
     const key = `${exIndex}-${setIndex}`;
-    const userInputs = this.performanceInputValues()[key];
+
+    const userInputs = this.performanceInputValues()[key] || {};
     const plannedSet = routine.exercises[exIndex].sets[setIndex];
     const loggedSet = this.getLoggedSet(exIndex, setIndex);
 
     // PRIORITY 1: Show already logged data if it exists.
     if (loggedSet) {
-      if (loggedSet.notes) {
-        return loggedSet.notes ?? '';
-      }
       switch (field) {
         case METRIC.reps: return (loggedSet.repsLogged ?? '').toString();
         case METRIC.weight: return (loggedSet.weightLogged ?? '').toString();
@@ -3161,6 +3164,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         case METRIC.duration: return this.formatSecondsToTime(loggedSet.durationLogged);
         case METRIC.tempo: return (loggedSet.tempoLogged ?? '-').toString();
         case METRIC.rest: return this.formatSecondsToTime(loggedSet.restLogged);
+        case 'notes': return loggedSet.notes ?? '';
       }
     }
 
@@ -3228,10 +3232,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
       default:
         // Add a default case for safety
-        return '';
-    }
-    if (plannedSet.notes) {
-      return plannedSet.notes ?? '';
+        return plannedSet.notes ?? '';
     }
 
     // =================== END OF SNIPPET ===================
@@ -3324,6 +3325,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
               actualWeight: unloggedSet.weightLogged,
               actualDuration: unloggedSet.durationLogged,
               actualDistance: unloggedSet.distanceLogged,
+              actualRest: unloggedSet.restLogged,
               notes: unloggedSet.notes
             };
             return { ...inputs };
@@ -3393,10 +3395,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         type: set.type,
         // --- THIS IS THE FIX ---
         // Performed values: Prioritize user input. If none, fall back to the planned target for the set.
-        repsLogged: userInputs.actualReps ?? set.targetReps ?? 0,
-        weightLogged: userInputs.actualWeight ?? set.targetWeight ?? 0,
-        durationLogged: actualdurationLogged,
-        distanceLogged: userInputs.actualDistance ?? set.targetDistance ?? 0,
+        repsLogged: userInputs.actualReps ?? set.targetReps ?? undefined,
+        weightLogged: userInputs.actualWeight ?? set.targetWeight ?? undefined,
+        durationLogged: userInputs.actualDuration ?? set.targetDuration ?? undefined,
+        distanceLogged: userInputs.actualDistance ?? set.targetDistance ?? undefined,
+        restLogged: userInputs.actualRest ?? set.targetRest ?? undefined,
         notes: userInputs.notes ?? set.notes,
         tempoLogged: userInputs.tempoLogged ?? set.targetTempo,
         timestamp: new Date().toISOString(),

@@ -261,7 +261,7 @@ export class TrackingService {
         };
 
         // Check for non-weight based PBs
-        if (candidateSet.repsLogged > 0 && (candidateSet.weightLogged === undefined || candidateSet.weightLogged === null || candidateSet.weightLogged === 0)) {
+        if (candidateSet.repsLogged && (candidateSet.weightLogged === undefined || candidateSet.weightLogged === null || candidateSet.weightLogged === 0)) {
           this.updateSpecificPB(exercisePBsList, candidateSet, `Max Reps (Bodyweight)`);
         }
         if (candidateSet.durationLogged && candidateSet.durationLogged > 0) {
@@ -277,7 +277,7 @@ export class TrackingService {
           if (candidateSet.repsLogged === 3) this.updateSpecificPB(exercisePBsList, candidateSet, `3RM (Actual)`);
           if (candidateSet.repsLogged === 5) this.updateSpecificPB(exercisePBsList, candidateSet, `5RM (Actual)`);
           this.updateSpecificPB(exercisePBsList, candidateSet, `Heaviest Lifted`);
-          if (candidateSet.repsLogged > 1) {
+          if (candidateSet.repsLogged && candidateSet.repsLogged > 1) {
             const e1RM = candidateSet.weightLogged * (1 + candidateSet.repsLogged / 30);
             const e1RMSet: LoggedSet = { ...candidateSet, repsLogged: 1, weightLogged: parseFloat(e1RM.toFixed(2)) };
             this.updateSpecificPB(exercisePBsList, e1RMSet, `1RM (Estimated)`);
@@ -319,7 +319,7 @@ export class TrackingService {
 
       let isBetter = false;
       if (pbType.includes('Max Reps')) {
-        if (candidateSet.repsLogged > existingPb.repsLogged) isBetter = true;
+        if (candidateSet.repsLogged && existingPb.repsLogged && candidateSet.repsLogged > existingPb.repsLogged) isBetter = true;
         else if (candidateSet.repsLogged === existingPb.repsLogged && (candidateSet.weightLogged ?? -1) > (existingPb.weightLogged ?? -1)) isBetter = true;
       } else if (pbType.includes('Max Duration')) {
         if ((candidateSet.durationLogged ?? 0) > (existingPb.durationLogged ?? 0)) isBetter = true;
@@ -401,7 +401,7 @@ export class TrackingService {
           };
 
           // Check for non-weight based PBs
-          if (candidateSet.repsLogged > 0 && (candidateSet.weightLogged === undefined || candidateSet.weightLogged === null || candidateSet.weightLogged === 0)) {
+          if (candidateSet.repsLogged && (candidateSet.weightLogged === undefined || candidateSet.weightLogged === null || candidateSet.weightLogged === 0)) {
             this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Max Reps (Bodyweight)`);
           }
           if (candidateSet.durationLogged && candidateSet.durationLogged > 0) {
@@ -417,7 +417,7 @@ export class TrackingService {
             if (candidateSet.repsLogged === 3) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `3RM (Actual)`);
             if (candidateSet.repsLogged === 5) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `5RM (Actual)`);
             this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Heaviest Lifted`);
-            if (candidateSet.repsLogged > 1) {
+            if (candidateSet.repsLogged && candidateSet.repsLogged > 1) {
               const e1RM = candidateSet.weightLogged * (1 + candidateSet.repsLogged / 30);
               const e1RMSet: LoggedSet = { ...candidateSet, repsLogged: 1, weightLogged: parseFloat(e1RM.toFixed(2)) };
               this.updateSpecificPB(exercisePBsListForRecalc, e1RMSet, `1RM (Estimated)`);
@@ -483,7 +483,7 @@ export class TrackingService {
                     maxWeightThisSession = set.weightLogged;
                     repsAtMaxWeight = set.repsLogged;
                   } else if (set.weightLogged === maxWeightThisSession) {
-                    if (repsAtMaxWeight === undefined || (set.repsLogged > repsAtMaxWeight)) {
+                    if (repsAtMaxWeight === undefined || (set.repsLogged && set.repsLogged > repsAtMaxWeight)) {
                       repsAtMaxWeight = set.repsLogged;
                     }
                   }
@@ -616,7 +616,7 @@ export class TrackingService {
         loggedEx.sets.forEach(originalSet => {
           const candidateSet: LoggedSet = { ...originalSet, timestamp: originalSet.timestamp || logTimestamp, workoutLogId: originalSet.workoutLogId || log.id, exerciseId: originalSet.exerciseId || loggedEx.exerciseId, };
           if (candidateSet.weightLogged === undefined || candidateSet.weightLogged === null || candidateSet.weightLogged === 0) {
-            if (candidateSet.repsLogged > 0) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Max Reps (Bodyweight)`);
+            if (candidateSet.repsLogged) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Max Reps (Bodyweight)`);
             if (candidateSet.durationLogged && candidateSet.durationLogged > 0) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Max Duration`);
             return;
           }
@@ -624,7 +624,7 @@ export class TrackingService {
           if (candidateSet.repsLogged === 3) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `3RM (Actual)`);
           if (candidateSet.repsLogged === 5) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `5RM (Actual)`);
           this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Heaviest Lifted`);
-          if (candidateSet.repsLogged > 1) {
+          if (candidateSet.repsLogged && candidateSet.repsLogged > 1) {
             const e1RM = candidateSet.weightLogged * (1 + candidateSet.repsLogged / 30);
             const e1RMSet: LoggedSet = { ...candidateSet, repsLogged: 1, weightLogged: parseFloat(e1RM.toFixed(2)) };
             this.updateSpecificPB(exercisePBsListForRecalc, e1RMSet, `1RM (Estimated)`);

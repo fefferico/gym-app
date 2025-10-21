@@ -2282,11 +2282,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             weightLogged: this.unitService.convertWeight(setInput.weightLogged, 'kg', this.unitService.currentWeightUnit()) ?? undefined,
             distanceLogged: setInput.distanceLogged,
             durationLogged: setInput.durationLogged,
+            restLogged: setInput.restLogged,
             notes: setInput.notes,
             targetReps: setInput.targetReps,
             targetWeight: setInput.targetWeight,
             targetDuration: setInput.targetDuration,
             targetTempo: setInput.targetTempo,
+            targetRest: setInput.targetRest,
             rpe: undefined,
             timestamp: setInput.timestamp || new Date().toISOString(),
           }));

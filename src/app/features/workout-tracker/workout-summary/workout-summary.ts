@@ -181,10 +181,10 @@ export class WorkoutSummaryComponent implements OnInit {
     let value = '';
     if (pb.weightLogged !== undefined && pb.weightLogged !== null && pb.weightLogged !== 0) {
       value += `${pb.weightLogged}${this.unitsService.getWeightUnitSuffix()}`;
-      if (pb.repsLogged > 0 && (pb.pbType.includes('Heaviest') || pb.repsLogged > 1 && !pb.pbType.includes('RM'))) {
+      if (pb.repsLogged && (pb.pbType.includes('Heaviest') || pb.repsLogged > 1 && !pb.pbType.includes('RM'))) {
         value += ` x ${pb.repsLogged}`;
       }
-    } else if (pb.repsLogged > 0 && pb.pbType.includes('Max Reps')) {
+    } else if (pb.repsLogged && pb.pbType.includes('Max Reps')) {
       value = `${pb.repsLogged} ${this.translate.instant('workoutSummary.units.reps')}`;
     } else if (pb.durationLogged && pb.durationLogged > 0 && pb.pbType.includes('Max Duration')) {
       value = `${pb.durationLogged}${this.translate.instant('workoutSummary.units.seconds')}`;
