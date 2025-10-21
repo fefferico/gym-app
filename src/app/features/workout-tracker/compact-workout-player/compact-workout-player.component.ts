@@ -2047,73 +2047,75 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
    * It now correctly handles advancing between rounds within a superset.
    */
   private handleAutoExpandNextExercise(): void {
-    const completedExIndex = this.lastExerciseIndex();
-    const completedSetIndex = this.lastExerciseSetIndex(); // This is the roundIndex for supersets
-    const routine = this.routine();
+    return;
 
-    if (completedExIndex < 0 || completedSetIndex < 0 || !routine) return;
+    // const completedExIndex = this.lastExerciseIndex();
+    // const completedSetIndex = this.lastExerciseSetIndex(); // This is the roundIndex for supersets
+    // const routine = this.routine();
 
-    const completedExercise = routine.exercises[completedExIndex];
+    // if (completedExIndex < 0 || completedSetIndex < 0 || !routine) return;
 
-    // --- EXECUTE THE STATE CHANGE ---
+    // const completedExercise = routine.exercises[completedExIndex];
 
-    // BRANCH 1: The completed item was part of a SUPERSET
-    if (completedExercise.supersetId) {
-      const isLastRound = completedSetIndex >= completedExercise.sets.length - 1;
+    // // --- EXECUTE THE STATE CHANGE ---
 
-      if (isLastRound) {
-        // ACTION 1A: It was the last round. Advance to the next exercise card.
-        const nextExIndex = this.findNextExerciseIndex(completedExIndex);
-        if (nextExIndex !== -1) {
-          this.toggleExerciseExpansion(nextExIndex);
-        } else {
-          // End of workout, collapse everything.
-          this.expandedExerciseIndex.set(null);
-        }
-      } else {
-        // ACTION 1B: Not the last round. Advance to the next round in the same superset.
-        const nextRoundIndex = completedSetIndex + 1;
+    // // BRANCH 1: The completed item was part of a SUPERSET
+    // if (completedExercise.supersetId) {
+    //   const isLastRound = completedSetIndex >= completedExercise.sets.length - 1;
 
-        // We need the index of the exercise that STARTS the superset group to manage the expanded state.
-        const firstExerciseInSupersetIndex = routine.exercises.findIndex(ex => ex.supersetId === completedExercise.supersetId);
+    //   if (isLastRound) {
+    //     // ACTION 1A: It was the last round. Advance to the next exercise card.
+    //     const nextExIndex = this.findNextExerciseIndex(completedExIndex);
+    //     if (nextExIndex !== -1) {
+    //       this.toggleExerciseExpansion(nextExIndex);
+    //     } else {
+    //       // End of workout, collapse everything.
+    //       this.expandedExerciseIndex.set(null);
+    //     }
+    //   } else {
+    //     // ACTION 1B: Not the last round. Advance to the next round in the same superset.
+    //     const nextRoundIndex = completedSetIndex + 1;
 
-        this.expandedRounds.update(currentSet => {
-          const newSet = new Set(currentSet);
-          newSet.delete(`${firstExerciseInSupersetIndex}-${completedSetIndex}`); // Collapse the old one
-          newSet.add(`${firstExerciseInSupersetIndex}-${nextRoundIndex}`);    // Expand the new one
-          return newSet;
-        });
+    //     // We need the index of the exercise that STARTS the superset group to manage the expanded state.
+    //     const firstExerciseInSupersetIndex = routine.exercises.findIndex(ex => ex.supersetId === completedExercise.supersetId);
 
-        // Scroll the new round into view.
-        this.scrollToRound(firstExerciseInSupersetIndex, nextRoundIndex);
-      }
-    }
-    // BRANCH 2: The completed item was a STANDARD EXERCISE
-    else {
-      const isLastSet = completedSetIndex >= completedExercise.sets.length - 1;
+    //     this.expandedRounds.update(currentSet => {
+    //       const newSet = new Set(currentSet);
+    //       newSet.delete(`${firstExerciseInSupersetIndex}-${completedSetIndex}`); // Collapse the old one
+    //       newSet.add(`${firstExerciseInSupersetIndex}-${nextRoundIndex}`);    // Expand the new one
+    //       return newSet;
+    //     });
 
-      if (isLastSet) {
-        // ACTION 2A: It was the last set. Advance to the next exercise card.
-        const nextExIndex = this.findNextExerciseIndex(completedExIndex);
-        if (nextExIndex !== -1) {
-          this.toggleExerciseExpansion(nextExIndex);
-        } else {
-          this.expandedExerciseIndex.set(null);
-        }
-      } else {
-        // ACTION 2B: The next set is in the SAME exercise.
-        const nextSetIndex = completedSetIndex + 1;
+    //     // Scroll the new round into view.
+    //     this.scrollToRound(firstExerciseInSupersetIndex, nextRoundIndex);
+    //   }
+    // }
+    // // BRANCH 2: The completed item was a STANDARD EXERCISE
+    // else {
+    //   const isLastSet = completedSetIndex >= completedExercise.sets.length - 1;
 
-        this.expandedSets.update(currentSet => {
-          const newSet = new Set(currentSet);
-          newSet.delete(`${completedExIndex}-${completedSetIndex}`); // Collapse the old one
-          newSet.add(`${completedExIndex}-${nextSetIndex}`);       // Expand the new one
-          return newSet;
-        });
+    //   if (isLastSet) {
+    //     // ACTION 2A: It was the last set. Advance to the next exercise card.
+    //     const nextExIndex = this.findNextExerciseIndex(completedExIndex);
+    //     if (nextExIndex !== -1) {
+    //       this.toggleExerciseExpansion(nextExIndex);
+    //     } else {
+    //       this.expandedExerciseIndex.set(null);
+    //     }
+    //   } else {
+    //     // ACTION 2B: The next set is in the SAME exercise.
+    //     const nextSetIndex = completedSetIndex + 1;
 
-        this.scrollToSet(completedExIndex, nextSetIndex);
-      }
-    }
+    //     this.expandedSets.update(currentSet => {
+    //       const newSet = new Set(currentSet);
+    //       newSet.delete(`${completedExIndex}-${completedSetIndex}`); // Collapse the old one
+    //       newSet.add(`${completedExIndex}-${nextSetIndex}`);       // Expand the new one
+    //       return newSet;
+    //     });
+
+    //     this.scrollToSet(completedExIndex, nextSetIndex);
+    //   }
+    // }
   }
 
   /**
