@@ -742,6 +742,7 @@
     "notesPlaceholder": "Notes for this exercise...",
     "toggleNotes": "Toggle notes for exercise",
     "logPerformance": "Log performance",
+    "loggedPerformance": "Performance logged",
     "markAsUndone": "Mark as undone to edit",
     "addMetric": "Add Metric",
     "weightLabel": "Weight ({{unit}})",

@@ -5,7 +5,7 @@
 
     <!-- Top part of header -->
     <div class="flex items-center justify-between w-full">
-      <button (click)="goBack()"
+      <button appBumpClick (click)="goBack()"
         class="p-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light">
         <app-icon name="cancel" class="h-6 w-6"></app-icon>
       </button>
@@ -20,12 +20,12 @@
       </div>
       <!-- MODIFIED: Container for Pause/Resume and Notes buttons -->
       <div class="relative flex items-center">
-        <button (click)="toggleMainSessionActionMenu($event)"
+        <button appBumpClick (click)="toggleMainSessionActionMenu($event)"
           class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
           <app-icon name="menu-action" class="h-10 w-10"></app-icon>
         </button>
         <!-- The separate pause/resume button is now inside the action menu -->
-        <button *ngIf="sessionState() === 'paused'" (click)="resumeSession()" class="p-2">
+        <button appBumpClick *ngIf="sessionState() === 'paused'" (click)="resumeSession()" class="p-2">
           <app-icon name="play" class="h-6 w-6 text-primary dark:text-primary-light animate-pulse"></app-icon>
         </button>
         <app-action-menu [isVisible]="mainSessionActionMenuOpened() === true && getMenuMode() !== 'compact'"
@@ -115,12 +115,12 @@
             <div class="absolute top-2 right-2 z-60">
               <div class="relative">
                 <div class="flex">
-                  <button (click)="toggleExerciseNotes(exIndex, $event)"
+                  <button appBumpClick (click)="toggleExerciseNotes(exIndex, $event)"
                     [title]="'compactPlayer.toggleNotes' | translate"
                     class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center p-2">
                     <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
                   </button>
-                  <button (click)="toggleActionMenu(exIndex, $event)"
+                  <button appBumpClick (click)="toggleActionMenu(exIndex, $event)"
                     class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
                     <app-icon name="menu-action" class="h-8 w-8"></app-icon>
                   </button>
@@ -150,14 +150,14 @@
               <ng-container *ngIf="!isSuperSet(exIndex)">
                 <ng-container *ngFor="let set of exercise.sets; let setIndex = index">
 
-                  
+
                   <!-- START: Set Card Layout -->
                   <div [attr.data-set-index]="setIndex" #setCard [ngClass]="getSetClasses(exIndex, setIndex, set)">
                     <!-- Set Header (Always visible, now clickable) -->
 
                     <div class="flex items-center gap-3 p-1 cursor-pointer"
                       (click)="toggleSetExpansion(exIndex, setIndex, $event)">
-                    <!-- Set Number -->
+                      <!-- Set Number -->
                       <div class="flex-shrink-0 w-8 text-center">
                         <span class="font-bold text-lg text-gray-700 dark:text-gray-200">#{{ setIndex + 1 }}</span>
                       </div>
@@ -186,7 +186,7 @@
                       <!-- Placeholder text for expanded view -->
                       <div class="flex-1 text-xs text-black dark:text-gray-300"
                         *ngIf="isSetExpanded(exIndex, setIndex)">
-                        {{ 'compactPlayer.logPerformance' | translate }}{{ isSetCompleted(exIndex, setIndex)?'ged':''}}:
+                        {{ (isSetCompleted(exIndex, setIndex)? 'compactPlayer.loggedPerformance' : 'compactPlayer.logPerformance' ) | translate}}:
                         <p *ngIf="isSetCompleted(exIndex, setIndex)" class="italic font-bold">{{
                           'compactPlayer.markAsUndone' | translate }}</p>
                         <p *ngIf="isSetWarmup(exIndex, setIndex)" class="font-bold">
@@ -198,24 +198,23 @@
                       <div *ngIf="isSetExpanded(exIndex,setIndex)"
                         class="flex-shrink-0 flex flex-col items-center justify-center gap-1">
                         <div *ngIf="!isSetCompleted(exIndex, setIndex)" class="flex items-center">
-                          <button (click)="toggleSetNotes(exIndex, setIndex, $event)"
+                          <button appBumpClick (click)="toggleSetNotes(exIndex, setIndex, $event)"
                             class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center"><app-icon
                               name="clipboard-list"
                               class="h-6 w-6 text-gray-500 dark:text-gray-400"></app-icon></button>
-                          <button (click)="removeSet(exIndex, setIndex)"
+                          <button appBumpClick (click)="removeSet(exIndex, setIndex)"
                             class="p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-600/50 flex items-center"><app-icon
                               name="trash" class="h-6 w-6 text-red-500" [strokeWidth]="2"></app-icon></button>
                         </div>
                       </div>
 
                       <!-- RIGHT Quick Complete Button -->
-                      <button *ngIf="!isTimedSet(exIndex, setIndex) && !isSetExpanded(exIndex, setIndex)"
+                      <button appBumpClick *ngIf="!isTimedSet(exIndex, setIndex) && !isSetExpanded(exIndex, setIndex)"
                         (click)="toggleSetCompletion(exercise, set, exIndex, setIndex, 0); $event.stopPropagation()"
                         [disabled]="!isSetDataValid(exIndex, setIndex)"
-                        class="h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 ease-in-out transform active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
+                        class="h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 ease-in-out transform active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none complete-set-button-animated"
                         [ngClass]="isSetCompleted(exIndex, setIndex, 0) ? 'bg-green-500 text-white shadow-lg' : 'bg-primary/60 text-white'">
-                        <app-icon
-                          name="done" class="h-6 w-6"></app-icon>
+                        <app-icon name="done" class="h-6 w-6"></app-icon>
                       </button>
 
                       <div *ngIf="isTimedSet(exIndex, setIndex) && !isSetCompleted(exIndex, setIndex)"
@@ -225,7 +224,7 @@
                           {{ formatSecondsToTime(getSetTimerState(exIndex, setIndex).remainingTime) }}
                         </span>
                         <!-- Play/Pause Button -->
-                        <button (click)="handleSetTimerAction(exIndex, setIndex, $event)"
+                        <button appBumpClick (click)="handleSetTimerAction(exIndex, setIndex, $event)"
                           class="h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 ease-in-out transform active:scale-90 focus:outline-none"
                           [ngClass]="getSetTimerButtonClass(exIndex, setIndex)">
                           <app-icon [name]="getSetTimerButtonIcon(exIndex, setIndex)" class="h-6 w-6"></app-icon>
@@ -233,7 +232,7 @@
                       </div>
 
                       <!-- Completed Indicator BUTTON (Shows for timed sets that are complete) -->
-                      <button *ngIf="isTimedSet(exIndex, setIndex) && isSetCompleted(exIndex, setIndex)"
+                      <button appBumpClick *ngIf="isTimedSet(exIndex, setIndex) && isSetCompleted(exIndex, setIndex)"
                         (click)="toggleSetCompletion(exercise, set, exIndex, setIndex, 0); $event.stopPropagation()"
                         class="h-10 w-10 rounded-full flex items-center justify-center bg-green-500 text-white shadow-lg transition-transform active:scale-90">
                         <app-icon name="done" class="h-6 w-6"></app-icon>
@@ -263,7 +262,7 @@
                       <!-- <div *ngIf="isSetExpanded(exIndex, setIndex)" class="border-t border-white dark:border-gray-600/50"> -->
 
                       <!-- Set ADD/REMOVE METRICS - STANDARD SET -->
-                      <div *ngIf="isSetExpanded(exIndex,setIndex)"
+                      <div 
                         class="flex-shrink-0 flex flex-col items-center justify-center gap-1">
                         <div *ngIf="!isSetCompleted(exIndex, setIndex)" class="flex items-center">
                           <div
@@ -272,13 +271,13 @@
                               class="flex items-center justify-between text-s font-medium text-white dark:text-gray-400">{{
                               'workoutBuilder.set.metrics' | translate }}:</label>
                             <!-- Remove metric button -->
-                            <button *ngIf="canRemoveAnyField(exIndex, setIndex)"
+                            <button appBumpClick *ngIf="canRemoveAnyField(exIndex, setIndex)"
                               (click)="promptRemoveField(exIndex, setIndex); $event.stopPropagation()"
                               class="flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors">
                               <app-icon name="minus-circle" class="h-5 w-5"></app-icon>
                             </button>
                             <!-- ADD metric -->
-                            <button *ngIf="getFieldsForSet(exIndex, setIndex).hidden.length > 0"
+                            <button appBumpClick *ngIf="getFieldsForSet(exIndex, setIndex).hidden.length > 0"
                               (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
                               class="flex items-center gap-1 text-xs font-semibold text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 p-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors">
                               <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
@@ -294,7 +293,7 @@
                               [disabled]="isSetCompleted(exIndex, setIndex)" [ngModel]="getSetType(exIndex, setIndex)"
                               (ngModelChange)="updateSetType(exIndex, setIndex, $event)"
                               class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed"
-                                [ngClass]="{'disabled-div-lower-opacity': isSetCompleted(exIndex, setIndex)}">
+                              [ngClass]="{'disabled-div-lower-opacity': isSetCompleted(exIndex, setIndex)}">
                               <option *ngFor="let typeOpt of availableSetTypes" [value]="typeOpt.value">{{ typeOpt.label
                                 }}</option>
                             </select>
@@ -304,7 +303,7 @@
 
                       <!-- Inputs Grid -->
                       <div class="grid grid-cols-2 gap-x-4 gap-y-2 p-1"
-                                [ngClass]="{'disabled-div-lower-opacity': isSetCompleted(exIndex, setIndex)}">
+                        [ngClass]="{'disabled-div-lower-opacity': isSetCompleted(exIndex, setIndex)}">
                         <ng-container *ngIf="getFieldsForSet(exIndex, setIndex).visible as visibleFields">
                           <!-- Loop through the visible fields in their defined order -->
                           <ng-container
@@ -341,7 +340,7 @@
                           <div
                             *ngIf="!isSetCompleted(exIndex,setIndex) && canAddField(exIndex, setIndex) && getFieldsForSet(exIndex, setIndex).visible.length%2===1"
                             class="flex items-center justify-center h-full">
-                            <button (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
+                            <button appBumpClick (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
                               class="flex items-center justify-center w-full p-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                               <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
                             </button>
@@ -356,17 +355,18 @@
                           class="w-full text-xs bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
                       </div>
 
+                      <!-- LOWER EXPANDED SET COMPLETE BUTTON -->
                       <div class="flex justify-center py-2">
-                        <button *ngIf="!isTimedSet(exIndex, setIndex)"
-                        (click)="toggleSetCompletion(exercise, set, exIndex, setIndex, 0); $event.stopPropagation()"
-                        [disabled]="!isSetDataValid(exIndex, setIndex)"
-                        class="py-2 px-4 rounded-full flex items-center font-semibold justify-center transition-all duration-200 ease-in-out transform active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
-                        [ngClass]="isSetCompleted(exIndex, setIndex, 0) ? 'bg-green-500 text-white shadow-lg' : 'bg-primary/60 text-white'"><app-icon
-                          name="done" class="h-6 w-6 mr-1"></app-icon>
+                        <button appBumpClick *ngIf="!isTimedSet(exIndex, setIndex)"
+                          (click)="toggleSetCompletion(exercise, set, exIndex, setIndex, 0); $event.stopPropagation()"
+                          [disabled]="!isSetDataValid(exIndex, setIndex)"
+                          class="py-2 px-4 rounded-full flex items-center font-semibold justify-center transition-all duration-200 ease-in-out transform active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none complete-set-button-animated"
+                          [ngClass]="isSetCompleted(exIndex, setIndex, 0) ? 'bg-green-500 text-white shadow-lg' : 'bg-primary/60 text-white'"><app-icon
+                            name="done" class="h-6 w-6 mr-1"></app-icon>
                           <span>
                             {{isSetCompleted(exIndex, setIndex, 0) ? 'SET COMPLETED' : 'COMPLETE SET'}}
                           </span>
-                      </button>
+                        </button>
                       </div>
 
                     </div>
@@ -381,12 +381,12 @@
                     class="flex w-fit items-center justify-center gap-1 bg-gray-300 dark:bg-gray-900/50 p-1 px-2 rounded-full">
                     <label class="flex items-center justify-between text-s font-medium text-white dark:text-gray-400">{{
                       'compactPlayer.setLabel' | translate }}:</label>
-                    <button type="button" (click)="removeSet(exIndex, -1)"
+                    <button appBumpClick type="button" (click)="removeSet(exIndex, -1)"
                       class="flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
                       [aria-label]="'compactPlayer.removeLastSet' | translate">
                       <app-icon name="minus-circle" class="h-5 w-5"></app-icon>
                     </button>
-                    <button type="button" (click)="addSet(exIndex, 'standard'); $event.stopPropagation()"
+                    <button appBumpClick type="button" (click)="addSet(exIndex, 'standard'); $event.stopPropagation()"
                       class="flex items-center gap-1 text-xs font-semibold text-green-500 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 p-1 rounded-full hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
                       [aria-label]="'compactPlayer.addSet' | translate">
                       <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
@@ -431,7 +431,7 @@
                         <!-- +++ NEW BUTTON/STATUS ELEMENT +++ -->
 
                         <!-- ROUND NOTES BUTTON -->
-                        <button (click)="toggleSetNotes(exIndex, roundIndex, $event)"
+                        <button appBumpClick (click)="toggleSetNotes(exIndex, roundIndex, $event)"
                           [title]="'compactPlayer.toggleNotes' | translate"
                           class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center p-2">
                           <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
@@ -444,7 +444,7 @@
                             {{ formatSecondsToTime(getEmomState(exIndex, roundIndex).remainingTime) }}
                           </span>
                           <!-- Play/Pause Button (for EMOM) -->
-                          <button (click)="handleEmomAction(exIndex, roundIndex); $event.stopPropagation()"
+                          <button appBumpClick (click)="handleEmomAction(exIndex, roundIndex); $event.stopPropagation()"
                             [disabled]="getEmomState(exIndex, roundIndex).status === 'completed'"
                             class="h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 ease-in-out transform active:scale-90 focus:outline-none disabled:opacity-50"
                             [ngClass]="getEmomButtonClass(exIndex, roundIndex)">
@@ -453,7 +453,7 @@
                         </div>
 
                         <!-- Quick Complete Button (for STANDARD supersets) -->
-                        <button *ngIf="!isEmom(exIndex)" (click)="completeRoundOrSet(exercise, roundIndex, $event)"
+                        <button appBumpClick *ngIf="!isEmom(exIndex)" (click)="completeRoundOrSet(exercise, roundIndex, $event)"
                           class="h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 ease-in-out transform active:scale-90 focus:outline-none"
                           [ngClass]="isRoundCompleted(exIndex, roundIndex) ? 'bg-green-500 text-white shadow-lg' : 'bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-300'">
                           <app-icon name="done" class="h-6 w-6"></app-icon>
@@ -513,36 +513,37 @@
                               <div class="grid grid-cols-2 gap-x-4 gap-y-2"
                                 [ngClass]="{'disabled-div-lower-opacity': isRoundCompleted(exIndex, roundIndex)}">
 
-                                <ng-container *ngIf="getFieldsForSet(ssOriginalIndex, roundIndex).visible as visibleFields">
-      <!-- Loop through the visible fields in their defined order -->
-      <ng-container
-        *ngFor="let field of (workoutService.getSetFieldOrder(routine()!, ssOriginalIndex, roundIndex) || visibleFields)">
-        <ng-container [ngSwitch]="field">
-          <div *ngSwitchCase="'reps'">
-            <ng-container [ngTemplateOutlet]="repsInputTemplate"
-              [ngTemplateOutletContext]="{ exIndex: ssOriginalIndex, setIndex: roundIndex, set: ssExercise.sets[roundIndex] }"></ng-container>
-          </div>
-          <div *ngSwitchCase="'weight'">
-            <ng-container [ngTemplateOutlet]="weightInputTemplate"
-              [ngTemplateOutletContext]="{ exIndex: ssOriginalIndex, setIndex: roundIndex, set: ssExercise.sets[roundIndex] }"></ng-container>
-          </div>
-          <div *ngSwitchCase="'duration'">
-            <ng-container [ngTemplateOutlet]="durationInputTemplate"
-              [ngTemplateOutletContext]="{ exIndex: ssOriginalIndex, setIndex: roundIndex, set: ssExercise.sets[roundIndex] }"></ng-container>
-          </div>
-          <div *ngSwitchCase="'tempo'">
-            <ng-container [ngTemplateOutlet]="tempoInputTemplate"
-              [ngTemplateOutletContext]="{ exIndex: ssOriginalIndex, setIndex: roundIndex, set: ssExercise.sets[roundIndex] }"></ng-container>
-          </div>
-          <div *ngSwitchCase="'rest'">
-            <ng-container [ngTemplateOutlet]="restInputTemplate"
-              [ngTemplateOutletContext]="{ exIndex: ssOriginalIndex, setIndex: roundIndex, set: ssExercise.sets[roundIndex] }"></ng-container>
-          </div>
-        </ng-container>
-      </ng-container>
+                                <ng-container
+                                  *ngIf="getFieldsForSet(ssOriginalIndex, roundIndex).visible as visibleFields">
+                                  <!-- Loop through the visible fields in their defined order -->
+                                  <ng-container
+                                    *ngFor="let field of (workoutService.getSetFieldOrder(routine()!, ssOriginalIndex, roundIndex) || visibleFields)">
+                                    <ng-container [ngSwitch]="field">
+                                      <div *ngSwitchCase="'reps'">
+                                        <ng-container [ngTemplateOutlet]="repsInputTemplate"
+                                          [ngTemplateOutletContext]="{ exIndex: ssOriginalIndex, setIndex: roundIndex, set: ssExercise.sets[roundIndex] }"></ng-container>
+                                      </div>
+                                      <div *ngSwitchCase="'weight'">
+                                        <ng-container [ngTemplateOutlet]="weightInputTemplate"
+                                          [ngTemplateOutletContext]="{ exIndex: ssOriginalIndex, setIndex: roundIndex, set: ssExercise.sets[roundIndex] }"></ng-container>
+                                      </div>
+                                      <div *ngSwitchCase="'duration'">
+                                        <ng-container [ngTemplateOutlet]="durationInputTemplate"
+                                          [ngTemplateOutletContext]="{ exIndex: ssOriginalIndex, setIndex: roundIndex, set: ssExercise.sets[roundIndex] }"></ng-container>
+                                      </div>
+                                      <div *ngSwitchCase="'tempo'">
+                                        <ng-container [ngTemplateOutlet]="tempoInputTemplate"
+                                          [ngTemplateOutletContext]="{ exIndex: ssOriginalIndex, setIndex: roundIndex, set: ssExercise.sets[roundIndex] }"></ng-container>
+                                      </div>
+                                      <div *ngSwitchCase="'rest'">
+                                        <ng-container [ngTemplateOutlet]="restInputTemplate"
+                                          [ngTemplateOutletContext]="{ exIndex: ssOriginalIndex, setIndex: roundIndex, set: ssExercise.sets[roundIndex] }"></ng-container>
+                                      </div>
+                                    </ng-container>
+                                  </ng-container>
 
-      <!-- "Add GHOST Field" Button for 1 or 3 fields - SUPERSET -->
-      <!-- <div
+                                  <!-- "Add GHOST Field" Button for 1 or 3 fields - SUPERSET -->
+                                  <!-- <div
         *ngIf="!isRoundCompleted(exIndex, roundIndex) && canAddField(ssOriginalIndex, roundIndex) && getFieldsForSet(ssOriginalIndex, roundIndex).visible.length%2===1"
         class="flex items-center justify-center h-full">
         <button (click)="promptAddField(ssOriginalIndex, roundIndex); $event.stopPropagation()"
@@ -550,7 +551,7 @@
           <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
         </button>
       </div> -->
-    </ng-container>
+                                </ng-container>
 
 
 
@@ -567,12 +568,12 @@
                 <!-- Col 2: Set +/- Buttons SUPER SET -->
                 <div class="flex items-center justify-center gap-x-2">
                   <label class="text-black dark:text-gray-100">{{ 'compactPlayer.roundLabel' | translate }}</label>
-                  <button type="button" (click)="removeSet(exIndex, -1)"
+                  <button appBumpClick type="button" (click)="removeSet(exIndex, -1)"
                     class="p-1.5 rounded-full bg-red-200 hover:bg-red-300 text-red-700 disabled:opacity-50 flex items-center"
                     [aria-label]="'compactPlayer.removeLastSet' | translate">
                     <app-icon name="minus-circle" class="h-5 w-5"></app-icon>
                   </button>
-                  <button type="button" (click)="addSet(exIndex, 'standard'); $event.stopPropagation()"
+                  <button appBumpClick type="button" (click)="addSet(exIndex, 'standard'); $event.stopPropagation()"
                     class="p-1.5 rounded-full bg-green-200 hover:bg-green-300 text-green-700 flex items-center"
                     [aria-label]="'compactPlayer.addSet' | translate">
                     <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
@@ -613,13 +614,13 @@
     <div
       class="w-full max-w-sm grid grid-cols-2 gap-4 bg-white dark:bg-gray-800/80 dark:backdrop-blur-sm border-t border-x border-gray-200 dark:border-gray-700 p-3 rounded-t-md">
 
-      <button (click)="openAddExerciseModal()"
+      <button appBumpClick (click)="openAddExerciseModal()"
         class="flex items-center justify-center space-x-2 bg-blue-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors">
         <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
         <span>{{ 'compactPlayer.addExercise' | translate }}</span>
       </button>
 
-      <button (click)="finishWorkout()"
+      <button appBumpClick (click)="finishWorkout()"
         [disabled]="!this.currentWorkoutLog() || !this.currentWorkoutLog().exercises || this.currentWorkoutLog().exercises?.length === 0"
         class="flex items-center justify-center space-x-2 bg-green-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
         <app-icon name="done" class="h-6 w-6"></app-icon>
@@ -663,14 +664,14 @@
           <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">{{ 'compactPlayer.insights.title' |
             translate }}</h3>
         </div>
-        <button (click)="closePerformanceInsightsModal()"
+        <button appBumpClick (click)="closePerformanceInsightsModal()"
           class="p-1.5 rounded-full text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/70 focus:outline-none transition-colors">
           <app-icon name="cancel" class="h-6 w-6"></app-icon>
         </button>
       </header>
       <div class="p-5 overflow-y-auto space-y-6 flex-grow">
         <div class="rounded-md border border-gray-200 dark:border-gray-700/80">
-          <button (click)="toggleCompletedSetsForExerciseInfo()" class="w-full flex items-center justify-between p-2 text-left text-sm font-medium text-gray-700
+          <button appBumpClick (click)="toggleCompletedSetsForExerciseInfo()" class="w-full flex items-center justify-between p-2 text-left text-sm font-medium text-gray-700
           dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors rounded-t-lg">
             <span class="flex items-center gap-2">
               <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
@@ -771,7 +772,7 @@
       </div>
       <footer
         class="p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 text-right flex-shrink-0">
-        <button (click)="closePerformanceInsightsModal()"
+        <button appBumpClick (click)="closePerformanceInsightsModal()"
           class="inline-flex items-center bg-primary hover:bg-primary-dark focus:ring-4 focus:ring-primary-focus text-white font-semibold py-2.5 px-6 rounded-md text-sm transition-colors shadow-md hover:shadow-lg">
           <app-icon name="done" class="h-7 w-7 mr-1"></app-icon>
           {{ 'compactPlayer.insights.done' | translate }}
@@ -833,7 +834,7 @@
     <div class="flex items-stretch w-full shadow-sm">
 
       <!-- Column 1: Decrement Button -->
-      <button type="button" appPress (shortPress)="onShortPressDecrement(exIndex, setIndex, field)"
+      <button appBumpClick type="button" appPress (shortPress)="onShortPressDecrement(exIndex, setIndex, field)"
         (longPress)="onLongPressDecrement(exIndex, setIndex, field)" (pressRelease)="onPressRelease()"
         class="flex items-center px-3 py-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-l-xl border-y border-l border-gray-300 dark:border-gray-700 transition-colors">
         <app-icon name="minus" class="h-5 w-5 pointer-events-none"></app-icon>
@@ -864,7 +865,7 @@
       </div>
 
       <!-- Column 3: Increment Button -->
-      <button type="button" appPress (shortPress)="onShortPressIncrement(exIndex, setIndex, field)"
+      <button appBumpClick type="button" appPress (shortPress)="onShortPressIncrement(exIndex, setIndex, field)"
         (longPress)="onLongPressIncrement(exIndex, setIndex, field)" (pressRelease)="onPressRelease()"
         class="flex items-center px-3 py-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-r-xl border-y border-r border-gray-300 dark:border-gray-700 transition-colors">
         <app-icon name="plus" class="h-5 w-5 pointer-events-none"></app-icon>

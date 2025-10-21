@@ -56,6 +56,7 @@ import { AUDIO_TYPES, AudioService } from '../../../core/services/audio.service'
 import { se } from 'date-fns/locale';
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { SET_TYPE } from '../workout-builder';
+import { BumpClickDirective } from '../../../shared/directives/bump-click.directive';
 
 // Interface for saving the paused state
 
@@ -88,7 +89,8 @@ export interface NextStepInfo {
   imports: [
     CommonModule, DatePipe, WeightUnitPipe, IconComponent,
     ExerciseSelectionModalComponent, FormsModule, ActionMenuComponent, FullScreenRestTimerComponent, NgLetDirective,
-    DragDropModule, BarbellCalculatorModalComponent, TranslateModule, SessionOverviewModalComponent, PressDirective
+    DragDropModule, BarbellCalculatorModalComponent, TranslateModule, SessionOverviewModalComponent, PressDirective,
+    BumpClickDirective
   ],
   templateUrl: './compact-workout-player.component.html',
   styleUrls: ['./compact-workout-player.component.scss'],
@@ -3370,7 +3372,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
       const userDefinedRest = userInputs.actualRest;
 
-      if (userDefinedRest) {
+      if (userDefinedRest !== undefined && userDefinedRest !== null) {
         set.targetRest = userDefinedRest;
       }
 
