@@ -1,1 +1,436 @@
-
+{
+  "exercises": {
+    "push-up": {
+      "name": "Flexión",
+      "description": "Un ejercicio clásico con peso corporal que trabaja el pecho, los hombros y los tríceps. Mantén el cuerpo recto y el core activado."
+    },
+    "pull-up": {
+      "name": "Dominada",
+      "description": "Un ejercicio avanzado con peso corporal que se enfoca en la espalda y los bíceps usando un agarre prono."
+    },
+    "chin-up": {
+      "name": "Dominada (agarre supino)",
+      "description": "Un ejercicio con peso corporal que se enfoca en la espalda y los bíceps usando un agarre supino, a menudo enfatizando más los bíceps que las dominadas."
+    },
+    "bodyweight-squat": {
+      "name": "Sentadilla con peso corporal",
+      "description": "Un ejercicio fundamental para el tren inferior que involucra cuádriceps, glúteos e isquiotibiales sin peso externo."
+    },
+    "lunge": {
+      "name": "Zancada",
+      "description": "Un ejercicio unilateral de piernas que mejora el equilibrio, la estabilidad y fortalece cuádriceps, glúteos e isquiotibiales."
+    },
+    "plank": {
+      "name": "Plancha",
+      "description": "Un ejercicio isométrico de fuerza del core que implica mantener una posición similar a una flexión durante el mayor tiempo posible."
+    },
+    "burpee": {
+      "name": "Burpee",
+      "description": "Un ejercicio de cuerpo completo y alta intensidad que combina una sentadilla, una flexión y un salto."
+    },
+    "dip-bar": {
+      "name": "Fondos (en paralelas)",
+      "description": "Un ejercicio compuesto con peso corporal que se enfoca principalmente en los tríceps y el pecho, realizado en barras paralelas."
+    },
+    "barbell-bench-press": {
+      "name": "Press de banca con barra",
+      "description": "Un ejercicio compuesto fundamental para la fuerza del tren superior, que se enfoca principalmente en el pecho, los hombros y los tríceps."
+    },
+    "barbell-back-squat": {
+      "name": "Sentadilla trasera con barra",
+      "description": "Un ejercicio de fuerza central que se enfoca en los cuádriceps, glúteos, isquiotibiales y la espalda baja al hacer una sentadilla con una barra en la parte superior de la espalda."
+    },
+    "barbell-deadlift": {
+      "name": "Peso muerto con barra (Convencional)",
+      "description": "Un ejercicio compuesto de cuerpo completo que consiste en levantar una barra del suelo hasta una posición de pie, involucrando piernas, espalda y core."
+    },
+    "overhead-press-barbell": {
+      "name": "Press militar con barra (de pie)",
+      "description": "Un ejercicio compuesto de hombros que consiste en empujar una barra por encima de la cabeza desde una posición de pie o sentado."
+    },
+    "bent-over-row-barbell": {
+      "name": "Remo inclinado con barra",
+      "description": "Un ejercicio compuesto de espalda en el que se jala una barra hacia el torso mientras se está inclinado en las caderas."
+    },
+    "barbell-bicep-curl": {
+      "name": "Curl de bíceps con barra",
+      "description": "Un ejercicio de aislamiento para los bíceps usando una barra."
+    },
+    "barbell-romanian-deadlift": {
+      "name": "Peso muerto rumano con barra (RDL)",
+      "description": "Se enfoca en los isquiotibiales y glúteos haciendo una bisagra en las caderas con una ligera flexión de rodilla, manteniendo la barra cerca de las piernas."
+    },
+    "dumbbell-bench-press": {
+      "name": "Press de banca con mancuernas",
+      "description": "Un ejercicio compuesto que se enfoca en el pecho, los hombros y los tríceps usando mancuernas en un banco, lo que permite un mayor rango de movimiento."
+    },
+    "dumbbell-shoulder-press": {
+      "name": "Press de hombros con mancuernas",
+      "description": "Un ejercicio compuesto de hombros que consiste en empujar mancuernas por encima de la cabeza, permitiendo el movimiento independiente de los brazos."
+    },
+    "dumbbell-row": {
+      "name": "Remo con mancuerna (a un brazo)",
+      "description": "Un ejercicio unilateral de espalda que se enfoca en dorsales, romboides y bíceps, generalmente realizado con una rodilla y una mano en un banco."
+    },
+    "dumbbell-bicep-curl": {
+      "name": "Curl de bíceps con mancuernas",
+      "description": "Un ejercicio de aislamiento para los bíceps usando mancuernas, que permite la supinación (rotación de la muñeca)."
+    },
+    "dumbbell-tricep-extension-overhead": {
+      "name": "Extensión de tríceps por encima de la cabeza con mancuerna",
+      "description": "Un ejercicio de aislamiento para los tríceps, realizado extendiendo una mancuerna por encima de la cabeza."
+    },
+    "dumbbell-lunge": {
+      "name": "Zancadas con mancuernas",
+      "description": "Zancadas realizadas mientras se sostienen mancuernas, añadiendo resistencia al tren inferior."
+    },
+    "dumbbell-romanian-deadlift": {
+      "name": "Peso muerto rumano con mancuernas (RDL)",
+      "description": "Se enfoca en los isquiotibiales y glúteos usando mancuernas, centrándose en el movimiento de bisagra de cadera."
+    },
+    "goblet-squat": {
+      "name": "Sentadilla de copa (Goblet Squat)",
+      "description": "Una variación de sentadilla sosteniendo una sola mancuerna o kettlebell a la altura del pecho, promoviendo un torso erguido."
+    },
+    "dumbbell-lateral-raise": {
+      "name": "Elevaciones laterales con mancuernas",
+      "description": "Un ejercicio de aislamiento para los deltoides mediales (laterales), levantando mancuernas hacia los lados."
+    },
+    "dumbbell-front-raise": {
+      "name": "Elevaciones frontales con mancuernas",
+      "description": "Un ejercicio de aislamiento para los deltoides anteriores (frontales), levantando mancuernas hacia adelante."
+    },
+    "kettlebell-swing": {
+      "name": "Swing con kettlebell (a dos manos)",
+      "description": "Un ejercicio dinámico y explosivo que se enfoca en la cadena posterior (glúteos, isquiotibiales, espalda) y mejora la potencia."
+    },
+    "kettlebell-goblet-squat": {
+      "name": "Sentadilla de copa con kettlebell",
+      "description": "Una sentadilla sosteniendo una kettlebell por los cuernos a la altura del pecho, excelente para la forma y la activación del core."
+    },
+    "kettlebell-clean-and-press": {
+      "name": "Clean and Press con kettlebell",
+      "description": "Un movimiento compuesto de cuerpo completo que implica levantar una kettlebell a la posición de rack y luego empujarla por encima de la cabeza."
+    },
+    "turkish-get-up": {
+      "name": "Levantamiento turco (TGU)",
+      "description": "Un ejercicio complejo de cuerpo completo que implica la transición de estar acostado en el suelo a estar de pie, todo mientras se sostiene una kettlebell (o mancuerna) por encima de la cabeza. Mejora la estabilidad, la movilidad y la fuerza."
+    },
+    "kettlebell-single-arm-row": {
+      "name": "Remo a un brazo con kettlebell",
+      "description": "Un ejercicio unilateral de espalda que se enfoca en dorsales, romboides y bíceps, realizado jalando una kettlebell hacia el torso, a menudo con una mano y una rodilla apoyadas en un banco."
+    },
+    "kettlebell-deadlift": {
+      "name": "Peso muerto con kettlebell",
+      "description": "Un ejercicio de fuerza fundamental que utiliza una o dos kettlebells para trabajar la cadena posterior, centrándose en un movimiento de bisagra de cadera. Se puede hacer con la(s) kettlebell(s) entre los pies o por fuera (estilo maleta)."
+    },
+    "kettlebell-strict-press": {
+      "name": "Press estricto con kettlebell (a un brazo)",
+      "description": "Un ejercicio de empuje por encima de la cabeza para la fuerza de hombros y tríceps, realizado con una sola kettlebell desde la posición de rack sin usar el impulso de las piernas."
+    },
+    "kettlebell-rack-lunge": {
+      "name": "Zancada con kettlebell (en posición de rack)",
+      "description": "Un ejercicio unilateral de piernas que desarrolla fuerza, estabilidad y activación del core, realizado mientras se sostienen una o dos kettlebells en la posición de rack frontal."
+    },
+    "kettlebell-windmill": {
+      "name": "Molino (Windmill) con kettlebell",
+      "description": "Un ejercicio complejo que mejora la estabilidad del hombro, la movilidad de la cadera y la fuerza del core, que implica una bisagra lateral en las caderas mientras se mantiene una kettlebell bloqueada por encima de la cabeza."
+    },
+    "kettlebell-russian-twist": {
+      "name": "Giro ruso con kettlebell",
+      "description": "Un ejercicio de core que se enfoca en los oblicuos y el recto abdominal, realizado sentándose con las rodillas dobladas y los pies fuera del suelo (opcional), girando el torso de lado a lado mientras se sostiene una kettlebell."
+    },
+    "kettlebell-high-pull": {
+      "name": "Tirón alto con kettlebell",
+      "description": "Un ejercicio explosivo que desarrolla potencia en las caderas, la espalda y los hombros. Implica jalar la kettlebell desde una posición de swing (o del suelo) hasta la altura de la barbilla, manteniendo el codo alto."
+    },
+    "kettlebell-figure-8": {
+      "name": "Figura 8 con kettlebell",
+      "description": "Un ejercicio dinámico que mejora la coordinación, la estabilidad del core y la fuerza de agarre al pasar la kettlebell entre y alrededor de las piernas en un movimiento de figura de ocho."
+    },
+    "kettlebell-suitcase-carry": {
+      "name": "Paseo del granjero a una mano (Suitcase Carry)",
+      "description": "Un ejercicio de transporte con carga unilateral que desafía la estabilidad del core, la fuerza de agarre y la postura al llevar una sola kettlebell pesada en una mano, como una maleta."
+    },
+    "kettlebell-thruster": {
+      "name": "Thruster con kettlebell",
+      "description": "Un ejercicio compuesto de cuerpo completo que combina una sentadilla frontal con kettlebell con un press por encima de la cabeza en un movimiento fluido. Se puede hacer con una o dos kettlebells."
+    },
+    "lat-pulldown-machine": {
+      "name": "Jalón al pecho (Máquina)",
+      "description": "Un ejercicio en máquina que se enfoca en los músculos dorsales anchos al jalar una barra hacia el pecho."
+    },
+    "seated-row-machine": {
+      "name": "Remo sentado (Máquina)",
+      "description": "Un ejercicio en máquina para el grosor de la espalda, que se enfoca en los músculos de la espalda media al jalar las manijas hacia el torso."
+    },
+    "leg-press-machine": {
+      "name": "Prensa de piernas (Máquina)",
+      "description": "Un ejercicio compuesto para el tren inferior realizado en una máquina, empujando una plataforma con peso con las piernas."
+    },
+    "leg-extension-machine": {
+      "name": "Extensión de piernas (Máquina)",
+      "description": "Un ejercicio de aislamiento para los cuádriceps, extendiendo las piernas contra una resistencia."
+    },
+    "leg-curl-machine": {
+      "name": "Curl de piernas (Máquina - acostado o sentado)",
+      "description": "Un ejercicio de aislamiento para los isquiotibiales, flexionando las piernas hacia los glúteos contra una resistencia."
+    },
+    "chest-press-machine": {
+      "name": "Press de pecho (Máquina)",
+      "description": "Un ejercicio compuesto en máquina para el pecho, similar a un press de banca pero con una trayectoria de movimiento fija."
+    },
+    "shoulder-press-machine": {
+      "name": "Press de hombros (Máquina)",
+      "description": "Un ejercicio en máquina para los hombros, empujando las manijas por encima de la cabeza con un movimiento guiado."
+    },
+    "pec-deck-fly-machine": {
+      "name": "Aperturas en contractora (Pec Deck)",
+      "description": "Un ejercicio de aislamiento para el pecho, juntando los brazos en un movimiento de apertura usando una máquina."
+    },
+    "reverse-pec-deck-machine": {
+      "name": "Pec Deck inverso (Pájaros para deltoides posterior)",
+      "description": "Un ejercicio en máquina que se enfoca en los deltoides posteriores y los músculos de la espalda alta."
+    },
+    "calf-raise-machine": {
+      "name": "Elevación de talones (Máquina - de pie o sentado)",
+      "description": "Un ejercicio de aislamiento para los músculos de la pantorrilla (gastrocnemio y sóleo)."
+    },
+    "cable-tricep-pushdown": {
+      "name": "Pushdown de tríceps en polea (con cuerda o barra)",
+      "description": "Un ejercicio de aislamiento para los tríceps usando una máquina de poleas con un accesorio de cuerda o barra."
+    },
+    "cable-bicep-curl": {
+      "name": "Curl de bíceps en polea (con barra o manijas)",
+      "description": "Un ejercicio de aislamiento para los bíceps usando una máquina de poleas, que proporciona tensión constante."
+    },
+    "cable-face-pull": {
+      "name": "Face Pull (Jalón a la cara) en polea",
+      "description": "Un excelente ejercicio para los deltoides posteriores, la salud del manguito rotador y la postura de la espalda alta."
+    },
+    "cable-fly": {
+      "name": "Cruces en polea (de pie - alta, media o baja)",
+      "description": "Un ejercicio de aislamiento para el pecho usando una máquina de poleas, que permite varios ángulos para trabajar diferentes partes del pecho."
+    },
+    "cable-lateral-raise": {
+      "name": "Elevaciones laterales en polea",
+      "description": "Un ejercicio de aislamiento para los deltoides mediales usando una polea, que proporciona tensión constante durante todo el movimiento."
+    },
+    "cable-woodchop": {
+      "name": "Leñador en polea (de alto a bajo o de bajo a alto)",
+      "description": "Un ejercicio de rotación del core que involucra los oblicuos y el abdomen transverso."
+    },
+    "resistance-band-bicep-curl": {
+      "name": "Curl de bíceps con banda de resistencia",
+      "description": "Curls de bíceps realizados con una banda de resistencia, que proporciona resistencia variable."
+    },
+    "resistance-band-tricep-pushdown": {
+      "name": "Pushdown de tríceps con banda de resistencia",
+      "description": "Pushdowns de tríceps usando una banda de resistencia anclada por encima o sostenida."
+    },
+    "resistance-band-pull-apart": {
+      "name": "Pull-Apart con banda de resistencia",
+      "description": "Un gran ejercicio para la salud de los hombros, que se enfoca en los deltoides posteriores y los músculos de la espalda alta."
+    },
+    "resistance-band-squat": {
+      "name": "Sentadilla con banda de resistencia",
+      "description": "Sentadillas realizadas con una banda de resistencia bajo los pies y sobre los hombros o sostenida, añadiendo resistencia."
+    },
+    "resistance-band-glute-bridge": {
+      "name": "Puente de glúteos con banda de resistencia",
+      "description": "Puentes de glúteos con una banda de resistencia alrededor de los muslos para una mayor activación del glúteo medio."
+    },
+    "farmers-walk": {
+      "name": "Paseo del granjero",
+      "description": "Un ejercicio de cuerpo completo que implica caminar una distancia mientras se sostienen pesos pesados (mancuernas, kettlebells o asas de granjero). Mejora la fuerza de agarre, la estabilidad del core y el acondicionamiento general."
+    },
+    "box-jump": {
+      "name": "Salto al cajón",
+      "description": "Un ejercicio pliométrico que implica saltar sobre una plataforma elevada, desarrollando potencia explosiva en el tren inferior."
+    },
+    "medicine-ball-slam": {
+      "name": "Slam de balón medicinal",
+      "description": "Un ejercicio de potencia de cuerpo completo que implica levantar un balón medicinal por encima de la cabeza y lanzarlo con fuerza contra el suelo."
+    },
+    "glute-bridge": {
+      "name": "Puente de glúteos",
+      "description": "Un ejercicio con peso corporal que se enfoca en los glúteos e isquiotibiales al levantar las caderas del suelo."
+    },
+    "superman-exercise": {
+      "name": "Superman",
+      "description": "Un ejercicio con peso corporal que fortalece la espalda baja, los glúteos y los isquiotibiales al levantar simultáneamente los brazos y las piernas del suelo mientras se está acostado boca abajo."
+    },
+    "mountain-climbers": {
+      "name": "Escaladores",
+      "description": "Un ejercicio dinámico de cuerpo completo que aumenta la resistencia cardiovascular, la fuerza del core y la agilidad, imitando el movimiento de escalar una montaña."
+    },
+    "bench-dips": {
+      "name": "Fondos en banco (Tríceps)",
+      "description": "Un ejercicio con peso corporal que se enfoca en los tríceps, realizado usando un banco o una silla."
+    },
+    "bodyweight-calf-raise": {
+      "name": "Elevación de talones con peso corporal",
+      "description": "Un ejercicio simple pero efectivo con peso corporal para fortalecer los músculos de la pantorrilla."
+    },
+    "barbell-hip-thrust": {
+      "name": "Empuje de cadera con barra",
+      "description": "Un potente ejercicio de glúteos realizado empujando las caderas hacia arriba con una barra sobre el regazo, generalmente con la parte superior de la espalda apoyada en un banco."
+    },
+    "barbell-front-squat": {
+      "name": "Sentadilla frontal con barra",
+      "description": "Una variación de sentadilla donde la barra se sostiene en la parte delantera de los hombros, enfatizando los cuádriceps y la estabilidad del core."
+    },
+    "barbell-good-morning": {
+      "name": "Buenos días con barra",
+      "description": "Un ejercicio que se enfoca en la cadena posterior (isquiotibiales, glúteos, espalda baja) haciendo una bisagra en las caderas con una barra en la parte superior de la espalda."
+    },
+    "dumbbell-incline-press": {
+      "name": "Press inclinado con mancuernas",
+      "description": "Se enfoca en la parte superior del pecho, los hombros y los tríceps al empujar mancuernas en un banco inclinado."
+    },
+    "dumbbell-fly": {
+      "name": "Aperturas con mancuernas",
+      "description": "Un ejercicio de aislamiento para el pecho, realizado abriendo y cerrando los brazos en un movimiento de arco mientras se sostienen mancuernas."
+    },
+    "dumbbell-hammer-curl": {
+      "name": "Curl martillo con mancuernas",
+      "description": "Una variación de curl de bíceps con un agarre neutro (palmas enfrentadas), que se enfoca en el braquial y el braquiorradial además de los bíceps."
+    },
+    "dumbbell-tricep-kickback": {
+      "name": "Patada de tríceps con mancuerna",
+      "description": "Un ejercicio de aislamiento para los tríceps, realizado extendiendo el brazo hacia atrás mientras se está inclinado en las caderas."
+    },
+    "dumbbell-bulgarian-split-squat": {
+      "name": "Sentadilla búlgara con mancuernas",
+      "description": "Un ejercicio unilateral de piernas con el pie trasero elevado, que se enfoca en cuádriceps, glúteos e isquiotibiales mientras mejora el equilibrio."
+    },
+    "dumbbell-pullover": {
+      "name": "Pullover con mancuerna",
+      "description": "Un ejercicio que trabaja el pecho y los dorsales, realizado acostado en un banco y bajando una mancuerna por detrás de la cabeza."
+    },
+    "kettlebell-snatch": {
+      "name": "Snatch (Arranque) con kettlebell",
+      "description": "Un ejercicio explosivo de cuerpo completo donde la kettlebell se balancea desde entre las piernas hasta una posición bloqueada por encima de la cabeza en un movimiento fluido."
+    },
+    "kettlebell-halo": {
+      "name": "Halo con kettlebell",
+      "description": "Un ejercicio de movilidad y estabilidad del hombro que implica hacer círculos con una kettlebell alrededor de la cabeza."
+    },
+    "hack-squat-machine": {
+      "name": "Sentadilla Hack (Máquina)",
+      "description": "Una variación de sentadilla en máquina que se enfoca en los cuádriceps, a menudo con énfasis en los cuádriceps externos."
+    },
+    "seated-calf-raise-machine": {
+      "name": "Elevación de talones sentado (Máquina)",
+      "description": "Un ejercicio de aislamiento para el músculo sóleo de la pantorrilla, realizado en una máquina sentado."
+    },
+    "abdominal-crunch-machine": {
+      "name": "Crunch abdominal (Máquina)",
+      "description": "Un ejercicio en máquina para aislar los músculos rectos del abdomen."
+    },
+    "back-extension-machine": {
+      "name": "Extensión de espalda (Máquina de hiperextensión)",
+      "description": "Fortalece la espalda baja, los glúteos y los isquiotibiales usando un banco o máquina de hiperextensión."
+    },
+    "cable-overhead-tricep-extension": {
+      "name": "Extensión de tríceps sobre la cabeza en polea (con cuerda)",
+      "description": "Se enfoca en la cabeza larga de los tríceps usando una máquina de poleas y un accesorio de cuerda."
+    },
+    "cable-pull-through": {
+      "name": "Pull-Through en polea",
+      "description": "Un ejercicio de bisagra de cadera que se enfoca en los glúteos e isquiotibiales usando una máquina de poleas."
+    },
+    "cable-reverse-fly": {
+      "name": "Pájaros en polea",
+      "description": "Se enfoca en los deltoides posteriores y los músculos de la espalda alta usando una máquina de poleas con poleas dobles."
+    },
+    "cable-torso-twist": {
+      "name": "Giro de torso en polea (de pie)",
+      "description": "Un ejercicio de core que se enfoca en los oblicuos a través del movimiento de rotación contra la resistencia de la polea."
+    },
+    "resistance-band-chest-press": {
+      "name": "Press de pecho con banda de resistencia",
+      "description": "Una variación del press de pecho usando bandas de resistencia, se puede hacer de pie o acostado."
+    },
+    "resistance-band-row": {
+      "name": "Remo con banda de resistencia (sentado o de pie)",
+      "description": "Se enfoca en los músculos de la espalda usando una banda de resistencia, puede ser anclada o sostenida."
+    },
+    "resistance-band-deadlift": {
+      "name": "Peso muerto con banda de resistencia",
+      "description": "Una variación de peso muerto usando bandas de resistencia, buena para aprender la forma o para días más ligeros."
+    },
+    "resistance-band-lateral-walk": {
+      "name": "Caminata lateral con banda de resistencia (Paso del cangrejo)",
+      "description": "Se enfoca en el glúteo medio y los abductores de la cadera, realizado caminando de lado con una banda alrededor de los tobillos o las rodillas."
+    },
+    "hamstring-stretch": {
+      "name": "Estiramiento de isquiotibiales (de pie/sentado)",
+      "description": "Un estiramiento estático para mejorar la flexibilidad en los músculos isquiotibiales."
+    },
+    "quadriceps-stretch": {
+      "name": "Estiramiento de cuádriceps (de pie)",
+      "description": "Un estiramiento estático para los cuádriceps, generalmente realizado jalando el talón hacia los glúteos."
+    },
+    "chest-stretch-doorway": {
+      "name": "Estiramiento de pecho (en el marco de una puerta)",
+      "description": "Un estiramiento estático para los músculos pectorales usando el marco de una puerta como palanca."
+    },
+    "triceps-stretch": {
+      "name": "Estiramiento de tríceps (por encima de la cabeza)",
+      "description": "Un estiramiento estático para los tríceps, realizado llevando un brazo por encima de la cabeza y doblando el codo."
+    },
+    "cat-cow-stretch": {
+      "name": "Estiramiento gato-vaca",
+      "description": "Un estiramiento dinámico que mejora la movilidad de la columna y alivia la tensión en la espalda y el core."
+    },
+    "childs-pose": {
+      "name": "Postura del niño",
+      "description": "Una pose de descanso suave que calma la mente y ayuda a aliviar el estrés y la fatiga. Estira suavemente las caderas, los muslos y los tobillos."
+    },
+    "jumping-jacks": {
+      "name": "Jumping Jacks (Saltos de tijera)",
+      "description": "Un ejercicio calisténico clásico de cuerpo completo que sirve como un buen calentamiento o ráfaga de cardio."
+    },
+    "high-knees": {
+      "name": "Rodillas altas",
+      "description": "Un ejercicio cardiovascular intenso que implica correr en el lugar mientras se levantan las rodillas lo más alto posible."
+    },
+    "running-jogging": {
+      "name": "Correr/Trotar",
+      "description": "Un ejercicio cardiovascular efectivo que mejora la resistencia y quema calorías."
+    },
+    "cycling": {
+      "name": "Ciclismo",
+      "description": "Un ejercicio cardiovascular de bajo impacto que trabaja principalmente los músculos de las piernas."
+    },
+    "jump-rope": {
+      "name": "Saltar la cuerda",
+      "description": "Un ejercicio cardiovascular muy efectivo que mejora la coordinación, la agilidad y quema una cantidad significativa de calorías."
+    },
+    "elliptical-trainer": {
+      "name": "Elíptica",
+      "description": "Una máquina de cardio de bajo impacto que simula subir escaleras, caminar o correr sin causar presión excesiva en las articulaciones."
+    },
+    "stair-climbing": {
+      "name": "Subir escaleras",
+      "description": "Un ejercicio cardiovascular vigoroso que se enfoca en los glúteos, cuádriceps e isquiotibiales."
+    },
+    "sled-push": {
+      "name": "Empuje de trineo",
+      "description": "Un ejercicio de fuerza y acondicionamiento de cuerpo completo que implica empujar un trineo con peso."
+    },
+    "sled-pull": {
+      "name": "Arrastre de trineo",
+      "description": "Un ejercicio de fuerza y acondicionamiento de cuerpo completo que implica jalar un trineo con peso usando correas o un arnés."
+    },
+    "tire-flip": {
+      "name": "Volteo de neumático",
+      "description": "Un potente ejercicio de cuerpo completo común en el entrenamiento de strongman, que implica voltear un neumático grande."
+    },
+    "battle-ropes": {
+      "name": "Cuerdas de batalla",
+      "description": "Un ejercicio de alta intensidad y bajo impacto que trabaja la parte superior del cuerpo, el core y proporciona un desafío cardiovascular."
+    }
+  }
+}

@@ -1,1 +1,436 @@
-
+{
+  "exercises": {
+    "push-up": {
+      "name": "俯卧撑",
+      "description": "一个经典的自重训练动作，可以锻炼胸部、肩部和三头肌。保持身体挺直，核心收紧。"
+    },
+    "pull-up": {
+      "name": "引体向上",
+      "description": "一个高级的自重训练动作，采用正手握法，主要锻炼背部和二头肌。"
+    },
+    "chin-up": {
+      "name": "反手引体向上",
+      "description": "一个采用反手握法的自重训练动作，主要锻炼背部和二头肌，通常比正手引体向上更能刺激二头肌。"
+    },
+    "bodyweight-squat": {
+      "name": "自重深蹲",
+      "description": "一个基础的下半身训练动作，在没有负重的情况下锻炼股四头肌、臀大肌和腘绳肌。"
+    },
+    "lunge": {
+      "name": "弓步",
+      "description": "一个单侧腿部训练动作，可以提高平衡性、稳定性，并增强股四头肌、臀大肌和腘绳肌。"
+    },
+    "plank": {
+      "name": "平板支撑",
+      "description": "一个等长核心力量训练动作，要求尽可能长时间地保持类似俯卧撑的姿势。"
+    },
+    "burpee": {
+      "name": "波比跳",
+      "description": "一个结合了深蹲、俯卧撑和跳跃的全身高强度训练动作。"
+    },
+    "dip-bar": {
+      "name": "双杠臂屈伸",
+      "description": "一个主要锻炼三头肌和胸部的复合自重训练动作，在双杠上进行。"
+    },
+    "barbell-bench-press": {
+      "name": "杠铃卧推",
+      "description": "一个基础的上半身力量复合训练动作，主要锻炼胸部、肩部和三头肌。"
+    },
+    "barbell-back-squat": {
+      "name": "杠铃后蹲",
+      "description": "一个核心力量训练动作，将杠铃放在上背部进行深蹲，主要锻炼股四头肌、臀大肌、腘绳肌和下背部。"
+    },
+    "barbell-deadlift": {
+      "name": "杠铃硬拉（传统）",
+      "description": "一个全身复合训练动作，将杠铃从地面拉起至站立姿势，锻炼腿部、背部和核心。"
+    },
+    "overhead-press-barbell": {
+      "name": "杠铃过顶推举",
+      "description": "一个复合肩部训练动作，从站姿或坐姿将杠铃推举过头顶。"
+    },
+    "bent-over-row-barbell": {
+      "name": "杠铃俯身划船",
+      "description": "一个复合背部训练动作，在髋部屈曲的同时将杠铃拉向躯干。"
+    },
+    "barbell-bicep-curl": {
+      "name": "杠铃二头肌弯举",
+      "description": "一个使用杠铃的二头肌孤立训练动作。"
+    },
+    "barbell-romanian-deadlift": {
+      "name": "杠铃罗马尼亚硬拉（RDL）",
+      "description": "以髋部为轴心，膝盖微屈，将杠铃贴近腿部下降，主要锻炼腘绳肌和臀大肌。"
+    },
+    "dumbbell-bench-press": {
+      "name": "哑铃卧推",
+      "description": "一个在卧推凳上使用哑铃的复合训练动作，锻炼胸部、肩部和三头肌，允许更大的运动范围。"
+    },
+    "dumbbell-shoulder-press": {
+      "name": "哑铃肩上推举",
+      "description": "一个复合肩部训练动作，将哑铃推举过头顶，允许手臂独立运动。"
+    },
+    "dumbbell-row": {
+      "name": "哑铃划船（单臂）",
+      "description": "一个单侧背部训练动作，主要锻炼背阔肌、菱形肌和二头肌，通常一条腿和一只手支撑在凳子上进行。"
+    },
+    "dumbbell-bicep-curl": {
+      "name": "哑铃二头肌弯举",
+      "description": "一个使用哑铃的二头肌孤立训练动作，允许手腕旋后（旋转）。"
+    },
+    "dumbbell-tricep-extension-overhead": {
+      "name": "哑铃过顶臂屈伸",
+      "description": "一个三头肌孤立训练动作，通过将哑铃举过头顶并伸展手臂来完成。"
+    },
+    "dumbbell-lunge": {
+      "name": "哑铃弓步",
+      "description": "手持哑铃进行的弓步，为下半身增加阻力。"
+    },
+    "dumbbell-romanian-deadlift": {
+      "name": "哑铃罗马尼亚硬拉（RDL）",
+      "description": "使用哑铃，专注于髋关节铰链运动，锻炼腘绳肌和臀大肌。"
+    },
+    "goblet-squat": {
+      "name": "高脚杯深蹲",
+      "description": "一种深蹲变式，将单个哑铃或壶铃举在胸前，有助于保持躯干直立。"
+    },
+    "dumbbell-lateral-raise": {
+      "name": "哑铃侧平举",
+      "description": "一个针对三角肌中束的孤立训练动作，将哑铃向两侧举起。"
+    },
+    "dumbbell-front-raise": {
+      "name": "哑铃前平举",
+      "description": "一个针对三角肌前束的孤立训练动作，将哑铃向前举起。"
+    },
+    "kettlebell-swing": {
+      "name": "壶铃摇摆（双手）",
+      "description": "一个动态、爆发性的训练动作，锻炼后侧链（臀部、腘绳肌、背部）并提高爆发力。"
+    },
+    "kettlebell-goblet-squat": {
+      "name": "壶铃高脚杯深蹲",
+      "description": "手持壶铃的“角”在胸前进行的深蹲，非常适合规范动作和锻炼核心。"
+    },
+    "kettlebell-clean-and-press": {
+      "name": "壶铃翻站推举",
+      "description": "一个全身复合动作，包括将壶铃翻至肩上，然后将其推举过头顶。"
+    },
+    "turkish-get-up": {
+      "name": "土耳其起立（TGU）",
+      "description": "一个复杂的全身训练动作，包括从躺在地板上过渡到站立，全程将壶铃（或哑铃）举过头顶。可增强稳定性、灵活性和力量。"
+    },
+    "kettlebell-single-arm-row": {
+      "name": "壶铃单臂划船",
+      "description": "一个单侧背部训练动作，锻炼背阔肌、菱形肌和二头肌，通常一只手和膝盖支撑在凳子上，将壶铃拉向躯干。"
+    },
+    "kettlebell-deadlift": {
+      "name": "壶铃硬拉",
+      "description": "一个基础力量训练动作，使用一个或两个壶铃锻炼后侧链，专注于髋关节铰链运动。可以把壶铃放在两脚之间或身体外侧（手提箱式）。"
+    },
+    "kettlebell-strict-press": {
+      "name": "壶铃严格推举（单臂）",
+      "description": "一个锻炼肩部和三头肌力量的过顶推举动作，从肩上位置单手推举壶铃，不借助腿部驱动。"
+    },
+    "kettlebell-rack-lunge": {
+      "name": "壶铃架式弓步",
+      "description": "一个单侧腿部训练动作，可以增强力量、稳定性和核心参与度，进行时将一个或两个壶铃保持在胸前的架式位置。"
+    },
+    "kettlebell-windmill": {
+      "name": "壶铃风车",
+      "description": "一个复杂的训练动作，可以提高肩部稳定性、髋部灵活性和核心力量，动作包括将壶铃锁定在头顶，同时向侧方进行髋关节铰链。"
+    },
+    "kettlebell-russian-twist": {
+      "name": "壶铃俄罗斯转体",
+      "description": "一个锻炼腹斜肌和腹直肌的核心训练动作，坐姿，膝盖弯曲，双脚离地（可选），手持壶铃从一侧向另一侧扭转躯干。"
+    },
+    "kettlebell-high-pull": {
+      "name": "壶铃高拉",
+      "description": "一个爆发性训练动作，可以发展髋部、背部和肩部的力量。动作包括将壶铃从摇摆位置（或地面）向上拉至下巴高度，保持肘部高抬。"
+    },
+    "kettlebell-figure-8": {
+      "name": "壶铃8字绕环",
+      "description": "一个动态训练动作，通过在双腿之间和周围以8字形传递壶铃，提高协调性、核心稳定性和握力。"
+    },
+    "kettlebell-suitcase-carry": {
+      "name": "壶铃手提箱行走",
+      "description": "一个单侧负重行走训练动作，通过单手提着一个重壶铃（像手提箱一样）行走，挑战核心稳定性、握力和姿势。"
+    },
+    "kettlebell-thruster": {
+      "name": "壶铃火箭推",
+      "description": "一个全身复合训练动作，将壶铃前蹲和过顶推举流畅地结合在一起。可以用一个或两个壶铃进行。"
+    },
+    "lat-pulldown-machine": {
+      "name": "高位下拉（器械）",
+      "description": "一个基于器械的训练动作，通过将横杆向胸部下拉来锻炼背阔肌。"
+    },
+    "seated-row-machine": {
+      "name": "坐姿划船（器械）",
+      "description": "一个锻炼背部厚度的器械训练动作，通过将手柄拉向躯干来锻炼中背部肌肉。"
+    },
+    "leg-press-machine": {
+      "name": "腿举（器械）",
+      "description": "一个在器械上进行的复合下半身训练动作，用腿部推开一个负重平台。"
+    },
+    "leg-extension-machine": {
+      "name": "腿屈伸（器械）",
+      "description": "一个针对股四头肌的孤立训练动作，通过对抗阻力伸展小腿。"
+    },
+    "leg-curl-machine": {
+      "name": "腿弯举（器械 - 俯身或坐姿）",
+      "description": "一个针对腘绳肌的孤立训练动作，通过对抗阻力将小腿向臀部弯曲。"
+    },
+    "chest-press-machine": {
+      "name": "胸部推举（器械）",
+      "description": "一个基于器械的胸部复合训练动作，类似于卧推，但运动轨迹是固定的。"
+    },
+    "shoulder-press-machine": {
+      "name": "肩部推举（器械）",
+      "description": "一个锻炼肩部的器械训练动作，通过引导式运动将手柄推举过头顶。"
+    },
+    "pec-deck-fly-machine": {
+      "name": "蝶机夹胸（器械）",
+      "description": "一个胸部的孤立训练动作，使用器械以飞鸟动作将手臂合拢。"
+    },
+    "reverse-pec-deck-machine": {
+      "name": "反向蝶机（后束飞鸟）",
+      "description": "一个锻炼三角肌后束和上背部肌肉的器械训练动作。"
+    },
+    "calf-raise-machine": {
+      "name": "提踵（器械 - 站姿或坐姿）",
+      "description": "一个锻炼小腿肌肉（腓肠肌和比目鱼肌）的孤立训练动作。"
+    },
+    "cable-tricep-pushdown": {
+      "name": "绳索三头肌下压（绳索或横杆）",
+      "description": "一个使用绳索器械和绳索或横杆附件的三头肌孤立训练动作。"
+    },
+    "cable-bicep-curl": {
+      "name": "绳索二头肌弯举（横杆或手柄）",
+      "description": "一个使用绳索器械的二头肌孤立训练动作，提供持续的张力。"
+    },
+    "cable-face-pull": {
+      "name": "绳索面拉",
+      "description": "一个非常适合锻炼后束三角肌、肩袖健康和上背部姿势的训练动作。"
+    },
+    "cable-fly": {
+      "name": "绳索飞鸟（站姿 - 高位、中位或低位）",
+      "description": "一个使用绳索器械的胸部孤立训练动作，允许通过不同角度锻炼胸部的不同部位。"
+    },
+    "cable-lateral-raise": {
+      "name": "绳索侧平举",
+      "description": "一个使用绳索锻炼三角肌中束的孤立训练动作，在整个运动过程中提供持续的张力。"
+    },
+    "cable-woodchop": {
+      "name": "绳索伐木（高位到低位或低位到高位）",
+      "description": "一个锻炼腹斜肌和腹横肌的核心旋转训练动作。"
+    },
+    "resistance-band-bicep-curl": {
+      "name": "弹力带二头肌弯举",
+      "description": "使用弹力带进行的二头肌弯举，提供可变阻力。"
+    },
+    "resistance-band-tricep-pushdown": {
+      "name": "弹力带三头肌下压",
+      "description": "使用固定在高处或手持的弹力带进行的三头肌下压。"
+    },
+    "resistance-band-pull-apart": {
+      "name": "弹力带拉开",
+      "description": "一个有益于肩部健康的极佳训练动作，锻炼后束三角肌和上背部肌肉。"
+    },
+    "resistance-band-squat": {
+      "name": "弹力带深蹲",
+      "description": "将弹力带踩在脚下并绕过肩膀或手持进行的深蹲，增加阻力。"
+    },
+    "resistance-band-glute-bridge": {
+      "name": "弹力带臀桥",
+      "description": "在大腿周围套上弹力带进行的臀桥，以增加臀中肌的激活。"
+    },
+    "farmers-walk": {
+      "name": "农夫行走",
+      "description": "一个全身训练动作，手持重物（哑铃、壶铃或农夫行走手柄）行走一段距离。提高握力、核心稳定性和整体体能。"
+    },
+    "box-jump": {
+      "name": "跳箱",
+      "description": "一个增强式训练动作，通过跳上一个高台来发展下半身的爆发力。"
+    },
+    "medicine-ball-slam": {
+      "name": "药球砸地",
+      "description": "一个全身力量训练动作，包括将药球举过头顶，然后用力砸向地面。"
+    },
+    "glute-bridge": {
+      "name": "臀桥",
+      "description": "一个通过将臀部抬离地面来锻炼臀大肌和腘绳肌的自重训练动作。"
+    },
+    "superman-exercise": {
+      "name": "超人",
+      "description": "一个自重训练动作，通过俯卧时同时抬起手臂和腿来加强下背部、臀部和腘绳肌。"
+    },
+    "mountain-climbers": {
+      "name": "登山者",
+      "description": "一个动态的全身训练动作，可以增强心肺耐力、核心力量和敏捷性，模仿登山的动作。"
+    },
+    "bench-dips": {
+      "name": "凳上臂屈伸（三头肌）",
+      "description": "一个利用长凳或椅子进行的三头肌自重训练动作。"
+    },
+    "bodyweight-calf-raise": {
+      "name": "自重提踵",
+      "description": "一个简单而有效的自重训练动作，用于加强小腿肌肉。"
+    },
+    "barbell-hip-thrust": {
+      "name": "杠铃臀推",
+      "description": "一个强大的臀部训练动作，通常上背部支撑在凳子上，将杠铃放在腿上向上推起臀部。"
+    },
+    "barbell-front-squat": {
+      "name": "杠铃前蹲",
+      "description": "一种深蹲变式，将杠铃置于肩膀前侧，强调股四头肌和核心稳定性。"
+    },
+    "barbell-good-morning": {
+      "name": "杠铃早安式",
+      "description": "一个通过将杠铃置于上背部进行髋关节铰链来锻炼后侧链（腘绳肌、臀部、下背部）的训练动作。"
+    },
+    "dumbbell-incline-press": {
+      "name": "上斜哑铃推举",
+      "description": "在上斜凳上推举哑铃，锻炼上胸部、肩部和三头肌。"
+    },
+    "dumbbell-fly": {
+      "name": "哑铃飞鸟",
+      "description": "一个胸部的孤立训练动作，手持哑铃以弧线方式打开和合拢手臂。"
+    },
+    "dumbbell-hammer-curl": {
+      "name": "哑铃锤式弯举",
+      "description": "一种采用中立握法（手掌相对）的二头肌弯举变式，除了二头肌外，还锻炼肱肌和肱桡肌。"
+    },
+    "dumbbell-tricep-kickback": {
+      "name": "哑铃三头肌后踢",
+      "description": "一个三头肌的孤立训练动作，在髋部屈曲时向后伸展手臂。"
+    },
+    "dumbbell-bulgarian-split-squat": {
+      "name": "哑铃保加利亚分腿蹲",
+      "description": "一个单侧腿部训练动作，后脚抬高，锻炼股四头肌、臀部和腘绳肌，同时提高平衡能力。"
+    },
+    "dumbbell-pullover": {
+      "name": "哑铃仰卧上拉",
+      "description": "一个锻炼胸部和背阔肌的训练动作，躺在凳子上，将哑铃下放到头后。"
+    },
+    "kettlebell-snatch": {
+      "name": "壶铃抓举",
+      "description": "一个爆发性的全身训练动作，将壶铃从两腿之间以一个流畅的动作摆动到头顶锁定位置。"
+    },
+    "kettlebell-halo": {
+      "name": "壶铃光环",
+      "description": "一个肩部灵活性和稳定性的训练动作，包括将壶铃环绕头部。"
+    },
+    "hack-squat-machine": {
+      "name": "哈克深蹲（器械）",
+      "description": "一种基于器械的深蹲变式，锻炼股四头肌，通常侧重于股四头肌外侧。"
+    },
+    "seated-calf-raise-machine": {
+      "name": "坐姿提踵（器械）",
+      "description": "一个在坐姿器械上进行的锻炼小腿比目鱼肌的孤立训练动作。"
+    },
+    "abdominal-crunch-machine": {
+      "name": "腹部卷腹（器械）",
+      "description": "一个用于孤立锻炼腹直肌的器械训练动作。"
+    },
+    "back-extension-machine": {
+      "name": "背部伸展（山羊挺身器）",
+      "description": "使用山羊挺身凳或器械来加强下背部、臀部和腘绳肌。"
+    },
+    "cable-overhead-tricep-extension": {
+      "name": "绳索过顶臂屈伸（绳索）",
+      "description": "使用绳索器械和绳索附件锻炼三头肌的长头。"
+    },
+    "cable-pull-through": {
+      "name": "绳索下拉",
+      "description": "一个使用绳索器械锻炼臀部和腘绳肌的髋关节铰链训练动作。"
+    },
+    "cable-reverse-fly": {
+      "name": "绳索反向飞鸟",
+      "description": "使用带有双滑轮的绳索器械锻炼后束三角肌和上背部肌肉。"
+    },
+    "cable-torso-twist": {
+      "name": "绳索躯干转体（站姿）",
+      "description": "一个通过对抗绳索阻力进行旋转运动来锻炼腹斜肌的核心训练动作。"
+    },
+    "resistance-band-chest-press": {
+      "name": "弹力带胸部推举",
+      "description": "一种使用弹力带的胸部推举变式，可以站着或躺着进行。"
+    },
+    "resistance-band-row": {
+      "name": "弹力带划船（坐姿或站姿）",
+      "description": "使用弹力带锻炼背部肌肉，可以固定或手持。"
+    },
+    "resistance-band-deadlift": {
+      "name": "弹力带硬拉",
+      "description": "一种使用弹力带的硬拉变式，适合学习动作或在较轻的日子里进行。"
+    },
+    "resistance-band-lateral-walk": {
+      "name": "弹力带侧向行走（螃蟹步）",
+      "description": "锻炼臀中肌和髋外展肌，通过将弹力带套在脚踝或膝盖周围侧向行走来完成。"
+    },
+    "hamstring-stretch": {
+      "name": "腘绳肌拉伸（站姿/坐姿）",
+      "description": "一种静态拉伸，用于提高腘绳肌的柔韧性。"
+    },
+    "quadriceps-stretch": {
+      "name": "股四头肌拉伸（站姿）",
+      "description": "一种股四头肌的静态拉伸，通常通过将脚跟拉向臀部来完成。"
+    },
+    "chest-stretch-doorway": {
+      "name": "胸部拉伸（门口）",
+      "description": "一种利用门框作为支撑的胸肌静态拉伸。"
+    },
+    "triceps-stretch": {
+      "name": "三头肌拉伸（过顶）",
+      "description": "一种三头肌的静态拉伸，通过将一只手臂举过头顶并弯曲肘部来完成。"
+    },
+    "cat-cow-stretch": {
+      "name": "猫牛式拉伸",
+      "description": "一种动态拉伸，可以提高脊柱的灵活性，缓解背部和核心的紧张感。"
+    },
+    "childs-pose": {
+      "name": "儿童式",
+      "description": "一个温和的休息姿势，可以使大脑平静，帮助缓解压力和疲劳。它可以轻柔地伸展臀部、大腿和脚踝。"
+    },
+    "jumping-jacks": {
+      "name": "开合跳",
+      "description": "一个经典的全身体操动作，可作为良好的热身或有氧运动爆发。"
+    },
+    "high-knees": {
+      "name": "高抬腿",
+      "description": "一个高强度的有氧运动，包括原地跑步，同时将膝盖尽可能抬高。"
+    },
+    "running-jogging": {
+      "name": "跑步/慢跑",
+      "description": "一种有效的心血管运动，可以提高耐力并燃烧卡路里。"
+    },
+    "cycling": {
+      "name": "骑行",
+      "description": "一种低冲击力的心血管运动，主要锻炼腿部肌肉。"
+    },
+    "jump-rope": {
+      "name": "跳绳",
+      "description": "一种非常有效的心血管运动，可以提高协调性、敏捷性，并燃烧大量卡路里。"
+    },
+    "elliptical-trainer": {
+      "name": "椭圆机",
+      "description": "一种低冲击力的有氧器械，模拟爬楼梯、走路或跑步，而不会对关节造成过大压力。"
+    },
+    "stair-climbing": {
+      "name": "爬楼梯",
+      "description": "一种剧烈的心血管运动，锻炼臀部、股四头肌和腘绳肌。"
+    },
+    "sled-push": {
+      "name": "推雪橇",
+      "description": "一个涉及推动负重雪橇的全身力量和体能训练动作。"
+    },
+    "sled-pull": {
+      "name": "拉雪橇",
+      "description": "一个涉及使用带子或挽具拉动负重雪橇的全身力量和体能训练动作。"
+    },
+    "tire-flip": {
+      "name": "翻轮胎",
+      "description": "一个在壮汉训练中常见的强大的全身训练动作，包括翻转一个大轮胎。"
+    },
+    "battle-ropes": {
+      "name": "战绳",
+      "description": "一种高强度、低冲击力的训练，可以锻炼上半身、核心，并提供心血管挑战。"
+    }
+  }
+}

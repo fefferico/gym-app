@@ -116,10 +116,6 @@
       "name": "Turkish Get-Up (TGU)",
       "description": "A complex, full-body exercise involving transitioning from lying on the floor to standing, all while holding a kettlebell (or dumbbell) overhead. Enhances stability, mobility, and strength."
     },
-    "farmers-walk": {
-      "name": "Farmer's Walk",
-      "description": "A full-body exercise involving walking for a distance while holding heavy weights (dumbbells, kettlebells, or farmer's walk handles). Improves grip strength, core stability, and overall conditioning."
-    },
     "kettlebell-single-arm-row": {
       "name": "Kettlebell Single Arm Row",
       "description": "A unilateral back exercise targeting lats, rhomboids, and biceps, performed by pulling a kettlebell towards the torso, often with one hand and knee supported on a bench."
@@ -243,6 +239,10 @@
     "resistance-band-glute-bridge": {
       "name": "Resistance Band Glute Bridge",
       "description": "Glute bridges with a resistance band around the thighs for added glute medius activation."
+    },
+    "farmers-walk": {
+      "name": "Farmer's Walk",
+      "description": "A full-body exercise involving walking for a distance while holding heavy weights (dumbbells, kettlebells, or farmer's walk handles). Improves grip strength, core stability, and overall conditioning."
     },
     "box-jump": {
       "name": "Box Jump",

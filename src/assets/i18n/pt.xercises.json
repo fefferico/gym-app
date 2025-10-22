@@ -1,1 +1,436 @@
-
+{
+  "exercises": {
+    "push-up": {
+      "name": "Flexão de braço",
+      "description": "Um exercício clássico com peso corporal que trabalha o peito, ombros e tríceps. Mantenha o corpo reto e o core contraído."
+    },
+    "pull-up": {
+      "name": "Barra Fixa (pegada pronada)",
+      "description": "Um exercício avançado com peso corporal que visa as costas e os bíceps, utilizando uma pegada com as palmas das mãos para a frente."
+    },
+    "chin-up": {
+      "name": "Barra Fixa (pegada supinada)",
+      "description": "Um exercício com peso corporal que visa as costas e os bíceps, utilizando uma pegada com as palmas das mãos para trás, geralmente enfatizando mais os bíceps do que a barra fixa tradicional."
+    },
+    "bodyweight-squat": {
+      "name": "Agachamento com peso corporal",
+      "description": "Um exercício fundamental para os membros inferiores que trabalha quadríceps, glúteos e isquiotibiais sem peso externo."
+    },
+    "lunge": {
+      "name": "Afundo",
+      "description": "Um exercício unilateral para as pernas que melhora o equilíbrio, a estabilidade e fortalece quadríceps, glúteos e isquiotibiais."
+    },
+    "plank": {
+      "name": "Prancha",
+      "description": "Um exercício isométrico de força para o core que consiste em manter uma posição semelhante à de uma flexão pelo maior tempo possível."
+    },
+    "burpee": {
+      "name": "Burpee",
+      "description": "Um exercício de corpo inteiro e alta intensidade que combina um agachamento, uma flexão e um salto."
+    },
+    "dip-bar": {
+      "name": "Mergulho (Barras Paralelas)",
+      "description": "Um exercício composto com peso corporal que visa principalmente os tríceps e o peito, realizado em barras paralelas."
+    },
+    "barbell-bench-press": {
+      "name": "Supino Reto com Barra",
+      "description": "Um exercício composto fundamental para a força da parte superior do corpo, visando principalmente o peito, ombros e tríceps."
+    },
+    "barbell-back-squat": {
+      "name": "Agachamento com Barra nas Costas",
+      "description": "Um exercício de força essencial que visa quadríceps, glúteos, isquiotibiais e a região lombar, realizado ao agachar com uma barra apoiada na parte superior das costas."
+    },
+    "barbell-deadlift": {
+      "name": "Levantamento Terra com Barra (Convencional)",
+      "description": "Um exercício composto de corpo inteiro que consiste em levantar uma barra do chão até a posição ereta, trabalhando pernas, costas e core."
+    },
+    "overhead-press-barbell": {
+      "name": "Desenvolvimento de Ombros com Barra",
+      "description": "Um exercício composto para os ombros que consiste em empurrar uma barra acima da cabeça, partindo de uma posição em pé ou sentado."
+    },
+    "bent-over-row-barbell": {
+      "name": "Remada Curvada com Barra",
+      "description": "Um exercício composto para as costas em que uma barra é puxada em direção ao tronco enquanto o corpo está inclinado para a frente a partir dos quadris."
+    },
+    "barbell-bicep-curl": {
+      "name": "Rosca Bíceps com Barra",
+      "description": "Um exercício de isolamento para os bíceps utilizando uma barra."
+    },
+    "barbell-romanian-deadlift": {
+      "name": "Levantamento Terra Romeno com Barra (RDL)",
+      "description": "Visa os isquiotibiais e glúteos através da flexão dos quadris com uma ligeira dobra nos joelhos, mantendo a barra próxima às pernas."
+    },
+    "dumbbell-bench-press": {
+      "name": "Supino Reto com Halteres",
+      "description": "Um exercício composto que visa o peito, ombros e tríceps utilizando halteres em um banco, permitindo uma maior amplitude de movimento."
+    },
+    "dumbbell-shoulder-press": {
+      "name": "Desenvolvimento de Ombros com Halteres",
+      "description": "Um exercício composto para os ombros que consiste em empurrar halteres acima da cabeça, permitindo o movimento independente dos braços."
+    },
+    "dumbbell-row": {
+      "name": "Remada com Halter (Unilateral)",
+      "description": "Um exercício unilateral para as costas que visa os dorsais, romboides e bíceps, geralmente realizado com um joelho e uma mão apoiados em um banco."
+    },
+    "dumbbell-bicep-curl": {
+      "name": "Rosca Bíceps com Halteres",
+      "description": "Um exercício de isolamento para os bíceps utilizando halteres, o que permite a supinação (rotação do punho)."
+    },
+    "dumbbell-tricep-extension-overhead": {
+      "name": "Extensão de Tríceps Acima da Cabeça com Halter",
+      "description": "Um exercício de isolamento para os tríceps, realizado estendendo um halter acima da cabeça."
+    },
+    "dumbbell-lunge": {
+      "name": "Afundo com Halteres",
+      "description": "Afundos realizados segurando halteres, adicionando resistência à parte inferior do corpo."
+    },
+    "dumbbell-romanian-deadlift": {
+      "name": "Levantamento Terra Romeno com Halteres (RDL)",
+      "description": "Visa os isquiotibiais e glúteos utilizando halteres, com foco no movimento de flexão do quadril."
+    },
+    "goblet-squat": {
+      "name": "Agachamento Goblet",
+      "description": "Uma variação do agachamento em que se segura um único halter ou kettlebell na altura do peito, promovendo um tronco ereto."
+    },
+    "dumbbell-lateral-raise": {
+      "name": "Elevação Lateral com Halteres",
+      "description": "Um exercício de isolamento para os deltoides mediais (laterais), elevando os halteres para os lados."
+    },
+    "dumbbell-front-raise": {
+      "name": "Elevação Frontal com Halteres",
+      "description": "Um exercício de isolamento para os deltoides anteriores (frontais), elevando os halteres à frente."
+    },
+    "kettlebell-swing": {
+      "name": "Swing com Kettlebell (Duas Mãos)",
+      "description": "Um exercício dinâmico e explosivo que visa a cadeia posterior (glúteos, isquiotibiais, costas) e melhora a potência."
+    },
+    "kettlebell-goblet-squat": {
+      "name": "Agachamento Goblet com Kettlebell",
+      "description": "Um agachamento segurando um kettlebell pelas alças na altura do peito, excelente para a postura e o engajamento do core."
+    },
+    "kettlebell-clean-and-press": {
+      "name": "Clean e Press com Kettlebell",
+      "description": "Um movimento composto de corpo inteiro que envolve trazer um kettlebell para a posição de \"rack\" e, em seguida, empurrá-lo acima da cabeça."
+    },
+    "turkish-get-up": {
+      "name": "Levantamento Turco (TGU)",
+      "description": "Um exercício complexo e de corpo inteiro que envolve a transição da posição deitada no chão para a posição em pé, tudo isso enquanto se segura um kettlebell (ou halter) acima da cabeça. Melhora a estabilidade, a mobilidade e a força."
+    },
+    "kettlebell-single-arm-row": {
+      "name": "Remada Unilateral com Kettlebell",
+      "description": "Um exercício unilateral para as costas que visa dorsais, romboides e bíceps, realizado puxando um kettlebell em direção ao tronco, muitas vezes com uma mão e um joelho apoiados em um banco."
+    },
+    "kettlebell-deadlift": {
+      "name": "Levantamento Terra com Kettlebell",
+      "description": "Um exercício de força fundamental que utiliza um ou dois kettlebells para trabalhar a cadeia posterior, com foco no movimento de flexão do quadril. Pode ser feito com o(s) kettlebell(s) entre os pés ou ao lado do corpo (estilo mala)."
+    },
+    "kettlebell-strict-press": {
+      "name": "Desenvolvimento Estrito com Kettlebell (Unilateral)",
+      "description": "Um exercício de desenvolvimento acima da cabeça para a força dos ombros e tríceps, realizado com um único kettlebell a partir da posição de \"rack\" sem usar o impulso das pernas."
+    },
+    "kettlebell-rack-lunge": {
+      "name": "Afundo com Kettlebell (Posição Rack)",
+      "description": "Um exercício unilateral para as pernas que desenvolve força, estabilidade e engajamento do core, realizado segurando um ou dois kettlebells na posição de \"rack\" frontal."
+    },
+    "kettlebell-windmill": {
+      "name": "Moinho de Vento com Kettlebell",
+      "description": "Um exercício complexo que melhora a estabilidade dos ombros, a mobilidade do quadril e a força do core, envolvendo a inclinação lateral do quadril enquanto se mantém um kettlebell travado acima da cabeça."
+    },
+    "kettlebell-russian-twist": {
+      "name": "Giro Russo com Kettlebell",
+      "description": "Um exercício para o core que visa os oblíquos e o reto abdominal, realizado sentado com os joelhos dobrados e os pés fora do chão (opcional), torcendo o tronco de um lado para o outro enquanto segura um kettlebell."
+    },
+    "kettlebell-high-pull": {
+      "name": "Puxada Alta com Kettlebell",
+      "description": "Um exercício explosivo que desenvolve potência nos quadris, costas e ombros. Envolve puxar o kettlebell a partir de uma posição de swing (ou do chão) até a altura do queixo, mantendo o cotovelo alto."
+    },
+    "kettlebell-figure-8": {
+      "name": "Oito com Kettlebell",
+      "description": "Um exercício dinâmico que melhora a coordenação, a estabilidade do core e a força de preensão, passando o kettlebell entre e ao redor das pernas em um movimento de figura oito."
+    },
+    "kettlebell-suitcase-carry": {
+      "name": "Caminhada de Fazendeiro Unilateral (Mala)",
+      "description": "Um exercício de transporte de carga unilateral que desafia a estabilidade do core, a força de preensão e a postura, carregando um único kettlebell pesado em uma mão, como uma mala."
+    },
+    "kettlebell-thruster": {
+      "name": "Thruster com Kettlebell",
+      "description": "Um exercício composto de corpo inteiro que combina um agachamento frontal com kettlebell e um desenvolvimento acima da cabeça em um movimento fluido. Pode ser feito com um ou dois kettlebells."
+    },
+    "lat-pulldown-machine": {
+      "name": "Puxada na Polia Alta (Máquina)",
+      "description": "Um exercício em máquina que visa os músculos do grande dorsal, puxando uma barra para baixo em direção ao peito."
+    },
+    "seated-row-machine": {
+      "name": "Remada Sentada (Máquina)",
+      "description": "Um exercício em máquina para a espessura das costas, visando os músculos do meio das costas ao puxar as alças em direção ao tronco."
+    },
+    "leg-press-machine": {
+      "name": "Leg Press (Máquina)",
+      "description": "Um exercício composto para os membros inferiores realizado em uma máquina, empurrando uma plataforma com peso para longe com as pernas."
+    },
+    "leg-extension-machine": {
+      "name": "Cadeira Extensora (Máquina)",
+      "description": "Um exercício de isolamento para o quadríceps, estendendo a parte inferior das pernas contra uma resistência."
+    },
+    "leg-curl-machine": {
+      "name": "Cadeira Flexora (Máquina - Deitado ou Sentado)",
+      "description": "Um exercício de isolamento para os isquiotibiais, flexionando a parte inferior das pernas em direção aos glúteos contra uma resistência."
+    },
+    "chest-press-machine": {
+      "name": "Supino na Máquina",
+      "description": "Um exercício composto para o peito em máquina, semelhante ao supino, mas com uma trajetória de movimento fixa."
+    },
+    "shoulder-press-machine": {
+      "name": "Desenvolvimento de Ombros na Máquina",
+      "description": "Um exercício em máquina para os ombros, empurrando as alças acima da cabeça com um movimento guiado."
+    },
+    "pec-deck-fly-machine": {
+      "name": "Voador Peitoral (Máquina)",
+      "description": "Um exercício de isolamento para o peito, unindo os braços em um movimento de voo utilizando uma máquina."
+    },
+    "reverse-pec-deck-machine": {
+      "name": "Voador Inverso (Crucifixo Inverso na Máquina)",
+      "description": "Um exercício em máquina que visa os deltoides posteriores e os músculos da parte superior das costas."
+    },
+    "calf-raise-machine": {
+      "name": "Elevação de Panturrilha (Máquina - Em Pé ou Sentado)",
+      "description": "Um exercício de isolamento para os músculos da panturrilha (gastrocnêmio e sóleo)."
+    },
+    "cable-tricep-pushdown": {
+      "name": "Tríceps na Polia (Corda ou Barra)",
+      "description": "Um exercício de isolamento para os tríceps utilizando uma máquina de cabos com um acessório de corda ou barra."
+    },
+    "cable-bicep-curl": {
+      "name": "Rosca Bíceps no Cabo (Barra ou Puxadores)",
+      "description": "Um exercício de isolamento para os bíceps utilizando uma máquina de cabos, que fornece tensão constante."
+    },
+    "cable-face-pull": {
+      "name": "Puxada para o Rosto no Cabo",
+      "description": "Um excelente exercício para os deltoides posteriores, a saúde do manguito rotador e a postura da parte superior das costas."
+    },
+    "cable-fly": {
+      "name": "Crucifixo no Cabo (Em Pé - Polia Alta, Média ou Baixa)",
+      "description": "Um exercício de isolamento para o peito utilizando uma máquina de cabos, permitindo vários ângulos para atingir diferentes partes do peito."
+    },
+    "cable-lateral-raise": {
+      "name": "Elevação Lateral no Cabo",
+      "description": "Um exercício de isolamento para os deltoides mediais utilizando um cabo, proporcionando tensão constante durante todo o movimento."
+    },
+    "cable-woodchop": {
+      "name": "Lenhador no Cabo (de Cima para Baixo ou de Baixo para Cima)",
+      "description": "Um exercício de rotação do core que trabalha os oblíquos e o transverso do abdômen."
+    },
+    "resistance-band-bicep-curl": {
+      "name": "Rosca Bíceps com Elástico de Resistência",
+      "description": "Rosca bíceps realizada com um elástico de resistência, proporcionando resistência variável."
+    },
+    "resistance-band-tricep-pushdown": {
+      "name": "Tríceps na Polia com Elástico de Resistência",
+      "description": "Extensão de tríceps utilizando um elástico de resistência ancorado acima da cabeça ou seguro por algo."
+    },
+    "resistance-band-pull-apart": {
+      "name": "Puxada com Elástico de Resistência",
+      "description": "Um ótimo exercício para a saúde dos ombros, visando os deltoides posteriores e os músculos da parte superior das costas."
+    },
+    "resistance-band-squat": {
+      "name": "Agachamento com Elástico de Resistência",
+      "description": "Agachamentos realizados com um elástico de resistência sob os pés e passado sobre os ombros ou segurado, adicionando resistência."
+    },
+    "resistance-band-glute-bridge": {
+      "name": "Elevação Pélvica com Elástico de Resistência",
+      "description": "Elevações pélvicas com um elástico de resistência ao redor das coxas para maior ativação do glúteo médio."
+    },
+    "farmers-walk": {
+      "name": "Caminhada do Fazendeiro",
+      "description": "Um exercício de corpo inteiro que envolve caminhar por uma distância segurando pesos pesados (halteres, kettlebells ou alças específicas). Melhora a força de preensão, a estabilidade do core e o condicionamento geral."
+    },
+    "box-jump": {
+      "name": "Salto na Caixa",
+      "description": "Um exercício pliométrico que envolve saltar para uma plataforma elevada, desenvolvendo potência explosiva nos membros inferiores."
+    },
+    "medicine-ball-slam": {
+      "name": "Arremesso de Medicine Ball ao Chão",
+      "description": "Um exercício de potência de corpo inteiro que envolve levantar uma medicine ball acima da cabeça e arremessá-la com força no chão."
+    },
+    "glute-bridge": {
+      "name": "Elevação Pélvica",
+      "description": "Um exercício com peso corporal que visa os glúteos e os isquiotibiais, elevando os quadris do chão."
+    },
+    "superman-exercise": {
+      "name": "Superman",
+      "description": "Um exercício com peso corporal que fortalece a região lombar, os glúteos e os isquiotibiais, elevando simultaneamente os braços e as pernas do chão enquanto se está deitado de bruços."
+    },
+    "mountain-climbers": {
+      "name": "Alpinista",
+      "description": "Um exercício dinâmico de corpo inteiro que aumenta a resistência cardiovascular, a força do core e a agilidade, imitando o movimento de escalar uma montanha."
+    },
+    "bench-dips": {
+      "name": "Mergulho no Banco (Tríceps)",
+      "description": "Um exercício com peso corporal que visa os tríceps, realizado utilizando um banco ou cadeira."
+    },
+    "bodyweight-calf-raise": {
+      "name": "Elevação de Panturrilha com Peso Corporal",
+      "description": "Um exercício simples, mas eficaz, com peso corporal para fortalecer os músculos da panturrilha."
+    },
+    "barbell-hip-thrust": {
+      "name": "Elevação Pélvica com Barra",
+      "description": "Um poderoso exercício para os glúteos realizado ao empurrar os quadris para cima com uma barra sobre o colo, geralmente com a parte superior das costas apoiada em um banco."
+    },
+    "barbell-front-squat": {
+      "name": "Agachamento Frontal com Barra",
+      "description": "Uma variação do agachamento onde a barra é mantida na parte da frente dos ombros, enfatizando o quadríceps e a estabilidade do core."
+    },
+    "barbell-good-morning": {
+      "name": "Bom Dia com Barra",
+      "description": "Um exercício que visa a cadeia posterior (isquiotibiais, glúteos, região lombar) através da flexão dos quadris com uma barra na parte superior das costas."
+    },
+    "dumbbell-incline-press": {
+      "name": "Supino Inclinado com Halteres",
+      "description": "Visa a parte superior do peito, ombros e tríceps, empurrando halteres em um banco inclinado."
+    },
+    "dumbbell-fly": {
+      "name": "Crucifixo com Halteres",
+      "description": "Um exercício de isolamento para o peito, realizado abrindo e fechando os braços em um movimento de arco enquanto segura halteres."
+    },
+    "dumbbell-hammer-curl": {
+      "name": "Rosca Martelo com Halteres",
+      "description": "Uma variação da rosca bíceps com pegada neutra (palmas das mãos viradas uma para a outra), visando o músculo braquial e o braquiorradial, além dos bíceps."
+    },
+    "dumbbell-tricep-kickback": {
+      "name": "Coice para Tríceps com Halter",
+      "description": "Um exercício de isolamento para os tríceps, realizado estendendo o braço para trás enquanto o tronco está inclinado para a frente."
+    },
+    "dumbbell-bulgarian-split-squat": {
+      "name": "Agachamento Búlgaro com Halteres",
+      "description": "Um exercício unilateral para as pernas com o pé de trás elevado, visando quadríceps, glúteos e isquiotibiais, ao mesmo tempo que melhora o equilíbrio."
+    },
+    "dumbbell-pullover": {
+      "name": "Pullover com Halter",
+      "description": "Um exercício que trabalha o peito e os dorsais, realizado deitado em um banco, baixando um halter para trás da cabeça."
+    },
+    "kettlebell-snatch": {
+      "name": "Arranque com Kettlebell",
+      "description": "Um exercício explosivo de corpo inteiro em que o kettlebell é balançado de entre as pernas até uma posição travada acima da cabeça em um movimento fluido."
+    },
+    "kettlebell-halo": {
+      "name": "Auréola com Kettlebell",
+      "description": "Um exercício de mobilidade e estabilidade dos ombros que envolve circular um kettlebell ao redor da cabeça."
+    },
+    "hack-squat-machine": {
+      "name": "Agachamento Hack (Máquina)",
+      "description": "Uma variação do agachamento em máquina que visa o quadríceps, muitas vezes com foco na parte externa do quadríceps."
+    },
+    "seated-calf-raise-machine": {
+      "name": "Elevação de Panturrilha Sentado (Máquina)",
+      "description": "Um exercício de isolamento para o músculo sóleo da panturrilha, realizado em uma máquina sentado."
+    },
+    "abdominal-crunch-machine": {
+      "name": "Abdominal na Máquina",
+      "description": "Um exercício em máquina para isolar os músculos do reto abdominal."
+    },
+    "back-extension-machine": {
+      "name": "Extensão Lombar (Máquina de Hiperextensão)",
+      "description": "Fortalece a região lombar, os glúteos e os isquiotibiais utilizando um banco ou máquina de hiperextensão."
+    },
+    "cable-overhead-tricep-extension": {
+      "name": "Extensão de Tríceps Acima da Cabeça no Cabo (Corda)",
+      "description": "Visa a cabeça longa do tríceps utilizando uma máquina de cabos e um acessório de corda."
+    },
+    "cable-pull-through": {
+      "name": "Puxada no Cabo por entre as Pernas",
+      "description": "Um exercício de flexão de quadril que visa os glúteos e os isquiotibiais utilizando uma máquina de cabos."
+    },
+    "cable-reverse-fly": {
+      "name": "Crucifixo Inverso no Cabo",
+      "description": "Visa os deltoides posteriores e os músculos da parte superior das costas utilizando uma máquina de cabos com polias duplas."
+    },
+    "cable-torso-twist": {
+      "name": "Giro de Tronco no Cabo (Em Pé)",
+      "description": "Um exercício para o core que visa os oblíquos através de um movimento rotacional contra a resistência do cabo."
+    },
+    "resistance-band-chest-press": {
+      "name": "Supino com Elástico de Resistência",
+      "description": "Uma variação do supino utilizando elásticos de resistência, pode ser feita em pé ou deitado."
+    },
+    "resistance-band-row": {
+      "name": "Remada com Elástico de Resistência (Sentado ou Em Pé)",
+      "description": "Visa os músculos das costas utilizando um elástico de resistência, que pode ser ancorado ou segurado."
+    },
+    "resistance-band-deadlift": {
+      "name": "Levantamento Terra com Elástico de Resistência",
+      "description": "Uma variação do levantamento terra utilizando elásticos de resistência, boa para aprender a forma ou para dias mais leves."
+    },
+    "resistance-band-lateral-walk": {
+      "name": "Caminhada Lateral com Elástico de Resistência (Passada de Caranguejo)",
+      "description": "Visa o glúteo médio e os abdutores do quadril, realizada caminhando de lado com um elástico ao redor dos tornozelos ou joelhos."
+    },
+    "hamstring-stretch": {
+      "name": "Alongamento de Isquiotibiais (Em Pé/Sentado)",
+      "description": "Um alongamento estático para melhorar a flexibilidade dos músculos isquiotibiais."
+    },
+    "quadriceps-stretch": {
+      "name": "Alongamento de Quadríceps (Em Pé)",
+      "description": "Um alongamento estático para o quadríceps, normalmente realizado puxando o calcanhar em direção ao glúteo."
+    },
+    "chest-stretch-doorway": {
+      "name": "Alongamento de Peito (na Porta)",
+      "description": "Um alongamento estático para os músculos peitorais utilizando o batente de uma porta como apoio."
+    },
+    "triceps-stretch": {
+      "name": "Alongamento de Tríceps (Acima da Cabeça)",
+      "description": "Um alongamento estático para os tríceps, realizado estendendo um braço acima da cabeça e dobrando o cotovelo."
+    },
+    "cat-cow-stretch": {
+      "name": "Alongamento Gato-Vaca",
+      "description": "Um alongamento dinâmico que melhora a mobilidade da coluna e alivia a tensão nas costas e no core."
+    },
+    "childs-pose": {
+      "name": "Postura da Criança",
+      "description": "Uma pose de descanso suave que acalma a mente e ajuda a aliviar o estresse e a fadiga. Alonga suavemente os quadris, coxas e tornozelos."
+    },
+    "jumping-jacks": {
+      "name": "Polichinelo",
+      "description": "Um exercício calistênico clássico de corpo inteiro que serve como um bom aquecimento ou exercício cardiovascular."
+    },
+    "high-knees": {
+      "name": "Corrida com Joelhos Altos",
+      "description": "Um exercício cardio-intensivo que envolve correr no lugar, elevando os joelhos o mais alto possível."
+    },
+    "running-jogging": {
+      "name": "Corrida/Trote",
+      "description": "Um exercício cardiovascular eficaz que melhora a resistência e queima calorias."
+    },
+    "cycling": {
+      "name": "Ciclismo",
+      "description": "Um exercício cardiovascular de baixo impacto que trabalha principalmente os músculos das pernas."
+    },
+    "jump-rope": {
+      "name": "Pular Corda",
+      "description": "Um exercício cardiovascular altamente eficaz que melhora a coordenação, a agilidade e queima uma quantidade significativa de calorias."
+    },
+    "elliptical-trainer": {
+      "name": "Elíptico",
+      "description": "Uma máquina de cardio de baixo impacto que simula subir escadas, caminhar ou correr sem causar pressão excessiva nas articulações."
+    },
+    "stair-climbing": {
+      "name": "Subir Escadas",
+      "description": "Um exercício cardiovascular vigoroso que visa os glúteos, quadríceps e isquiotibiais."
+    },
+    "sled-push": {
+      "name": "Empurrar Trenó",
+      "description": "Um exercício de força e condicionamento de corpo inteiro que envolve empurrar um trenó com peso."
+    },
+    "sled-pull": {
+      "name": "Puxar Trenó",
+      "description": "Um exercício de força e condicionamento de corpo inteiro que envolve puxar um trenó com peso usando cordas ou um cinto."
+    },
+    "tire-flip": {
+      "name": "Virar Pneu",
+      "description": "Um exercício poderoso de corpo inteiro comum no treinamento de strongman, que envolve virar um pneu grande."
+    },
+    "battle-ropes": {
+      "name": "Corda Naval",
+      "description": "Um exercício de alta intensidade e baixo impacto que trabalha a parte superior do corpo, o core e proporciona um desafio cardiovascular."
+    }
+  }
+}

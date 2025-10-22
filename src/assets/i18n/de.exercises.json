@@ -1,1 +1,436 @@
-
+{
+  "exercises": {
+    "push-up": {
+      "name": "Liegestütz",
+      "description": "Eine klassische Eigengewichtsübung, die Brust, Schultern und Trizeps trainiert. Halten Sie Ihren Körper gerade und den Rumpf angespannt."
+    },
+    "pull-up": {
+      "name": "Klimmzug",
+      "description": "Eine fortgeschrittene Eigengewichtsübung, die mit einem Obergriff auf den Rücken und den Bizeps abzielt."
+    },
+    "chin-up": {
+      "name": "Klimmzug im Untergriff",
+      "description": "Eine Eigengewichtsübung, die mit einem Untergriff auf Rücken und Bizeps abzielt und oft den Bizeps stärker betont als Klimmzüge."
+    },
+    "bodyweight-squat": {
+      "name": "Kniebeuge mit Eigengewicht",
+      "description": "Eine grundlegende Unterkörperübung, die Quadrizeps, Gesäßmuskeln und Oberschenkelrückseiten ohne zusätzliches Gewicht beansprucht."
+    },
+    "lunge": {
+      "name": "Ausfallschritt",
+      "description": "Eine unilaterale Beinübung, die Gleichgewicht und Stabilität verbessert und Quadrizeps, Gesäßmuskeln und Oberschenkelrückseiten stärkt."
+    },
+    "plank": {
+      "name": "Unterarmstütz (Plank)",
+      "description": "Eine isometrische Rumpfkraftübung, bei der eine Position ähnlich einem Liegestütz so lange wie möglich gehalten wird."
+    },
+    "burpee": {
+      "name": "Burpee",
+      "description": "Eine hochintensive Ganzkörperübung, die eine Kniebeuge, einen Liegestütz und einen Sprung kombiniert."
+    },
+    "dip-bar": {
+      "name": "Dip (am Barren)",
+      "description": "Eine Verbundübung mit Eigengewicht, die hauptsächlich den Trizeps und die Brust trainiert und an Parallelbarren ausgeführt wird."
+    },
+    "barbell-bench-press": {
+      "name": "Langhantel-Bankdrücken",
+      "description": "Eine grundlegende Verbundübung für die Oberkörperkraft, die hauptsächlich Brust, Schultern und Trizeps anspricht."
+    },
+    "barbell-back-squat": {
+      "name": "Langhantel-Kniebeuge (hinten)",
+      "description": "Eine Kernkraftübung, die auf Quadrizeps, Gesäß, Oberschenkelrückseiten und den unteren Rücken abzielt, indem man mit einer Langhantel auf dem oberen Rücken in die Hocke geht."
+    },
+    "barbell-deadlift": {
+      "name": "Langhantel-Kreuzheben (Konventionell)",
+      "description": "Eine Ganzkörper-Verbundübung, bei der eine Langhantel vom Boden in eine stehende Position gehoben wird, was Beine, Rücken und Rumpf beansprucht."
+    },
+    "overhead-press-barbell": {
+      "name": "Überkopfdrücken (Langhantel)",
+      "description": "Eine Verbundübung für die Schultern, bei der eine Langhantel im Stehen oder Sitzen über den Kopf gedrückt wird."
+    },
+    "bent-over-row-barbell": {
+      "name": "Vorgebeugtes Rudern (Langhantel)",
+      "description": "Eine Verbundübung für den Rücken, bei der eine Langhantel im vorgebeugten Zustand zum Oberkörper gezogen wird."
+    },
+    "barbell-bicep-curl": {
+      "name": "Langhantel-Bizepscurl",
+      "description": "Eine Isolationsübung für den Bizeps mit einer Langhantel."
+    },
+    "barbell-romanian-deadlift": {
+      "name": "Rumänisches Kreuzheben (Langhantel)",
+      "description": "Zielt auf die Oberschenkelrückseiten und das Gesäß ab, indem man sich mit leicht gebeugten Knien an der Hüfte beugt und die Langhantel nahe an den Beinen hält."
+    },
+    "dumbbell-bench-press": {
+      "name": "Kurzhantel-Bankdrücken",
+      "description": "Eine Verbundübung, die mit Kurzhanteln auf einer Bank Brust, Schultern und Trizeps trainiert und einen größeren Bewegungsumfang ermöglicht."
+    },
+    "dumbbell-shoulder-press": {
+      "name": "Kurzhantel-Schulterdrücken",
+      "description": "Eine Verbundübung für die Schultern, bei der Kurzhanteln über Kopf gedrückt werden, was eine unabhängige Armbewegung ermöglicht."
+    },
+    "dumbbell-row": {
+      "name": "Kurzhantel-Rudern (Einarmig)",
+      "description": "Eine unilaterale Rückenübung, die auf Latissimus, Rhomboiden und Bizeps abzielt und typischerweise mit einem Knie und einer Hand auf einer Bank ausgeführt wird."
+    },
+    "dumbbell-bicep-curl": {
+      "name": "Kurzhantel-Bizepscurl",
+      "description": "Eine Isolationsübung für den Bizeps mit Kurzhanteln, die eine Supination (Handgelenksdrehung) ermöglicht."
+    },
+    "dumbbell-tricep-extension-overhead": {
+      "name": "Überkopf-Trizepsdrücken mit Kurzhantel",
+      "description": "Eine Isolationsübung für den Trizeps, bei der eine Kurzhantel über dem Kopf gestreckt wird."
+    },
+    "dumbbell-lunge": {
+      "name": "Ausfallschritt mit Kurzhanteln",
+      "description": "Ausfallschritte, die mit Kurzhanteln in den Händen ausgeführt werden, um den Widerstand für den Unterkörper zu erhöhen."
+    },
+    "dumbbell-romanian-deadlift": {
+      "name": "Rumänisches Kreuzheben (Kurzhantel)",
+      "description": "Zielt mit Kurzhanteln auf die Oberschenkelrückseiten und das Gesäß ab, wobei der Fokus auf der Hüftbeugung liegt."
+    },
+    "goblet-squat": {
+      "name": "Goblet Squat (Kelch-Kniebeuge)",
+      "description": "Eine Kniebeugen-Variante, bei der eine einzelne Kurzhantel oder Kettlebell auf Brusthöhe gehalten wird, was einen aufrechten Oberkörper fördert."
+    },
+    "dumbbell-lateral-raise": {
+      "name": "Seitheben mit Kurzhanteln",
+      "description": "Eine Isolationsübung für die mittleren (seitlichen) Deltamuskeln, bei der Kurzhanteln zur Seite gehoben werden."
+    },
+    "dumbbell-front-raise": {
+      "name": "Frontheben mit Kurzhanteln",
+      "description": "Eine Isolationsübung für die vorderen (anterioren) Deltamuskeln, bei der Kurzhanteln nach vorne gehoben werden."
+    },
+    "kettlebell-swing": {
+      "name": "Kettlebell Swing (Zweihändig)",
+      "description": "Eine dynamische, explosive Übung, die auf die hintere Kette (Gesäß, Oberschenkelrückseiten, Rücken) abzielt und die Kraft verbessert."
+    },
+    "kettlebell-goblet-squat": {
+      "name": "Kettlebell Goblet Squat",
+      "description": "Eine Kniebeuge, bei der eine Kettlebell an den Hörnern auf Brusthöhe gehalten wird, hervorragend für die Form und die Rumpfaktivierung."
+    },
+    "kettlebell-clean-and-press": {
+      "name": "Kettlebell Clean and Press (Umsetzen und Drücken)",
+      "description": "Eine Ganzkörper-Verbundbewegung, die das Umsetzen einer Kettlebell in die Rack-Position und das anschließende Überkopfdrücken umfasst."
+    },
+    "turkish-get-up": {
+      "name": "Turkish Get-Up (TGU)",
+      "description": "Eine komplexe Ganzkörperübung, bei der man aus dem Liegen auf dem Boden in den Stand übergeht, während man eine Kettlebell (oder Kurzhantel) über Kopf hält. Verbessert Stabilität, Mobilität und Kraft."
+    },
+    "kettlebell-single-arm-row": {
+      "name": "Einarmiges Kettlebell-Rudern",
+      "description": "Eine unilaterale Rückenübung, die auf Latissimus, Rhomboiden und Bizeps abzielt, indem eine Kettlebell zum Oberkörper gezogen wird, oft mit einer Hand und einem Knie auf einer Bank gestützt."
+    },
+    "kettlebell-deadlift": {
+      "name": "Kettlebell-Kreuzheben",
+      "description": "Eine grundlegende Kraftübung mit ein oder zwei Kettlebells zur Stärkung der hinteren Kette, mit Fokus auf einer Hüftbeugung. Kann mit Kettlebell(s) zwischen den Füßen oder außen (Kofferstil) ausgeführt werden."
+    },
+    "kettlebell-strict-press": {
+      "name": "Kettlebell Strict Press (Einarmig)",
+      "description": "Eine Überkopf-Drückübung für Schulter- und Trizepskraft, die mit einer einzelnen Kettlebell aus der Rack-Position ohne Beinschwung ausgeführt wird."
+    },
+    "kettlebell-rack-lunge": {
+      "name": "Kettlebell-Ausfallschritt (Rack-Position)",
+      "description": "Eine unilaterale Beinübung, die Kraft, Stabilität und Rumpfaktivierung aufbaut und mit ein oder zwei Kettlebells in der vorderen Rack-Position ausgeführt wird."
+    },
+    "kettlebell-windmill": {
+      "name": "Kettlebell Windmill (Windmühle)",
+      "description": "Eine komplexe Übung, die die Schulterstabilität, Hüftmobilität und Rumpfkraft verbessert, indem man sich seitlich an der Hüfte beugt, während eine Kettlebell über Kopf fixiert bleibt."
+    },
+    "kettlebell-russian-twist": {
+      "name": "Kettlebell Russian Twist",
+      "description": "Eine Rumpfübung, die auf die schrägen und geraden Bauchmuskeln abzielt, indem man mit gebeugten Knien und (optional) angehobenen Füßen sitzt und den Oberkörper mit einer Kettlebell von Seite zu Seite dreht."
+    },
+    "kettlebell-high-pull": {
+      "name": "Kettlebell High Pull (Hochziehen)",
+      "description": "Eine explosive Übung, die Kraft in Hüfte, Rücken und Schultern entwickelt. Dabei wird die Kettlebell aus einer Swing-Position (oder vom Boden) bis auf Kinnhöhe hochgezogen, wobei der Ellbogen hoch bleibt."
+    },
+    "kettlebell-figure-8": {
+      "name": "Kettlebell Figure 8 (Achterbewegung)",
+      "description": "Eine dynamische Übung, die Koordination, Rumpfstabilität und Griffkraft verbessert, indem die Kettlebell in einer Achterbewegung zwischen und um die Beine geführt wird."
+    },
+    "kettlebell-suitcase-carry": {
+      "name": "Kettlebell Suitcase Carry (Koffertragen)",
+      "description": "Eine unilaterale Trageübung, die die Rumpfstabilität, Griffkraft und Haltung fordert, indem eine einzelne schwere Kettlebell in einer Hand wie ein Koffer getragen wird."
+    },
+    "kettlebell-thruster": {
+      "name": "Kettlebell Thruster",
+      "description": "Eine Ganzkörper-Verbundübung, die eine Kettlebell-Frontkniebeuge mit einem Überkopfdrücken in einer fließenden Bewegung kombiniert. Kann mit einer oder zwei Kettlebells ausgeführt werden."
+    },
+    "lat-pulldown-machine": {
+      "name": "Latzug (Maschine)",
+      "description": "Eine maschinengestützte Übung, die auf die Latissimus-Muskeln abzielt, indem eine Stange zur Brust gezogen wird."
+    },
+    "seated-row-machine": {
+      "name": "Sitzendes Rudern (Maschine)",
+      "description": "Eine Maschinenübung für die Rückendichte, die auf die mittleren Rückenmuskeln abzielt, indem Griffe zum Oberkörper gezogen werden."
+    },
+    "leg-press-machine": {
+      "name": "Beinpresse (Maschine)",
+      "description": "Eine Verbundübung für den Unterkörper an einer Maschine, bei der eine gewichtete Plattform mit den Beinen weggedrückt wird."
+    },
+    "leg-extension-machine": {
+      "name": "Beinstrecker (Maschine)",
+      "description": "Eine Isolationsübung für den Quadrizeps, bei der die Unterschenkel gegen einen Widerstand gestreckt werden."
+    },
+    "leg-curl-machine": {
+      "name": "Beinbeuger (Maschine - Liegend oder Sitzend)",
+      "description": "Eine Isolationsübung für die Oberschenkelrückseiten, bei der die Unterschenkel gegen einen Widerstand zum Gesäß gebeugt werden."
+    },
+    "chest-press-machine": {
+      "name": "Brustpresse (Maschine)",
+      "description": "Eine maschinengestützte Verbundübung für die Brust, ähnlich dem Bankdrücken, aber mit einem festen Bewegungsweg."
+    },
+    "shoulder-press-machine": {
+      "name": "Schulterpresse (Maschine)",
+      "description": "Eine Maschinenübung für die Schultern, bei der Griffe mit einer geführten Bewegung über Kopf gedrückt werden."
+    },
+    "pec-deck-fly-machine": {
+      "name": "Pec Deck Fly (Maschine)",
+      "description": "Eine Isolationsübung für die Brust, bei der die Arme mit einer Maschine in einer Fliege-Bewegung zusammengeführt werden."
+    },
+    "reverse-pec-deck-machine": {
+      "name": "Reverse Pec Deck (Rear Delt Fly)",
+      "description": "Eine Maschinenübung, die auf die hinteren Deltamuskeln (hintere Schultern) und die oberen Rückenmuskeln abzielt."
+    },
+    "calf-raise-machine": {
+      "name": "Wadenheben (Maschine - Stehend oder Sitzend)",
+      "description": "Eine Isolationsübung für die Wadenmuskulatur (Gastrocnemius und Soleus)."
+    },
+    "cable-tricep-pushdown": {
+      "name": "Trizepsdrücken am Kabelzug (Seil oder Stange)",
+      "description": "Eine Isolationsübung für den Trizeps mit einer Kabelzugmaschine und einem Seil- oder Stangenaufsatz."
+    },
+    "cable-bicep-curl": {
+      "name": "Bizepscurl am Kabelzug (Stange oder Griffe)",
+      "description": "Eine Isolationsübung für den Bizeps mit einer Kabelzugmaschine, die konstante Spannung bietet."
+    },
+    "cable-face-pull": {
+      "name": "Face Pull am Kabelzug",
+      "description": "Eine ausgezeichnete Übung für die hinteren Deltamuskeln, die Gesundheit der Rotatorenmanschette und die Haltung des oberen Rückens."
+    },
+    "cable-fly": {
+      "name": "Fliegende am Kabelzug (Stehend - Hoch, Mittel oder Tief)",
+      "description": "Eine Isolationsübung für die Brust mit einer Kabelzugmaschine, die verschiedene Winkel ermöglicht, um verschiedene Teile der Brust anzusprechen."
+    },
+    "cable-lateral-raise": {
+      "name": "Seitheben am Kabelzug",
+      "description": "Eine Isolationsübung für die mittleren Deltamuskeln mit einem Kabel, die während der gesamten Bewegung konstante Spannung bietet."
+    },
+    "cable-woodchop": {
+      "name": "Cable Woodchop (Holzhacken am Kabelzug)",
+      "description": "Eine rotatorische Rumpfübung, die die schrägen und querverlaufenden Bauchmuskeln beansprucht."
+    },
+    "resistance-band-bicep-curl": {
+      "name": "Bizepscurl mit Widerstandsband",
+      "description": "Bizepscurls, die mit einem Widerstandsband ausgeführt werden und einen variablen Widerstand bieten."
+    },
+    "resistance-band-tricep-pushdown": {
+      "name": "Trizepsdrücken mit Widerstandsband",
+      "description": "Trizepsdrücken mit einem über Kopf verankerten oder gehaltenen Widerstandsband."
+    },
+    "resistance-band-pull-apart": {
+      "name": "Auseinanderziehen mit Widerstandsband",
+      "description": "Eine großartige Übung für die Schultergesundheit, die auf die hinteren Deltamuskeln und die oberen Rückenmuskeln abzielt."
+    },
+    "resistance-band-squat": {
+      "name": "Kniebeuge mit Widerstandsband",
+      "description": "Kniebeugen, die mit einem Widerstandsband unter den Füßen und über die Schultern geschlungen oder gehalten ausgeführt werden, um den Widerstand zu erhöhen."
+    },
+    "resistance-band-glute-bridge": {
+      "name": "Gesäßbrücke mit Widerstandsband",
+      "description": "Gesäßbrücken mit einem Widerstandsband um die Oberschenkel für eine zusätzliche Aktivierung des Gluteus medius."
+    },
+    "farmers-walk": {
+      "name": "Farmer's Walk (Koffertragen)",
+      "description": "Eine Ganzkörperübung, bei der man eine Strecke lang schwere Gewichte (Kurzhanteln, Kettlebells oder spezielle Griffe) trägt. Verbessert die Griffkraft, Rumpfstabilität und allgemeine Kondition."
+    },
+    "box-jump": {
+      "name": "Box Jump (Kastensprung)",
+      "description": "Eine plyometrische Übung, bei der auf eine erhöhte Plattform gesprungen wird, um die explosive Kraft des Unterkörpers zu entwickeln."
+    },
+    "medicine-ball-slam": {
+      "name": "Medizinball-Slam",
+      "description": "Eine Ganzkörper-Kraftübung, bei der ein Medizinball über den Kopf gehoben und kraftvoll auf den Boden geschmettert wird."
+    },
+    "glute-bridge": {
+      "name": "Gesäßbrücke",
+      "description": "Eine Eigengewichtsübung, die auf das Gesäß und die Oberschenkelrückseiten abzielt, indem die Hüften vom Boden gehoben werden."
+    },
+    "superman-exercise": {
+      "name": "Superman",
+      "description": "Eine Eigengewichtsübung, die den unteren Rücken, das Gesäß und die Oberschenkelrückseiten stärkt, indem Arme und Beine gleichzeitig vom Boden gehoben werden, während man auf dem Bauch liegt."
+    },
+    "mountain-climbers": {
+      "name": "Mountain Climbers (Bergsteiger)",
+      "description": "Eine dynamische Ganzkörperübung, die die Cardio-Ausdauer, Rumpfkraft und Beweglichkeit fördert und die Bewegung des Bergsteigens nachahmt."
+    },
+    "bench-dips": {
+      "name": "Bank-Dips (Trizeps)",
+      "description": "Eine Eigengewichtsübung, die auf den Trizeps abzielt und mit einer Bank oder einem Stuhl ausgeführt wird."
+    },
+    "bodyweight-calf-raise": {
+      "name": "Wadenheben mit Eigengewicht",
+      "description": "Eine einfache, aber effektive Eigengewichtsübung zur Stärkung der Wadenmuskulatur."
+    },
+    "barbell-hip-thrust": {
+      "name": "Langhantel-Hüftstoß",
+      "description": "Eine kraftvolle Gesäßübung, bei der die Hüften mit einer Langhantel über dem Schoß nach oben gestoßen werden, typischerweise mit dem oberen Rücken auf einer Bank gestützt."
+    },
+    "barbell-front-squat": {
+      "name": "Langhantel-Frontkniebeuge",
+      "description": "Eine Kniebeugen-Variante, bei der die Langhantel vor den Schultern gehalten wird, was Quadrizeps und Rumpfstabilität betont."
+    },
+    "barbell-good-morning": {
+      "name": "Barbell Good Morning",
+      "description": "Eine Übung, die auf die hintere Kette (Oberschenkelrückseiten, Gesäß, unterer Rücken) abzielt, indem man sich an der Hüfte mit einer Langhantel auf dem oberen Rücken beugt."
+    },
+    "dumbbell-incline-press": {
+      "name": "Schrägbankdrücken mit Kurzhanteln",
+      "description": "Zielt auf die obere Brust, Schultern und Trizeps ab, indem Kurzhanteln auf einer Schrägbank gedrückt werden."
+    },
+    "dumbbell-fly": {
+      "name": "Fliegende mit Kurzhanteln",
+      "description": "Eine Isolationsübung für die Brust, die durch das Öffnen und Schließen der Arme in einer Bogenbewegung mit Kurzhanteln ausgeführt wird."
+    },
+    "dumbbell-hammer-curl": {
+      "name": "Hammercurls mit Kurzhanteln",
+      "description": "Eine Bizepscurl-Variante mit neutralem Griff (Handflächen zueinander), die zusätzlich zum Bizeps den Brachialis und Brachioradialis anspricht."
+    },
+    "dumbbell-tricep-kickback": {
+      "name": "Trizeps-Kickbacks mit Kurzhanteln",
+      "description": "Eine Isolationsübung für den Trizeps, die ausgeführt wird, indem der Arm nach hinten gestreckt wird, während man an der Hüfte gebeugt ist."
+    },
+    "dumbbell-bulgarian-split-squat": {
+      "name": "Bulgarian Split Squat mit Kurzhanteln",
+      "description": "Eine unilaterale Beinübung mit erhöhtem hinterem Fuß, die Quadrizeps, Gesäß und Oberschenkelrückseiten trainiert und gleichzeitig das Gleichgewicht verbessert."
+    },
+    "dumbbell-pullover": {
+      "name": "Überzüge mit Kurzhantel",
+      "description": "Eine Übung, die Brust und Latissimus trainiert, indem man auf einer Bank liegt und eine Kurzhantel hinter den Kopf absenkt."
+    },
+    "kettlebell-snatch": {
+      "name": "Kettlebell Snatch (Reißen)",
+      "description": "Eine explosive Ganzkörperübung, bei der die Kettlebell in einer fließenden Bewegung von zwischen den Beinen in eine über Kopf fixierte Position geschwungen wird."
+    },
+    "kettlebell-halo": {
+      "name": "Kettlebell Halo (Heiligenschein)",
+      "description": "Eine Übung für Schultermobilität und -stabilität, bei der eine Kettlebell um den Kopf gekreist wird."
+    },
+    "hack-squat-machine": {
+      "name": "Hackenschmidt-Kniebeuge (Maschine)",
+      "description": "Eine maschinengestützte Kniebeugen-Variante, die auf den Quadrizeps abzielt, oft mit Fokus auf den äußeren Quadrizeps."
+    },
+    "seated-calf-raise-machine": {
+      "name": "Sitzendes Wadenheben (Maschine)",
+      "description": "Eine Isolationsübung für den Soleus-Muskel der Wade, die an einer sitzenden Maschine ausgeführt wird."
+    },
+    "abdominal-crunch-machine": {
+      "name": "Bauchpresse (Maschine)",
+      "description": "Eine maschinengestützte Übung zur Isolierung der geraden Bauchmuskeln."
+    },
+    "back-extension-machine": {
+      "name": "Rückenstrecker (Hyperextension-Maschine)",
+      "description": "Stärkt den unteren Rücken, das Gesäß und die Oberschenkelrückseiten mit einer Hyperextensionsbank oder -maschine."
+    },
+    "cable-overhead-tricep-extension": {
+      "name": "Überkopf-Trizepsdrücken am Kabelzug (Seil)",
+      "description": "Zielt auf den langen Kopf des Trizeps ab, unter Verwendung einer Kabelzugmaschine und eines Seilaufsatzes."
+    },
+    "cable-pull-through": {
+      "name": "Cable Pull-Through",
+      "description": "Eine Hüftbeuge-Übung, die mit einer Kabelzugmaschine auf das Gesäß und die Oberschenkelrückseiten abzielt."
+    },
+    "cable-reverse-fly": {
+      "name": "Reverse Fly am Kabelzug",
+      "description": "Zielt auf die hinteren Deltamuskeln und die oberen Rückenmuskeln ab, unter Verwendung einer Kabelzugmaschine mit zwei Rollen."
+    },
+    "cable-torso-twist": {
+      "name": "Oberkörperdrehung am Kabelzug (Stehend)",
+      "description": "Eine Rumpfübung, die durch rotatorische Bewegung gegen den Kabelwiderstand auf die schrägen Bauchmuskeln abzielt."
+    },
+    "resistance-band-chest-press": {
+      "name": "Brustpresse mit Widerstandsband",
+      "description": "Eine Brustpressen-Variante mit Widerstandsbändern, die im Stehen oder Liegen ausgeführt werden kann."
+    },
+    "resistance-band-row": {
+      "name": "Rudern mit Widerstandsband (Sitzend oder Stehend)",
+      "description": "Zielt auf die Rückenmuskulatur ab, unter Verwendung eines Widerstandsbandes, das verankert oder gehalten werden kann."
+    },
+    "resistance-band-deadlift": {
+      "name": "Kreuzheben mit Widerstandsband",
+      "description": "Eine Kreuzheben-Variante mit Widerstandsbändern, gut zum Erlernen der Form oder für leichtere Tage."
+    },
+    "resistance-band-lateral-walk": {
+      "name": "Seitliches Gehen mit Widerstandsband (Crab Walk)",
+      "description": "Zielt auf den Gluteus medius und die Hüftabduktoren ab, ausgeführt durch seitliches Gehen mit einem Band um die Knöchel oder Knie."
+    },
+    "hamstring-stretch": {
+      "name": "Oberschenkelrückseiten-Dehnung (Stehend/Sitzend)",
+      "description": "Eine statische Dehnung zur Verbesserung der Flexibilität der Oberschenkelrückseiten."
+    },
+    "quadriceps-stretch": {
+      "name": "Quadrizeps-Dehnung (Stehend)",
+      "description": "Eine statische Dehnung für den Quadrizeps, typischerweise ausgeführt, indem die Ferse zum Gesäß gezogen wird."
+    },
+    "chest-stretch-doorway": {
+      "name": "Brustdehnung (im Türrahmen)",
+      "description": "Eine statische Dehnung für die Brustmuskulatur unter Verwendung eines Türrahmens als Hebel."
+    },
+    "triceps-stretch": {
+      "name": "Trizeps-Dehnung (Überkopf)",
+      "description": "Eine statische Dehnung für den Trizeps, die ausgeführt wird, indem ein Arm über den Kopf gestreckt und der Ellbogen gebeugt wird."
+    },
+    "cat-cow-stretch": {
+      "name": "Katze-Kuh-Dehnung",
+      "description": "Eine dynamische Dehnung, die die Wirbelsäulenmobilität verbessert und Verspannungen im Rücken und Rumpf löst."
+    },
+    "childs-pose": {
+      "name": "Stellung des Kindes",
+      "description": "Eine sanfte Ruhehaltung, die den Geist beruhigt und hilft, Stress und Müdigkeit abzubauen. Sie dehnt sanft Hüften, Oberschenkel und Knöchel."
+    },
+    "jumping-jacks": {
+      "name": "Hampelmann",
+      "description": "Eine klassische Ganzkörper-Gymnastikübung, die als gutes Aufwärmtraining oder Cardio-Einheit dient."
+    },
+    "high-knees": {
+      "name": "Hohe Knie",
+      "description": "Eine cardio-intensive Übung, bei der auf der Stelle gelaufen und die Knie so hoch wie möglich gehoben werden."
+    },
+    "running-jogging": {
+      "name": "Laufen/Joggen",
+      "description": "Eine effektive Herz-Kreislauf-Übung, die die Ausdauer verbessert und Kalorien verbrennt."
+    },
+    "cycling": {
+      "name": "Radfahren",
+      "description": "Eine gelenkschonende Herz-Kreislauf-Übung, die hauptsächlich die Beinmuskulatur trainiert."
+    },
+    "jump-rope": {
+      "name": "Seilspringen",
+      "description": "Eine äußerst effektive Herz-Kreislauf-Übung, die Koordination, Beweglichkeit verbessert und eine erhebliche Menge an Kalorien verbrennt."
+    },
+    "elliptical-trainer": {
+      "name": "Crosstrainer",
+      "description": "Ein gelenkschonendes Cardiogerät, das Treppensteigen, Gehen oder Laufen simuliert, ohne übermäßigen Druck auf die Gelenke auszuüben."
+    },
+    "stair-climbing": {
+      "name": "Treppensteigen",
+      "description": "Eine anstrengende Herz-Kreislauf-Übung, die auf Gesäß, Quadrizeps und Oberschenkelrückseiten abzielt."
+    },
+    "sled-push": {
+      "name": "Schlittenschieben",
+      "description": "Eine Ganzkörper-Kraft- und Konditionsübung, bei der ein gewichteter Schlitten geschoben wird."
+    },
+    "sled-pull": {
+      "name": "Schlittenziehen",
+      "description": "Eine Ganzkörper-Kraft- und Konditionsübung, bei der ein gewichteter Schlitten mit Gurten oder einem Geschirr gezogen wird."
+    },
+    "tire-flip": {
+      "name": "Reifenumwerfen",
+      "description": "Eine kraftvolle Ganzkörperübung, die im Strongman-Training üblich ist und das Umwerfen eines großen Reifens beinhaltet."
+    },
+    "battle-ropes": {
+      "name": "Battle Ropes",
+      "description": "Eine hochintensive, gelenkschonende Übung, die den Oberkörper und den Rumpf trainiert und eine kardiovaskuläre Herausforderung darstellt."
+    }
+  }
+}
