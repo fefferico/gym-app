@@ -65,24 +65,25 @@
     "defaultName": "Passionné(e) de Fitness"
   },
   "pausedWorkout": {
-    "inProgress": "Vous avez une séance d'entraînement en cours !",
-    "routineLabel": "Routine",
-    "programLabel": "Programme",
-    "loggedOn": "Enregistrée le",
-    "pausedAt": "Mise en pause à",
-    "defaultRoutineName": "Nouvelle session",
-    "fallbackRoutineName": "votre séance",
-    "adHocWorkout": "Séance Spontanée",
-    "resumeButton": "REPRENDRE LA SÉANCE",
-    "detailsButton": "DÉTAILS",
-    "discardButton": "ABANDONNER",
-    "discardPromptTitle": "Abandonner la séance en pause ?",
-    "discardPromptMessage": "Êtes-vous sûr(e) de vouloir abandonner cette séance en pause ? Cette action est irréversible.",
-    "summaryTitle": "En pause : {{routineName}}",
-    "summaryMessage": "Vous avez effectué {{exercisesDone}} exercices sur {{exercisesAvailable}}, avec {{setsDone}} série(s) enregistrée(s){{targetSetsInfo}}. Temps écoulé : {{timeElapsed}}. Reprenez la séance pour la continuer.",
-    "noPausedWorkoutFound": "Aucune séance en pause trouvée à reprendre",
-    "sessionDiscarded": "Session d'entraînement en pause abandonnée."
-  },
+      "inProgress": "Vous avez un entraînement en cours !",
+      "routineLabel": "Routine",
+      "programLabel": "Programme",
+      "loggedOn": "Enregistré le",
+      "pausedAt": "En pause à",
+      "defaultRoutineName": "Nouvelle session",
+      "fallbackRoutineName": "votre entraînement",
+      "adHocWorkout": "Entraînement Ad-hoc",
+      "resumeButton": "REPRENDRE L'ENTRAÎNEMENT",
+      "detailsButton": "DÉTAILS",
+      "discardButton": "ABANDONNER",
+      "DISCARDTITLE": "Abandonner l'entraînement en pause ?",
+      "discardMessage": "Êtes-vous sûr de vouloir abandonner cette session d'entraînement en pause ? Cette action est irréversible.",
+      "summaryTitle": "En pause : {{routineName}}",
+      "summaryMessage": "Vous avez effectué {{exercisesDone}} exercices sur {{exercisesAvailable}}, avec {{setsDone}} série(s) enregistrée(s){{targetSetsInfo}}. Temps écoulé : {{timeElapsed}}. Reprenez l'entraînement pour continuer.",
+      "noPausedWorkoutFound": "Aucun entraînement en pause trouvé à reprendre",
+      "sessionDiscarded": "Session d'entraînement en pause abandonnée.",
+      "status": "Votre entraînement est en pause"
+    },
   "quickActions": {
     "startNewSessionTitle": "Démarrer une nouvelle session",
     "startNewSessionDescription": "Commencez une toute nouvelle session et ajustez-la au fur et à mesure",
@@ -2232,5 +2233,13 @@
       "detailed": "GÉNÉRER UN ENTRAÎNEMENT PERSONNALISÉ",
       "quick": "SURPRENEZ-MOI !"
     }
-  }
+  },
+  "metrics": {
+      "rest": "Repos",
+      "weight": "Poids",
+      "tempo": "Tempo",
+      "duration": "Durée",
+      "distance": "Distance",
+      "reps": "Répétitions"
+    }
 }

@@ -17,24 +17,25 @@
     "defaultName": "Appassionato di Fitness"
   },
   "pausedWorkout": {
-    "inProgress": "Hai un allenamento in corso!",
-    "routineLabel": "Routine",
-    "programLabel": "Programma",
-    "loggedOn": "Registrato il",
-    "pausedAt": "In pausa dal",
-    "defaultRoutineName": "Nuova sessione",
-    "fallbackRoutineName": "il tuo allenamento",
-    "adHocWorkout": "Allenamento Estemporaneo",
-    "resumeButton": "RIPRENDI ALLENAMENTO",
-    "detailsButton": "DETTAGLI",
-    "discardButton": "SCARTA",
-    "discardPromptTitle": "Scartare l'Allenamento in Pausa?",
-    "discardPromptMessage": "Sei sicuro di voler scartare questa sessione di allenamento in pausa? L'azione non può essere annullata.",
-    "summaryTitle": "In Pausa: {{routineName}}",
-    "summaryMessage": "Hai eseguito {{exercisesDone}} esercizi su {{exercisesAvailable}}, con {{setsDone}} serie registrate{{targetSetsInfo}}. Tempo trascorso: {{timeElapsed}}. Riprendi l'allenamento per continuare.",
-    "noPausedWorkoutFound": "Nessun allenamento in pausa trovato da riprendere",
-    "sessionDiscarded": "Sessione di allenamento in pausa scartata."
-  },
+      "inProgress": "Hai un allenamento in corso!",
+      "routineLabel": "Routine",
+      "programLabel": "Programma",
+      "loggedOn": "Registrato il",
+      "pausedAt": "In pausa alle",
+      "defaultRoutineName": "Nuova sessione",
+      "fallbackRoutineName": "il tuo allenamento",
+      "adHocWorkout": "Allenamento Ad-hoc",
+      "resumeButton": "RIPRENDI ALLENAMENTO",
+      "detailsButton": "DETTAGLI",
+      "discardButton": "SCARTA",
+      "discardTitle": "Scartare l'allenamento in pausa?",
+      "discardMessage": "Sei sicuro di voler scartare questa sessione di allenamento in pausa? L'azione non può essere annullata.",
+      "summaryTitle": "In pausa: {{routineName}}",
+      "summaryMessage": "Hai eseguito {{exercisesDone}} di {{exercisesAvailable}} esercizi, con {{setsDone}} set registrati{{targetSetsInfo}}. Tempo trascorso: {{timeElapsed}}. Riprendi l'allenamento per continuare.",
+      "noPausedWorkoutFound": "Nessun allenamento in pausa trovato da riprendere",
+      "sessionDiscarded": "Sessione di allenamento in pausa scartata.",
+      "status": "Il tuo allenamento è in pausa"
+    },
   "quickActions": {
     "startNewSessionTitle": "Inizia una nuova sessione",
     "startNewSessionDescription": "Inizia una sessione da zero e definiscila mentre ti alleni",
@@ -784,7 +785,7 @@
     "allSetsDone": "Tutte le serie previste sono completate. Ottimo lavoro!",
     "addExercise": "AGGIUNGI ESERCIZIO",
     "finish": "TERMINA",
-    "addExerciseTitle": "AGGIUNGI ESERCIZIO ALLA SESSIONE",
+    "addExerciseTitle": "SELEZIONA UN ESERCIZIO DALLA LISTA",
     "switchExerciseTitle": "CAMBIA ESERCIZIO",
     "similarExercisesTitle": "ESERCIZI SIMILI",
     "searchPlaceholder": "Cerca un sostituto...",
@@ -973,7 +974,7 @@
     "lastUsed": "Ultimo uso: {{date}}",
     "noSimilar": "Nessun esercizio simile trovato.",
     "noMatches": "Nessun esercizio corrisponde ai tuoi filtri.",
-    "createCustom": "CREA UN ESERCIZIO PERSONALIZZATO...",
+    "createCustom": "CREA UN NUOVO ESERCIZIO...",
     "cancel": "ANNULLA",
     "frequencyGroups": {
       "gt30": "30+ Volte",
@@ -1254,6 +1255,17 @@
       "ungroup": "Separa",
       "makeEmom": "Crea EMOM",
       "switch": "Sostituisci Esercizio"
+    },
+    "prompts": {
+      "addField": {
+        "title": "Aggiungi metrica alla serie",
+        "message": "Quale metrica vorresti aggiungere al Set #{{setNumber}}?"
+      },
+      "setTarget": {
+        "title": "Imposta Obiettivo {{field}}",
+        "message": "Inserisci il valore obiettivo per questo set.",
+        "applyButton": "Applica Obiettivo"
+      }
     },
     "buttons": {
       "regenButton": "RIGENERA SCHEDA"
@@ -1784,7 +1796,7 @@
     }
   },
   "logActivity": {
-    "logTitle": "Registra un'Attività",
+    "logTitle": "Registra un'attività",
     "editTitle": "Modifica Registro Attività",
     "logSubtitle": "Registra qualsiasi attività fisica che hai svolto.",
     "editSubtitle": "Aggiorna i dettagli della tua attività registrata.",
@@ -2494,5 +2506,13 @@
       "successTitle": "Eliminato",
       "error": "Impossibile eliminare l'esercizio. Potrebbe essere in uso."
     }
-  }
+  },
+  "metrics": {
+      "rest": "Riposo",
+      "weight": "Peso",
+      "tempo": "Tempo",
+      "duration": "Durata",
+      "distance": "Distanza",
+      "reps": "Ripetizioni"
+    }
 }

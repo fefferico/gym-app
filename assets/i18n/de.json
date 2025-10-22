@@ -65,23 +65,24 @@
         "defaultName": "Fitness-Enthusiast"
     },
     "pausedWorkout": {
-        "inProgress": "Du hast ein laufendes Training!",
-        "routineLabel": "Trainingsplan",
-        "programLabel": "Programm",
-        "loggedOn": "Gestartet am",
-        "pausedAt": "Pausiert um",
-        "defaultRoutineName": "Neue Einheit",
-        "fallbackRoutineName": "dein Training",
-        "adHocWorkout": "Spontanes Training",
-        "resumeButton": "TRAINING FORTSETZEN",
-        "detailsButton": "DETAILS",
-        "discardButton": "VERWERFEN",
-        "discardPromptTitle": "Pausiertes Training Verwerfen?",
-        "discardPromptMessage": "Bist du sicher, dass du diese pausierte Trainingseinheit verwerfen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
-        "summaryTitle": "Pausiert: {{routineName}}",
-        "summaryMessage": "Du hast {{exercisesDone}} von {{exercisesAvailable}} Übungen ausgeführt, mit {{setsDone}} protokollierten Sätzen{{targetSetsInfo}}. Verstrichene Zeit: {{timeElapsed}}. Setze das Training fort, um weiterzumachen.",
-        "noPausedWorkoutFound": "Kein pausiertes Training zum Fortsetzen gefunden",
-        "sessionDiscarded": "Pausierte Trainingseinheit verworfen."
+      "inProgress": "Du hast ein laufendes Training!",
+      "routineLabel": "Routine",
+      "programLabel": "Programm",
+      "loggedOn": "Protokolliert am",
+      "pausedAt": "Pausiert um",
+      "defaultRoutineName": "Neue Sitzung",
+      "fallbackRoutineName": "dein Training",
+      "adHocWorkout": "Ad-hoc-Training",
+      "resumeButton": "TRAINING FORTSETZEN",
+      "detailsButton": "DETAILS",
+      "discardButton": "VERWERFEN",
+      "DISCARDTITLE": "Pausiertes Training verwerfen?",
+      "discardMessage": "Bist du sicher, dass du diese pausierte Trainingseinheit verwerfen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "summaryTitle": "Pausiert: {{routineName}}",
+      "summaryMessage": "Du hast {{exercisesDone}} von {{exercisesAvailable}} Übungen ausgeführt, mit {{setsDone}} protokollierten Satz(Sätzen){{targetSetsInfo}}. Verstrichene Zeit: {{timeElapsed}}. Setze das Training fort, um weiterzumachen.",
+      "noPausedWorkoutFound": "Kein pausiertes Training zum Fortsetzen gefunden",
+      "sessionDiscarded": "Pausierte Trainingseinheit verworfen.",
+      "status": "Dein Training ist pausiert"
     },
     "quickActions": {
         "startNewSessionTitle": "Eine neue Einheit starten",
@@ -2232,5 +2233,14 @@
       "detailed": "BENUTZERDEFINIERTES TRAINING GENERIEREN",
       "quick": "ÜBERRASCH MICH!"
     }
-  }
+  },
+
+   "metrics": {
+      "rest": "Pause",
+      "weight": "Gewicht",
+      "tempo": "Tempo",
+      "duration": "Dauer",
+      "distance": "Distanz",
+      "reps": "Wiederholungen"
+    }
 }

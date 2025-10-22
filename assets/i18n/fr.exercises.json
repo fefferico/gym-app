@@ -1,1 +1,1429 @@
+{
+  "exercises": {
+    "push-up": {
+      "name": "Pompe",
+      "description": "Un exercice classique au poids du corps qui fait travailler la poitrine, les épaules et les triceps. Gardez votre corps droit et votre sangle abdominale engagée."
+    },
+    "pull-up": {
+      "name": "Traction (prise pronation)",
+      "description": "Un exercice avancé au poids du corps qui cible le dos et les biceps en utilisant une prise en pronation (paumes vers l'avant)."
+    },
+    "chin-up": {
+      "name": "Traction (prise supination)",
+      "description": "Un exercice au poids du corps ciblant le dos et les biceps avec une prise en supination (paumes vers soi), qui met souvent plus l'accent sur les biceps que les tractions."
+    },
+    "bodyweight-squat": {
+      "name": "Squat au poids du corps",
+      "description": "Un exercice fondamental pour le bas du corps qui engage les quadriceps, les fessiers et les ischio-jambiers sans poids externe."
+    },
+    "lunge": {
+      "name": "Fente",
+      "description": "Un exercice unilatéral pour les jambes qui améliore l'équilibre, la stabilité et renforce les quadriceps, les fessiers et les ischio-jambiers."
+    },
+    "plank": {
+      "name": "Planche",
+      "description": "Un exercice de renforcement isométrique du tronc qui consiste à maintenir une position similaire à celle d'une pompe le plus longtemps possible."
+    },
+    "burpee": {
+      "name": "Burpee",
+      "description": "Un exercice complet et de haute intensité combinant un squat, une pompe et un saut."
+    },
+    "dip-bar": {
+      "name": "Dips (barres parallèles)",
+      "description": "Un exercice composé au poids du corps ciblant principalement les triceps et la poitrine, effectué sur des barres parallèles."
+    },
+    "barbell-bench-press": {
+      "name": "Développé couché à la barre",
+      "description": "Un exercice composé fondamental pour la force du haut du corps, ciblant principalement la poitrine, les épaules et les triceps."
+    },
+    "barbell-back-squat": {
+      "name": "Squat avec barre sur le dos",
+      "description": "Un exercice de force de base ciblant les quadriceps, les fessiers, les ischio-jambiers et le bas du dos en s'accroupissant avec une barre sur le haut du dos."
+    },
+    "barbell-deadlift": {
+      "name": "Soulevé de terre à la barre (Conventionnel)",
+      "description": "Un exercice composé complet du corps consistant à soulever une barre du sol jusqu'à une position debout, engageant les jambes, le dos et le tronc."
+    },
+    "overhead-press-barbell": {
+      "name": "Développé militaire à la barre",
+      "description": "Un exercice composé pour les épaules consistant à pousser une barre au-dessus de la tête depuis une position debout ou assise."
+    },
+    "bent-over-row-barbell": {
+      "name": "Rowing barre buste penché",
+      "description": "Un exercice composé pour le dos où une barre est tirée vers le torse tout en étant penché au niveau des hanches."
+    },
+    "barbell-bicep-curl": {
+      "name": "Curl biceps à la barre",
+      "description": "Un exercice d'isolation pour les biceps utilisant une barre."
+    },
+    "barbell-romanian-deadlift": {
+      "name": "Soulevé de terre roumain à la barre (RDL)",
+      "description": "Cible les ischio-jambiers et les fessiers en articulant les hanches avec une légère flexion des genoux, en gardant la barre près des jambes."
+    },
+    "dumbbell-bench-press": {
+      "name": "Développé couché avec haltères",
+      "description": "Un exercice composé qui cible la poitrine, les épaules et les triceps en utilisant des haltères sur un banc, permettant une plus grande amplitude de mouvement."
+    },
+    "dumbbell-shoulder-press": {
+      "name": "Développé épaules avec haltères",
+      "description": "Un exercice composé pour les épaules consistant à pousser des haltères au-dessus de la tête, permettant un mouvement indépendant des bras."
+    },
+    "dumbbell-row": {
+      "name": "Rowing avec haltère (un bras)",
+      "description": "Un exercice unilatéral pour le dos ciblant les grands dorsaux, les rhomboïdes et les biceps, généralement effectué avec un genou et une main sur un banc."
+    },
+    "dumbbell-bicep-curl": {
+      "name": "Curl biceps avec haltères",
+      "description": "Un exercice d'isolation pour les biceps utilisant des haltères, permettant la supination (rotation du poignet)."
+    },
+    "dumbbell-tricep-extension-overhead": {
+      "name": "Extension triceps au-dessus de la tête avec haltère",
+      "description": "Un exercice d'isolation pour les triceps, effectué en étendant un haltère au-dessus de la tête."
+    },
+    "dumbbell-lunge": {
+      "name": "Fentes avec haltères",
+      "description": "Fentes effectuées en tenant des haltères, ajoutant une résistance au bas du corps."
+    },
+    "dumbbell-romanian-deadlift": {
+      "name": "Soulevé de terre roumain avec haltères (RDL)",
+      "description": "Cible les ischio-jambiers et les fessiers en utilisant des haltères, en se concentrant sur le mouvement de charnière de la hanche."
+    },
+    "goblet-squat": {
+      "name": "Goblet Squat",
+      "description": "Une variante du squat consistant à tenir un seul haltère ou une kettlebell au niveau de la poitrine, favorisant un torse droit."
+    },
+    "dumbbell-lateral-raise": {
+      "name": "Élévations latérales avec haltères",
+      "description": "Un exercice d'isolation pour les deltoïdes médians (latéraux), en levant les haltères sur les côtés."
+    },
+    "dumbbell-front-raise": {
+      "name": "Élévations frontales avec haltères",
+      "description": "Un exercice d'isolation pour les deltoïdes antérieurs (frontaux), en levant les haltères vers l'avant."
+    },
+    "kettlebell-swing": {
+      "name": "Swing avec kettlebell (à deux mains)",
+      "description": "Un exercice dynamique et explosif ciblant la chaîne postérieure (fessiers, ischio-jambiers, dos) et améliorant la puissance."
+    },
+    "kettlebell-goblet-squat": {
+      "name": "Goblet Squat avec kettlebell",
+      "description": "Un squat en tenant une kettlebell par les cornes au niveau de la poitrine, excellent pour la forme et l'engagement du tronc."
+    },
+    "kettlebell-clean-and-press": {
+      "name": "Épaulé-jeté avec kettlebell (Clean and Press)",
+      "description": "Un mouvement composé complet du corps impliquant de monter une kettlebell en position de rack, puis de la pousser au-dessus de la tête."
+    },
+    "turkish-get-up": {
+      "name": "Relevé turc (Turkish Get-Up)",
+      "description": "Un exercice complexe et complet du corps qui consiste à passer d'une position allongée sur le sol à une position debout, tout en tenant une kettlebell (ou un haltère) au-dessus de la tête. Améliore la stabilité, la mobilité et la force."
+    },
+    "kettlebell-single-arm-row": {
+      "name": "Rowing avec kettlebell à un bras",
+      "description": "Un exercice unilatéral pour le dos ciblant les grands dorsaux, les rhomboïdes et les biceps, effectué en tirant une kettlebell vers le torse, souvent avec une main et un genou en appui sur un banc."
+    },
+    "kettlebell-deadlift": {
+      "name": "Soulevé de terre avec kettlebell",
+      "description": "Un exercice de force fondamental utilisant une ou deux kettlebells pour cibler la chaîne postérieure, en se concentrant sur un mouvement de charnière de hanche. Peut être fait avec la (les) kettlebell(s) entre les pieds ou à l'extérieur (style valise)."
+    },
+    "kettlebell-strict-press": {
+      "name": "Développé strict avec kettlebell (un bras)",
+      "description": "Un exercice de poussée au-dessus de la tête pour la force des épaules et des triceps, effectué avec une seule kettlebell depuis la position de rack sans utiliser l'impulsion des jambes."
+    },
+    "kettlebell-rack-lunge": {
+      "name": "Fente avec kettlebell (en position rack)",
+      "description": "Un exercice unilatéral pour les jambes qui développe la force, la stabilité et l'engagement du tronc, effectué en tenant une ou deux kettlebells en position de rack avant."
+    },
+    "kettlebell-windmill": {
+      "name": "Moulin à vent (Windmill) avec kettlebell",
+      "description": "Un exercice complexe qui améliore la stabilité de l'épaule, la mobilité de la hanche et la force du tronc, impliquant une flexion latérale des hanches tout en gardant une kettlebell verrouillée au-dessus de la tête."
+    },
+    "kettlebell-russian-twist": {
+      "name": "Russian Twist avec kettlebell",
+      "description": "Un exercice pour le tronc ciblant les obliques et le grand droit de l'abdomen, effectué en position assise, genoux fléchis et pieds décollés du sol (facultatif), en tournant le torse d'un côté à l'autre tout en tenant une kettlebell."
+    },
+    "kettlebell-high-pull": {
+      "name": "Tirage haut avec kettlebell",
+      "description": "Un exercice explosif qui développe la puissance des hanches, du dos et des épaules. Il consiste à tirer la kettlebell d'une position de swing (ou du sol) jusqu'à la hauteur du menton, en gardant le coude haut."
+    },
+    "kettlebell-figure-8": {
+      "name": "Huit avec kettlebell",
+      "description": "Un exercice dynamique qui améliore la coordination, la stabilité du tronc et la force de préhension en faisant passer la kettlebell entre et autour des jambes dans un mouvement en forme de huit."
+    },
+    "kettlebell-suitcase-carry": {
+      "name": "Marche du fermier à une main (valise)",
+      "description": "Un exercice de port de charge unilatéral qui met au défi la stabilité du tronc, la force de préhension et la posture en transportant une seule kettlebell lourde dans une main, comme une valise."
+    },
+    "kettlebell-thruster": {
+      "name": "Thruster avec kettlebell",
+      "description": "Un exercice composé complet du corps combinant un squat avant avec kettlebell et un développé au-dessus de la tête en un seul mouvement fluide. Peut être fait avec une ou deux kettlebells."
+    },
+    "lat-pulldown-machine": {
+      "name": "Tirage vertical à la poulie haute (Lat Pulldown)",
+      "description": "Un exercice à la machine ciblant les muscles grands dorsaux en tirant une barre vers le bas en direction de la poitrine."
+    },
+    "seated-row-machine": {
+      "name": "Rowing assis à la machine",
+      "description": "Un exercice à la machine pour l'épaisseur du dos, ciblant les muscles du milieu du dos en tirant des poignées vers le torse."
+    },
+    "leg-press-machine": {
+      "name": "Presse à cuisses",
+      "description": "Un exercice composé pour le bas du corps effectué sur une machine, en poussant une plateforme lestée avec les jambes."
+    },
+    "leg-extension-machine": {
+      "name": "Leg Extension (machine)",
+      "description": "Un exercice d'isolation pour les quadriceps, consistant à étendre les jambes contre une résistance."
+    },
+    "leg-curl-machine": {
+      "name": "Leg Curl (machine - allongé ou assis)",
+      "description": "Un exercice d'isolation pour les ischio-jambiers, consistant à fléchir les jambes vers les fessiers contre une résistance."
+    },
+    "chest-press-machine": {
+      "name": "Développé poitrine à la machine",
+      "description": "Un exercice composé à la machine pour la poitrine, similaire à un développé couché mais avec une trajectoire de mouvement fixe."
+    },
+    "shoulder-press-machine": {
+      "name": "Développé épaules à la machine",
+      "description": "Un exercice à la machine pour les épaules, consistant à pousser des poignées au-dessus de la tête avec un mouvement guidé."
+    },
+    "pec-deck-fly-machine": {
+      "name": "Pec Deck (Butterfly)",
+      "description": "Un exercice d'isolation pour la poitrine, consistant à rapprocher les bras dans un mouvement d'écarté à l'aide d'une machine."
+    },
+    "reverse-pec-deck-machine": {
+      "name": "Pec Deck inversé (Oiseau)",
+      "description": "Un exercice à la machine ciblant les deltoïdes postérieurs (arrière des épaules) et les muscles du haut du dos."
+    },
+    "calf-raise-machine": {
+      "name": "Mollets à la machine (debout ou assis)",
+      "description": "Un exercice d'isolation pour les muscles des mollets (gastrocnémiens et soléaires)."
+    },
+    "cable-tricep-pushdown": {
+      "name": "Extension triceps à la poulie haute (corde ou barre)",
+      "description": "Un exercice d'isolation pour les triceps utilisant une machine à câble avec un accessoire de corde ou de barre."
+    },
+    "cable-bicep-curl": {
+      "name": "Curl biceps à la poulie (barre ou poignées)",
+      "description": "Un exercice d'isolation pour les biceps utilisant une machine à câble, offrant une tension constante."
+    },
+    "cable-face-pull": {
+      "name": "Face Pull à la poulie",
+      "description": "Un excellent exercice pour les deltoïdes postérieurs, la santé de la coiffe des rotateurs et la posture du haut du corps."
+    },
+    "cable-fly": {
+      "name": "Écarté à la poulie (debout - poulie haute, moyenne ou basse)",
+      "description": "Un exercice d'isolation pour la poitrine utilisant une machine à câble, permettant différents angles pour cibler différentes parties de la poitrine."
+    },
+    "cable-lateral-raise": {
+      "name": "Élévations latérales à la poulie",
+      "description": "Un exercice d'isolation pour les deltoïdes médians utilisant un câble, offrant une tension constante tout au long du mouvement."
+    },
+    "cable-woodchop": {
+      "name": "Bûcheron à la poulie (de haut en bas ou de bas en haut)",
+      "description": "Un exercice de rotation du tronc engageant les obliques et l'abdomen transverse."
+    },
+    "resistance-band-bicep-curl": {
+      "name": "Curl biceps avec élastique",
+      "description": "Curls pour les biceps effectués avec une bande de résistance, offrant une résistance variable."
+    },
+    "resistance-band-tricep-pushdown": {
+      "name": "Extension triceps avec élastique",
+      "description": "Extensions pour les triceps utilisant une bande de résistance ancrée en hauteur ou tenue."
+    },
+    "resistance-band-pull-apart": {
+      "name": "Écarté avec élastique (Pull-Apart)",
+      "description": "Un excellent exercice pour la santé des épaules, ciblant les deltoïdes postérieurs et les muscles du haut du dos."
+    },
+    "resistance-band-squat": {
+      "name": "Squat avec élastique",
+      "description": "Squats effectués avec une bande de résistance sous les pieds et passée sur les épaules ou tenue, ajoutant une résistance."
+    },
+    "resistance-band-glute-bridge": {
+      "name": "Pont fessier avec élastique",
+      "description": "Ponts fessiers avec une bande de résistance autour des cuisses pour une activation accrue du moyen fessier."
+    },
+    "farmers-walk": {
+      "name": "Marche du fermier",
+      "description": "Un exercice complet du corps consistant à marcher sur une distance en tenant des poids lourds (haltères, kettlebells ou poignées spécifiques). Améliore la force de préhension, la stabilité du tronc et le conditionnement général."
+    },
+    "box-jump": {
+      "name": "Saut sur boîte (Box Jump)",
+      "description": "Un exercice de pliométrie qui consiste à sauter sur une plateforme surélevée, développant la puissance explosive du bas du corps."
+    },
+    "medicine-ball-slam": {
+      "name": "Slam de medecine ball",
+      "description": "Un exercice de puissance pour tout le corps consistant à soulever une medecine ball au-dessus de la tête et à la claquer violemment sur le sol."
+    },
+    "glute-bridge": {
+      "name": "Pont fessier",
+      "description": "Un exercice au poids du corps ciblant les fessiers et les ischio-jambiers en soulevant les hanches du sol."
+    },
+    "superman-exercise": {
+      "name": "Superman",
+      "description": "Un exercice au poids du corps qui renforce le bas du dos, les fessiers et les ischio-jambiers en soulevant simultanément les bras et les jambes du sol en position allongée sur le ventre."
+    },
+    "mountain-climbers": {
+      "name": "Mountain Climbers",
+      "description": "Un exercice dynamique complet qui développe l'endurance cardiovasculaire, la force du tronc et l'agilité, imitant le mouvement de l'escalade."
+    },
+    "bench-dips": {
+      "name": "Dips sur banc",
+      "description": "Un exercice au poids du corps ciblant les triceps, effectué à l'aide d'un banc ou d'une chaise."
+    },
+    "bodyweight-calf-raise": {
+      "name": "Mollets au poids du corps",
+      "description": "Un exercice au poids du corps simple mais efficace pour renforcer les muscles des mollets."
+    },
+    "barbell-hip-thrust": {
+      "name": "Hip Thrust à la barre",
+      "description": "Un exercice puissant pour les fessiers, effectué en poussant les hanches vers le haut avec une barre sur les genoux, généralement avec le haut du dos appuyé sur un banc."
+    },
+    "barbell-front-squat": {
+      "name": "Squat avant à la barre",
+      "description": "Une variante du squat où la barre est tenue sur le devant des épaules, mettant l'accent sur les quadriceps et la stabilité du tronc."
+    },
+    "barbell-good-morning": {
+      "name": "Good Morning à la barre",
+      "description": "Un exercice ciblant la chaîne postérieure (ischio-jambiers, fessiers, bas du dos) en s'inclinant au niveau des hanches avec une barre sur le haut du dos."
+    },
+    "dumbbell-incline-press": {
+      "name": "Développé incliné avec haltères",
+      "description": "Cible le haut de la poitrine, les épaules et les triceps en poussant des haltères sur un banc incliné."
+    },
+    "dumbbell-fly": {
+      "name": "Écarté avec haltères",
+      "description": "Un exercice d'isolation pour la poitrine, effectué en ouvrant et fermant les bras en arc de cercle tout en tenant des haltères."
+    },
+    "dumbbell-hammer-curl": {
+      "name": "Curl marteau avec haltères",
+      "description": "Une variante du curl biceps avec une prise neutre (paumes face à face), ciblant le brachial et le brachio-radial en plus des biceps."
+    },
+    "dumbbell-tricep-kickback": {
+      "name": "Kickback triceps avec haltère",
+      "description": "Un exercice d'isolation pour les triceps, effectué en étendant le bras vers l'arrière tout en étant penché au niveau des hanches."
+    },
+    "dumbbell-bulgarian-split-squat": {
+      "name": "Fente bulgare avec haltères",
+      "description": "Un exercice unilatéral pour les jambes avec le pied arrière surélevé, ciblant les quadriceps, les fessiers et les ischio-jambiers tout en améliorant l'équilibre."
+    },
+    "dumbbell-pullover": {
+      "name": "Pull-over avec haltère",
+      "description": "Un exercice qui fait travailler la poitrine et les grands dorsaux, effectué en position allongée sur un banc et en abaissant un haltère derrière la tête."
+    },
+    "kettlebell-snatch": {
+      "name": "Arraché (Snatch) avec kettlebell",
+      "description": "Un exercice explosif complet du corps où la kettlebell est balancée depuis l'entrejambe jusqu'à une position verrouillée au-dessus de la tête en un seul mouvement fluide."
+    },
+    "kettlebell-halo": {
+      "name": "Halo avec kettlebell",
+      "description": "Un exercice de mobilité et de stabilité de l'épaule consistant à faire un cercle avec une kettlebell autour de la tête."
+    },
+    "hack-squat-machine": {
+      "name": "Hack Squat (machine)",
+      "description": "Une variante du squat à la machine qui cible les quadriceps, souvent en mettant l'accent sur les quadriceps externes."
+    },
+    "seated-calf-raise-machine": {
+      "name": "Mollets assis à la machine",
+      "description": "Un exercice d'isolation pour le muscle soléaire du mollet, effectué sur une machine en position assise."
+    },
+    "abdominal-crunch-machine": {
+      "name": "Crunch à la machine",
+      "description": "Un exercice à la machine pour isoler les muscles du grand droit de l'abdomen."
+    },
+    "back-extension-machine": {
+      "name": "Extension du dos (banc à lombaires)",
+      "description": "Renforce le bas du dos, les fessiers et les ischio-jambiers à l'aide d'un banc ou d'une machine à hyper-extension."
+    },
+    "cable-overhead-tricep-extension": {
+      "name": "Extension triceps au-dessus de la tête à la poulie (corde)",
+      "description": "Cible la longue portion du triceps en utilisant une machine à câble et un accessoire de corde."
+    },
+    "cable-pull-through": {
+      "name": "Pull-through à la poulie",
+      "description": "Un exercice de charnière de hanche qui cible les fessiers et les ischio-jambiers en utilisant une machine à câble."
+    },
+    "cable-reverse-fly": {
+      "name": "Écarté inversé à la poulie",
+      "description": "Cible les deltoïdes postérieurs et les muscles du haut du dos en utilisant une machine à câble avec des poulies doubles."
+    },
+    "cable-torso-twist": {
+      "name": "Rotation du buste à la poulie (debout)",
+      "description": "Un exercice pour le tronc ciblant les obliques par un mouvement de rotation contre la résistance d'un câble."
+    },
+    "resistance-band-chest-press": {
+      "name": "Développé poitrine avec élastique",
+      "description": "Une variante du développé poitrine utilisant des bandes de résistance, peut se faire debout ou allongé."
+    },
+    "resistance-band-row": {
+      "name": "Rowing avec élastique (assis ou debout)",
+      "description": "Cible les muscles du dos en utilisant une bande de résistance, qui peut être ancrée ou tenue."
+    },
+    "resistance-band-deadlift": {
+      "name": "Soulevé de terre avec élastique",
+      "description": "Une variante du soulevé de terre utilisant des bandes de résistance, idéale pour apprendre la forme ou pour les jours plus légers."
+    },
+    "resistance-band-lateral-walk": {
+      "name": "Marche latérale avec élastique (marche du crabe)",
+      "description": "Cible le moyen fessier et les abducteurs de la hanche, effectuée en marchant de côté avec une bande autour des chevilles ou des genoux."
+    },
+    "hamstring-stretch": {
+      "name": "Étirement des ischio-jambiers (debout/assis)",
+      "description": "Un étirement statique pour améliorer la flexibilité des muscles ischio-jambiers."
+    },
+    "quadriceps-stretch": {
+      "name": "Étirement des quadriceps (debout)",
+      "description": "Un étirement statique pour les quadriceps, généralement effectué en tirant le talon vers le fessier."
+    },
+    "chest-stretch-doorway": {
+      "name": "Étirement de la poitrine (dans l'encadrement de porte)",
+      "description": "Un étirement statique pour les muscles pectoraux utilisant un encadrement de porte comme levier."
+    },
+    "triceps-stretch": {
+      "name": "Étirement des triceps (au-dessus de la tête)",
+      "description": "Un étirement statique pour les triceps, effectué en levant un bras au-dessus de la tête et en pliant le coude."
+    },
+    "cat-cow-stretch": {
+      "name": "Étirement du chat-vache",
+      "description": "Un étirement dynamique qui améliore la mobilité de la colonne vertébrale et soulage les tensions dans le dos et le tronc."
+    },
+    "childs-pose": {
+      "name": "Position de l'enfant",
+      "description": "Une posture de repos douce qui calme l'esprit et aide à soulager le stress et la fatigue. Elle étire doucement les hanches, les cuisses et les chevilles."
+    },
+    "jumping-jacks": {
+      "name": "Jumping Jacks",
+      "description": "Un exercice de gymnastique classique complet qui sert de bon échauffement ou d'effort cardio."
+    },
+    "high-knees": {
+      "name": "Montées de genoux",
+      "description": "Un exercice cardio intensif qui consiste à courir sur place en levant les genoux le plus haut possible."
+    },
+    "running-jogging": {
+      "name": "Course à pied/Jogging",
+      "description": "Un exercice cardiovasculaire efficace qui améliore l'endurance et brûle des calories."
+    },
+    "cycling": {
+      "name": "Vélo",
+      "description": "Un exercice cardiovasculaire à faible impact qui fait principalement travailler les muscles des jambes."
+    },
+    "jump-rope": {
+      "name": "Corde à sauter",
+      "description": "Un exercice cardiovasculaire très efficace qui améliore la coordination, l'agilité et brûle une quantité importante de calories."
+    },
+    "elliptical-trainer": {
+      "name": "Vélo elliptique",
+      "description": "Une machine cardio à faible impact qui simule la montée d'escaliers, la marche ou la course sans exercer de pression excessive sur les articulations."
+    },
+    "stair-climbing": {
+      "name": "Montée d'escaliers",
+      "description": "Un exercice cardiovasculaire vigoureux qui cible les fessiers, les quadriceps et les ischio-jambiers."
+    },
+    "sled-push": {
+      "name": "Poussée de traîneau (Sled Push)",
+      "description": "Un exercice de force et de conditionnement complet impliquant la poussée d'un traîneau lesté."
+    },
+    "sled-pull": {
+      "name": "Tirage de traîneau (Sled Pull)",
+      "description": "Un exercice de force et de conditionnement complet impliquant le tirage d'un traîneau lesté à l'aide de sangles ou d'un harnais."
+    },
+    "tire-flip": {
+      "name": "Retournement de pneu",
+      "description": "Un exercice de puissance complet, courant dans l'entraînement de strongman, consistant à retourner un grand pneu."
+    },
+    "battle-ropes": {
+      "name": "Cordes ondulatoires (Battle Ropes)",
+      "description": "Un exercice à haute intensité et faible impact qui fait travailler le haut du corps, le tronc et constitue un défi cardiovasculaire."
+    },
 
+    "alternating-proprioceptive-reverse-lunge": {
+      "name": "Fente arrière proprioceptive en alternance",
+      "description": "Une variation de la fente arrière qui met au défi l'équilibre et la conscience corporelle en alternant les jambes à chaque répétition, souvent sur une surface instable ou les yeux fermés pour améliorer la proprioception."
+    },
+    "rehab-ankle-pumps": {
+      "name": "Pompes de cheville",
+      "description": "Un exercice de mobilité simple consistant à fléchir et étendre les chevilles, souvent utilisé pour améliorer la circulation et l'amplitude de mouvement après une blessure ou une inactivité."
+    },
+    "archer-push-up": {
+      "name": "Pompe Archer",
+      "description": "Une variation de pompe unilatérale où un bras s'étend sur le côté pendant que l'autre effectue la pompe, renforçant la force et le contrôle d'un côté à la fois."
+    },
+    "barbell-skull-crusher": {
+      "name": "Barre au front (Skull Crusher)",
+      "description": "Un exercice d'isolation pour les triceps, effectué en étant allongé sur un banc et en abaissant une barre vers le front avant d'étendre les coudes."
+    },
+    "bird-dog": {
+      "name": "Bird Dog",
+      "description": "Un exercice de stabilité du tronc où vous étendez simultanément un bras et une jambe opposés en étant à quatre pattes, améliorant l'équilibre et la stabilité de la colonne vertébrale."
+    },
+    "rehab-bird-dog-stability": {
+      "name": "Bird-Dog (Focus Stabilité)",
+      "description": "Une variation de l'exercice Bird Dog mettant l'accent sur des mouvements lents et contrôlés et des maintiens pour maximiser la stabilisation et le contrôle du tronc."
+    },
+    "bulgarian-bag-arm-throw": {
+      "name": "Lancer de bras avec sac bulgare",
+      "description": "Un exercice de rotation dynamique utilisant un sac bulgare, impliquant de balancer et de lancer le sac à travers le corps pour développer la puissance du tronc et la coordination."
+    },
+    "bulgarian-bag-snatch": {
+      "name": "Arraché avec sac bulgare",
+      "description": "Un mouvement explosif complet du corps où un sac bulgare est balancé depuis l'entre-jambes jusqu'à une position au-dessus de la tête en un seul mouvement fluide."
+    },
+    "bulgarian-bag-spin": {
+      "name": "Rotation avec sac bulgare",
+      "description": "Un exercice signature du sac bulgare impliquant de faire tourner le sac autour de la tête et du corps, renforçant la stabilité des épaules, la force du tronc et la prise."
+    },
+    "bulgarian-bag-suplex": {
+      "name": "Suplex avec sac bulgare",
+      "description": "Un exercice axé sur la puissance qui imite un suplex de lutte, impliquant de soulever et de lancer le sac bulgare par-dessus l'épaule."
+    },
+    "burpee-box-jump": {
+      "name": "Burpee avec saut sur boîte",
+      "description": "Une variation de haute intensité du burpee où le saut final est effectué sur une boîte surélevée, augmentant la demande pliométrique."
+    },
+    "cable-seated-row": {
+      "name": "Rameur assis à la poulie",
+      "description": "Un exercice à la machine pour l'épaisseur du dos, ciblant les muscles du milieu du dos en tirant des poignées vers le torse depuis une position assise."
+    },
+    "calf-stretch": {
+      "name": "Étirement du mollet",
+      "description": "Un exercice de flexibilité pour allonger les muscles gastrocnémien et soléaire, généralement effectué contre un mur ou sur une marche."
+    },
+    "chin-tucks-cervical-retraction": {
+      "name": "Rétraction cervicale (rentré de menton)",
+      "description": "Un exercice postural pour corriger la posture de la tête en avant en rétractant doucement la tête et le cou, renforçant les fléchisseurs cervicaux profonds."
+    },
+    "rehab-clamshells": {
+      "name": "Clamshell (Coquillage)",
+      "description": "Un exercice d'abduction de la hanche effectué en position couchée sur le côté pour renforcer le moyen fessier, crucial pour la stabilité de la hanche."
+    },
+    "clubbell-barbarian-squat": {
+      "name": "Squat barbare avec clubbell",
+      "description": "Un exercice complexe combinant un squat avec des mouvements de rotation du clubbell, mettant au défi la coordination, la force du tronc et la puissance du bas du corps."
+    },
+    "clubbell-gamma-cast": {
+      "name": "Gamma Cast avec clubbell",
+      "description": "Un exercice fondamental avec clubbell impliquant un balancement pendulaire d'un côté à l'autre devant le corps, renforçant la prise, les épaules et la force du tronc."
+    },
+    "clubbell-mill": {
+      "name": "Mill (Moulin) avec clubbell",
+      "description": "Un exercice de force circulaire où un clubbell est balancé selon un schéma de rotation autour du corps, similaire à un mouvement de moulin à vent, améliorant la mobilité et la stabilité de l'épaule."
+    },
+    "clubbell-shield-cast": {
+      "name": "Shield Cast (Lancer de bouclier) avec clubbell",
+      "description": "Un mouvement de base avec clubbell où le club est lancé par-dessus l'épaule dans un mouvement de 'bouclier' protecteur, excellent pour la mobilité de l'épaule et du thorax."
+    },
+    "crab-walk": {
+      "name": "Marche du crabe",
+      "description": "Un exercice au poids du corps effectué en marchant sur les mains et les pieds avec la poitrine tournée vers le haut, engageant les triceps, les épaules, les fessiers et les ischio-jambiers."
+    },
+    "dead-bug": {
+      "name": "Dead Bug (Insecte mort)",
+      "description": "Un exercice pour le tronc où vous vous allongez sur le dos et abaissez lentement les bras et les jambes opposés, améliorant la stabilité lombo-pelvienne sans stresser le dos."
+    },
+    "decline-push-up": {
+      "name": "Pompe déclinée",
+      "description": "Une variation de pompe avec les pieds surélevés, ce qui augmente la charge sur le haut de la poitrine et les épaules."
+    },
+    "dolphin-plank": {
+      "name": "Planche dauphin",
+      "description": "Une variation avancée de la planche effectuée sur les avant-bras, impliquant de monter et descendre les hanches pour défier les épaules et le tronc."
+    },
+    "double-kettlebell-alternating-clean": {
+      "name": "Clean alterné avec double kettlebell",
+      "description": "Un exercice tenant deux kettlebells, où vous alternez le clean de chacun en position de rack, mettant au défi la coordination et la stabilité du tronc."
+    },
+    "double-kettlebell-alternating-floor-press": {
+      "name": "Développé au sol alterné avec double kettlebell",
+      "description": "Un développé au sol utilisant deux kettlebells, où vous poussez un bras à la fois, forçant le tronc à résister à la rotation."
+    },
+    "double-kettlebell-alternating-rotational-press": {
+      "name": "Développé en rotation alterné avec double kettlebell",
+      "description": "Un développé au-dessus de la tête avec deux kettlebells, incorporant une rotation du torse lorsque vous poussez chaque kettlebell vers le haut un à la fois."
+    },
+    "double-kettlebell-alternating-snatch": {
+      "name": "Arraché alterné avec double kettlebell",
+      "description": "Un exercice explosif où vous alternez l'arraché de chaque kettlebell au-dessus de la tête dans un mouvement continu et fluide."
+    },
+    "double-kettlebell-arching-swing": {
+      "name": "Swing arqué avec double kettlebell",
+      "description": "Une variation de swing où deux kettlebells sont balancés dans une trajectoire arquée, à l'extérieur des jambes, sollicitant les hanches et le tronc différemment d'un swing standard."
+    },
+    "double-kettlebell-bent-over-row": {
+      "name": "Rameur penché avec double kettlebell",
+      "description": "Un exercice de force pour le dos, effectuant un rameur penché tout en tenant un kettlebell dans chaque main."
+    },
+    "double-kettlebell-clean": {
+      "name": "Clean avec double kettlebell",
+      "description": "Un exercice de puissance où deux kettlebells sont simultanément amenés d'une position de swing à la position de rack sur la poitrine."
+    },
+    "double-kettlebell-clean-and-jerk": {
+      "name": "Épaulé-jeté avec double kettlebell",
+      "description": "Un mouvement balistique complet du corps combinant le clean avec double kettlebell et un jeté puissant pour amener les deux kettlebells au-dessus de la tête."
+    },
+    "double-kettlebell-clean-and-push-press": {
+      "name": "Épaulé-poussé avec double kettlebell",
+      "description": "Un mouvement composé combinant le clean avec double kettlebell et un push press, utilisant la poussée des jambes pour aider à presser les kettlebells au-dessus de la tête."
+    },
+    "double-kettlebell-clean-to-reverse-lunge": {
+      "name": "Clean vers fente arrière avec double kettlebell",
+      "description": "Un complexe qui combine un clean avec double kettlebell avec une fente arrière sur chaque jambe avant de répéter."
+    },
+    "double-kettlebell-complex-clean-squat-press": {
+      "name": "Complexe double kettlebell (Clean-Squat-Press)",
+      "description": "Une séquence où vous effectuez un clean avec double kettlebell, suivi d'un squat avant, puis d'un développé au-dessus de la tête dans un complexe continu."
+    },
+    "double-kettlebell-deadlift-to-swing": {
+      "name": "Soulevé de terre vers swing avec double kettlebell",
+      "description": "Un exercice qui commence par un soulevé de terre avec double kettlebell et se transforme directement en un swing de kettlebell, aidant à modeler la charnière de hanche."
+    },
+    "double-kettlebell-farmers-squat": {
+      "name": "Squat du fermier avec double kettlebell",
+      "description": "Une variation de squat effectuée en tenant deux kettlebells sur les côtés (position de la marche du fermier), engageant fortement les trapèzes et le tronc."
+    },
+    "double-kettlebell-floor-press": {
+      "name": "Développé au sol avec double kettlebell",
+      "description": "Un exercice pour la poitrine et les triceps effectué en s'allongeant sur le sol et en poussant deux kettlebells vers le haut. Le sol limite l'amplitude de mouvement, se concentrant sur la force de verrouillage."
+    },
+    "double-kettlebell-front-squat": {
+      "name": "Squat avant avec double kettlebell",
+      "description": "Un squat effectué en tenant deux kettlebells en position de rack avant, sollicitant intensément les quadriceps, les fessiers et le tronc."
+    },
+    "double-kettlebell-front-squat-to-press-out": {
+      "name": "Squat avant avec poussée isométrique avec double kettlebell",
+      "description": "Combine un squat avant avec double kettlebell avec une poussée isométrique en bas du squat, augmentant l'engagement du tronc et des épaules."
+    },
+    "double-kettlebell-gorilla-row": {
+      "name": "Rameur gorille avec double kettlebell",
+      "description": "Un rameur alterné effectué à partir d'une position de charnière de hanche profonde avec deux kettlebells au sol, renforçant la force et la stabilité du dos."
+    },
+    "double-kettlebell-offset-carry-overhead-rack": {
+      "name": "Porté asymétrique avec double kettlebell (au-dessus de la tête/en rack)",
+      "description": "Un porté chargé où un kettlebell est tenu au-dessus de la tête et l'autre en position de rack, créant un défi important pour la stabilité du tronc и des épaules."
+    },
+    "double-kettlebell-offset-squat-rack-suitcase": {
+      "name": "Squat asymétrique avec double kettlebell (en rack/valise)",
+      "description": "Un squat effectué en tenant un kettlebell en position de rack et l'autre en position valise (sur le côté), défiant la flexion anti-latérale."
+    },
+    "double-kettlebell-overhead-carry": {
+      "name": "Marche au-dessus de la tête avec double kettlebell",
+      "description": "Un porté chargé qui consiste à marcher en tenant deux kettlebells verrouillés au-dessus de la tête, renforçant une immense stabilité des épaules et du tronc."
+    },
+    "double-kettlebell-overhead-lunge": {
+      "name": "Fente au-dessus de la tête avec double kettlebell",
+      "description": "Une fente effectuée en tenant deux kettlebells au-dessus de la tête, exigeant une stabilité et une force corporelle importantes."
+    },
+    "double-kettlebell-press": {
+      "name": "Développé militaire avec double kettlebell",
+      "description": "Un exercice de force pour les épaules consistant à presser deux kettlebells de la position de rack jusqu'au-dessus de la tête."
+    },
+    "double-kettlebell-push-press": {
+      "name": "Push Press (poussé) avec double kettlebell",
+      "description": "Un développé au-dessus de la tête explosif qui utilise une flexion et une poussée des jambes pour aider à propulser deux kettlebells au-dessus de la tête."
+    },
+    "double-kettlebell-push-up-to-renegade-row": {
+      "name": "Pompe vers rameur renégat avec double kettlebell",
+      "description": "Un complexe impliquant une pompe sur deux kettlebells, suivie du tirage de chaque kettlebell vers la poitrine un à la fois."
+    },
+    "double-kettlebell-rack-deadlift": {
+      "name": "Soulevé de terre en rack avec double kettlebell",
+      "description": "Une variation de soulevé de terre où les kettlebells sont tenus en position de rack avant, mettant un fort accent sur les quadriceps et le tronc."
+    },
+    "double-kettlebell-renegade-row": {
+      "name": "Rameur renégat avec double kettlebell",
+      "description": "Depuis une position de planche sur deux kettlebells, vous alternez le tirage de chaque kettlebell vers votre poitrine, défiant la stabilité du tronc et la force du dos."
+    },
+    "double-kettlebell-rotational-press": {
+      "name": "Développé en rotation avec double kettlebell",
+      "description": "Un développé au-dessus de la tête qui incorpore un pivot et une rotation du torse pour générer de la puissance."
+    },
+    "double-kettlebell-see-saw-press": {
+      "name": "Développé en balancier avec double kettlebell",
+      "description": "Un développé au-dessus de la tête alterné où, pendant qu'un kettlebell monte, l'autre descend, créant une tension constante et un défi de stabilité."
+    },
+    "double-kettlebell-see-saw-row": {
+      "name": "Rameur en balancier avec double kettlebell",
+      "description": "Un rameur penché alterné où, pendant qu'un kettlebell est tiré vers le haut, l'autre est abaissé, défiant le dos et le tronc."
+    },
+    "double-kettlebell-snatch": {
+      "name": "Arraché avec double kettlebell",
+      "description": "Un mouvement très athlétique où deux kettlebells sont balancés et projetés vers un verrouillage au-dessus de la tête en un seul mouvement explosif."
+    },
+    "double-kettlebell-split-jerk": {
+      "name": "Jeté en fente avec double kettlebell",
+      "description": "Une variation de jeté puissante où vous fléchissez, poussez et chutez sous les kettlebells en position de fente pour les recevoir au-dessus de la tête."
+    },
+    "double-kettlebell-split-snatch": {
+      "name": "Arraché en fente avec double kettlebell",
+      "description": "Une variation d'arraché avancée où vous attrapez les deux kettlebells au-dessus de la tête en déplaçant vos pieds en position de fente."
+    },
+    "double-kettlebell-suitcase-deadlift": {
+      "name": "Soulevé de terre valise avec double kettlebell",
+      "description": "Un soulevé de terre effectué avec un kettlebell à l'extérieur de chaque pied, défiant les jambes, le dos et la stabilité du tronc."
+    },
+    "double-kettlebell-sumo-deadlift": {
+      "name": "Soulevé de terre sumo avec double kettlebell",
+      "description": "Un soulevé de terre effectué avec une posture large (sumo), en tenant deux kettlebells entre les jambes, mettant l'accent sur les fessiers et les hanches."
+    },
+    "double-kettlebell-thruster": {
+      "name": "Thruster avec double kettlebell",
+      "description": "Un exercice composé complet du corps combinant un squat avant avec double kettlebell et un développé au-dessus de la tête en un seul mouvement fluide."
+    },
+    "double-kettlebell-walking-lunge": {
+      "name": "Fente marchée avec double kettlebell",
+      "description": "Des fentes marchées effectuées en tenant deux kettlebells, généralement en position de rack ou de fermier, pour ajouter une charge importante."
+    },
+    "double-kettlebell-windmill": {
+      "name": "Moulin à vent avec double kettlebell",
+      "description": "Une variation avancée du moulin à vent où vous tenez un kettlebell au-dessus de la tête et vous penchez pour en ramasser un deuxième au sol, nécessitant une stabilité et une mobilité immenses."
+    },
+    "dumbbell-arnold-press": {
+      "name": "Développé Arnold avec haltères",
+      "description": "Une variation de développé pour les épaules qui incorpore une rotation pour travailler les trois chefs du deltoïde."
+    },
+    "dumbbell-concentration-curl": {
+      "name": "Curl concentré avec haltère",
+      "description": "Un curl biceps assis où le coude est calé contre l'intérieur de la cuisse pour isoler le muscle biceps."
+    },
+    "dumbbell-incline-bench-press": {
+      "name": "Développé incliné avec haltères",
+      "description": "Cible le haut de la poitrine, les épaules et les triceps en poussant des haltères sur un banc incliné."
+    },
+    "dumbbell-incline-fly": {
+      "name": "Écarté incliné avec haltères",
+      "description": "Un exercice d'isolation pour le haut de la poitrine effectué sur un banc incliné, ouvrant et fermant les bras dans un large arc."
+    },
+    "dumbbell-overhead-lunge": {
+      "name": "Fente au-dessus de la tête avec haltères",
+      "description": "Une fente effectuée en tenant un ou deux haltères au-dessus de la tête, mettant au défi l'équilibre, la stabilité de l'épaule et la force du tronc."
+    },
+    "dumbbell-pistol-squat-double": {
+      "name": "Pistol squat avec deux haltères",
+      "description": "Un squat sur une jambe effectué en tenant deux haltères, généralement aux épaules ou sur les côtés, ajoutant une charge importante au mouvement."
+    },
+    "dumbbell-pistol-squat-single": {
+      "name": "Pistol squat avec un haltère",
+      "description": "Un squat sur une jambe effectué en tenant un haltère, souvent en position goblet, pour servir de contrepoids et ajouter de la résistance."
+    },
+    "dumbbell-row-to-deadlift-complex": {
+      "name": "Complexe rameur vers soulevé de terre avec haltères",
+      "description": "Une séquence combinant un soulevé de terre roumain avec haltères et un rameur penché à chaque répétition."
+    },
+    "dumbbell-tate-press": {
+      "name": "Tate Press avec haltères",
+      "description": "Un exercice pour les triceps effectué allongé sur un banc, où les haltères sont abaissés vers la poitrine avec les coudes écartés, puis repoussés vers le haut."
+    },
+    "explosive-clap-push-up": {
+      "name": "Pompe explosive claquée",
+      "description": "Une pompe pliométrique où vous poussez explosivement sur le sol avec suffisamment de force pour taper dans vos mains en l'air."
+    },
+    "frog-stand": {
+      "name": "Posture du corbeau",
+      "description": "Un équilibre sur les bras fondamental en gymnastique et en yoga, où vous équilibrez vos genoux sur vos coudes en position groupée."
+    },
+    "front-lever": {
+      "name": "Planche avant",
+      "description": "Un mouvement de gymnastique avancé où le corps est maintenu parallèle au sol, face vers le haut, en se suspendant à une barre, nécessitant une immense force du dos et du tronc."
+    },
+    "glute-squeezes-isometric": {
+      "name": "Contraction isométrique des fessiers",
+      "description": "Un simple exercice d'activation consistant à serrer et maintenir consciemment les muscles fessiers, souvent effectué dans le cadre d'un échauffement."
+    },
+    "half-turkish-get-up": {
+      "name": "Demi-relevé turc",
+      "description": "La première partie du relevé turc complet, passant d'une position allongée à une position assise avec le poids au-dessus de la tête. Excellent pour la stabilité du tronc et de l'épaule."
+    },
+    "handstand": {
+      "name": "Équilibre sur les mains (ATR)",
+      "description": "L'acte de soutenir le corps dans une position verticale inversée stable en s'équilibrant sur les mains."
+    },
+    "handstand-push-up": {
+      "name": "Pompe en équilibre sur les mains",
+      "description": "Un exercice de poussée avancé effectué à partir d'une position d'équilibre sur les mains, ciblant les épaules et les triceps."
+    },
+    "heel-slides": {
+      "name": "Glissement de talon",
+      "description": "Un exercice de rééducation doux pour la flexion du genou, effectué en faisant glisser le talon vers et loin du corps en position assise ou allongée."
+    },
+    "hip-flexor-stretch": {
+      "name": "Étirement du fléchisseur de la hanche",
+      "description": "Un étirement ciblant les muscles à l'avant de la hanche, généralement effectué en position de fente du chevalier servant."
+    },
+    "incline-chest-press-machine": {
+      "name": "Presse pectorale inclinée (machine)",
+      "description": "Un exercice sur machine qui cible les muscles pectoraux supérieurs avec un mouvement de poussée guidé vers le haut."
+    },
+    "indian-club-double-circles": {
+      "name": "Cercles doubles avec massues indiennes",
+      "description": "Un exercice de coordination et de mobilité utilisant deux massues indiennes, balancées en motifs circulaires pour améliorer la santé et l'amplitude de mouvement des épaules."
+    },
+    "indian-club-heart-shapes": {
+      "name": "Formes de cœur avec massues indiennes",
+      "description": "Un exercice rythmique avec des massues indiennes où les massues sont balancées dans un motif ressemblant à un cœur, favorisant la mobilité et la coordination des épaules."
+    },
+    "inverted-row": {
+      "name": "Rameur inversé",
+      "description": "Un exercice pour le dos au poids du corps où vous vous suspendez sous une barre et tirez votre poitrine vers celle-ci, souvent considéré comme un précurseur de la traction."
+    },
+    "jump-squat": {
+      "name": "Squat sauté",
+      "description": "Un exercice pliométrique combinant un squat avec un saut vertical pour développer la puissance et l'explosivité du bas du corps."
+    },
+    "kettlebell-360-mace-style": {
+      "name": "Kettlebell 360 (style masse)",
+      "description": "Un exercice de rotation imitant un 360 de masse en acier, où un kettlebell est balancé autour de la tête pour renforcer les épaules et le tronc."
+    },
+    "kettlebell-arm-bar": {
+      "name": "Arm Bar avec kettlebell",
+      "description": "Un exercice de stabilité et de mobilité de l'épaule, où vous vous allongez sur le côté tout en équilibrant un kettlebell au-dessus de votre tête avec un bras tendu."
+    },
+    "kettlebell-bent-press": {
+      "name": "Bent Press avec kettlebell",
+      "description": "Un levé de strongman classique consistant à presser un kettlebell au-dessus de la tête tout en se penchant sur le côté, en utilisant la force du tronc et du dos."
+    },
+    "kettlebell-bicep-curl": {
+      "name": "Curl biceps avec kettlebell",
+      "description": "Un exercice d'isolation pour les biceps effectué en fléchissant un kettlebell. Peut être fait avec une prise standard ou en écrasant."
+    },
+    "kettlebell-bottoms-up-carry": {
+      "name": "Porté bottoms-up avec kettlebell",
+      "description": "Un porté chargé où le kettlebell est tenu à l'envers, mettant au défi la prise, la coiffe des rotateurs et la stabilité du tronc."
+    },
+    "kettlebell-bottoms-up-clean": {
+      "name": "Clean bottoms-up avec kettlebell",
+      "description": "Amener un kettlebell en position de rack mais en terminant avec celui-ci en équilibre à l'envers, exigeant une tension et un contrôle incroyables."
+    },
+    "kettlebell-bottoms-up-press": {
+      "name": "Développé bottoms-up avec kettlebell",
+      "description": "Un développé strict effectué avec le kettlebell tenu à l'envers, excellent pour renforcer la stabilité de l'épaule et la mécanique de poussée."
+    },
+    "kettlebell-cheat-row": {
+      "name": "Rameur triché avec kettlebell",
+      "description": "Un rameur penché lourd qui utilise une légère impulsion du corps ou un élan pour soulever un poids plus lourd que possible avec une forme stricte."
+    },
+    "kettlebell-clean-and-jerk-single-arm": {
+      "name": "Épaulé-jeté à un bras avec kettlebell",
+      "description": "Le levé de kettlebell classique, consistant à amener le kettlebell au rack puis à le propulser au-dessus de la tête avec un jeté puissant."
+    },
+    "kettlebell-clean-ohp-complex": {
+      "name": "Complexe Clean & Press avec kettlebell",
+      "description": "Un complexe qui combine un clean de kettlebell à un bras directement en un développé au-dessus de la tête pour chaque répétition."
+    },
+    "kettlebell-close-grip-floor-press": {
+      "name": "Développé au sol prise serrée avec kettlebell",
+      "description": "Une variation de développé au sol effectuée en tenant un seul kettlebell avec les deux mains en prise serrée, ciblant les triceps et l'intérieur de la poitrine."
+    },
+    "kettlebell-cossack-squat": {
+      "name": "Squat cosaque avec kettlebell",
+      "description": "Un squat latéral qui développe la mobilité de la hanche et la force sur une seule jambe, effectué en s'accroupissant d'un côté tout en tenant un kettlebell, souvent en position goblet."
+    },
+    "kettlebell-crush-grip-curl": {
+      "name": "Curl en prise écrasée avec kettlebell",
+      "description": "Un curl biceps où le kettlebell est tenu par la boule ('l'écrasant' entre les mains) pour augmenter la tension isométrique dans la poitrine et les bras."
+    },
+    "kettlebell-crush-grip-floor-press": {
+      "name": "Développé au sol en prise écrasée avec kettlebell",
+      "description": "Un développé au sol effectué en tenant un kettlebell par la boule avec les deux mains, se concentrant sur la poitrine et les triceps."
+    },
+    "kettlebell-curtsy-lunge": {
+      "name": "Fente révérence avec kettlebell",
+      "description": "Une variation de fente où la jambe arrière croise derrière la jambe avant, ciblant le moyen fessier et l'intérieur des cuisses, souvent effectuée en tenant un kettlebell."
+    },
+    "kettlebell-dead-bug-pullover": {
+      "name": "Dead Bug pullover avec kettlebell",
+      "description": "Un exercice de tronc combinant le mouvement du dead bug avec un pullover de kettlebell, mettant au défi la coordination et la stabilité."
+    },
+    "kettlebell-dead-clean": {
+      "name": "Clean depuis l'arrêt avec kettlebell",
+      "description": "Un clean de kettlebell initié à partir d'un arrêt complet au sol pour chaque répétition, développant une puissance explosive depuis le sol."
+    },
+    "kettlebell-dead-swing": {
+      "name": "Swing depuis l'arrêt avec kettlebell",
+      "description": "Un swing de kettlebell où chaque répétition commence à partir d'un arrêt complet au sol, se concentrant sur la génération d'une puissance maximale pour chaque swing."
+    },
+    "kettlebell-deadstop-swing": {
+      "name": "Swing depuis l'arrêt avec kettlebell",
+      "description": "Aussi connu sous le nom de Dead Swing, cette variation commence chaque répétition depuis le sol pour développer une poussée de hanche explosive sans le bénéfice de l'élan."
+    },
+    "kettlebell-deck-front-roll": {
+      "name": "Deck Squat avec roulade avant avec kettlebell",
+      "description": "Un mouvement dynamique combinant un rouleau arrière en un deck squat, utilisant le kettlebell comme contrepoids pour se relever et passer à un rouleau avant."
+    },
+    "kettlebell-deck-squat": {
+      "name": "Deck Squat avec kettlebell",
+      "description": "Un exercice où vous effectuez un squat, roulez sur le dos, puis utilisez l'élan et le poids du kettlebell pour vous relever en position debout."
+    },
+    "kettlebell-double-farmers-walk": {
+      "name": "Marche du fermier double avec kettlebell",
+      "description": "Un exercice complet du corps où vous marchez sur une distance en tenant un kettlebell lourd dans chaque main."
+    },
+    "kettlebell-double-hand-deadlift": {
+      "name": "Soulevé de terre à deux mains avec kettlebell",
+      "description": "Un soulevé de terre utilisant un seul kettlebell tenu à deux mains, excellent pour apprendre le mouvement de charnière de hanche."
+    },
+    "kettlebell-double-hand-swing": {
+      "name": "Swing à deux mains avec kettlebell",
+      "description": "Le swing de kettlebell fondamental, effectué en tenant un kettlebell à deux mains."
+    },
+    "kettlebell-double-overhead-squat": {
+      "name": "Squat au-dessus de la tête avec double kettlebell",
+      "description": "Une variation de squat avancée nécessitant une mobilité et une stabilité importantes, effectuée en tenant deux kettlebells verrouillés au-dessus de la tête."
+    },
+    "kettlebell-double-shrug": {
+      "name": "Haussement d'épaules double avec kettlebell",
+      "description": "Un exercice de renforcement des trapèzes effectué en haussant les épaules tout en tenant un kettlebell lourd dans chaque main."
+    },
+    "kettlebell-figure-eight-to-hold": {
+      "name": "Huit avec maintien avec kettlebell",
+      "description": "Une variation du huit avec kettlebell où le mouvement est mis en pause et maintenu à l'avant, mettant au défi le tronc et la prise de manière isométrique."
+    },
+    "kettlebell-floor-skullcrusher": {
+      "name": "Skullcrusher au sol avec kettlebell",
+      "description": "Un exercice d'extension des triceps effectué allongé sur le sol, en abaissant un ou deux kettlebells vers la tête."
+    },
+    "kettlebell-get-up-sit-up": {
+      "name": "Sit-up du relevé turc avec kettlebell",
+      "description": "La phase de redressement assis initiale d'un relevé turc, excellente pour renforcer la force et la stabilité du tronc avec le poids au-dessus de la tête."
+    },
+    "kettlebell-glute-bridge-with-floor-press": {
+      "name": "Pont fessier avec développé au sol avec kettlebell",
+      "description": "Un exercice combiné où vous maintenez un pont fessier tout en effectuant un développé au sol alterné ou double avec kettlebell."
+    },
+    "kettlebell-goblet-alternating-reverse-lunge": {
+      "name": "Fente arrière alternée en goblet avec kettlebell",
+      "description": "Des fentes arrière effectuées en tenant un kettlebell en position goblet, en alternant les jambes à chaque répétition."
+    },
+    "kettlebell-goblet-clean": {
+      "name": "Clean en goblet avec kettlebell",
+      "description": "Une variation de clean où le kettlebell est amené en position de squat goblet, tenu à deux mains au niveau de la poitrine."
+    },
+    "kettlebell-goblet-squat-with-curl": {
+      "name": "Squat goblet avec curl avec kettlebell",
+      "description": "Un complexe où un squat goblet est combiné avec un curl biceps en haut du mouvement."
+    },
+    "kettlebell-goblet-walk": {
+      "name": "Marche en goblet avec kettlebell",
+      "description": "Un porté chargé où vous marchez en tenant un kettlebell en position goblet, renforçant la stabilité du tronc et l'endurance du haut du corps."
+    },
+    "kettlebell-good-morning-squat": {
+      "name": "Good Morning Squat avec kettlebell",
+      "description": "Un exercice hybride qui commence par un good morning (charnière de hanche) puis se transforme en un squat profond, en tenant souvent le kettlebell en position goblet."
+    },
+    "kettlebell-gorilla-clean": {
+      "name": "Clean gorille avec kettlebell",
+      "description": "Un clean explosif effectué à partir d'une position de squat/charnière profonde, souvent fait avec deux kettlebells et de manière alternée."
+    },
+    "kettlebell-half-kneeling-halo": {
+      "name": "Halo à genoux (un genou) avec kettlebell",
+      "description": "Un halo de kettlebell effectué à partir d'une position à genoux pour augmenter le défi de stabilité du tronc et isoler la ceinture scapulaire."
+    },
+    "kettlebell-half-kneeling-press": {
+      "name": "Développé à genoux (un genou) avec kettlebell",
+      "description": "Un développé au-dessus de la tête effectué à partir d'une position à genoux pour défier la stabilité du tronc et empêcher l'utilisation de la poussée des jambes."
+    },
+    "kettlebell-halifax": {
+      "name": "Halifax avec kettlebell",
+      "description": "Un enchaînement complexe de kettlebell qui combine généralement un clean, un squat et un développé en rotation."
+    },
+    "kettlebell-hang-clean": {
+      "name": "Clean suspendu avec kettlebell",
+      "description": "Un clean de kettlebell qui est initié à partir d'une position 'suspendue' (après le premier swing) plutôt qu'à partir d'un arrêt complet au sol."
+    },
+    "kettlebell-jefferson-curl": {
+      "name": "Jefferson Curl avec kettlebell",
+      "description": "Un étirement de flexion de la colonne vertébrale chargé utilisant un kettlebell pour améliorer la flexibilité de la chaîne postérieure et la mobilité de la colonne."
+    },
+    "kettlebell-lateral-lunge": {
+      "name": "Fente latérale avec kettlebell",
+      "description": "Une fente sur le côté tout en tenant un kettlebell (souvent en position goblet ou rack) pour cibler l'intérieur et l'extérieur des cuisses et améliorer la mobilité de la hanche."
+    },
+    "kettlebell-lunge-pass-through": {
+      "name": "Fente avec passage de kettlebell",
+      "description": "Une variation de fente qui inclut le passage du kettlebell sous la jambe avant, mettant au défi la coordination et la stabilité du tronc."
+    },
+    "kettlebell-lying-triceps-extension": {
+      "name": "Extension triceps allongé avec kettlebell",
+      "description": "Un exercice d'isolation des triceps effectué en s'allongeant sur un banc ou au sol et en étendant un ou deux kettlebells depuis derrière la tête."
+    },
+    "kettlebell-outside-swing": {
+      "name": "Swing extérieur avec kettlebell",
+      "description": "Une variation de swing où le kettlebell se déplace à l'extérieur de la jambe au lieu de passer entre les jambes."
+    },
+    "kettlebell-pistol-squat-double": {
+      "name": "Pistol squat avec deux kettlebells",
+      "description": "Un squat avancé sur une seule jambe effectué en tenant deux kettlebells en position de rack avant."
+    },
+    "kettlebell-pistol-squat-single": {
+      "name": "Pistol squat avec un kettlebell",
+      "description": "Un squat sur une seule jambe effectué en tenant un kettlebell en position goblet pour servir de contrepoids."
+    },
+    "kettlebell-plank-drag-pull-through": {
+      "name": "Tirage en planche avec kettlebell",
+      "description": "Un exercice de tronc anti-rotation où vous maintenez une planche et tirez un kettlebell d'un côté de votre corps à l'autre."
+    },
+    "kettlebell-pullover-to-sit-up-to-press": {
+      "name": "Pullover vers Sit-up vers Press avec kettlebell",
+      "description": "Un mouvement complexe combinant un pullover, un redressement assis et un développé au-dessus de la tête en une seule séquence fluide."
+    },
+    "kettlebell-rack-carry": {
+      "name": "Marche en rack avec kettlebell",
+      "description": "Un porté chargé où vous marchez en tenant un ou deux kettlebells en position de rack avant, renforçant la force du tronc et du haut du dos."
+    },
+    "kettlebell-rack-walk": {
+      "name": "Marche en rack avec kettlebell",
+      "description": "Un autre nom pour le porté en rack avec kettlebell, mettant l'accent sur la marche sur une distance ou une durée."
+    },
+    "kettlebell-rotational-deadlift": {
+      "name": "Soulevé de terre en rotation avec kettlebell",
+      "description": "Une variation de soulevé de terre qui incorpore une rotation du torse pour ramasser un kettlebell positionné sur le côté du corps."
+    },
+    "kettlebell-rotational-swing": {
+      "name": "Swing en rotation avec kettlebell",
+      "description": "Un swing de kettlebell avec une composante de rotation, où les hanches et le torse pivotent pendant le mouvement."
+    },
+    "kettlebell-row-to-deadlift-complex": {
+      "name": "Complexe rameur vers soulevé de terre avec kettlebell",
+      "description": "Une séquence impliquant un soulevé de terre avec kettlebell suivi immédiatement d'un rameur penché."
+    },
+    "kettlebell-side-press": {
+      "name": "Développé latéral avec kettlebell",
+      "description": "Une variation de press classique où vous vous penchez loin du kettlebell pour obtenir un avantage mécanique afin de le presser au-dessus de la tête."
+    },
+    "kettlebell-single-arm-clean-and-thruster": {
+      "name": "Clean & Thruster à un bras avec kettlebell",
+      "description": "Un complexe combinant un clean à un bras, un squat et un développé au-dessus de la tête en un seul mouvement puissant et fluide."
+    },
+    "kettlebell-single-arm-complex-clean-squat-press": {
+      "name": "Complexe à un bras (Clean-Squat-Press) avec kettlebell",
+      "description": "Une séquence d'un clean à un bras, d'un squat et d'un développé au-dessus de la tête effectuée sans poser le kettlebell."
+    },
+    "kettlebell-single-arm-deadlift": {
+      "name": "Soulevé de terre à un bras avec kettlebell",
+      "description": "Un soulevé de terre effectué en soulevant un seul kettlebell avec un bras, mettant au défi l'anti-rotation et la force de préhension."
+    },
+    "kettlebell-single-arm-overhead-squat": {
+      "name": "Squat au-dessus de la tête à un bras avec kettlebell",
+      "description": "Un squat effectué en tenant un seul kettlebell verrouillé au-dessus de la tête, exigeant une mobilité et une stabilité exceptionnelles."
+    },
+    "kettlebell-single-arm-shrug": {
+      "name": "Haussement d'épaules à un bras avec kettlebell",
+      "description": "Un haussement d'épaules unilatéral effectué avec un kettlebell lourd pour cibler le muscle trapèze d'un côté."
+    },
+    "kettlebell-single-arm-thruster": {
+      "name": "Thruster à un bras avec kettlebell",
+      "description": "Un exercice composé combinant un squat avec kettlebell en rack à un bras et un développé au-dessus de la tête."
+    },
+    "kettlebell-single-leg-deadlift": {
+      "name": "Soulevé de terre sur une jambe avec kettlebell",
+      "description": "Un mouvement de charnière unilatéral qui met au défi l'équilibre, la stabilité et la force de la chaîne postérieure, effectué en tenant un kettlebell."
+    },
+    "kettlebell-slingshot": {
+      "name": "Slingshot (fronde) avec kettlebell",
+      "description": "Un exercice d'échauffement et de coordination qui consiste à faire passer un kettlebell autour du corps de main en main."
+    },
+    "kettlebell-slingshot-to-goblet-squat": {
+      "name": "Slingshot vers Squat Goblet avec kettlebell",
+      "description": "Un enchaînement qui combine le slingshot avec kettlebell et un squat goblet à chaque répétition."
+    },
+    "kettlebell-snatch-to-overhead-reverse-lunge": {
+      "name": "Arraché vers fente arrière au-dessus de la tête avec kettlebell",
+      "description": "Un complexe où vous effectuez un arraché de kettlebell puis exécutez une fente arrière tout en gardant le kettlebell stable au-dessus de la tête."
+    },
+    "kettlebell-snatch-to-reverse-lunge": {
+      "name": "Arraché vers fente arrière avec kettlebell",
+      "description": "Un complexe combinant un arraché de kettlebell avec une fente arrière. La fente peut être faite avec le kettlebell en rack ou tenu au-dessus de la tête."
+    },
+    "kettlebell-somersault-squat": {
+      "name": "Squat salto avec kettlebell",
+      "description": "Une variation de squat avancée impliquant de faire rouler le kettlebell par-dessus l'épaule pendant le squat, mettant au défi la mobilité et la coordination."
+    },
+    "kettlebell-sots-press": {
+      "name": "Développé Sot's avec kettlebell",
+      "description": "Un développé au-dessus de la tête effectué depuis le bas d'un squat profond, nécessitant une mobilité, une stabilité et une force incroyables."
+    },
+    "kettlebell-sport-style-swing": {
+      "name": "Swing style Girevoy (sport) avec kettlebell",
+      "description": "Un swing plus efficace, de type pendulaire, utilisé dans les compétitions de Kettlebell Sport (Girevoy), conçu pour l'endurance plutôt que pour la puissance maximale."
+    },
+    "kettlebell-stacked-stance-deadlift": {
+      "name": "Soulevé de terre en position décalée avec kettlebell",
+      "description": "Une variation de soulevé de terre avec une posture décalée (un pied légèrement derrière l'autre) pour augmenter la charge sur la jambe avant."
+    },
+    "kettlebell-standing-pullover": {
+      "name": "Pullover debout avec kettlebell",
+      "description": "Un exercice de mobilité et de force pour les dorsaux et le grand dentelé, effectué en abaissant un kettlebell derrière la tête en position debout."
+    },
+    "kettlebell-straight-leg-sit-up": {
+      "name": "Sit-up jambes tendues avec kettlebell",
+      "description": "Un redressement assis lesté effectué avec les jambes tendues tout en tenant un kettlebell sur la poitrine ou au-dessus de la tête."
+    },
+    "kettlebell-suitcase-farmers-carry": {
+      "name": "Porté valise/fermier avec kettlebell",
+      "description": "Un porté chargé effectué avec un kettlebell dans une main (valise) ou dans les deux mains (fermier), renforçant la prise, le tronc et la posture."
+    },
+    "kettlebell-sumo-deadlift-high-pull": {
+      "name": "Soulevé de terre sumo avec tirage haut avec kettlebell",
+      "description": "Un mouvement explosif combinant un soulevé de terre sumo avec un tirage vertical puissant, développant la puissance de tout le corps."
+    },
+    "kettlebell-swing-to-snatch": {
+      "name": "Swing vers Arraché avec kettlebell",
+      "description": "Un exercice qui aide à apprendre l'arraché en le décomposant en un swing suivi de la poussée vers le haut jusqu'au verrouillage."
+    },
+    "kettlebell-tactical-lunge": {
+      "name": "Fente tactique avec kettlebell",
+      "description": "Une variation de fente qui inclut souvent un passage ou un autre mouvement coordonné, mettant l'accent sur l'athlétisme et le contrôle."
+    },
+    "kettlebell-tall-kneeling-press": {
+      "name": "Développé à genoux (deux genoux) avec kettlebell",
+      "description": "Un développé au-dessus de la tête effectué en étant à genoux sur les deux genoux, ce qui engage les fessiers et le tronc pour créer une base stable."
+    },
+    "kettlebell-tate-press": {
+      "name": "Tate Press avec kettlebell",
+      "description": "Un développé pour les triceps où les kettlebells sont abaissés vers la poitrine avec les coudes écartés, similaire à la version avec haltères."
+    },
+    "kettlebell-towel-curl": {
+      "name": "Curl avec serviette et kettlebell",
+      "description": "Un curl biceps utilisant une serviette passée dans la poignée du kettlebell pour mettre au défi la force de préhension."
+    },
+    "kettlebell-turkish-sit-up": {
+      "name": "Sit-up turc avec kettlebell",
+      "description": "La partie redressement assis du Relevé Turc, un exercice puissant pour le tronc et les fléchisseurs de la hanche."
+    },
+    "kettlebell-two-hand-bottoms-up-squat": {
+      "name": "Squat bottoms-up à deux mains avec kettlebell",
+      "description": "Un squat effectué tout en équilibrant un kettlebell à l'envers avec les deux mains, nécessitant une tension immense de tout le corps."
+    },
+    "kettlebell-upright-row": {
+      "name": "Rameur vertical avec kettlebell",
+      "description": "Un exercice qui cible les épaules et les trapèzes en tirant un ou deux kettlebells vers le haut en direction du menton."
+    },
+    "kettlebell-waiters-walk": {
+      "name": "Marche du serveur avec kettlebell",
+      "description": "Un porté unilatéral chargé en tenant un kettlebell droit au-dessus de la tête, comme si l'on portait un plateau. Renforce la stabilité de l'épaule и du tronc."
+    },
+    "l-sit": {
+      "name": "Équerre (L-Sit)",
+      "description": "Un exercice de gymnastique où le corps est maintenu en forme de 'L', en se soutenant avec les mains tandis que les jambes sont tenues droites. Nécessite une force significative du tronc et des triceps."
+    },
+    "leg-raises": {
+      "name": "Relevé de jambes",
+      "description": "Un exercice de tronc ciblant les abdominaux inférieurs, effectué en s'allongeant sur le dos et en levant les jambes vers le plafond."
+    },
+    "lower-trunk-rotations-supine": {
+      "name": "Rotations du bas du tronc (couché)",
+      "description": "Un exercice de mobilité doux pour le bas du dos, effectué en s'allongeant sur le dos avec les genoux pliés et en faisant pivoter les jambes d'un côté à l'autre."
+    },
+    "lying-leg-curl-machine": {
+      "name": "Leg curl allongé (machine)",
+      "description": "Un exercice d'isolation pour les ischio-jambiers effectué sur une machine en position allongée sur le ventre."
+    },
+    "macebell-10-to-2": {
+      "name": "Macebell 10-à-2",
+      "description": "Un exercice fondamental de macebell impliquant un balancement pendulaire d'un côté à l'autre devant le corps, semblable aux aiguilles d'une horloge se déplaçant de 10 à 2."
+    },
+    "macebell-360": {
+      "name": "Macebell 360",
+      "description": "L'exercice signature du macebell, impliquant de balancer la masse en un cercle complet autour de la tête, renforçant la prise, les épaules et la force du tronc."
+    },
+    "macebell-gravedigger": {
+      "name": "Fossoyeur avec macebell",
+      "description": "Un exercice de rotation qui imite le mouvement de creuser avec une pelle, ciblant le tronc et améliorant la puissance de rotation."
+    },
+    "macebell-spear-stab": {
+      "name": "Coup de lance avec macebell",
+      "description": "Un exercice complet du corps qui imite le coup de lance, impliquant une puissante poussée vers l'avant de la masse."
+    },
+    "machine-chest-press": {
+      "name": "Presse pectorale (machine)",
+      "description": "Un exercice composé pour la poitrine, similaire à un développé couché mais avec une trajectoire de mouvement fixe fournie par une machine."
+    },
+    "machine-hip-abduction": {
+      "name": "Abduction de la hanche (machine)",
+      "description": "Un exercice d'isolation sur machine pour l'extérieur des cuisses et le moyen fessier en écartant les jambes contre une résistance."
+    },
+    "machine-hip-adduction": {
+      "name": "Adduction de la hanche (machine)",
+      "description": "Un exercice d'isolation sur machine pour l'intérieur des cuisses en serrant les jambes l'une contre l'autre contre une résistance."
+    },
+    "machine-lateral-raise": {
+      "name": "Élévation latérale (machine)",
+      "description": "Un exercice d'isolation pour les deltoïdes médians utilisant une machine qui fournit une trajectoire fixe pour le mouvement d'élévation latérale."
+    },
+    "military-press-barbell": {
+      "name": "Développé militaire à la barre",
+      "description": "Un développé strict au-dessus de la tête avec une barre, effectué debout, sans impulsion des jambes. C'est un test fondamental de la force des épaules."
+    },
+    "muscle-up": {
+      "name": "Muscle-up",
+      "description": "Une compétence de gymnastique avancée combinant une traction avec un dip en un seul mouvement fluide pour passer d'une suspension sous une barre ou des anneaux à un soutien au-dessus."
+    },
+    "parallette-deep-push-up": {
+      "name": "Pompe profonde sur parallettes",
+      "description": "Une pompe effectuée sur des parallettes, permettant une plus grande amplitude de mouvement et un étirement plus profond de la poitrine."
+    },
+    "parallette-l-sit": {
+      "name": "Équerre (L-Sit) sur parallettes",
+      "description": "Un L-Sit effectué sur des parallettes, ce qui peut être légèrement plus facile que sur le sol car il offre plus d'espace pour les jambes."
+    },
+    "parallette-shoot-through": {
+      "name": "Passage des jambes sur parallettes",
+      "description": "Un mouvement de gymnastique dynamique sur des parallettes, passant d'une position de planche ou de pompe à une position groupée ou en L-sit en 'lançant' les jambes à travers les bras."
+    },
+    "parallette-tuck-planche": {
+      "name": "Planche groupée sur parallettes",
+      "description": "Une progression vers la planche complète, effectuée sur des parallettes, où le corps est soutenu par les bras avec les genoux rentrés dans la poitrine."
+    },
+    "pelvic-tilts": {
+      "name": "Bascule du bassin",
+      "description": "Un exercice d'activation du tronc et de mobilité de la colonne vertébrale impliquant de basculer le bassin en antéversion et rétroversion, souvent effectué en position allongée sur le dos."
+    },
+    "pike-push-up": {
+      "name": "Pompe en V (Pike push-up)",
+      "description": "Une variation de pompe effectuée avec les hanches hautes en forme de 'V' inversé, ce qui déplace l'accent sur les épaules. Une progression vers la pompe en équilibre."
+    },
+    "piriformis-stretch-supine": {
+      "name": "Étirement du piriforme (couché)",
+      "description": "Un étirement pour le muscle piriforme de la hanche, effectué en position allongée sur le dos, souvent en croisant une cheville sur le genou opposé et en tirant vers la poitrine."
+    },
+    "pistol-squat": {
+      "name": "Pistol Squat",
+      "description": "Un exercice avancé au poids du corps consistant en un squat sur une seule jambe, nécessitant une force, un équilibre et une mobilité importants."
+    },
+    "planche": {
+      "name": "Planche",
+      "description": "Une compétence de gymnastique avancée où le corps est maintenu parallèle au sol, soutenu uniquement par les mains, nécessitant une force et un équilibre incroyables des bras tendus."
+    },
+    "plank-to-push-up": {
+      "name": "Planche vers pompe",
+      "description": "Un exercice dynamique où vous alternez entre une planche sur les avant-bras et une planche haute (position de pompe), mettant au défi la stabilité du tronc et la force du haut du corps."
+    },
+    "proprioceptive-close-grip-push-up": {
+      "name": "Pompe proprioceptive prise serrée",
+      "description": "Une pompe à prise serrée effectuée sur une surface instable pour mettre au défi la stabilité, le contrôle et la conscience corporelle."
+    },
+    "proprioceptive-pause-goblet-squat": {
+      "name": "Squat goblet proprioceptif avec pause",
+      "description": "Un squat goblet avec une pause en bas, souvent effectué les yeux fermés ou sur une surface instable pour améliorer la proprioception et la stabilité."
+    },
+    "quad-sets-isometric": {
+      "name": "Contraction isométrique du quadriceps",
+      "description": "Un exercice de renforcement isométrique pour les quadriceps, impliquant la contraction du muscle sans bouger l'articulation du genou. Souvent utilisé en début de rééducation."
+    },
+    "ring-archer-pull-up": {
+      "name": "Traction archer aux anneaux",
+      "description": "Une variation de traction unilatérale sur des anneaux de gymnastique, où un bras tire tandis que l'autre s'étend sur le côté, semblable à un archer bandant un arc."
+    },
+    "ring-dip": {
+      "name": "Dips aux anneaux",
+      "description": "Un dip effectué sur des anneaux de gymnastique, ce qui ajoute une composante d'instabilité nécessitant une plus grande force et stabilisation des épaules et de la poitrine."
+    },
+    "ring-muscle-up": {
+      "name": "Muscle-up aux anneaux",
+      "description": "Un muscle-up effectué sur des anneaux de gymnastique, ce qui permet une transition plus naturelle en raison du mouvement des anneaux."
+    },
+    "ring-row": {
+      "name": "Rameur aux anneaux",
+      "description": "Un rameur inversé effectué à l'aide d'anneaux de gymnastique, permettant une rotation naturelle des mains et une difficulté réglable en changeant l'angle du corps."
+    },
+    "ring-skin-the-cat": {
+      "name": "Skin the Cat aux anneaux",
+      "description": "Un exercice de mobilité fondamental de gymnastique sur anneaux, consistant à passer les pieds et les hanches à travers les bras et au-dessus de la tête en suspension, puis à revenir."
+    },
+    "ring-support-hold": {
+      "name": "Maintien en support aux anneaux",
+      "description": "Une prise isométrique fondamentale sur des anneaux de gymnastique, où vous soutenez votre poids corporel avec les bras tendus, nécessitant une stabilisation importante."
+    },
+    "sandbag-bear-hug-squat": {
+      "name": "Squat en étreinte d'ours avec sac de sable",
+      "description": "Un squat effectué en serrant un sac de sable verticalement contre le torse, engageant intensément le tronc et le haut du dos."
+    },
+    "sandbag-clean": {
+      "name": "Clean avec sac de sable",
+      "description": "Un exercice explosif où un sac de sable est soulevé du sol à l'épaule en un seul mouvement puissant."
+    },
+    "sandbag-over-the-shoulder-carry": {
+      "name": "Porté sur l'épaule avec sac de sable",
+      "description": "Un porté chargé où un sac de sable lourd est porté sur une épaule, mettant au défi le tronc et la chaîne postérieure."
+    },
+    "sandbag-rotational-lunge": {
+      "name": "Fente en rotation avec sac de sable",
+      "description": "Une fente qui incorpore une rotation du torse, en tenant un sac de sable pour ajouter de la résistance et mettre au défi le tronc."
+    },
+    "sandbag-shouldering": {
+      "name": "Épaulé avec sac de sable",
+      "description": "L'acte de soulever un sac de sable du sol et de le placer sur une épaule, une compétence fondamentale de strongman et de levage d'objets irréguliers."
+    },
+    "sandbag-zercher-squat": {
+      "name": "Squat Zercher avec sac de sable",
+      "description": "Un squat effectué en tenant un sac de sable dans le creux des coudes, ce qui sollicite fortement le tronc, le haut du dos et les bras."
+    },
+    "scapular-retraction-shoulder-blade-squeezes": {
+      "name": "Rétraction scapulaire (serrage des omoplates)",
+      "description": "Un exercice postural axé sur le serrage des omoplates pour renforcer les rhomboïdes et les trapèzes moyens."
+    },
+    "seated-hamstring-stretch": {
+      "name": "Étirement des ischio-jambiers assis",
+      "description": "Un étirement pour les ischio-jambiers effectué en position assise, généralement en tendant les bras vers les orteils avec les jambes tendues."
+    },
+    "seated-pec-deck-fly": {
+      "name": "Pec Deck assis (écarté à la machine)",
+      "description": "Un exercice d'isolation pour la poitrine utilisant une machine où vous vous asseyez et rapprochez des leviers rembourrés dans un mouvement d'écarté."
+    },
+    "shoulder-external-rotation-banded": {
+      "name": "Rotation externe de l'épaule (avec élastique)",
+      "description": "Un exercice de préhabilitation/rééducation pour les muscles de la coiffe des rotateurs, utilisant une bande de résistance pour faire pivoter le bras vers l'extérieur contre une tension."
+    },
+    "shoulder-pendulum-swings": {
+      "name": "Balancements pendulaires de l'épaule",
+      "description": "Un exercice doux d'amplitude de mouvement pour l'articulation de l'épaule, souvent utilisé en début de rééducation, consistant à se pencher et à balancer doucement le bras."
+    },
+    "shrimp-squat": {
+      "name": "Shrimp Squat",
+      "description": "Une variation de squat sur une jambe où la jambe qui ne travaille pas est pliée et maintenue derrière le corps, similaire à un pistol squat mais avec une position de jambe différente."
+    },
+    "side-plank": {
+      "name": "Planche latérale",
+      "description": "Un exercice de tronc isométrique effectué d'un côté pour cibler les muscles obliques et améliorer la stabilité latérale."
+    },
+    "single-kettlebell-alternating-swing": {
+      "name": "Swing alterné avec un kettlebell",
+      "description": "Un swing de kettlebell où le kettlebell est passé d'une main à l'autre au sommet de chaque swing."
+    },
+    "single-kettlebell-clean-and-press-to-pause-windmill": {
+      "name": "Clean & Press vers Moulin à vent avec pause (un kettlebell)",
+      "description": "Un enchaînement complexe combinant un clean, un press, puis un moulin à vent avec une pause, mettant au défi la force, la stabilité et la mobilité."
+    },
+    "single-kettlebell-clean-and-press": {
+      "name": "Clean and Press avec un kettlebell",
+      "description": "Une combinaison classique où un kettlebell est amené au rack puis immédiatement pressé au-dessus de la tête."
+    },
+    "single-kettlebell-figure-eight": {
+      "name": "Huit avec un kettlebell",
+      "description": "Un exercice dynamique qui améliore la coordination, la stabilité du tronc et la force de préhension en faisant passer le kettlebell entre et autour des jambes en forme de huit."
+    },
+    "single-kettlebell-front-squat": {
+      "name": "Squat avant avec un kettlebell",
+      "description": "Un squat effectué avec un seul kettlebell tenu en position de rack avant, créant une charge décalée qui met au défi la stabilité du tronc."
+    },
+    "single-kettlebell-high-pull": {
+      "name": "Tirage haut avec un kettlebell",
+      "description": "Un exercice explosif qui consiste à tirer un kettlebell d'une position de swing jusqu'à la hauteur du menton, en gardant le coude haut."
+    },
+    "single-kettlebell-jerk": {
+      "name": "Jeté avec un kettlebell",
+      "description": "Un levé puissant où vous utilisez un mouvement de 'jeté' à double flexion avec vos jambes pour propulser un seul kettlebell au-dessus de la tête."
+    },
+    "single-kettlebell-overhead-lunge": {
+      "name": "Fente au-dessus de la tête avec un kettlebell",
+      "description": "Une fente effectuée en tenant un seul kettlebell verrouillé au-dessus de la tête, créant un défi de stabilité important."
+    },
+    "single-kettlebell-overhead-press": {
+      "name": "Développé militaire avec un kettlebell",
+      "description": "Un exercice de force fondamental du haut du corps consistant à presser un seul kettlebell de la position de rack à un verrouillage au-dessus de la tête."
+    },
+    "single-kettlebell-russian-twist": {
+      "name": "Twist russe avec un kettlebell",
+      "description": "Un exercice de tronc ciblant les obliques, effectué en position assise et en tordant le torse d'un côté à l'autre tout en tenant un seul kettlebell."
+    },
+    "single-kettlebell-swing": {
+      "name": "Swing à un bras avec kettlebell",
+      "description": "Le swing de kettlebell à une main, qui ajoute un défi anti-rotation au swing standard à deux mains."
+    },
+    "single-leg-stance-balance": {
+      "name": "Équilibre sur une jambe",
+      "description": "Un exercice d'équilibre fondamental qui consiste à se tenir sur une jambe pendant une durée déterminée."
+    },
+    "skater-jumps": {
+      "name": "Sauts du patineur",
+      "description": "Un exercice pliométrique qui implique des sauts latéraux d'une jambe à l'autre, imitant le mouvement d'un patineur de vitesse pour développer la puissance et l'agilité."
+    },
+    "slow-eccentric-floor-skullcrusher": {
+      "name": "Skullcrusher au sol avec phase excentrique lente",
+      "description": "Un skullcrusher pour les triceps effectué au sol en se concentrant sur une phase de descente (excentrique) très lente et contrôlée."
+    },
+    "slow-eccentric-floor-skullcrusher-to-close-grip-floor-press": {
+      "name": "Skullcrusher excentrique lent vers développé serré au sol",
+      "description": "Un complexe axé sur les triceps combinant un skullcrusher excentrique lent avec un développé au sol à prise serrée à chaque répétition."
+    },
+    "slow-eccentric-pause-towel-curls": {
+      "name": "Curls avec serviette, excentrique lent et pause",
+      "description": "Un curl biceps utilisant une serviette pour la prise, mettant l'accent sur une phase de descente lente et une pause pour maximiser le temps sous tension."
+    },
+    "standing-calf-raise": {
+      "name": "Élévation des mollets debout",
+      "description": "Un exercice pour renforcer le muscle gastrocnémien du mollet en levant les talons depuis une position debout."
+    },
+    "dip": {
+      "name": "Dips sur barre droite",
+      "description": "Un dip effectué sur une seule barre droite, nécessitant plus de stabilisation du tronc et un angle d'épaule différent des dips sur barres parallèles."
+    },
+    "straight-leg-raise": {
+      "name": "Élévation de jambe tendue",
+      "description": "Un exercice pour le tronc et les fléchisseurs de la hanche effectué en s'allongeant sur le dos et en levant une ou les deux jambes droites sans plier les genoux."
+    },
+    "suitcase-deadlift-to-anti-rotation-row": {
+      "name": "Soulevé de terre valise vers rameur anti-rotation",
+      "description": "Un complexe qui combine un soulevé de terre valise à un bras avec un rameur en haut, mettant au défi le tronc de résister à la rotation."
+    },
+    "superman-extensions": {
+      "name": "Extensions Superman",
+      "description": "Un exercice au poids du corps qui renforce le bas du dos, les fessiers et les ischio-jambiers en soulevant simultanément les bras et les jambes du sol en position allongée sur le ventre."
+    },
+    "terminal-knee-extension-tke": {
+      "name": "Extension terminale du genou (TKE)",
+      "description": "Un exercice de rééducation et d'activation pour les quadriceps (spécifiquement le VMO) qui se concentre sur les derniers degrés d'extension du genou, utilisant souvent une bande de résistance."
+    },
+    "towel-scrunches": {
+      "name": "Froissement de serviette (avec les orteils)",
+      "description": "Un exercice pour les muscles intrinsèques des pieds, effectué en utilisant les orteils pour froisser une serviette placée sur le sol."
+    },
+    "tuck-planche": {
+      "name": "Planche groupée",
+      "description": "Une progression fondamentale pour la planche complète, où le corps est en équilibre sur les mains avec les genoux fermement rentrés dans la poitrine."
+    },
+    "twist-sit-up": {
+      "name": "Sit-up avec torsion",
+      "description": "Une variation de redressement assis qui incorpore une torsion du torse en haut du mouvement pour engager les muscles obliques."
+    },
+    "upper-trapezius-stretch": {
+      "name": "Étirement du trapèze supérieur",
+      "description": "Un étirement du cou effectué en inclinant doucement la tête d'un côté pour allonger le muscle trapèze supérieur."
+    },
+    "vipr-cylinder-drop-squat": {
+      "name": "Squat avec chute de cylindre ViPR",
+      "description": "Un squat dynamique utilisant un ViPR, où le cylindre est lâché et rattrapé, intégrant le mouvement et la charge."
+    },
+    "vipr-cylinder-lift": {
+      "name": "Soulevé de cylindre ViPR",
+      "description": "Un exercice fondamental de ViPR qui consiste à soulever le cylindre dans différents plans de mouvement, imitant souvent des tâches fonctionnelles."
+    },
+    "vipr-ice-skater": {
+      "name": "Patineur avec ViPR",
+      "description": "Un exercice de mouvement latéral utilisant le ViPR qui imite le mouvement du patinage sur glace, développant la puissance et l'agilité dans le plan frontal."
+    },
+    "vipr-lateral-shift-with-rip": {
+      "name": "Décalage latéral avec arraché ViPR",
+      "description": "Un exercice dynamique combinant un décalage latéral du ViPR avec un puissant mouvement de pousser-tirer 'arraché'."
+    },
+    "vipr-shoveling": {
+      "name": "Pelletage avec ViPR",
+      "description": "Un exercice de rotation complet du corps qui imite le mouvement de pelletage, développant la puissance et la coordination à travers les hanches et le tronc."
+    },
+    "vipr-thread-the-needle": {
+      "name": "Enfiler l'aiguille avec ViPR",
+      "description": "Un exercice de mobilité et de stabilité utilisant le ViPR, impliquant une portée en rotation sous le corps pour améliorer la mobilité de la colonne thoracique."
+    },
+    "wall-handstand": {
+      "name": "Équilibre au mur",
+      "description": "Un équilibre sur les mains effectué avec les pieds reposant contre un mur pour le soutien, utilisé pour renforcer la force et la confiance pour un équilibre autoportant."
+    },
+    "rehab-wall-push-up": {
+      "name": "Pompe au mur",
+      "description": "Une variation de pompe pour débutant où vous poussez contre un mur, réduisant la quantité de poids corporel soulevé."
+    },
+    "wall-sit": {
+      "name": "Chaise (contre un mur)",
+      "description": "Un exercice isométrique où vous maintenez une position de squat avec le dos contre un mur, renforçant principalement les quadriceps."
+    },
+    "rehab-wall-sit-isometric": {
+      "name": "Chaise isométrique (contre un mur)",
+      "description": "Un exercice isométrique maintenant une position de squat contre un mur pour développer l'endurance musculaire des quadriceps, des fessiers et des ischio-jambiers."
+    }
+  }
+}
