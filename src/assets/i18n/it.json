@@ -105,10 +105,25 @@
       "weightIncrementLabel": "Incremento Peso",
       "weightIncrementDescription": "Passo predefinito per i pulsanti +/- del peso nel player (in {{unit}})",
       "weightIncrementError": "Deve essere un numero positivo (es. 2.5 o 5). Max 50.",
+      "durationIncrementLabel": "Incremento Durata",
+      "durationIncrementDescription": "La quantità per aumentare/diminuire il tempo (in secondi).",
+      "durationIncrementError": "Inserisci un incremento di durata valido (es. 5).",
+      "distanceIncrementLabel": "Incremento Distanza",
+      "distanceIncrementDescription": "La quantità per aumentare/diminuire la distanza (in {{unit}}).",
+      "distanceIncrementError": "Inserisci un incremento di distanza valido (es. 0.1).",
+      "restIncrementLabel": "Incremento Riposo",
+      "restIncrementDescription": "La quantità per aumentare/diminuire il tempo di riposo (in secondi).",
+      "restIncrementError": "Inserisci un incremento di riposo valido (es. 10).",
       "countdownSoundLabel": "Suono Conto alla Rovescia",
       "countdownSoundDescription": "Riproduci un suono X secondi prima della fine di una serie a tempo",
       "countdownSoundSecondsLabel": "Inizia da (secondi)",
-      "countdownSoundError": "Deve essere tra 1-20s."
+      "countdownSoundError": "Deve essere tra 1-20s.",
+      "trueGymMode": {
+        "label": "Modalità PALESTRA",
+        "description": "Semplifica la schermata di esecuzione della scheda per mostrare soltanto le metriche essenziali (Peso/Ripetizioni per la forza, Durata per cardio).",
+        "disabledTitle": "Cambio disabilitato",
+        "disabledMessage": "Non è possibile cambiare la modalità finché c'è una scheda di allenamento in esecuzione. Terminala o scartala per poter modificare questa impostazione."
+      }
     },
     "progressiveOverload": {
       "title": "Sovraccarico Progressivo",
@@ -227,7 +242,8 @@
     "importCancelled": "Importazione dati annullata",
     "languageSet": "Lingua impostata su {{language}}",
     "routinesDisabledOnImport": "L'importazione ha rilevato {{count}} routine abilitate. Gli utenti gratuiti possono avere solo 4 routine abilitate. Tutte le routine importate sono state disabilitate. Puoi abilitarle dopo l'aggiornamento a Premium.",
-    "routinesDisabledTitle": "Routine Disabilitate"
+    "routinesDisabledTitle": "Routine Disabilitate",
+    "trueGymModeNoMetrics": "Non possono essere aggiunte altre metriche nella modalità 'PALESTRA'."
   },
   "alerts": {
     "playerModeChangeDisabledTitle": "Azione Disabilitata",
@@ -726,6 +742,9 @@
     }
   },
   "compactPlayer": {
+    "warmupSet":"Serie di riscaldamento",
+    "completedSet": "SERIE COMPLETATA",
+    "completeSet": "COMPLETA SERIE",
     "takeABreak": "Prenditi una pausa",
     "manualRest": "Pausa",
     "defaultWorkoutName": "Allenamento",

@@ -516,7 +516,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         // this.router.navigate([playerRoute, pausedState.routineId || ''], { queryParams: { resume: 'true' } }); // Handle undefined routineId
       } else if (confirmation && confirmation.data === 'discard_start_new') {
         this.workoutService.removePausedWorkout();
-        this.toastService.info(this.translate.instant('pausedWorkout.sessionDiscarded'), 3000);
+        // this.toastService.info(this.translate.instant('pausedWorkout.sessionDiscarded'), 3000);
         // this.router.navigate([playerRoute, newRoutineId]);
         this.workoutService.navigateToPlayer(newRoutineId);
       } else {

@@ -17,9 +17,9 @@
 
     <!-- Circular Timer SVG (Absolutely positioned inside the container, only for 'timer' mode) -->
     <svg *ngIf="mode() === 'timer'" #progressCircleSvg class="absolute inset-0 transform -rotate-90" viewBox="0 0 200 200">
-      <circle cx="100" cy="100" [attr.r]="getCircleRadius()" fill="transparent" stroke="rgba(255, 255, 255, 0.15)" stroke-width="12" />
+      <circle cx="100" cy="100" [attr.r]="getCircleRadius()" fill="transparent" stroke="rgba(255, 255, 255, 0.15)" stroke-width="16" />
       <circle cx="100" cy="100" [attr.r]="getCircleRadius()" fill="transparent" stroke="currentColor"
-        class="text-yellow-400" stroke-width="14" [attr.stroke-dasharray]="getCircleCircumference()"
+        class="text-yellow-400" stroke-width="12" [attr.stroke-dasharray]="getCircleCircumference()"
         [attr.stroke-dashoffset]="strokeDashoffset()" stroke-linecap="round" />
     </svg>
 
@@ -30,6 +30,7 @@
       </div>
       <div class="mt-1 text-lg md:text-xl font-semibold uppercase tracking-widest text-gray-300">
         {{ mode() === 'timer' ? mainText() : ('restTimer.elapsed' | translate) }}
+                <p><app-icon name="rest" class="h-12 w-12 text-yellow-400"></app-icon></p>
       </div>
     </div>
   </div>

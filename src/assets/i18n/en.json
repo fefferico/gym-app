@@ -158,10 +158,26 @@
       "weightIncrementLabel": "Weight Increment Step",
       "weightIncrementDescription": "Default step for +/- weight buttons in player (in {{unit}})",
       "weightIncrementError": "Must be a positive number (e.g., 2.5 or 5). Max 50.",
+      "durationIncrementLabel": "Duration Step",
+      "durationIncrementDescription": "The amount to increase/decrease time (in seconds).",
+      "durationIncrementError": "Please enter a valid duration step (e.g., 5).",
+      "distanceIncrementLabel": "Distance Step",
+      "distanceIncrementDescription": "The amount to increase/decrease distance (in {{unit}}).",
+      "distanceIncrementError": "Please enter a valid distance step (e.g., 0.1).",
+      "restIncrementLabel": "Rest Step",
+      "restIncrementDescription": "The amount to increase/decrease rest time (in seconds).",
+      "restIncrementError": "Please enter a valid rest step (e.g., 10).",
       "countdownSoundLabel": "Timed Set Countdown Sound",
       "countdownSoundDescription": "Play sound X seconds before a timed set ends",
       "countdownSoundSecondsLabel": "Countdown From (seconds)",
-      "countdownSoundError": "Must be 1-20s."
+      "countdownSoundError": "Must be 1-20s.",
+      
+      "trueGymMode": {
+        "label": "True GYM Mode",
+        "description": "Simplifies the workout player to show only essential metrics (Weight/Reps for strength, Duration for cardio).",
+        "disabledTitle": "Change Disabled",
+        "disabledMessage": "You cannot change the player mode while a workout session is active. Please finish or discard the current session first."
+      }
     },
     "progressiveOverload": {
       "title": "Progressive Overload",
@@ -279,7 +295,8 @@
     "importCancelled": "Data import cancelled",
     "languageSet": "Language set to {{language}}",
     "routinesDisabledOnImport": "Import detected {{count}} enabled routines. Free users can only have 4 enabled routines. All imported routines have been disabled. You can enable them after upgrading to Premium.",
-    "routinesDisabledTitle": "Routines Disabled"
+    "routinesDisabledTitle": "Routines Disabled",
+    "trueGymModeNoMetrics": "No more metrics can be added in True GYM mode."
   },
   "alerts": {
     "playerModeChangeDisabledTitle": "Action Disabled",
@@ -730,6 +747,9 @@
     }
   },
   "compactPlayer": {
+    "warmupSet":"Warmup set",
+    "completedSet": "COMPLETED SET",
+    "completeSet": "COMPLETE SET",
     "takeABreak": "Take a break",
     "manualRest": "Rest",
     "defaultWorkoutName": "Workout",

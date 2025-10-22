@@ -134,6 +134,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return this.appSettingsService.getMenuMode();
   }
 
+  protected getTrueGymMode(): boolean {
+    return this.appSettingsService.isTrueGymMode();
+  }
+
   lastSetInfo = computed<ActiveSetInfo | null>(() => {
     const r = this.routine();
     const exIndex = this.lastExerciseIndex();
@@ -579,6 +583,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   startWorkout(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+
     this.workoutStartTime = Date.now();
     this.sessionState.set(SessionState.Playing);
     this.currentWorkoutLog.set({
@@ -932,11 +940,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       return;
     }
 
-// 1. Analyze completion to decide the prompt's tone (Finish vs. Finish Early)
+    // 1. Analyze completion to decide the prompt's tone (Finish vs. Finish Early)
     const analysis = this.analyzeWorkoutCompletion();
     const hasIncomplete = analysis.incompleteExercises.length > 0 || analysis.skippedExercises.length > 0;
     const title = hasIncomplete ? this.translate.instant('compactPlayer.alerts.finishEarlyTitle') : this.translate.instant('compactPlayer.alerts.finishTitle');
-    
+
     // =================== START OF MODIFICATION ===================
     let message = this.translate.instant('compactPlayer.alerts.finishMessage'); // Default for a fully completed workout
 
@@ -955,7 +963,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
       // Join the parts with a simple 'and'. You can also make ' and ' a translation key if needed.
       const details = messageParts.join(' and ');
-      
+
       // Use a base message that incorporates the dynamic details.
       message = this.translate.instant('compactPlayer.alerts.finishEarlyMessageSimple', { details: details });
     }
@@ -1136,7 +1144,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     this.routine.set({ ...routine });
 
-    this.toastService.success(`Warm-up set added to ${exercise.exerciseName}`);
+    // this.toastService.success(`Warm-up set added to ${exercise.exerciseName}`);
     if (this.expandedExerciseIndex() !== exIndex) {
       this.expandedExerciseIndex.set(exIndex);
     }
@@ -1189,7 +1197,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           newSet.targetDuration = userInputs.actualDuration ?? lastSet.targetDuration;
           newSet.targetRest = userInputs.actualRest ?? lastSet.targetRest;
           newSet.targetTempo = userInputs.tempoLogged ?? lastSet.targetTempo;
-          
+
           // Also carry over the fieldOrder to the new set
           if (lastSet.fieldOrder) {
             newSet.fieldOrder = [...lastSet.fieldOrder];
@@ -1201,7 +1209,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           newSet.targetWeight = 10;
           newSet.fieldOrder = [METRIC.weight, METRIC.reps];
         }
-        
+
         groupEx.sets.push(newSet);
       });
       // =================== END OF FIX ===================
@@ -1225,7 +1233,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         } else {
           newSet.targetWeight = 0;
         }
-      } else { 
+      } else {
         if (lastSet) {
           const setIndex = triggerExercise.sets.length - 1;
           const key = `${exIndex}-${setIndex}`;
@@ -2413,7 +2421,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           return true;
         } else {
           this.workoutService.removePausedWorkout();
-          this.toastService.info(this.translate.instant('compactPlayer.toasts.pausedDiscarded'), 3000);
+          // this.toastService.info(this.translate.instant('compactPlayer.toasts.pausedDiscarded'), 3000);
           return false;
         }
       }
@@ -2684,8 +2692,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       return {
         'rounded-xl shadow-md transition-all duration-300': true,
         'relative ring-2 ring-yellow-400 dark:ring-yellow-500 z-10': true, // Focus style
-        'bg-white dark:bg-gray-800': !set.type || set.type !== 'warmup', // Default background when focused
-        'bg-blue-200/60 dark:bg-blue-900/40 border border-blue-300 dark:border-blue-800': set.type === 'warmup'
+        'bg-white dark:bg-gray-800': true, // Default background when focused
+        'relative ring-2 ring-blue-400 dark:ring-blue-500 z-10': set.type === 'warmup'
       };
     }
 
@@ -2696,17 +2704,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       };
     }
 
-    if (set.type === 'warmup') {
-      return {
-        'rounded-xl shadow-sm transition-all duration-300': true,
-        'bg-blue-200/60 dark:bg-blue-900/40 border border-blue-300 dark:border-blue-800': true, // Subtle warmup style
-      };
-    }
-
     // Default style for a standard, non-focused, non-completed set
     return {
       'rounded-xl shadow-sm transition-all duration-300': true,
-      'bg-white dark:bg-gray-800': true
+      'bg-white dark:bg-gray-800': true,
+      'border-2 border-blue-400 dark:border-blue-500': set.type === 'warmup', // Subtle warmup style
     };
   }
 
@@ -3298,13 +3300,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   /**
-  * --- THIS IS THE OTHER HALF OF THE FIX ---
   * On completion, this method now builds the log entry by combining three sources:
   * 1. The user's input (`performanceInputValues`).
   * 2. The routine's plan (as a fallback for performed values).
   * 3. The original snapshot (for target values).
   */
-  toggleSetCompletion(exercise: WorkoutExercise, set: ExerciseTargetSetParams, exIndex: number, setIndex: number, roundIndex: number): void {
+  toggleSetCompletion(exercise: WorkoutExercise, set: ExerciseTargetSetParams, exIndex: number, setIndex: number, roundIndex: number, triggerAnimation: boolean = true): void {
     const log = this.currentWorkoutLog();
     if (!log.exercises) log.exercises = [];
 
@@ -3313,7 +3314,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const targetLoggedSetId = exercise.supersetId ? `${set.id}-round-${roundIndex}` : set.id;
     const key = `${exIndex}-${setIndex}`;
 
-    this.toggledSetAnimation.set({ key, type: 'set', state: wasCompleted ? 'incompleted' : 'completed' });
+    if (triggerAnimation) {
+      const key = `${exIndex}-${setIndex}`;
+      this.toggledSetAnimation.set({ key, type: 'set', state: wasCompleted ? 'incompleted' : 'completed' });
+    }
 
     if (wasCompleted) {
       this.audioService.playSound(AUDIO_TYPES.untoggle);
@@ -3548,7 +3552,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (!currentRoutine) return;
 
     // The service handles the UI and returns the updated routine state
-    const updatedRoutine = await this.workoutService.promptAddField(currentRoutine, exIndex, setIndex);
+    const updatedRoutine = await this.workoutService.promptAddField(currentRoutine, exIndex, setIndex, true);
 
     if (updatedRoutine) {
       // =================== START OF SNIPPET (Part 2) ===================
@@ -3560,7 +3564,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       this._prefillPerformanceInputs();
       // =================== END OF SNIPPET (Part 2) ===================
 
-      this.toastService.success("Field added to set.");
+      // this.toastService.success("Field added to set.");
       this.scrollToSet(exIndex, setIndex);
     }
   }
@@ -4061,10 +4065,18 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   private incrementValue(exIndex: number, setIndex: number, field: METRIC): void {
     const settings = this.appSettingsService.getSettings();
-    const isWeight = field === METRIC.weight;
-    const isTime = field === METRIC.duration || field === METRIC.rest;
-    const step = isWeight ? (settings.weightStep || 0.5) : (isTime ? 1 : 1); // Step is 1 second for time
     const key = `${exIndex}-${setIndex}`;
+    
+    // START: REFACTORED STEP LOGIC
+    let step: number;
+    switch (field) {
+        case METRIC.weight:   step = settings.weightStep || 1; break;
+        case METRIC.duration: step = settings.durationStep || 5; break;
+        case METRIC.rest:     step = settings.restStep || 5; break;
+        case METRIC.distance: step = settings.distanceStep || 0.1; break;
+        default:              step = 1; // Default for reps
+    }
+    // END: REFACTORED STEP LOGIC
 
     this.performanceInputValues.update(currentInputs => {
       const newInputs = { ...currentInputs };
@@ -4074,8 +4086,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
       const initialValueStr = this.getInitialInputValue(exIndex, setIndex, field);
       let currentNumberValue = 0;
-
-      // THE FIX: Use the correct parser based on the field type
+      
+      const isTime = field === METRIC.duration || field === METRIC.rest;
       if (isTime) {
         currentNumberValue = this.parseTimeToSeconds(initialValueStr) || 0;
       } else {
@@ -4098,8 +4110,18 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   private decrementValue(exIndex: number, setIndex: number, field: METRIC): void {
     const settings = this.appSettingsService.getSettings();
-    const step = field === METRIC.weight ? (settings.weightStep || 0.5) : 1;
     const key = `${exIndex}-${setIndex}`;
+    
+    // START: REFACTORED STEP LOGIC
+    let step: number;
+    switch (field) {
+        case METRIC.weight:   step = settings.weightStep || 1; break;
+        case METRIC.duration: step = settings.durationStep || 5; break;
+        case METRIC.rest:     step = settings.restStep || 5; break;
+        case METRIC.distance: step = settings.distanceStep || 0.1; break;
+        default:              step = 1; // Default for reps
+    }
+    // END: REFACTORED STEP LOGIC
 
     this.performanceInputValues.update(currentInputs => {
       const newInputs = { ...currentInputs };
@@ -4108,14 +4130,19 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       }
 
       let currentValue = 0;
-      switch (field) {
-        case METRIC.weight: currentValue = newInputs[key]!.actualWeight ?? (parseFloat(this.getInitialInputValue(exIndex, setIndex, METRIC.weight)) || 0); break;
-        case METRIC.reps: currentValue = newInputs[key]!.actualReps ?? (parseInt(this.getInitialInputValue(exIndex, setIndex, METRIC.reps)) || 0); break;
-        case METRIC.distance: currentValue = newInputs[key]!.actualDistance ?? (parseInt(this.getInitialInputValue(exIndex, setIndex, METRIC.distance)) || 0); break;
-        case METRIC.duration: currentValue = newInputs[key]!.actualDuration ?? (parseInt(this.getInitialInputValue(exIndex, setIndex, METRIC.duration)) || 0); break;
-        case METRIC.rest: currentValue = newInputs[key]!.actualRest ?? (parseInt(this.getInitialInputValue(exIndex, setIndex, METRIC.rest)) || 0); break;
-      }
+      const isTime = field === METRIC.duration || field === METRIC.rest;
 
+      if (isTime) {
+          const timeValue = newInputs[key]!.actualDuration ?? newInputs[key]!.actualRest ?? this.parseTimeToSeconds(this.getInitialInputValue(exIndex, setIndex, field));
+          currentValue = timeValue || 0;
+      } else {
+          switch (field) {
+            case METRIC.weight: currentValue = newInputs[key]!.actualWeight ?? (parseFloat(this.getInitialInputValue(exIndex, setIndex, METRIC.weight)) || 0); break;
+            case METRIC.reps: currentValue = newInputs[key]!.actualReps ?? (parseInt(this.getInitialInputValue(exIndex, setIndex, METRIC.reps)) || 0); break;
+            case METRIC.distance: currentValue = newInputs[key]!.actualDistance ?? (parseFloat(this.getInitialInputValue(exIndex, setIndex, METRIC.distance)) || 0); break;
+          }
+      }
+      
       const newValue = Math.max(0, parseFloat((currentValue - step).toFixed(2)));
 
       switch (field) {
@@ -4250,4 +4277,16 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return !!set;
   }
 
+  isRestModalVisible = signal(false);
+  activeRestModalContext = signal<{ exIndex: number, setIndex: number } | null>(null);
+  openRestModal(exIndex: number, setIndex: number, event: Event): void {
+    event.stopPropagation();
+    this.activeRestModalContext.set({ exIndex, setIndex });
+    this.isRestModalVisible.set(true);
+  }
+
+  closeRestModal(): void {
+    this.isRestModalVisible.set(false);
+    this.activeRestModalContext.set(null); // Clear context on close
+  }
 }

@@ -806,7 +806,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     if (confirm && confirm.data) {
       if (isPlatformBrowser(this.platformId)) {
         this.storageService.removeItem('fitTrackPro_pausedWorkoutState');
-        this.toastService.info(this.translate.instant('historyList.toasts.pausedDiscarded'), 3000);
+        // this.toastService.info(this.translate.instant('historyList.toasts.pausedDiscarded'), 3000);
       }
       this.navigateToLogWorkout();
     }

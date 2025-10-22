@@ -7,7 +7,10 @@ export interface AppSettings {
   weightStep: number;
   playerMode: PlayerMode;
   menuMode: MenuMode;
-  // Add other settings as needed
+  enableTrueGymMode: boolean;
+  durationStep: number;
+  distanceStep: number;
+  restStep: number;
 }
 
 export type MenuMode = 'dropdown' | 'compact' | 'modal';

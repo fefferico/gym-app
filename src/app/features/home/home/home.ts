@@ -130,7 +130,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       if (isPlatformBrowser(this.platformId)) {
         this.workoutService.removePausedWorkout();
         // The subscription above will now handle setting pausedWorkoutInfo.set(null);
-        this.toastService.info(this.translate.instant('pausedWorkout.sessionDiscarded'), 3000);
+        // this.toastService.info(this.translate.instant('pausedWorkout.sessionDiscarded'), 3000);
       }
     }
   }

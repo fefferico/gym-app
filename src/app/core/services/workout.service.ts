@@ -1,6 +1,6 @@
 // src/app/core/services/workout.service.ts
-import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, Observable, of, Subject, throwError } from 'rxjs';
+import { Injectable, Injector, inject } from '@angular/core';
+import { BehaviorSubject, firstValueFrom, Observable, of, Subject, throwError } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 
@@ -19,6 +19,7 @@ import { Exercise } from '../models/exercise.model';
 import { SubscriptionService } from './subscription.service';
 import { TranslateService } from '@ngx-translate/core';
 import { mapLoggedSetToExerciseTargetSetParams, mapLoggedWorkoutExerciseToWorkoutExercise, mapWorkoutExerciseToLoggedWorkoutExercise } from '../models/workout-mapper';
+import { ExerciseService } from './exercise.service';
 
 @Injectable({
   providedIn: 'root',
@@ -26,6 +27,16 @@ import { mapLoggedSetToExerciseTargetSetParams, mapLoggedWorkoutExerciseToWorkou
 export class WorkoutService {
   private storageService = inject(StorageService);
   private appSettingsService = inject(AppSettingsService);
+    private injector = inject(Injector);
+
+  private _exerciseService: ExerciseService | undefined;
+    private get exerciseService(): ExerciseService {
+      if (!this._exerciseService) {
+        this._exerciseService = this.injector.get(ExerciseService);
+      }
+      return this._exerciseService;
+    }
+
   private router = inject(Router);
   private alertService = inject(AlertService);
   private unitsService = inject(UnitsService);
@@ -649,7 +660,7 @@ export class WorkoutService {
     this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
     this._pausedWorkoutDiscarded.next();
     if (!showAlert) return;
-    this.toastService.info(this.translate.instant('workoutService.toasts.pausedDiscarded'));
+    // this.toastService.info(this.translate.instant('workoutService.toasts.pausedDiscarded'));
   }
 
   savePausedWorkout(stateToSave: PausedWorkoutState): void {
@@ -1433,8 +1444,9 @@ export class WorkoutService {
    * and then asking for its VALUE.
    * @returns A promise that resolves with the updated Routine object, or null if cancelled.
    */
-  public async promptAddField(routine: Routine, exIndex: number, setIndex: number): Promise<Routine | null> {
+  public async promptAddField(routine: Routine, exIndex: number, setIndex: number, isPlayer: boolean = false): Promise<Routine | null> {
     const { hidden } = this.getFieldsForSet(routine, exIndex, setIndex);
+
     if (hidden.length === 0) {
       this.toastService.info("All available metrics are already added to this set.");
       return null;
@@ -1454,12 +1466,36 @@ export class WorkoutService {
       }
     }
 
+    let availableMetrics = filteredHidden ? filteredHidden : hidden;
+        const appSettings = this.appSettingsService.getSettings();
+
+
+    // If the call is coming from the workout player, filter out the 'rest' metric
+    // If in the player and True GYM mode is on, filter the available metrics
+    if (isPlayer && appSettings.enableTrueGymMode) {
+        // We need the base exercise to determine if it's cardio
+        const baseExercise = await firstValueFrom(this.exerciseService.getExerciseById(routine.exercises[exIndex].exerciseId));
+        const isCardio = baseExercise?.category === 'cardio';
+
+        const allowedFields = isCardio
+            ? [METRIC.duration] // Rest is handled by its own modal now
+            : [METRIC.weight, METRIC.reps];
+        
+        availableMetrics = availableMetrics.filter(field => allowedFields.includes(field as METRIC));
+    }
+
+    // If after all filtering there are no metrics left to add, inform the user and exit.
+    if (availableMetrics.length === 0) {
+      this.toastService.info("No more metrics can be added to this set.");
+      return null;
+    }
+
+
     // --- Step 1: Ask WHICH field to add ---
-    const availableMetrics = filteredHidden ? filteredHidden : hidden;
     const buttons: AlertButton[] = availableMetrics.map(field => ({
       text: field.charAt(0).toUpperCase() + field.slice(1),
       role: 'add', data: field,
-      icon: field === METRIC.duration ? 'duration' : field
+      icon: field
     }));
     buttons.push({ text: this.translate.instant('common.cancel'), role: 'cancel', data: null, icon: 'cancel' });
 

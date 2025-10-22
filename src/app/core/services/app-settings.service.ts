@@ -9,11 +9,15 @@ const DEFAULT_APP_SETTINGS: AppSettings = {
     enableTimerCountdownSound: true,
     enableProgressiveOverload: false,
     countdownSoundSeconds: 5,
-    enablePresetTimer: false,        // NEW Default
-    presetTimerDurationSeconds: 10,  // NEW Default (e.g., 10 seconds)
+    enablePresetTimer: false,
+    presetTimerDurationSeconds: 10,
     weightStep: 1,
     playerMode: 'compact' as PlayerMode,
     menuMode: 'modal' as MenuMode,
+    enableTrueGymMode: false,
+    durationStep: 5,
+    distanceStep: 0.1,
+    restStep: 5,
 };
 
 // 1. Define a type for the three menu modes for type safety.
@@ -27,7 +31,7 @@ export class AppSettingsService {
     private platformId = inject(PLATFORM_ID);
 
     private readonly APP_SETTINGS_KEY = 'fitTrackPro_appSettings';
-    private readonly MENU_MODE_KEY = 'fitTrackPro_menuMode'; // New key for storage
+    private readonly MENU_MODE_KEY = 'fitTrackPro_menuMode';
 
 
     private appSettingsSubject: BehaviorSubject<AppSettings>;
@@ -40,9 +44,13 @@ export class AppSettingsService {
     public enablePresetTimer = signal<boolean>(DEFAULT_APP_SETTINGS.enablePresetTimer);
     public presetTimerDurationSeconds = signal<number>(DEFAULT_APP_SETTINGS.presetTimerDurationSeconds);
     public menuMode = signal<MenuMode>(DEFAULT_APP_SETTINGS.menuMode);
+    public enableTrueGymMode = signal<boolean>(DEFAULT_APP_SETTINGS.enableTrueGymMode);
+    public durationStep = signal<number>(DEFAULT_APP_SETTINGS.durationStep);
+    public distanceStep = signal<number>(DEFAULT_APP_SETTINGS.distanceStep);
+    public restStep = signal<number>(DEFAULT_APP_SETTINGS.restStep);
 
 
-     constructor() {
+    constructor() {
         const storedSettings = this.storageService.getItem<AppSettings>(this.APP_SETTINGS_KEY);
         const initialSettings = { ...DEFAULT_APP_SETTINGS, ...storedSettings };
         this.appSettingsSubject = new BehaviorSubject<AppSettings>(initialSettings);
@@ -54,6 +62,10 @@ export class AppSettingsService {
         this.countdownSoundSeconds.set(initialSettings.countdownSoundSeconds);
         this.enablePresetTimer.set(initialSettings.enablePresetTimer);
         this.presetTimerDurationSeconds.set(initialSettings.presetTimerDurationSeconds);
+        this.enableTrueGymMode.set(initialSettings.enableTrueGymMode);
+        this.durationStep.set(initialSettings.durationStep);
+        this.distanceStep.set(initialSettings.distanceStep);
+        this.restStep.set(initialSettings.restStep);
         const storedMenuMode = this.storageService.getItem<MenuMode>(this.MENU_MODE_KEY);
         this.menuMode.set(storedMenuMode || 'dropdown');
 
@@ -84,6 +96,11 @@ export class AppSettingsService {
         if (settings.countdownSoundSeconds !== undefined) this.countdownSoundSeconds.set(settings.countdownSoundSeconds);
         if (settings.enablePresetTimer !== undefined) this.enablePresetTimer.set(settings.enablePresetTimer);
         if (settings.presetTimerDurationSeconds !== undefined) this.presetTimerDurationSeconds.set(settings.presetTimerDurationSeconds);
+        if (settings.enableTrueGymMode !== undefined) this.enableTrueGymMode.set(settings.enableTrueGymMode);
+        if (settings.durationStep !== undefined) this.durationStep.set(settings.durationStep);
+        if (settings.distanceStep !== undefined) this.distanceStep.set(settings.distanceStep);
+        if (settings.restStep !== undefined) this.restStep.set(settings.restStep);
+
     }
 
     // Example of updating a specific setting directly via signal and saving
@@ -111,6 +128,10 @@ export class AppSettingsService {
         this.enablePresetTimer.set(settingsToSave.enablePresetTimer);
         this.presetTimerDurationSeconds.set(settingsToSave.presetTimerDurationSeconds);
         this.menuMode.set(settingsToSave.menuMode);
+        this.enableTrueGymMode.set(settingsToSave.enableTrueGymMode);
+        this.durationStep.set(settingsToSave.durationStep);
+        this.distanceStep.set(settingsToSave.distanceStep);
+        this.restStep.set(settingsToSave.restStep);
     }
 
     // Method to clear app settings (used by ProfileSettingsComponent)
@@ -157,5 +178,9 @@ export class AppSettingsService {
 
     isPlayerFocusMode(): boolean {
         return this.playerModeSignal() && this.playerModeSignal() === 'focus';
+    }
+
+    isTrueGymMode(): boolean {
+        return this.enableTrueGymMode() && this.enableTrueGymMode() === true;
     }
 }

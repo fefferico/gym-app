@@ -163,7 +163,11 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
       countdownSoundSeconds: [5, [Validators.required, Validators.min(1), Validators.max(60)]],
       enablePresetTimer: [false],
       presetTimerDurationSeconds: [10, [Validators.required, Validators.min(3), Validators.max(60)]],
-      weightStep: [2.5, [Validators.required, Validators.min(0.01), Validators.max(50)]]
+      weightStep: [2.5, [Validators.required, Validators.min(0.01), Validators.max(50)]],
+      enableTrueGymMode: [false],
+      durationStep: [5, [Validators.required, Validators.min(1), Validators.pattern("^[0-9]*$")]],
+      distanceStep: [0.1, [Validators.required, Validators.min(0.01)]],
+      restStep: [5, [Validators.required, Validators.min(1), Validators.pattern("^[0-9]*$")]]
     });
 
     this.progressiveOverloadForm = this.fb.group({
@@ -175,6 +179,26 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
       durationIncrement: [null as number | null, [Validators.min(1), Validators.pattern("^[0-9]*$")]],
       sessionsToIncrement: [1, [Validators.required, Validators.min(1)]]
     });
+  }
+
+  toggleTrueGymMode(event: Event): void {
+    this.workoutService.vibrate();
+    const inputElement = event.target as HTMLInputElement;
+    const isChecked = inputElement.checked;
+
+    if (this.workoutService.isPausedSession()) {
+      // Prevent the change and show an alert
+      inputElement.checked = !isChecked; // Revert the visual state of the toggle
+      this.appSettingsForm.get('enableTrueGymMode')?.setValue(!isChecked, { emitEvent: false }); // Revert form value without triggering listeners
+      this.alertService.showAlert(
+        this.translate.instant('settings.player.trueGymMode.disabledTitle'),
+        this.translate.instant('settings.player.trueGymMode.disabledMessage')
+      );
+      this.cdr.detectChanges(); // Ensure the view updates
+    } else {
+      this.appSettingsForm.get('enableTrueGymMode')?.setValue(isChecked);
+      this.appSettingsService.saveSettings({ enableTrueGymMode: isChecked });
+    }
   }
 
   togglePlayerMode(event: Event): void {
@@ -231,7 +255,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     this.unitsService.setBodyMeasureUnitPreference(unit);
   }
 
-ngOnInit(): void {
+  ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo(0, 0);
     }
@@ -248,10 +272,10 @@ ngOnInit(): void {
       this.languageControl.valueChanges.subscribe(lang => {
         // Check if the new value is different from the current one to avoid redundant calls
         if (lang && lang !== this.languageService.currentLang()) {
-            this.workoutService.vibrate();
-            this.languageService.setLanguage(lang);
-            const translatedLangName = this.translate.instant(this.languageDisplayNames[lang] || lang);
-            this.toastService.success(this.translate.instant('toasts.languageSet', { language: translatedLangName }), 2000);
+          this.workoutService.vibrate();
+          this.languageService.setLanguage(lang);
+          const translatedLangName = this.translate.instant(this.languageDisplayNames[lang] || lang);
+          this.toastService.success(this.translate.instant('toasts.languageSet', { language: translatedLangName }), 2000);
         }
       })
     );
@@ -652,6 +676,6 @@ ngOnInit(): void {
     }
   }
 
-    languageControl!: FormControl<string>;
+  languageControl!: FormControl<string>;
 
 }
