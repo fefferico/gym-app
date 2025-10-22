@@ -143,6 +143,78 @@
           <div *ngIf="expandedExerciseIndex() === exIndex"
             class="bg-gray-100 dark:bg-gray-700/50 pt-2 pb-3 px-1 border-t border-gray-200 dark:border-gray-700 rounded-b-md">
 
+            <!-- SET INFO FOR ALL THE SETS -->
+            <div *ngIf="getExerciseSetsLength(exIndex) > 1" class="px-2 pb-2">
+              <!-- Toggle Button -->
+              <button (click)="toggleSetAllPanel(exIndex, $event)"
+                class="w-full flex justify-between items-center p-2 text-sm font-semibold text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-gray-800 rounded-xl  transition-transform duration-200"
+                [ngClass]="{'rounded-b-none' : expandedSetAllPanel() === exIndex}">
+                <span>Set values for all Sets/Rounds</span>
+                <app-icon name="chevron-down" class="h-5 w-5 transition-transform duration-200"
+                  [class.rotate-180]="expandedSetAllPanel() === exIndex"></app-icon>
+              </button>
+
+              <!-- Collapsible Content -->
+              <div class="overflow-hidden transition-all duration-300 ease-in-out"
+                [style.maxHeight]="expandedSetAllPanel() === exIndex ? '500px' : '0px'">
+                <div
+                  class="p-4 border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-xl bg-white dark:bg-gray-800">
+                  <div class="grid grid-cols-2 gap-4">
+
+                    <!-- Reps Input -->
+                    <div *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.reps]">
+                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">Reps</label>
+                      <input type="number" [(ngModel)]="repsToSetForAll" [ngModelOptions]="{standalone: true}"
+                        class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
+                    </div>
+
+                    <!-- Weight Input -->
+                    <div *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.weight]">
+                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">Weight
+                        ({{ unitService.getWeightUnitSuffix() }})</label>
+                      <input type="number" [(ngModel)]="weightToSetForAll" [ngModelOptions]="{standalone: true}"
+                        class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
+                    </div>
+
+                    <!-- Duration Input -->
+                    <div *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.duration]">
+                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">Duration
+                        (s)</label>
+                      <input type="number" [(ngModel)]="durationToSetForAll" [ngModelOptions]="{standalone: true}"
+                        class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
+                    </div>
+
+                    <!-- Distance Input -->
+                    <div *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.distance]">
+                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">Distance
+                        ({{ unitService.getDistanceMeasureUnitSuffix()
+                        }})</label>
+                      <input type="number" [(ngModel)]="distanceToSetForAll" [ngModelOptions]="{standalone: true}"
+                        class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
+                    </div>
+
+                    <!-- Rest Input -->
+                    <div *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.rest]">
+                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">Rest
+                        (s)</label>
+                      <input type="number" [(ngModel)]="restToSetForAll" [ngModelOptions]="{standalone: true}"
+                        class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
+                    </div>
+                  </div>
+
+                  <!-- Apply Button -->
+                  <div class="mt-4 text-right">
+                    <button (click)="applyToAllSets(exIndex)"
+                      [disabled]="repsToSetForAll() === null && weightToSetForAll() === null && durationToSetForAll() === null && distanceToSetForAll() === null && restToSetForAll() === null"
+                      class="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-xl shadow-sm hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed">
+                      Apply to All
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
             <!-- Sets List -->
             <div class="space-y-3">
 
@@ -159,7 +231,7 @@
                       (click)="toggleSetExpansion(exIndex, setIndex, $event)">
                       <!-- Set Number -->
                       <div class="flex-shrink-0 w-8 text-center"
-                       [ngClass]="{'bg-primary rounded-xl' : isSetExpanded(exIndex,setIndex)}">
+                        [ngClass]="{'bg-primary rounded-xl' : isSetExpanded(exIndex,setIndex)}">
                         <span class="font-bold text-lg text-gray-700 dark:text-gray-200">#{{ setIndex + 1 }}</span>
                       </div>
 
@@ -294,7 +366,8 @@
                             </button>
                           </div>
                         </div>
-                        <div *ngIf="getSetType(exIndex, setIndex)" class="flex justify-start w-full">
+                        <div *ngIf="getSetType(exIndex, setIndex) && !getTrueGymMode()"
+                          class="flex justify-start w-full">
                           <div class="w-full px-1">
                             <label [for]="'setType-exp-' + exIndex + '-' + setIndex"
                               class="block text-s font-medium text-gray-600 dark:text-gray-400">{{
@@ -347,8 +420,7 @@
                           </ng-container>
 
                           <!-- "Add GHOST Field" Button - STANDARD SET -->
-                          <div
-                            *ngIf="isGhostFieldVisible(exIndex, setIndex)"
+                          <div *ngIf="isGhostFieldVisible(exIndex, setIndex)"
                             class="flex items-center justify-center h-full">
                             <button appBumpClick (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
                               class="flex items-center justify-center w-full p-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
@@ -374,7 +446,8 @@
                           [ngClass]="isSetCompleted(exIndex, setIndex, 0) ? 'bg-green-500 text-white shadow-lg' : 'bg-gray-200 dark:bg-gray-700 text-white border-2 border-gray-200 dark:border-gray-100'"><app-icon
                             name="done" class="h-6 w-6 mr-1"></app-icon>
                           <span>
-                            {{(isSetCompleted(exIndex, setIndex, 0) ? 'compactPlayer.completedSet' : 'compactPlayer.completeSet') | translate}}
+                            {{(isSetCompleted(exIndex, setIndex, 0) ? 'compactPlayer.completedSet' :
+                            'compactPlayer.completeSet') | translate}}
                           </span>
                         </button>
                       </div>

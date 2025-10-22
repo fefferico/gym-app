@@ -2595,26 +2595,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return this.exercisesFormArray.length;
   }
 
-  //   /**
-  //  * Converts a millisecond timestamp into a 'dd/MM/yy HH:mm' formatted string.
-  //  * @param msTime The timestamp in milliseconds (e.g., from Date.now() or log.startTime).
-  //  * @returns The formatted date string, or an empty string if the input is invalid.
-  //  */
-  // formatMilliseconds(msTime: number | undefined | null): string {
-  //   if (msTime === null || msTime === undefined || !isFinite(msTime)) {
-  //     return ''; // Return empty for invalid input
-  //   }
-
-  //   try {
-  //     const date = new Date(msTime);
-  //     return format(date, 'dd/MM/yy HH:mm');
-  //   } catch (error) {
-  //     console.error("Error formatting date from milliseconds:", error);
-  //     return ''; // Return empty on formatting error
-  //   }
-  // }
-
-
   private mapFormToRoutine(formValue: any): Routine {
     const initialRoutine = this.loadedRoutine();
 
@@ -2790,7 +2770,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   async checkEditRoutine(routineId: string): Promise<void> {
     const pausedRoutine = this.workoutService.getPausedSession();
     if (this.workoutService.isPausedSession() && pausedRoutine && pausedRoutine?.routineId === routineId) {
-      await this.alertService.showAlert("Info", "It's not possible to edit a running routine. Complete it or discard it before doing it.").then(() => {
+      await this.alertService.showAlert(this.translate.instant("workoutService.alerts.editRunningTitle"), this.translate.instant('workoutService.alerts.editRunningMessage')).then(() => {
         return;
       })
       return;
@@ -4988,66 +4968,104 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.expandedSetAllPanel.update(current => (current === exIndex ? null : exIndex));
   }
 
+
   /**
    * Applies the values entered in the "Set All" panel to every set of a specific exercise.
+   * If a metric being applied does not exist on a set, its form control is added before patching.
    * @param exIndex The index of the exercise in the form array.
    */
   applyToAllSets(exIndex: number): void {
     const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
     const setsArray = this.getSetsFormArray(exerciseControl);
     const patchData: { [key: string]: any } = {};
+    const metricsToApply: METRIC[] = [];
 
-    // Build the patch object only with the fields that have been filled in
+    // --- 1. Build the data patch object and identify all metrics being applied ---
     if (this.repsToSetForAll() !== null) {
       const field = this.mode === 'manualLogEntry' ? 'repsLogged' : 'targetReps';
       patchData[field] = this.repsToSetForAll();
-      if (this.mode === 'routineBuilder') { // Clear range values if setting a single value
+      if (this.mode === 'routineBuilder') {
         patchData['targetRepsMin'] = null;
         patchData['targetRepsMax'] = null;
       }
+      metricsToApply.push(METRIC.reps);
     }
     if (this.weightToSetForAll() !== null) {
       const field = this.mode === 'manualLogEntry' ? 'weightLogged' : 'targetWeight';
       patchData[field] = this.weightToSetForAll();
+      metricsToApply.push(METRIC.weight);
     }
     if (this.durationToSetForAll() !== null) {
       const field = this.mode === 'manualLogEntry' ? 'durationLogged' : 'targetDuration';
       patchData[field] = this.durationToSetForAll();
+      metricsToApply.push(METRIC.duration);
     }
     if (this.distanceToSetForAll() !== null) {
       const field = this.mode === 'manualLogEntry' ? 'distanceLogged' : 'targetDistance';
       patchData[field] = this.distanceToSetForAll();
+      metricsToApply.push(METRIC.distance);
     }
     if (this.restToSetForAll() !== null) {
-      // Rest is only a planned value, so it only applies to routineBuilder mode
-      if (this.mode === 'routineBuilder') {
-        patchData['targetRest'] = this.restToSetForAll();
-      }
+      const field = this.mode === 'manualLogEntry' ? 'restLogged' : 'targetRest';
+      patchData[field] = this.restToSetForAll();
+      metricsToApply.push(METRIC.rest);
     }
-
     if (this.tempoToSetForAll() !== null && this.tempoToSetForAll()!.trim() !== '') {
       patchData['targetTempo'] = this.tempoToSetForAll();
+      metricsToApply.push(METRIC.tempo);
     }
 
-    // If no values were entered, do nothing
+
     if (Object.keys(patchData).length === 0) {
       this.toastService.info("No values entered to apply.");
       return;
     }
 
-    // Apply the patch to every set
-    setsArray.controls.forEach(setControl => {
-      setControl.patchValue(patchData);
+    // --- 2. Iterate through each set to ensure all necessary controls exist ---
+    setsArray.controls.forEach(control => {
+      const setGroup = control as FormGroup;
+      const currentFieldOrder: METRIC[] = setGroup.get('fieldOrder')?.value ? [...setGroup.get('fieldOrder')?.value] : [];
+      let didOrderChange = false;
+
+      metricsToApply.forEach(metric => {
+        const formControlName = this.getFormControlName(metric);
+        if (formControlName && !setGroup.get(formControlName)) {
+          // The control is missing, so we add it.
+          setGroup.addControl(formControlName, this.fb.control(null));
+
+          // For routine builder, we also need to add the corresponding min/max controls if they exist
+          if (this.mode === 'routineBuilder' && [METRIC.reps, METRIC.weight, METRIC.duration, METRIC.distance, METRIC.rest].includes(metric)) {
+            const capitalizedMetric = metric.charAt(0).toUpperCase() + metric.slice(1);
+            setGroup.addControl(`target${capitalizedMetric}Min`, this.fb.control(null));
+            setGroup.addControl(`target${capitalizedMetric}Max`, this.fb.control(null));
+          }
+        }
+
+        // Also update the fieldOrder array to make the new field visible
+        if (!currentFieldOrder.includes(metric)) {
+          currentFieldOrder.push(metric);
+          didOrderChange = true;
+        }
+      });
+
+      // Patch the fieldOrder if it was modified
+      if (didOrderChange) {
+        setGroup.get('fieldOrder')?.patchValue(currentFieldOrder);
+      }
+
+      // --- 3. Now it's safe to patch the values ---
+      setGroup.patchValue(patchData);
     });
 
-    // Reset the input fields and collapse the panel
+
+    // --- 4. Reset UI state ---
     this.repsToSetForAll.set(null);
     this.weightToSetForAll.set(null);
     this.durationToSetForAll.set(null);
     this.distanceToSetForAll.set(null);
     this.restToSetForAll.set(null);
-    this.expandedSetAllPanel.set(null);
     this.tempoToSetForAll.set(null);
+    this.expandedSetAllPanel.set(null);
 
     this.toastService.success(`Applied values to all ${setsArray.length} sets/rounds.`);
   }
@@ -5175,6 +5193,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (!timeStr) return 0;
     const parts = timeStr.toString().split(':').map(part => parseInt(part, 10) || 0);
     return parts.length === 2 ? (parts[0] * 60) + parts[1] : parts[0];
+  }
+
+  protected getExerciseSetsLength(exIndex: number): number {
+    const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
+    if (!exerciseControl) return 0;
+    const setsArray = this.getSetsFormArray(exerciseControl);
+    if (!setsArray) return 0;
+    return setsArray.length;
   }
 
 }

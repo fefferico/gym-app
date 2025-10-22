@@ -1915,17 +1915,17 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       };
 
       const baseAddSetRoundBtn = !this.isSuperSet(exIndex) ? addSetToExerciseBtn : { ...addRoundToExerciseBtn, actionKey: 'add_set' };
-      const baseRemoveSetRoundBtn = !this.isSuperSet(exIndex) ? removeSetFromExerciseBtn : { ...removeRoundFromExerciseBtn, actionKey: 'remove_set' };
-      const addSetRoundBtn = {
-        ...baseAddSetRoundBtn,
-        data: { exIndex },
-        overrideCssButtonClass: baseAddSetRoundBtn.buttonClass + commonModalButtonClass
-      };
-      const removeSetRoundBtn = {
-        ...baseRemoveSetRoundBtn,
-        data: { exIndex },
-        overrideCssButtonClass: baseRemoveSetRoundBtn.buttonClass + commonModalButtonClass
-      };
+      // const baseRemoveSetRoundBtn = !this.isSuperSet(exIndex) ? removeSetFromExerciseBtn : { ...removeRoundFromExerciseBtn, actionKey: 'remove_set' };
+      // const addSetRoundBtn = {
+      //   ...baseAddSetRoundBtn,
+      //   data: { exIndex },
+      //   overrideCssButtonClass: baseAddSetRoundBtn.buttonClass + commonModalButtonClass
+      // };
+      // const removeSetRoundBtn = {
+      //   ...baseRemoveSetRoundBtn,
+      //   data: { exIndex },
+      //   overrideCssButtonClass: baseRemoveSetRoundBtn.buttonClass + commonModalButtonClass
+      // };
 
       const addWarmupSetBtnItem = {
         ...addWarmupSetBtn,
@@ -1950,9 +1950,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       }
 
       actionsArray = [...actionsArray,
-      addSetRoundBtn as ActionMenuItem,
+      // addSetRoundBtn as ActionMenuItem,
       { isDivider: true },
-      removeSetRoundBtn as ActionMenuItem,
+      // removeSetRoundBtn as ActionMenuItem,
         removeExerciseBtnItem,
       ];
 
@@ -4401,4 +4401,155 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return !!(!this.isSetCompleted(exIndex, setIndex) && this.canAddField(exIndex, setIndex) && (visibleFieldsLength % 2 === 1 || visibleFieldsLength === 1) && !this.getTrueGymMode());
     // return !!(this.isEditableMode() && !this.isSuperSet(exIndex) && fieldOrder && fieldOrder.length !== undefined && ((fieldOrder.length <= 1) || (fieldOrder.length > 2 && fieldOrder.length % 2 == 1)));
   }
+
+  protected getExerciseSetsLength(exIndex: number) : number {
+    const routine = this.routine();
+    if (!routine || !routine.exercises || !routine.exercises.length) return 0;
+    return (routine.exercises[exIndex]?.sets?.length ?? 0);
+  }
+
+
+    // Tracks which exercise's "Set All" panel is currently expanded.
+  expandedSetAllPanel = signal<number | null>(null);
+
+  // Signals to hold the temporary values from the "Set All" input fields.
+  repsToSetForAll = signal<number | null>(null);
+  weightToSetForAll = signal<number | null>(null);
+  durationToSetForAll = signal<number | null>(null);
+  distanceToSetForAll = signal<number | null>(null);
+  restToSetForAll = signal<number | null>(null);
+  tempoToSetForAll = signal<string | null>(null);
+
+      /**
+   * Toggles the visibility of the "Set All" collapsible panel for a given exercise.
+   * @param exIndex The index of the exercise.
+   * @param event The mouse event to stop it from propagating and collapsing the card.
+   */
+  toggleSetAllPanel(exIndex: number, event: Event): void {
+    event.stopPropagation();
+    this.expandedSetAllPanel.update(current => (current === exIndex ? null : exIndex));
+  }
+
+  /**
+   * Checks all sets within an exercise to determine which data columns should be visible in the UI.
+   * A column is considered visible if at least one set has a target value for that metric.
+   * @param exerciseControl The FormGroup for the exercise.
+   * @returns An object with boolean flags for each potential column (reps, weight, etc.).
+   */
+  public getVisibleColumnsForExercise(exIndex: number): { [key: string]: boolean } {
+    const routine = this.routine();
+    if (!routine) return {};
+    return this.workoutService.getVisibleExerciseColumns(routine, exIndex);
+  }
+
+  /**
+   * Applies the values entered in the "Set All" panel to every set of a specific exercise.
+   * This updates both the planned targets in the `routine` signal for the session and
+   * the current values in the `performanceInputValues` signal.
+   * If a metric doesn't exist on a set, it's added to its `fieldOrder`.
+   * @param exIndex The index of the exercise in the routine.
+   */
+  applyToAllSets(exIndex: number): void {
+    const routine = this.routine();
+    if (!routine) return;
+
+    const metricsToApply: METRIC[] = [];
+    const targetPatch: { [key: string]: any } = {};
+    const performancePatch: { [key: string]: any } = {};
+
+    // 1. Build patch objects for both routine targets and performance inputs
+    if (this.repsToSetForAll() !== null) {
+      targetPatch['targetReps'] = this.repsToSetForAll();
+      targetPatch['targetRepsMin'] = null; // Clear range if setting single value
+      targetPatch['targetRepsMax'] = null;
+      performancePatch['actualReps'] = this.repsToSetForAll();
+      metricsToApply.push(METRIC.reps);
+    }
+    if (this.weightToSetForAll() !== null) {
+      targetPatch['targetWeight'] = this.weightToSetForAll();
+      performancePatch['actualWeight'] = this.weightToSetForAll();
+      metricsToApply.push(METRIC.weight);
+    }
+    if (this.durationToSetForAll() !== null) {
+      targetPatch['targetDuration'] = this.durationToSetForAll();
+      performancePatch['actualDuration'] = this.durationToSetForAll();
+      metricsToApply.push(METRIC.duration);
+    }
+    if (this.distanceToSetForAll() !== null) {
+      targetPatch['targetDistance'] = this.distanceToSetForAll();
+      performancePatch['actualDistance'] = this.distanceToSetForAll();
+      metricsToApply.push(METRIC.distance);
+    }
+    if (this.restToSetForAll() !== null) {
+      targetPatch['targetRest'] = this.restToSetForAll();
+      performancePatch['actualRest'] = this.restToSetForAll();
+      metricsToApply.push(METRIC.rest);
+    }
+    if (this.tempoToSetForAll() !== null && this.tempoToSetForAll()!.trim() !== '') {
+        targetPatch['targetTempo'] = this.tempoToSetForAll();
+        performancePatch['tempoLogged'] = this.tempoToSetForAll();
+        metricsToApply.push(METRIC.tempo);
+    }
+
+    if (metricsToApply.length === 0) {
+      this.toastService.info("No values entered to apply.");
+      return;
+    }
+
+    // 2. Update the main routine signal immutably
+    this.routine.update(r => {
+      if (!r) return r;
+      const newExercises = [...r.exercises];
+      const exerciseToUpdate = { ...newExercises[exIndex] };
+      
+      const newSets = exerciseToUpdate.sets.map(set => {
+        const newSet = { ...set };
+        Object.assign(newSet, targetPatch); // Apply new target values
+
+        // Ensure all applied metrics are in the fieldOrder
+        const currentFieldOrder = newSet.fieldOrder ? [...newSet.fieldOrder] : [];
+        let orderChanged = false;
+        metricsToApply.forEach(metric => {
+          if (!currentFieldOrder.includes(metric)) {
+            currentFieldOrder.push(metric);
+            orderChanged = true;
+          }
+        });
+        if (orderChanged) {
+          newSet.fieldOrder = currentFieldOrder;
+        }
+        return newSet;
+      });
+
+      exerciseToUpdate.sets = newSets;
+      newExercises[exIndex] = exerciseToUpdate;
+      return { ...r, exercises: newExercises };
+    });
+
+    // 3. Update the performance input values signal
+    this.performanceInputValues.update(currentInputs => {
+      const newInputs = { ...currentInputs };
+      const setsCount = routine.exercises[exIndex].sets.length;
+      for (let i = 0; i < setsCount; i++) {
+        const key = `${exIndex}-${i}`;
+        if (!newInputs[key]) {
+          newInputs[key] = {};
+        }
+        Object.assign(newInputs[key], performancePatch);
+      }
+      return newInputs;
+    });
+
+    // 4. Reset UI
+    this.repsToSetForAll.set(null);
+    this.weightToSetForAll.set(null);
+    this.durationToSetForAll.set(null);
+    this.distanceToSetForAll.set(null);
+    this.restToSetForAll.set(null);
+    this.tempoToSetForAll.set(null);
+    this.expandedSetAllPanel.set(null);
+
+    this.toastService.success(`Applied values to all ${routine.exercises[exIndex].sets.length} sets/rounds.`);
+  }
+
 }

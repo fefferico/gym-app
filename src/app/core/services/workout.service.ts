@@ -27,15 +27,15 @@ import { ExerciseService } from './exercise.service';
 export class WorkoutService {
   private storageService = inject(StorageService);
   private appSettingsService = inject(AppSettingsService);
-    private injector = inject(Injector);
+  private injector = inject(Injector);
 
   private _exerciseService: ExerciseService | undefined;
-    private get exerciseService(): ExerciseService {
-      if (!this._exerciseService) {
-        this._exerciseService = this.injector.get(ExerciseService);
-      }
-      return this._exerciseService;
+  private get exerciseService(): ExerciseService {
+    if (!this._exerciseService) {
+      this._exerciseService = this.injector.get(ExerciseService);
     }
+    return this._exerciseService;
+  }
 
   private router = inject(Router);
   private alertService = inject(AlertService);
@@ -1250,7 +1250,7 @@ export class WorkoutService {
       newSet.targetDistance = set.distance;
       delete newSet[METRIC.distance];
     }
-    
+
     // --- MIGRATION LOGIC FOR REST ---
     // Handles mapping 'restAfterSet' or 'targetRestAfterSet' to the new 'targetRest' property.
     if (newSet.targetRest === undefined || newSet.targetRest === null) {
@@ -1260,7 +1260,7 @@ export class WorkoutService {
         newSet.targetRest = newSet.restAfterSet;
       }
     }
-    
+
     // Clean up the old, now-migrated properties from the object.
     delete newSet.targetRestAfterSet;
     delete newSet.restAfterSet;
@@ -1467,21 +1467,21 @@ export class WorkoutService {
     }
 
     let availableMetrics = filteredHidden ? filteredHidden : hidden;
-        const appSettings = this.appSettingsService.getSettings();
+    const appSettings = this.appSettingsService.getSettings();
 
 
     // If the call is coming from the workout player, filter out the 'rest' metric
     // If in the player and True GYM mode is on, filter the available metrics
     if (isPlayer && appSettings.enableTrueGymMode) {
-        // We need the base exercise to determine if it's cardio
-        const baseExercise = await firstValueFrom(this.exerciseService.getExerciseById(routine.exercises[exIndex].exerciseId));
-        const isCardio = baseExercise?.category === 'cardio';
+      // We need the base exercise to determine if it's cardio
+      const baseExercise = await firstValueFrom(this.exerciseService.getExerciseById(routine.exercises[exIndex].exerciseId));
+      const isCardio = baseExercise?.category === 'cardio';
 
-        const allowedFields = isCardio
-            ? [METRIC.duration] // Rest is handled by its own modal now
-            : [METRIC.weight, METRIC.reps];
-        
-        availableMetrics = availableMetrics.filter(field => allowedFields.includes(field as METRIC));
+      const allowedFields = isCardio
+        ? [METRIC.duration] // Rest is handled by its own modal now
+        : [METRIC.weight, METRIC.reps];
+
+      availableMetrics = availableMetrics.filter(field => allowedFields.includes(field as METRIC));
     }
 
     // If after all filtering there are no metrics left to add, inform the user and exit.
@@ -1493,7 +1493,7 @@ export class WorkoutService {
 
     // --- Step 1: Ask WHICH field to add ---
     const buttons: AlertButton[] = availableMetrics.map(field => ({
-      text: this.translate.instant('metrics.'+field),
+      text: this.translate.instant('metrics.' + field),
       role: 'add', data: field,
       icon: field
     }));
@@ -1511,7 +1511,7 @@ export class WorkoutService {
     }
 
     const fieldToAdd = choice.data as string;
-    const translatedFieldToAdd = this.translate.instant('metrics.'+fieldToAdd);
+    const translatedFieldToAdd = this.translate.instant('metrics.' + fieldToAdd);
 
     // --- Step 2: Ask for the VALUE of the chosen field ---
     let inputLabel = this.translate.instant('workoutBuilder.prompts.setTarget.title', { field: translatedFieldToAdd });
@@ -1549,7 +1549,7 @@ export class WorkoutService {
       [{
         name: 'targetValue',
         type: fieldToAdd === METRIC.tempo ? 'text' : 'number',
-        label: this.translate.instant('metrics.'+fieldToAdd),
+        label: this.translate.instant('metrics.' + fieldToAdd),
         value: placeholderValue,
         attributes: correctAttribute
       }] as AlertInput[],
@@ -1596,26 +1596,26 @@ export class WorkoutService {
 
     // If the call is coming from the workout player, filter out the 'rest' metric
     // If in the player and True GYM mode is on, filter the available metrics
-    if (isPlayer){
+    if (isPlayer) {
       removableFields = removableFields.filter(field => field !== METRIC.rest);
-    }
-    if (appSettings.enableTrueGymMode) {
-      // We need the base exercise to determine if it's cardio
-      const baseExercise = await firstValueFrom(this.exerciseService.getExerciseById(routine.exercises[exIndex].exerciseId));
-      const isCardio = baseExercise?.category === 'cardio';
 
-      const allowedFields = isCardio
-        ? [METRIC.duration] // Rest is handled by its own modal now
-        : [METRIC.weight, METRIC.reps];
+      if (appSettings.enableTrueGymMode) {
+        const baseExercise = await firstValueFrom(this.exerciseService.getExerciseById(routine.exercises[exIndex].exerciseId));
+        const isCardio = baseExercise?.category === 'cardio';
 
-      removableFields = removableFields.filter(field => allowedFields.includes(field as METRIC));
+        const allowedFields = isCardio
+          ? [METRIC.duration] // Rest is handled by its own modal now
+          : [METRIC.weight, METRIC.reps];
+
+        removableFields = removableFields.filter(field => allowedFields.includes(field as METRIC));
+      }
     }
 
     if (removableFields.length === 0) {
       this.toastService.info("No fields can be removed from this set.");
       return routine;
     };
-    
+
 
     const buttons: AlertButton[] = removableFields.map(field => ({
       text: field.charAt(0).toUpperCase() + field.slice(1),
