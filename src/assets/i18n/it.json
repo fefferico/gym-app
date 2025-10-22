@@ -28,7 +28,7 @@
       "resumeButton": "RIPRENDI ALLENAMENTO",
       "detailsButton": "DETTAGLI",
       "discardButton": "SCARTA",
-      "DISCARDTITLE": "Scartare l'allenamento in pausa?",
+      "discardTitle": "Scartare l'allenamento in pausa?",
       "discardMessage": "Sei sicuro di voler scartare questa sessione di allenamento in pausa? L'azione non può essere annullata.",
       "summaryTitle": "In pausa: {{routineName}}",
       "summaryMessage": "Hai eseguito {{exercisesDone}} di {{exercisesAvailable}} esercizi, con {{setsDone}} set registrati{{targetSetsInfo}}. Tempo trascorso: {{timeElapsed}}. Riprendi l'allenamento per continuare.",
