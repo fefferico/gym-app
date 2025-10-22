@@ -3532,7 +3532,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (!currentRoutine) return;
 
     // The service handles the UI and returns the updated routine state
-    const updatedRoutine = await this.workoutService.promptRemoveField(currentRoutine, exIndex, setIndex);
+    const updatedRoutine = await this.workoutService.promptRemoveField(currentRoutine, exIndex, setIndex, true);
 
     if (updatedRoutine) {
       // =================== START OF SNIPPET (Part 1) ===================
@@ -4288,5 +4288,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   closeRestModal(): void {
     this.isRestModalVisible.set(false);
     this.activeRestModalContext.set(null); // Clear context on close
+  }
+
+  protected isGhostFieldVisible(exIndex: number, setIndex: number, fieldOrder?: METRIC[], ): boolean {
+    const visibleFields: any = this.getFieldsForSet(exIndex, setIndex).visible;
+    const visibleFieldsLength = visibleFields && visibleFields.indexOf("rest") ? visibleFields.length - 1 : visibleFields.length; 
+    return !!(!this.isSetCompleted(exIndex,setIndex) && this.canAddField(exIndex, setIndex) && (visibleFieldsLength%2===1 || visibleFieldsLength === 1) && !this.getTrueGymMode());
+    // return !!(this.isEditableMode() && !this.isSuperSet(exIndex) && fieldOrder && fieldOrder.length !== undefined && ((fieldOrder.length <= 1) || (fieldOrder.length > 2 && fieldOrder.length % 2 == 1)));
   }
 }

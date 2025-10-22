@@ -65,24 +65,25 @@
     "defaultName": "健身爱好者"
   },
   "pausedWorkout": {
-    "inProgress": "您有一个正在进行的训练！",
-    "routineLabel": "训练计划",
-    "programLabel": "训练方案",
-    "loggedOn": "记录于",
-    "pausedAt": "暂停于",
-    "defaultRoutineName": "新训练",
-    "fallbackRoutineName": "您的训练",
-    "adHocWorkout": "即兴训练",
-    "resumeButton": "继续训练",
-    "detailsButton": "详情",
-    "discardButton": "放弃",
-    "discardPromptTitle": "放弃已暂停的训练？",
-    "discardPromptMessage": "您确定要放弃这个已暂停的训练吗？此操作无法撤销。",
-    "summaryTitle": "已暂停：{{routineName}}",
-    "summaryMessage": "您已完成 {{exercisesAvailable}} 个动作中的 {{exercisesDone}} 个，记录了 {{setsDone}} 组{{targetSetsInfo}}。已用时间：{{timeElapsed}}。请继续训练以完成它。",
-    "noPausedWorkoutFound": "未找到可继续的已暂停训练",
-    "sessionDiscarded": "已放弃暂停的训练。"
-  },
+      "inProgress": "您有正在进行的锻炼！",
+      "routineLabel": "常规",
+      "programLabel": "计划",
+      "loggedOn": "记录于",
+      "pausedAt": "暂停于",
+      "defaultRoutineName": "新会话",
+      "fallbackRoutineName": "您的锻炼",
+      "adHocWorkout": "即兴锻炼",
+      "resumeButton": "继续锻炼",
+      "detailsButton": "详情",
+      "discardButton": "放弃",
+      "DISCARDTITLE": "放弃暂停的锻炼？",
+      "discardMessage": "您确定要放弃这个已暂停的锻炼会话吗？此操作无法撤销。",
+      "summaryTitle": "已暂停：{{routineName}}",
+      "summaryMessage": "您已完成 {{exercisesAvailable}} 个练习中的 {{exercisesDone}} 个，记录了 {{setsDone}} 组{{targetSetsInfo}}。已用时间：{{timeElapsed}}。请继续锻炼以完成。",
+      "noPausedWorkoutFound": "未找到要恢复的暂停锻炼",
+      "sessionDiscarded": "已放弃暂停的锻炼会话。",
+      "status": "您的锻炼已暂停"
+    },
   "quickActions": {
     "startNewSessionTitle": "开始新训练",
     "startNewSessionDescription": "开始一个全新的训练，并随时进行调整",
@@ -2232,6 +2233,14 @@
       "detailed": "生成自定义训练",
       "quick": "给我惊喜！"
     }
-  }
+  },
+  "metrics": {
+      "rest": "休息 (Xiūxí)",
+      "weight": "重量 (Zhòngliàng)",
+      "tempo": "节奏 (Jiézòu)",
+      "duration": "持续时间 (Chíxù shíjiān)",
+      "distance": "距离 (Jùlí)",
+      "reps": "次数 (Cìshù)"
+    }
 
 }

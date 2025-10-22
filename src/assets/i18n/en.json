@@ -76,12 +76,13 @@
     "resumeButton": "RESUME WORKOUT",
     "detailsButton": "DETAILS",
     "discardButton": "DISCARD",
-    "discardPromptTitle": "Discard Paused Workout?",
-    "discardPromptMessage": "Are you sure you want to discard this paused workout session? This action cannot be undone.",
+    "discardTitle": "Discard Paused Workout?",
+    "discardMessage": "Are you sure you want to discard this paused workout session? This action cannot be undone.",
     "summaryTitle": "Paused: {{routineName}}",
     "summaryMessage": "You have executed {{exercisesDone}} of {{exercisesAvailable}} exercises, with {{setsDone}} set(s) logged{{targetSetsInfo}}. Elapsed time: {{timeElapsed}}. Resume the workout to continue it.",
     "noPausedWorkoutFound": "No paused workout found to resume",
-    "sessionDiscarded": "Paused workout session discarded."
+    "sessionDiscarded": "Paused workout session discarded.",
+    "status": "Your workout is paused"
   },
   "quickActions": {
     "startNewSessionTitle": "Start a new session",
@@ -2492,5 +2493,13 @@
       "successTitle": "Deleted",
       "error": "Failed to delete exercise. It might be in use."
     }
-  }
+  },
+  "metrics": {
+      "rest": "Rest",
+      "weight": "Weight",
+      "tempo": "Tempo",
+      "duration": "Duration",
+      "distance": "Distance",
+      "reps": "Reps"
+    }
 }

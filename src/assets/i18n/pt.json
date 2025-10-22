@@ -65,24 +65,25 @@
     "defaultName": "Entusiasta de Fitness"
   },
   "pausedWorkout": {
-    "inProgress": "Você tem um treino em andamento!",
-    "routineLabel": "Rotina",
-    "programLabel": "Programa",
-    "loggedOn": "Registrado em",
-    "pausedAt": "Pausado às",
-    "defaultRoutineName": "Nova sessão",
-    "fallbackRoutineName": "seu treino",
-    "adHocWorkout": "Treino Avulso",
-    "resumeButton": "RETOMAR TREINO",
-    "detailsButton": "DETALHES",
-    "discardButton": "DESCARTAR",
-    "discardPromptTitle": "Descartar Treino Pausado?",
-    "discardPromptMessage": "Tem certeza de que deseja descartar esta sessão de treino pausada? Esta ação não pode ser desfeita.",
-    "summaryTitle": "Pausado: {{routineName}}",
-    "summaryMessage": "Você executou {{exercisesDone}} de {{exercisesAvailable}} exercícios, com {{setsDone}} série(s) registrada(s){{targetSetsInfo}}. Tempo decorrido: {{timeElapsed}}. Retome o treino para continuar.",
-    "noPausedWorkoutFound": "Nenhum treino pausado encontrado para retomar",
-    "sessionDiscarded": "Sessão de treino pausada descartada."
-  },
+      "inProgress": "Você tem um treino em andamento!",
+      "routineLabel": "Rotina",
+      "programLabel": "Programa",
+      "loggedOn": "Registrado em",
+      "pausedAt": "Pausado às",
+      "defaultRoutineName": "Nova sessão",
+      "fallbackRoutineName": "seu treino",
+      "adHocWorkout": "Treino Ad-hoc",
+      "resumeButton": "RETOMAR TREINO",
+      "detailsButton": "DETALHES",
+      "discardButton": "DESCARTAR",
+      "DISCARDTITLE": "Descartar treino pausado?",
+      "discardMessage": "Tem certeza de que deseja descartar esta sessão de treino pausada? Esta ação não pode ser desfeita.",
+      "summaryTitle": "Pausado: {{routineName}}",
+      "summaryMessage": "Você executou {{exercisesDone}} de {{exercisesAvailable}} exercícios, com {{setsDone}} série(s) registrada(s){{targetSetsInfo}}. Tempo decorrido: {{timeElapsed}}. Retome o treino para continuar.",
+      "noPausedWorkoutFound": "Nenhum treino pausado encontrado para retomar",
+      "sessionDiscarded": "Sessão de treino pausada descartada.",
+      "status": "Seu treino está em pausa"
+    },
   "quickActions": {
     "startNewSessionTitle": "Iniciar uma nova sessão",
     "startNewSessionDescription": "Inicie uma sessão totalmente nova e aprimore-a enquanto treina",
@@ -2231,5 +2232,13 @@
       "detailed": "GERAR TREINO PERSONALIZADO",
       "quick": "SURPREENDA-ME!"
     }
-  }
+  },
+  "metrics": {
+      "rest": "Descanso",
+      "weight": "Peso",
+      "tempo": "Tempo",
+      "duration": "Duração",
+      "distance": "Distância",
+      "reps": "Repetições"
+    }
 }

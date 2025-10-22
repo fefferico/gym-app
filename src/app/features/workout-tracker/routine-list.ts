@@ -33,6 +33,7 @@ import { WorkoutGenerationOptions, WorkoutGeneratorService } from '../../core/se
 import { FabAction, FabMenuComponent } from '../../shared/components/fab-menu/fab-menu.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ColorsService } from '../../core/services/colors.service';
+import { BumpClickDirective } from '../../shared/directives/bump-click.directive';
 
 @Component({
   selector: 'app-routine-list',
@@ -41,7 +42,8 @@ import { ColorsService } from '../../core/services/colors.service';
     GenerateWorkoutModalComponent,
     GeneratedWorkoutSummaryComponent,
     FabMenuComponent,
-    TranslateModule
+    TranslateModule,
+    BumpClickDirective
   ],
   templateUrl: './routine-list.html',
   styleUrl: './routine-list.scss',

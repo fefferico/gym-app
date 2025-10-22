@@ -1493,7 +1493,7 @@ export class WorkoutService {
 
     // --- Step 1: Ask WHICH field to add ---
     const buttons: AlertButton[] = availableMetrics.map(field => ({
-      text: field.charAt(0).toUpperCase() + field.slice(1),
+      text: this.translate.instant('metrics.'+field),
       role: 'add', data: field,
       icon: field
     }));
@@ -1511,9 +1511,10 @@ export class WorkoutService {
     }
 
     const fieldToAdd = choice.data as string;
+    const translatedFieldToAdd = this.translate.instant('metrics.'+fieldToAdd);
 
     // --- Step 2: Ask for the VALUE of the chosen field ---
-    let inputLabel = `${this.translate.instant('workoutBuilder.prompts.setTarget.title', { field: fieldToAdd })}`;
+    let inputLabel = this.translate.instant('workoutBuilder.prompts.setTarget.title', { field: translatedFieldToAdd });
     let placeholderValue: number | string = 0;
 
     switch (fieldToAdd) {
@@ -1543,12 +1544,12 @@ export class WorkoutService {
 
     const correctAttribute = fieldToAdd !== METRIC.tempo ? { min: '0', step: 'any' } : {};
     const valueResult = await this.alertService.showPromptDialog(
-      this.translate.instant('workoutBuilder.prompts.setTarget.title', { field: fieldToAdd.charAt(0).toUpperCase() + fieldToAdd.slice(1) }),
+      this.translate.instant('workoutBuilder.prompts.setTarget.title', { field: translatedFieldToAdd }),
       this.translate.instant('workoutBuilder.prompts.setTarget.message', { setNumber: setIndex + 1 }),
       [{
         name: 'targetValue',
         type: fieldToAdd === METRIC.tempo ? 'text' : 'number',
-        label: inputLabel,
+        label: this.translate.instant('metrics.'+fieldToAdd),
         value: placeholderValue,
         attributes: correctAttribute
       }] as AlertInput[],
@@ -1564,7 +1565,7 @@ export class WorkoutService {
     // --- Step 3: Call the private method to apply the change ---
     const updatedRoutine = this.addFieldToSet(routine, exIndex, setIndex, fieldToAdd, targetValue);
 
-    this.toastService.success(`'${fieldToAdd.toUpperCase()}' field added to Set #${setIndex + 1}.`);
+    // this.toastService.success(`'${fieldToAdd.toUpperCase()}' field added to Set #${setIndex + 1}.`);
     return updatedRoutine;
   }
 
@@ -1587,20 +1588,40 @@ export class WorkoutService {
     return { visible, hidden };
   }
 
-  public async promptRemoveField(routine: Routine, exIndex: number, setIndex: number): Promise<Routine | null> {
+  public async promptRemoveField(routine: Routine, exIndex: number, setIndex: number, isPlayer: boolean = false): Promise<Routine | null> {
     const cols = this.getVisibleSetColumns(routine, exIndex, setIndex);
-    const removableFields = Object.keys(cols).filter(key => cols[key as keyof typeof cols]);
+    let removableFields = Object.keys(cols).filter(key => cols[key as keyof typeof cols]);
+
+    const appSettings = this.appSettingsService.getSettings();
+
+    // If the call is coming from the workout player, filter out the 'rest' metric
+    // If in the player and True GYM mode is on, filter the available metrics
+    if (isPlayer){
+      removableFields = removableFields.filter(field => field !== METRIC.rest);
+    }
+    if (appSettings.enableTrueGymMode) {
+      // We need the base exercise to determine if it's cardio
+      const baseExercise = await firstValueFrom(this.exerciseService.getExerciseById(routine.exercises[exIndex].exerciseId));
+      const isCardio = baseExercise?.category === 'cardio';
+
+      const allowedFields = isCardio
+        ? [METRIC.duration] // Rest is handled by its own modal now
+        : [METRIC.weight, METRIC.reps];
+
+      removableFields = removableFields.filter(field => allowedFields.includes(field as METRIC));
+    }
 
     if (removableFields.length === 0) {
       this.toastService.info("No fields can be removed from this set.");
       return routine;
     };
+    
 
     const buttons: AlertButton[] = removableFields.map(field => ({
       text: field.charAt(0).toUpperCase() + field.slice(1),
       role: 'remove',
       data: field,
-      icon: field === METRIC.duration ? 'duration' : field,
+      icon: field,
       cssClass: 'bg-red-500 hover:bg-red-600'
     }));
 

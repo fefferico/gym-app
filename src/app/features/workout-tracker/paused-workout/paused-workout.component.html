@@ -5,29 +5,29 @@
 
   <div class="banner-content-wrapper flex items-center justify-between gap-4 p-2 px-4">
 
-    <!-- Information section (no changes here) -->
-    <div class="flex items-center gap-3 min-w-0 text-white">
+    <!-- Information section -->
+    <div class="flex items-center gap-3 min-w-1 text-white">
       <app-icon name="pause" class="h-6 w-6 flex-shrink-0"></app-icon>
       <div class="min-w-0">
         <p class="text-sm font-semibold truncate text-white">
           {{ pausedRoutineName() }}
         </p>
         <p class="text-xs opacity-80 text-white">
-          Your workout is paused
+          {{ 'pausedWorkout.status' | translate }}
         </p>
       </div>
     </div>
 
-    <!-- Actions section (no changes here) -->
+    <!-- Actions section -->
     <div class="flex items-center gap-2 flex-shrink-0">
       <button appPress (shortPress)="resumeWorkout()"
         class="flex items-center gap-1.5 px-3 py-1 bg-white/20 hover:bg-white/30 rounded-md transition">
         <app-icon name="play" class="h-5 w-5 text-white"></app-icon>
-        <span class="text-sm font-bold text-white">RESUME</span>
+        <!-- <span class="text-sm font-bold text-white">{{ 'pausedWorkout.resumeButton' | translate }}</span> -->
       </button>
 
       <button appPress (shortPress)="discardWorkout()" class="p-2 hover:bg-white/20 rounded-full transition"
-        title="Discard Paused Workout">
+        [title]="'pausedWorkout.discardTooltip' | translate">
         <app-icon name="trash" class="h-5 w-5 text-white"></app-icon>
       </button>
     </div>

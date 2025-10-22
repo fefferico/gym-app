@@ -65,24 +65,25 @@
     "defaultName": "Энтузиаст Фитнеса"
   },
   "pausedWorkout": {
-    "inProgress": "У вас есть незаконченная тренировка!",
-    "routineLabel": "Программа",
-    "programLabel": "План",
-    "loggedOn": "Начата",
-    "pausedAt": "Приостановлена в",
-    "defaultRoutineName": "Новая сессия",
-    "fallbackRoutineName": "ваша тренировка",
-    "adHocWorkout": "Разовая Тренировка",
-    "resumeButton": "ВОЗОБНОВИТЬ ТРЕНИРОВКУ",
-    "detailsButton": "ДЕТАЛИ",
-    "discardButton": "ЗАВЕРШИТЬ",
-    "discardPromptTitle": "Завершить Приостановленную Тренировку?",
-    "discardPromptMessage": "Вы уверены, что хотите завершить эту приостановленную тренировку? Это действие необратимо.",
-    "summaryTitle": "Пауза: {{routineName}}",
-    "summaryMessage": "Вы выполнили {{exercisesDone}} из {{exercisesAvailable}} упражнений, записано {{setsDone}} подходов{{targetSetsInfo}}. Прошло времени: {{timeElapsed}}. Возобновите тренировку, чтобы продолжить.",
-    "noPausedWorkoutFound": "Приостановленная тренировка не найдена",
-    "sessionDiscarded": "Приостановленная тренировка завершена."
-  },
+      "inProgress": "У вас есть незавершенная тренировка!",
+      "routineLabel": "Программа",
+      "programLabel": "План",
+      "loggedOn": "Записано",
+      "pausedAt": "Приостановлено в",
+      "defaultRoutineName": "Новая сессия",
+      "fallbackRoutineName": "ваша тренировка",
+      "adHocWorkout": "Специальная тренировка",
+      "resumeButton": "ПРОДОЛЖИТЬ ТРЕНИРОВКУ",
+      "detailsButton": "ДЕТАЛИ",
+      "discardButton": "ОТМЕНИТЬ",
+      "DISCARDTITLE": "Отменить приостановленную тренировку?",
+      "discardMessage": "Вы уверены, что хотите отменить эту приостановленную тренировку? Это действие нельзя отменить.",
+      "summaryTitle": "Приостановлено: {{routineName}}",
+      "summaryMessage": "Вы выполнили {{exercisesDone}} из {{exercisesAvailable}} упражнений, записав {{setsDone}} подход(а/ов){{targetSetsInfo}}. Прошедшее время: {{timeElapsed}}. Возобновите тренировку, чтобы продолжить.",
+      "noPausedWorkoutFound": "Приостановленная тренировка для возобновления не найдена",
+      "sessionDiscarded": "Приостановленная тренировка отменена.",
+      "status": "Ваша тренировка приостановлена"
+    },
   "quickActions": {
     "startNewSessionTitle": "Начать новую сессию",
     "startNewSessionDescription": "Начните совершенно новую тренировку и корректируйте ее по ходу",
@@ -2222,5 +2223,13 @@
       "detailed": "СОЗДАТЬ ИНДИВИДУАЛЬНУЮ ТРЕНИРОВКУ",
       "quick": "УДИВИ МЕНЯ!"
     }
-  }
+  },
+   "metrics": {
+      "rest": "Отдых (Otdykh)",
+      "weight": "Вес (Ves)",
+      "tempo": "Темп (Temp)",
+      "duration": "Длительность (Dlitel'nost')",
+      "distance": "Расстояние (Rasstoyaniye)",
+      "reps": "Повторения (Povtoreniya)"
+    }
 }

@@ -65,24 +65,25 @@
     "defaultName": "フィットネス愛好家"
   },
   "pausedWorkout": {
-    "inProgress": "進行中のワークアウトがあります！",
-    "routineLabel": "ルーティン",
-    "programLabel": "プログラム",
-    "loggedOn": "記録日",
-    "pausedAt": "一時停止",
-    "defaultRoutineName": "新しいセッション",
-    "fallbackRoutineName": "あなたのワークアウト",
-    "adHocWorkout": "アドホックワークアウト",
-    "resumeButton": "ワークアウトを再開",
-    "detailsButton": "詳細",
-    "discardButton": "破棄",
-    "discardPromptTitle": "一時停止中のワークアウトを破棄しますか？",
-    "discardPromptMessage": "この一時停止中のワークアウトセッションを破棄してもよろしいですか？この操作は元に戻せません。",
-    "summaryTitle": "一時停止中: {{routineName}}",
-    "summaryMessage": "全{{exercisesAvailable}}種目中{{exercisesDone}}種目を実行し、{{setsDone}}セットを記録しました{{targetSetsInfo}}。経過時間: {{timeElapsed}}。ワークアウトを再開して続行してください。",
-    "noPausedWorkoutFound": "再開できる一時停止中のワークアウトはありません",
-    "sessionDiscarded": "一時停止中のワークアウトセッションが破棄されました。"
-  },
+      "inProgress": "進行中のワークアウトがあります！",
+      "routineLabel": "ルーチン",
+      "programLabel": "プログラム",
+      "loggedOn": "記録日",
+      "pausedAt": "一時停止",
+      "defaultRoutineName": "新しいセッション",
+      "fallbackRoutineName": "あなたのワークアウト",
+      "adHocWorkout": "アドホックワークアウト",
+      "resumeButton": "ワークアウトを再開",
+      "detailsButton": "詳細",
+      "discardButton": "破棄",
+      "DISCARDTITLE": "一時停止中のワークアウトを破棄しますか？",
+      "discardMessage": "この一時停止中のワークアウトセッションを破棄してもよろしいですか？この操作は元に戻せません。",
+      "summaryTitle": "一時停止中: {{routineName}}",
+      "summaryMessage": "{{exercisesAvailable}} 個の演習のうち {{exercisesDone}} 個を実行し、{{setsDone}} セットを記録しました{{targetSetsInfo}}。経過時間: {{timeElapsed}}。ワークアウトを再開して続行してください。",
+      "noPausedWorkoutFound": "再開する一時停止中のワークアウトが見つかりません",
+      "sessionDiscarded": "一時停止中のワークアウトセッションが破棄されました。",
+      "status": "ワークアウトは一時停止中です"
+    },
   "quickActions": {
     "startNewSessionTitle": "新しいセッションを開始",
     "startNewSessionDescription": "新しいセッションを開始し、実行しながら内容を調整します",
@@ -2230,5 +2231,13 @@
       "detailed": "カスタムトレーニングを生成",
       "quick": "おまかせ！"
     }
-  }
+  },
+   "metrics": {
+      "rest": "休憩 (Kyūkei)",
+      "weight": "重量 (Jūryō)",
+      "tempo": "テンポ (Tenpo)",
+      "duration": "期間 (Kikan)",
+      "distance": "距離 (Kyori)",
+      "reps": "回数 (Kaisū)"
+    }
 }

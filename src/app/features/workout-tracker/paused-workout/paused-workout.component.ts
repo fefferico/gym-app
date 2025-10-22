@@ -6,11 +6,12 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { WorkoutService } from '../../../core/services/workout.service';
 import { AlertService } from '../../../core/services/alert.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-paused-workout',
   standalone: true,
-  imports: [CommonModule, IconComponent, PressDirective],
+  imports: [CommonModule, IconComponent, PressDirective, TranslateModule],
   templateUrl: './paused-workout.component.html',
   styleUrls: ['./paused-workout.component.scss']
 })
@@ -18,11 +19,13 @@ export class PausedWorkoutComponent implements OnInit {
   // Make the workout service public to use its methods directly in the template
   public workoutService = inject(WorkoutService);
   private alertService = inject(AlertService);
+  protected translate = inject(TranslateService);
 
   // Signal to hold the name of the paused routine for display
-  pausedRoutineName = signal<string>('New session');
+  pausedRoutineName = signal<string>('');
 
   ngOnInit(): void {
+    this.pausedRoutineName.set(this.translate.instant('pausedWorkout.newSession'));
     // When the component loads, check for a paused session and get its name
     this.getPausedRoutineInfo();
   }
@@ -47,7 +50,7 @@ export class PausedWorkoutComponent implements OnInit {
    */
   resumeWorkout(): void {
     // We can pass any routineId; the service will detect the paused session and override it.
-    this.workoutService.navigateToPlayer('', {forceNavigation: true});
+    this.workoutService.navigateToPlayer('', { forceNavigation: true });
   }
 
   /**
@@ -55,9 +58,9 @@ export class PausedWorkoutComponent implements OnInit {
    */
   async discardWorkout(): Promise<void> {
     const confirmation = await this.alertService.showConfirm(
-      'Discard Workout?',
-      'Are you sure you want to discard your paused workout progress? This cannot be undone.',
-      'Discard'
+      this.translate.instant('pausedWorkout.discardTitle'),
+      this.translate.instant('pausedWorkout.discardMessage'),
+      this.translate.instant('pausedWorkout.discardButton')
     );
 
     if (confirmation && confirmation.data) {

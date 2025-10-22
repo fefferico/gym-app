@@ -65,24 +65,25 @@
     "defaultName": "Entusiasta del Fitness"
   },
   "pausedWorkout": {
-    "inProgress": "¡Tienes un entrenamiento en curso!",
-    "routineLabel": "Rutina",
-    "programLabel": "Programa",
-    "loggedOn": "Iniciado el",
-    "pausedAt": "Pausado a las",
-    "defaultRoutineName": "Nueva sesión",
-    "fallbackRoutineName": "tu entrenamiento",
-    "adHocWorkout": "Entrenamiento Espontáneo",
-    "resumeButton": "REANUDAR ENTRENAMIENTO",
-    "detailsButton": "DETALLES",
-    "discardButton": "DESCARTAR",
-    "discardPromptTitle": "¿Descartar Entrenamiento Pausado?",
-    "discardPromptMessage": "¿Estás seguro de que quieres descartar esta sesión de entrenamiento pausada? Esta acción no se puede deshacer.",
-    "summaryTitle": "Pausado: {{routineName}}",
-    "summaryMessage": "Has ejecutado {{exercisesDone}} de {{exercisesAvailable}} ejercicios, con {{setsDone}} serie(s) registrada(s){{targetSetsInfo}}. Tiempo transcurrido: {{timeElapsed}}. Reanuda el entrenamiento para continuar.",
-    "noPausedWorkoutFound": "No se encontró ningún entrenamiento pausado para reanudar",
-    "sessionDiscarded": "Sesión de entrenamiento pausada descartada."
-  },
+      "inProgress": "¡Tienes un entrenamiento en progreso!",
+      "routineLabel": "Rutina",
+      "programLabel": "Programa",
+      "loggedOn": "Registrado el",
+      "pausedAt": "Pausado a las",
+      "defaultRoutineName": "Nueva sesión",
+      "fallbackRoutineName": "tu entrenamiento",
+      "adHocWorkout": "Entrenamiento Ad-hoc",
+      "resumeButton": "REANUDAR ENTRENAMIENTO",
+      "detailsButton": "DETALLES",
+      "discardButton": "DESCARTAR",
+      "DISCARDTITLE": "¿Descartar entrenamiento en pausa?",
+      "discardMessage": "¿Estás seguro de que quieres descartar esta sesión de entrenamiento en pausa? Esta acción no se puede deshacer.",
+      "summaryTitle": "Pausado: {{routineName}}",
+      "summaryMessage": "Has ejecutado {{exercisesDone}} de {{exercisesAvailable}} ejercicios, con {{setsDone}} serie(s) registrada(s){{targetSetsInfo}}. Tiempo transcurrido: {{timeElapsed}}. Reanuda el entrenamiento para continuar.",
+      "noPausedWorkoutFound": "No se encontró ningún entrenamiento en pausa para reanudar",
+      "sessionDiscarded": "Sesión de entrenamiento en pausa descartada.",
+      "status": "Tu entrenamiento está en pausa"
+    },
   "quickActions": {
     "startNewSessionTitle": "Iniciar una nueva sesión",
     "startNewSessionDescription": "Comienza una sesión nueva y ajústala sobre la marcha",
@@ -2220,5 +2221,13 @@
       "detailed": "GENERAR ENTRENAMIENTO PERSONALIZADO",
       "quick": "¡SORPRÉNDEME!"
     }
-  }
+  },
+  "metrics": {
+      "rest": "Descanso",
+      "weight": "Peso",
+      "tempo": "Tempo",
+      "duration": "Duración",
+      "distance": "Distancia",
+      "reps": "Repeticiones"
+    }
 }

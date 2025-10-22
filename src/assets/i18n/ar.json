@@ -65,23 +65,24 @@
         "defaultName": "محب اللياقة"
     },
     "pausedWorkout": {
-        "inProgress": "لديك تمرين قيد التقدم!",
-        "routineLabel": "روتين",
-        "programLabel": "برنامج",
-        "loggedOn": "تم التسجيل في",
-        "pausedAt": "توقف مؤقتًا في",
-        "defaultRoutineName": "جلسة جديدة",
-        "fallbackRoutineName": "تمرينك",
-        "adHocWorkout": "تمرين فوري",
-        "resumeButton": "استئناف التمرين",
-        "detailsButton": "التفاصيل",
-        "discardButton": "تجاهل",
-        "discardPromptTitle": "هل تريد تجاهل التمرين المتوقف مؤقتًا؟",
-        "discardPromptMessage": "هل أنت متأكد من أنك تريد تجاهل جلسة التمرين المتوقفة مؤقتًا؟ لا يمكن التراجع عن هذا الإجراء.",
-        "summaryTitle": "متوقف مؤقتًا: {{routineName}}",
-        "summaryMessage": "لقد نفذت {{exercisesDone}} من {{exercisesAvailable}} تمرينًا، مع تسجيل {{setsDone}} مجموعة (مجموعات){{targetSetsInfo}}. الوقت المنقضي: {{timeElapsed}}. استأنف التمرين لمواصلته.",
-        "noPausedWorkoutFound": "لم يتم العثور على تمرين متوقف مؤقتًا لاستئنافه",
-        "sessionDiscarded": "تم تجاهل جلسة التمرين المتوقفة مؤقتًا."
+      "inProgress": "لديك تمرين قيد التقدم!",
+      "routineLabel": "روتين",
+      "programLabel": "برنامج",
+      "loggedOn": "سُجل في",
+      "pausedAt": "متوقف مؤقتًا عند",
+      "defaultRoutineName": "جلسة جديدة",
+      "fallbackRoutineName": "تمرينك",
+      "adHocWorkout": "تمرين مخصص",
+      "resumeButton": "استئناف التمرين",
+      "detailsButton": "التفاصيل",
+      "discardButton": "تجاهل",
+      "DISCARDTITLE": "هل تريد تجاهل التمرين المتوقف مؤقتًا؟",
+      "discardMessage": "هل أنت متأكد من رغبتك في تجاهل جلسة التمرين المتوقفة مؤقتًا؟ لا يمكن التراجع عن هذا الإجراء.",
+      "summaryTitle": "متوقف مؤقتًا: {{routineName}}",
+      "summaryMessage": "لقد نفذت {{exercisesDone}} من {{exercisesAvailable}} تمارين، مع تسجيل {{setsDone}} مجموعة (مجموعات){{targetSetsInfo}}. الوقت المنقضي: {{timeElapsed}}. استأنف التمرين لمواصلته.",
+      "noPausedWorkoutFound": "لم يتم العثور على تمرين متوقف مؤقتًا لاستئنافه",
+      "sessionDiscarded": "تم تجاهل جلسة التمرين المتوقفة مؤقتًا.",
+      "status": "تمرينك متوقف مؤقتًا"
     },
     "quickActions": {
         "startNewSessionTitle": "بدء جلسة جديدة",
@@ -2231,5 +2232,13 @@
       "detailed": "إنشاء تمرين مخصص",
       "quick": "فاجئني!"
     }
-  }
+  },
+  "metrics": {
+      "rest": "راحة (Raha)",
+      "weight": "وزن (Wazn)",
+      "tempo": "إيقاع (Iqa)",
+      "duration": "مدة (Muddah)",
+      "distance": "مسافة (Masafa)",
+      "reps": "تكرارات (Tikrarat)"
+    }
 }
