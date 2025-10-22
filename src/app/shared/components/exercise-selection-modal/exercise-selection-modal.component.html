@@ -16,7 +16,7 @@
         </div>
 
         <!-- Filter and Sort Accordion Section -->
-        <div class="px-4 pt-4 flex-shrink-0">
+        <div class="px-4 pt-2 flex-shrink-0">
             <div class="flex justify-between items-center">
                 <h4 class="font-semibold text-gray-700 dark:text-gray-200">{{ 'exerciseSelectionModal.filtersTitle' |
                     translate }}</h4>
@@ -108,13 +108,13 @@
                 <ng-container *ngFor="let item of processedExercises(); let odd = odd">
                     <!-- Case 1: Item is an Alphabetical Header -->
                     <div *ngIf="!isExercise(item)"
-                        class="py-2 px-3 sticky top-0 bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-200 font-bold text-lg z-10 rounded-md">
+                        class="py-2 px-3 sticky top-0 bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-200 font-bold text-lg z-10">
                         {{ item.label }}
                     </div>
 
                     <!-- Case 2: Item is an Exercise (Unchanged) -->
-                    <li *ngIf="isExercise(item)" (click)="onExerciseClicked(item)"
-                        class="p-3 rounded-md cursor-pointer transition-colors duration-150 ease-in-out flex justify-between items-center"
+                    <li appBumpClick *ngIf="isExercise(item)" (click)="onExerciseClicked(item)"
+                        class="p-3 mx-1 rounded-md cursor-pointer transition-colors duration-150 ease-in-out flex justify-between items-center"
                         [ngClass]="{
                             'selected-item': isSelected(item),
                             'bg-gray-200 dark:bg-gray-600': odd && !isSelected(item),
@@ -164,7 +164,8 @@
                 </li>
             </ul>
         </div>
-        <div *ngIf="showCreateCustomLink()" class="p-3 border-t border-gray-200 dark:border-gray-600 text-center flex-shrink-0">
+        <div *ngIf="showCreateCustomLink()" class="px-4 border-t border-gray-200 dark:border-gray-600 text-center flex-shrink-0">
+            <p class="text-gray-500 dark:text-gray-400">Otherwise....</p>
             <button type="button" (click)="onCreateCustom()"
                 class="inline-flex w-full justify-center items-center rounded-md px-4 py-2 text-lg font-semibold text-white shadow-sm sm:w-auto bg-green-500 hover:bg-green-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-focus disabled:opacity-50 disabled:cursor-not-allowed">
                 {{ 'exerciseSelectionModal.createCustom' | translate }}
@@ -173,13 +174,13 @@
 
         <!-- Footer -->
         <div
-            class="bg-gray-50 dark:bg-gray-800 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 flex-shrink-0 justify-center gap-2">
+            class="bg-gray-50 dark:bg-gray-800 px-4 pb-3 sm:flex sm:flex-row-reverse sm:px-6 flex-shrink-0 justify-center gap-2">
             <!-- NEW: Primary Action for Multi-Select -->
             <button *ngIf="isMultiSelect()" type="button" (click)="confirmSelection()"
                 [disabled]="selectionCount() === 0" class="inline-flex w-full justify-center items-center rounded-md px-4 py-2 text-xl font-semibold text-white shadow-sm sm:w-auto
                    bg-primary hover:bg-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-focus
                    disabled:opacity-50 disabled:cursor-not-allowed">
-                <app-icon name="plus-circle" class="w-6 h-6 mr-2"></app-icon>
+                <app-icon name="done" class="w-6 h-6 mr-2"></app-icon>
                 {{ 'exerciseSelectionModal.addSelected' | translate }} {{ selectionCount() > 0 ? '(' + selectionCount()
                 + ')' : '' }}
             </button>

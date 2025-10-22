@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { BehaviorSubject, forkJoin, Observable, of, throwError } from 'rxjs';
 import { catchError, map, shareReplay, take, tap, finalize, filter } from 'rxjs/operators'; // Added finalize
 import { Exercise } from '../models/exercise.model';
 import { StorageService } from './storage.service';
@@ -822,6 +822,34 @@ export class ExerciseService {
         };
       })
     );
+  }
+
+   /**
+   * --- NEW METHOD TO BE ADDED ---
+   * Translates the names of all exercises in a given list by calling
+   * getTranslatedExercise for each and waiting for all to complete.
+   *
+   * @param exercises The array of Exercise objects to translate.
+   * @returns An Observable that emits an array of translated Exercise objects.
+   */
+  public getTranslatedExerciseList(exercises: Exercise[]): Observable<Exercise[]> {
+    // If the input array is null or empty, there's nothing to do.
+    // Return an observable that immediately emits an empty array.
+    if (!exercises || exercises.length === 0) {
+      return of([]);
+    }
+
+    // Create an array of observables. Each observable in the array is a call
+    // to translate a single exercise from the input list.
+    const translationObservables = exercises.map(exercise =>
+      this.getTranslatedExercise(exercise)
+    );
+
+    // Use forkJoin to execute all the translation observables in parallel.
+    // forkJoin will wait until every observable in the array has emitted a value
+    // and completed. It will then emit a single value: an array containing the
+    // results (the translated exercises) from each of the inner observables.
+    return forkJoin(translationObservables);
   }
 
 }

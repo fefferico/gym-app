@@ -75,7 +75,7 @@
               <div #colorFilterContainer class="lg:col-span-1 relative">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
                   'historyList.filters.cardColor' | translate }}</label>
-                <button (click)="toggleColorFilterDropdown()" [disabled]="uniqueHistoryColors().length === 0"
+                <button appBumpClick (click)="toggleColorFilterDropdown()" [disabled]="uniqueHistoryColors().length === 0"
                   class="relative w-full cursor-pointer rounded-md bg-white dark:bg-gray-700 py-2 pl-3 pr-10 text-left border border-gray-300 dark:border-gray-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-100">
 
                   <!-- Display selected color -->
@@ -137,12 +137,13 @@
 
               <!-- WORKOUT LOG CARD -->
               <div *ngIf="item.itemType === 'workout'"
-                class="rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-yellow-200 dark:hover:bg-gray-600"
+                class="rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-yellow-200 dark:hover:bg-gray-600"
                 [ngClass]="{
                   'border-2 border-l-4 dark:border-l-4 border-primary border-b-0 border-r-0 rounded-lg': !item.cardColor,
                   '': !!item.cardColor,
                 }" [style.zIndex]="areActionsVisible(item.id) ? 50 : 'auto'">
                 <div class="p-4 sm:p-6 cursor-pointer border dark:border-none rounded-md"
+                  appBumpClick
                   (click)="toggleActions(item.id, $event)" [ngClass]="{
                     'bg-white dark:bg-gray-700 border-primary text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-yellow-200 dark:hover:bg-gray-600': !item.cardColor,
                     'text-white border-transparent': !!item.cardColor
@@ -194,7 +195,7 @@
                 <!-- Action Menu for Workouts -->
                 <div class="absolute top-2 right-2 z-50">
                   <div class="relative">
-                    <button (click)="toggleActions(item.id, $event)"
+                    <button appBumpClick (click)="toggleActions(item.id, $event)"
                       class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center"
                       [ngClass]="{ 
                                         'bg-white dark:bg-gray-700': !item.cardColor,
@@ -220,9 +221,9 @@
 
               <!-- ACTIVITY LOG CARD -->
               <div *ngIf="item.itemType === 'activity'"
-                class="bg-white dark:bg-gray-700 border-2 border-l-4 dark:border-l-4 border-teal-400 border-b-0 border-r-0 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1  text-teal-600 dark:text-teal-400 dark:hover:text-yellow-200"
+                class="bg-white dark:bg-gray-700 border-2 border-l-4 dark:border-l-4 border-teal-400 border-b-0 border-r-0 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group  text-teal-600 dark:text-teal-400 dark:hover:text-yellow-200"
                 [style.zIndex]="areActionsVisible(item.id) ? 50 : 'auto'">
-                <div class="p-4 sm:p-6 cursor-pointer" (click)="toggleActions(item.id, $event)">
+                <div appBumpClick class="p-4 sm:p-6 cursor-pointer" (click)="toggleActions(item.id, $event)">
                   <div class="flex justify-between items-start mb-1.5">
                     <h2 class="text-lg sm:text-xl font-semibold truncate pr-8" [title]="item.activityName">
                       {{ item.activityName }}
@@ -257,7 +258,7 @@
                 <!-- Action Menu for Acitities -->
                 <div class="absolute top-2 right-2 z-50">
                   <div class="relative">
-                    <button (click)="toggleActions(item.id, $event)"
+                    <button appBumpClick (click)="toggleActions(item.id, $event)"
                       class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
                       <app-icon name="menu-action" class="h-10 w-10"></app-icon>
                     </button>
@@ -359,7 +360,7 @@
           date:'fullDate' }}<span *ngIf="pastLoggedWorkoutsDay?.isToday"
             class="text-xs text-primary dark:text-primary-light ml-2">{{ 'historyList.calendar.today' | translate
             }}</span></h3>
-        <button (click)="toggleShowPastLoggedWorkouts()"
+        <button appBumpClick (click)="toggleShowPastLoggedWorkouts()"
           class="p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"><svg
             xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
             <path
@@ -405,7 +406,7 @@
               </p>
             </div>
             <div class="flex items-center">
-              <button (click)="viewLogDetails(item.id)"
+              <button appBumpClick (click)="viewLogDetails(item.id)"
                 class="flex justify-center items-center w-full sm:w-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                 <app-icon name="eye" class="w-6 h-6 mr-1"></app-icon>
                 {{ 'historyList.card.details' | translate }}
@@ -427,7 +428,7 @@
             </div>
 
             <div class="flex flex-col items-center">
-              <button (click)="viewActivityLogDetails(item.id)"
+              <button appBumpClick (click)="viewActivityLogDetails(item.id)"
                 class="flex justify-center items-center w-full sm:w-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                 <app-icon name="eye" class="w-6 h-6 mr-1"></app-icon>
                 {{ 'historyList.card.details' | translate }}

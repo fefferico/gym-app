@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectorRef, PLATFORM_ID, ViewChildren, QueryList, ElementRef, effect, ViewChild, afterNextRender, Injector, runInInjectionContext } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription, timer, of, lastValueFrom, firstValueFrom, combineLatest } from 'rxjs';
+import { Subscription, timer, of, lastValueFrom, firstValueFrom, combineLatest, forkJoin, Observable } from 'rxjs';
 import { switchMap, take, map } from 'rxjs/operators';
 import {
   Routine,
@@ -402,6 +402,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           this.scheduledDay.set(ids.scheduledDayId);
         }
         return this.routineId ? this.workoutService.getRoutineById(this.routineId) : of(null);
+      }),
+      switchMap(routine => {
+        if (!routine) return of(null); // Pass nulls through
+        return this.translateRoutineExercises$(routine); // Return the translation observable
       })
     ).subscribe(async (routine) => {
       if (this.isDestroyed) { return; }
@@ -1131,18 +1135,67 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  addWarmupSet(exIndex: number) {
+  async addWarmupSet(exIndex: number) {
     const routine = this.routine();
     if (!routine) return;
-    const exercise = routine.exercises[exIndex];
-    const firstSet = exercise.sets[0];
-    const newWarmupSet: ExerciseTargetSetParams = {
-      id: uuidv4(), targetReps: 12, targetWeight: firstSet?.targetWeight ? parseFloat((firstSet.targetWeight / 2).toFixed(1)) : 0,
-      targetRest: 30, type: 'warmup'
-    };
-    exercise.sets.unshift(newWarmupSet);
+    const exerciseToUpdate = routine.exercises[exIndex];
+    const firstSet = exerciseToUpdate.sets[0];
 
-    this.routine.set({ ...routine });
+    const exBased = await firstValueFrom(this.exerciseService.getExerciseById(exerciseToUpdate.exerciseId));
+    const isCardio = exBased?.category === 'cardio';
+    let warmpUpExerciseMetrics: Partial<ExerciseTargetSetParams>;
+
+    if (!isCardio) {
+      warmpUpExerciseMetrics = {
+        fieldOrder: [METRIC.weight, METRIC.reps, METRIC.rest],
+        targetReps: 12,
+        targetWeight: firstSet?.targetWeight ? parseFloat((firstSet.targetWeight / 2).toFixed(1)) : 0,
+        targetRest: 30
+      }
+    } else {
+      warmpUpExerciseMetrics = {
+        fieldOrder: [METRIC.duration, METRIC.rest],
+        targetDuration: 300,
+        targetRest: 30
+      }
+    }
+
+
+    const newWarmupSet: ExerciseTargetSetParams = {
+      id: uuidv4(),
+      type: 'warmup',
+      ...warmpUpExerciseMetrics
+    };
+
+    // --- START: IMMUTABLE UPDATE LOGIC ---
+
+    // 1. Create a new 'sets' array for the updated exercise.
+    //    The new warmup set is placed at the beginning, followed by all existing sets.
+    const newSets = [newWarmupSet, ...exerciseToUpdate.sets];
+
+    // 2. Create a new 'exercises' array. Map over the old one.
+    const newExercises = routine.exercises.map((exercise, index) => {
+      // If this is the exercise we're updating, return a new object for it
+      // containing the new 'sets' array.
+      if (index === exIndex) {
+        return {
+          ...exercise,
+          sets: newSets
+        };
+      }
+      // Otherwise, return the original, unchanged exercise object.
+      return exercise;
+    });
+
+    // 3. Update the routine signal with a new routine object that contains
+    //    the new 'exercises' array. This is a fully immutable update.
+    this.routine.update(routine => {
+      if (!routine) return routine;
+      return {
+        ...routine,
+        exercises: newExercises
+      };
+    });
 
     // this.toastService.success(`Warm-up set added to ${exercise.exerciseName}`);
     if (this.expandedExerciseIndex() !== exIndex) {
@@ -1469,11 +1522,62 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   private loadAvailableExercises(): void {
-    this.exerciseService.getExercises().pipe(take(1)).subscribe(e => {
-      this.availableExercises = e.filter(ex => !ex.isHidden)
-      this.defaultExercises = e.filter(ex => !ex.isHidden)
+    this.exerciseService.getExercises().pipe(
+      take(1),
+      // Use switchMap to chain the translation call after fetching the base list
+      switchMap(exercises => this.exerciseService.getTranslatedExerciseList(exercises))
+    ).subscribe(translatedExercises => {
+      // Now, the exercises in the list have their translated names
+      this.availableExercises = translatedExercises.filter(ex => !ex.isHidden);
+      this.defaultExercises = translatedExercises.filter(ex => !ex.isHidden);
     });
   }
+
+  /**
+   * Takes a routine and returns an Observable that emits a new routine
+   * with all exercise names translated.
+   * @param routine The routine to translate.
+   * @returns An Observable of the translated Routine.
+   */
+  private translateRoutineExercises$(routine: Routine): Observable<Routine> {
+    // If there's nothing to translate, return the original routine immediately
+    if (!routine || !routine.exercises || routine.exercises.length === 0) {
+      return of(routine);
+    }
+
+    // Create an array of Observables, each handling one exercise's translation
+    const translationObservables = routine.exercises.map(workoutEx =>
+      this.exerciseService.getExerciseById(workoutEx.exerciseId).pipe(
+        switchMap(baseExercise => {
+          // If the base exercise can't be found, proceed with the original workout exercise
+          if (!baseExercise) return of(workoutEx);
+          // Otherwise, get the translated version
+          return this.exerciseService.getTranslatedExercise(baseExercise);
+        }),
+        map((translatedBaseExercise: any) => {
+          // Return a new workout exercise object with the translated name
+          // Note: If translation failed, translatedBaseExercise will be the original, so the name remains correct
+          return {
+            ...workoutEx,
+            exerciseName: translatedBaseExercise.name
+          };
+        }),
+        take(1) // Ensure each inner observable completes
+      )
+    );
+
+    // Use forkJoin to wait for all translations to complete
+    return forkJoin(translationObservables).pipe(
+      map(translatedExercises => {
+        // Return a new routine object containing the array of translated exercises
+        return {
+          ...routine,
+          exercises: translatedExercises
+        };
+      })
+    );
+  }
+
 
   openAddExerciseModal(): void { this.isAddExerciseModalOpen.set(true); }
   closeAddExerciseModal(): void {
@@ -3647,6 +3751,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         newSet.delete(key);
       } else {
         newSet.add(key);
+        this.scrollToSet(exIndex, setIndex);
       }
       return newSet;
     });
@@ -4066,15 +4171,15 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private incrementValue(exIndex: number, setIndex: number, field: METRIC): void {
     const settings = this.appSettingsService.getSettings();
     const key = `${exIndex}-${setIndex}`;
-    
+
     // START: REFACTORED STEP LOGIC
     let step: number;
     switch (field) {
-        case METRIC.weight:   step = settings.weightStep || 1; break;
-        case METRIC.duration: step = settings.durationStep || 5; break;
-        case METRIC.rest:     step = settings.restStep || 5; break;
-        case METRIC.distance: step = settings.distanceStep || 0.1; break;
-        default:              step = 1; // Default for reps
+      case METRIC.weight: step = settings.weightStep || 1; break;
+      case METRIC.duration: step = settings.durationStep || 5; break;
+      case METRIC.rest: step = settings.restStep || 5; break;
+      case METRIC.distance: step = settings.distanceStep || 0.1; break;
+      default: step = 1; // Default for reps
     }
     // END: REFACTORED STEP LOGIC
 
@@ -4086,7 +4191,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
       const initialValueStr = this.getInitialInputValue(exIndex, setIndex, field);
       let currentNumberValue = 0;
-      
+
       const isTime = field === METRIC.duration || field === METRIC.rest;
       if (isTime) {
         currentNumberValue = this.parseTimeToSeconds(initialValueStr) || 0;
@@ -4111,15 +4216,15 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private decrementValue(exIndex: number, setIndex: number, field: METRIC): void {
     const settings = this.appSettingsService.getSettings();
     const key = `${exIndex}-${setIndex}`;
-    
+
     // START: REFACTORED STEP LOGIC
     let step: number;
     switch (field) {
-        case METRIC.weight:   step = settings.weightStep || 1; break;
-        case METRIC.duration: step = settings.durationStep || 5; break;
-        case METRIC.rest:     step = settings.restStep || 5; break;
-        case METRIC.distance: step = settings.distanceStep || 0.1; break;
-        default:              step = 1; // Default for reps
+      case METRIC.weight: step = settings.weightStep || 1; break;
+      case METRIC.duration: step = settings.durationStep || 5; break;
+      case METRIC.rest: step = settings.restStep || 5; break;
+      case METRIC.distance: step = settings.distanceStep || 0.1; break;
+      default: step = 1; // Default for reps
     }
     // END: REFACTORED STEP LOGIC
 
@@ -4133,16 +4238,16 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       const isTime = field === METRIC.duration || field === METRIC.rest;
 
       if (isTime) {
-          const timeValue = newInputs[key]!.actualDuration ?? newInputs[key]!.actualRest ?? this.parseTimeToSeconds(this.getInitialInputValue(exIndex, setIndex, field));
-          currentValue = timeValue || 0;
+        const timeValue = newInputs[key]!.actualDuration ?? newInputs[key]!.actualRest ?? this.parseTimeToSeconds(this.getInitialInputValue(exIndex, setIndex, field));
+        currentValue = timeValue || 0;
       } else {
-          switch (field) {
-            case METRIC.weight: currentValue = newInputs[key]!.actualWeight ?? (parseFloat(this.getInitialInputValue(exIndex, setIndex, METRIC.weight)) || 0); break;
-            case METRIC.reps: currentValue = newInputs[key]!.actualReps ?? (parseInt(this.getInitialInputValue(exIndex, setIndex, METRIC.reps)) || 0); break;
-            case METRIC.distance: currentValue = newInputs[key]!.actualDistance ?? (parseFloat(this.getInitialInputValue(exIndex, setIndex, METRIC.distance)) || 0); break;
-          }
+        switch (field) {
+          case METRIC.weight: currentValue = newInputs[key]!.actualWeight ?? (parseFloat(this.getInitialInputValue(exIndex, setIndex, METRIC.weight)) || 0); break;
+          case METRIC.reps: currentValue = newInputs[key]!.actualReps ?? (parseInt(this.getInitialInputValue(exIndex, setIndex, METRIC.reps)) || 0); break;
+          case METRIC.distance: currentValue = newInputs[key]!.actualDistance ?? (parseFloat(this.getInitialInputValue(exIndex, setIndex, METRIC.distance)) || 0); break;
+        }
       }
-      
+
       const newValue = Math.max(0, parseFloat((currentValue - step).toFixed(2)));
 
       switch (field) {
@@ -4290,10 +4395,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.activeRestModalContext.set(null); // Clear context on close
   }
 
-  protected isGhostFieldVisible(exIndex: number, setIndex: number, fieldOrder?: METRIC[], ): boolean {
+  protected isGhostFieldVisible(exIndex: number, setIndex: number, fieldOrder?: METRIC[],): boolean {
     const visibleFields: any = this.getFieldsForSet(exIndex, setIndex).visible;
-    const visibleFieldsLength = visibleFields && visibleFields.indexOf("rest") ? visibleFields.length - 1 : visibleFields.length; 
-    return !!(!this.isSetCompleted(exIndex,setIndex) && this.canAddField(exIndex, setIndex) && (visibleFieldsLength%2===1 || visibleFieldsLength === 1) && !this.getTrueGymMode());
+    const visibleFieldsLength = visibleFields && visibleFields.indexOf("rest") ? visibleFields.length - 1 : visibleFields.length;
+    return !!(!this.isSetCompleted(exIndex, setIndex) && this.canAddField(exIndex, setIndex) && (visibleFieldsLength % 2 === 1 || visibleFieldsLength === 1) && !this.getTrueGymMode());
     // return !!(this.isEditableMode() && !this.isSuperSet(exIndex) && fieldOrder && fieldOrder.length !== undefined && ((fieldOrder.length <= 1) || (fieldOrder.length > 2 && fieldOrder.length % 2 == 1)));
   }
 }

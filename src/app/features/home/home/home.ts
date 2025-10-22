@@ -15,12 +15,13 @@ import { PausedWorkoutState, WorkoutExercise } from '../../../core/models/workou
 import { SubscriptionService } from '../../../core/services/subscription.service';
 import { BarbellCalculatorModalComponent } from '../../../shared/components/barbell-calculator-modal/barbell-calculator-modal.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { BumpClickDirective } from '../../../shared/directives/bump-click.directive';
 
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, TodaysWorkoutComponent, IconComponent, BarbellCalculatorModalComponent, TranslateModule], // Added DatePipe
+  imports: [CommonModule, TodaysWorkoutComponent, IconComponent, BarbellCalculatorModalComponent, TranslateModule, BumpClickDirective], // Added DatePipe
   templateUrl: './home.html',
   styleUrls: ['./home.scss']
 })

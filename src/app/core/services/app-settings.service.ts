@@ -14,7 +14,7 @@ const DEFAULT_APP_SETTINGS: AppSettings = {
     weightStep: 1,
     playerMode: 'compact' as PlayerMode,
     menuMode: 'modal' as MenuMode,
-    enableTrueGymMode: false,
+    enableTrueGymMode: true,
     durationStep: 5,
     distanceStep: 0.1,
     restStep: 5,

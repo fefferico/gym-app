@@ -220,7 +220,7 @@
                         'bg-white dark:bg-gray-800': !routine.cardColor,
                         'text-white': !!routine.cardColor
                     }" [ngStyle]="{'background-color': routine.cardColor ? routine.cardColor : null}"
-                    class="rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 text-left border hover-dark-border-card hover-light-border-card"
+                    class="rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group text-left border hover-dark-border-card hover-light-border-card"
                     [style.zIndex]="areActionsVisible(routine.id) ? 50 : 'auto'">
 
                     <div class="p-3 h-full" [ngClass]="{'text-primary dark:text-primary-light': !routine.cardColor}">

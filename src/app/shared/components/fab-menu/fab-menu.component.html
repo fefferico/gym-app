@@ -31,7 +31,7 @@
         <div *ngIf="showMainButton" class="flex flex-col-reverse items-center gap-4" (mouseenter)="handleFabMouseEnter()"
             (mouseleave)="handleFabMouseLeave()">
             <!-- Main FAB Button (remains the same) -->
-            <button (click)="handleFabClick()" type="button"
+            <button appBumpClick (click)="handleFabClick()" type="button"
                 class="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl transition-all duration-300 hover:bg-primary-dark hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-focus focus:ring-offset-2 dark:ring-offset-gray-900">
                 <app-icon name="plus" class="h-8 w-8 transition-transform duration-300"
                     [class.rotate-45]="isFabActionsOpen()"></app-icon>

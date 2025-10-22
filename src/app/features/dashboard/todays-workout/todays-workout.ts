@@ -21,13 +21,14 @@ import { PremiumFeature, SubscriptionService } from '../../../core/services/subs
 import { MillisecondsDatePipe } from '../../../shared/pipes/milliseconds-date.pipe';
 import { TranslateModule } from '@ngx-translate/core';
 import { parseISO } from 'date-fns';
+import { BumpClickDirective } from '../../../shared/directives/bump-click.directive';
 
 export type SlideAnimationState = 'center' | 'exitToLeft' | 'exitToRight' | 'enterFromLeft' | 'enterFromRight';
 
 @Component({
   selector: 'app-todays-workout',
   standalone: true,
-  imports: [CommonModule, DatePipe, PressScrollDirective, TooltipDirective, IconComponent, MillisecondsDatePipe, TranslateModule],
+  imports: [CommonModule, DatePipe, PressScrollDirective, TooltipDirective, IconComponent, MillisecondsDatePipe, TranslateModule, BumpClickDirective],
   templateUrl: './todays-workout.html',
   styleUrls: ['./todays-workout.scss'],
   animations: [

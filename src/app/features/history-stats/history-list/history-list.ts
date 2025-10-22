@@ -47,6 +47,7 @@ import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language.service';
 import { ColorsService } from '../../../core/services/colors.service';
+import { BumpClickDirective } from '../../../shared/directives/bump-click.directive';
 
 
 interface CalendarMonth {
@@ -81,7 +82,7 @@ type EnrichedHistoryListItem = HistoryListItem & {
 @Component({
   selector: 'app-history-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, TitleCasePipe, FormsModule, ReactiveFormsModule, ActionMenuComponent, PressDirective, IconComponent, FabMenuComponent, TranslateModule],
+  imports: [CommonModule, DatePipe, TitleCasePipe, FormsModule, ReactiveFormsModule, ActionMenuComponent, PressDirective, IconComponent, FabMenuComponent, TranslateModule, BumpClickDirective],
   templateUrl: './history-list.html',
   styleUrl: './history-list.scss',
   providers: [DecimalPipe],

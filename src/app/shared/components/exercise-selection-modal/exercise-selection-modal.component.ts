@@ -9,6 +9,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { TrackingService } from '../../../core/services/tracking.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { BumpClickDirective } from '../../directives/bump-click.directive';
 
 // +++ NEW: Type definition for the list, which can now contain headers +++
 type ListItem = Exercise | { isHeader: true; label: string };
@@ -17,7 +18,7 @@ type ListItem = Exercise | { isHeader: true; label: string };
     selector: 'app-exercise-selection-modal',
     standalone: true,
     // +++ Added AsyncPipe for the new filter dropdowns +++
-    imports: [CommonModule, FormsModule, TitleCasePipe, DatePipe, IconComponent, AsyncPipe, TranslateModule],
+    imports: [CommonModule, FormsModule, TitleCasePipe, DatePipe, IconComponent, AsyncPipe, TranslateModule, BumpClickDirective],
     templateUrl: './exercise-selection-modal.component.html',
 })
 export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges {
@@ -108,7 +109,7 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     title = input<string>('Select Exercise');
     exercises = input.required<Exercise[]>();
     searchPlaceholder = input<string>('Search exercises...');
-    itemIconName = input<string>('plus-circle');
+    itemIconName = input<string>('done');
     itemIconClass = input<string>('text-primary dark:text-primary-light');
 
     // --- Feature Flags: (Unchanged) ---

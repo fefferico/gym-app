@@ -785,7 +785,7 @@
     "allSetsDone": "Tutte le serie previste sono completate. Ottimo lavoro!",
     "addExercise": "AGGIUNGI ESERCIZIO",
     "finish": "TERMINA",
-    "addExerciseTitle": "AGGIUNGI ESERCIZIO ALLA SESSIONE",
+    "addExerciseTitle": "SELEZIONA UN ESERCIZIO DALLA LISTA",
     "switchExerciseTitle": "CAMBIA ESERCIZIO",
     "similarExercisesTitle": "ESERCIZI SIMILI",
     "searchPlaceholder": "Cerca un sostituto...",
@@ -974,7 +974,7 @@
     "lastUsed": "Ultimo uso: {{date}}",
     "noSimilar": "Nessun esercizio simile trovato.",
     "noMatches": "Nessun esercizio corrisponde ai tuoi filtri.",
-    "createCustom": "CREA UN ESERCIZIO PERSONALIZZATO...",
+    "createCustom": "CREA UN NUOVO ESERCIZIO...",
     "cancel": "ANNULLA",
     "frequencyGroups": {
       "gt30": "30+ Volte",
@@ -1796,7 +1796,7 @@
     }
   },
   "logActivity": {
-    "logTitle": "Registra un'Attività",
+    "logTitle": "Registra un'attività",
     "editTitle": "Modifica Registro Attività",
     "logSubtitle": "Registra qualsiasi attività fisica che hai svolto.",
     "editSubtitle": "Aggiorna i dettagli della tua attività registrata.",
