@@ -431,6 +431,1001 @@
     "battle-ropes": {
       "name": "战绳",
       "description": "一种高强度、低冲击力的训练，可以锻炼上半身、核心，并提供心血管挑战。"
-    }
+    },
+
+  "alternating-proprioceptive-reverse-lunge": {
+    "name": "交替本体感受反向弓步",
+    "description": "一种反向弓步的变式，通过每次重复交替腿来挑战平衡和身体意识，通常在不稳定的表面上或闭眼进行以增强本体感受。"
+  },
+  "rehab-ankle-pumps": {
+    "name": "脚踝泵",
+    "description": "一种简单的活动度练习，包括屈伸脚踝，常用于受伤或不活动后改善血液循环和活动范围。"
+  },
+  "archer-push-up": {
+    "name": "弓箭手俯卧撑",
+    "description": "一种单侧俯卧撑的变式，其中一只手臂向侧方伸展，而另一只手臂进行俯卧撑，一次锻炼一侧的力量和控制力。"
+  },
+  "barbell-skull-crusher": {
+    "name": "杠铃碎颅者",
+    "description": "一种针对三头肌的孤立练习，躺在长凳上，将杠铃朝前额方向放下，然后伸展肘部。"
+  },
+  "bird-dog": {
+    "name": "鸟狗式",
+    "description": "一种核心稳定性练习，四肢着地，同时伸展对侧的手臂和腿，以改善平衡和脊柱稳定性。"
+  },
+  "rehab-bird-dog-stability": {
+    "name": "鸟狗式（注重稳定）",
+    "description": "鸟狗式练习的变式，强调缓慢、有控制的动作和保持，以最大限度地提高核心稳定性和控制力。"
+  },
+  "bulgarian-bag-arm-throw": {
+    "name": "保加利亚包臂投",
+    "description": "使用保加利亚包进行的动态旋转练习，包括将包在身体前方摆动和投掷，以发展核心力量和协调性。"
+  },
+  "bulgarian-bag-snatch": {
+    "name": "保加利亚包抓举",
+    "description": "一种爆发性的全身动作，将保加利亚包从两腿之间摆动到头顶位置，一气呵成。"
+  },
+  "bulgarian-bag-spin": {
+    "name": "保加利亚包旋转",
+    "description": "一种标志性的保加利亚包练习，包括将包绕头和身体旋转，建立肩部稳定性、核心力量和握力。"
+  },
+  "bulgarian-bag-suplex": {
+    "name": "保加利亚包过肩摔",
+    "description": "一种以力量为重点的练习，模仿摔跤中的过肩摔，包括将保加利亚包举起并摔过肩膀。"
+  },
+  "burpee-box-jump": {
+    "name": "波比跳加跳箱",
+    "description": "波比跳的高强度变式，最后的跳跃是在一个高箱上完成，增加了增强式训练的要求。"
+  },
+  "cable-seated-row": {
+    "name": "坐姿绳索划船",
+    "description": "一种增加背部厚度的器械练习，通过从坐姿将手柄拉向躯干来锻炼中背部肌肉。"
+  },
+  "calf-stretch": {
+    "name": "小腿伸展",
+    "description": "一种拉伸腓肠肌和比目鱼肌的柔韧性练习，通常靠墙或在台阶上进行。"
+  },
+  "chin-tucks-cervical-retraction": {
+    "name": "收下巴（颈椎后缩）",
+    "description": "一种纠正头部前倾姿势的姿势练习，通过轻轻地向后收回头和颈部来加强深层颈屈肌。"
+  },
+  "rehab-clamshells": {
+    "name": "蚌式开合",
+    "description": "一种侧卧进行的髋外展练习，以加强臀中肌，这对髋部稳定性至关重要。"
+  },
+  "clubbell-barbarian-squat": {
+    "name": "棍铃野蛮人深蹲",
+    "description": "一种将深蹲与旋转棍铃动作相结合的复杂练习，挑战协调性、核心力量和下半身力量。"
+  },
+  "clubbell-gamma-cast": {
+    "name": "棍铃伽玛甩",
+    "description": "一种基础的棍铃练习，包括在身体前方左右摆动，建立握力、肩部和核心力量。"
+  },
+  "clubbell-mill": {
+    "name": "棍铃风车",
+    "description": "一种循环力量练习，将棍铃绕身体以旋转模式摆动，类似于风车动作，提高肩部活动度和稳定性。"
+  },
+  "clubbell-shield-cast": {
+    "name": "棍铃盾牌甩",
+    "description": "一种核心的棍铃动作，将棍铃以保护性的“盾牌”动作甩过肩膀，非常适合肩部和胸椎的活动度。"
+  },
+  "crab-walk": {
+    "name": "螃蟹走",
+    "description": "一种自重练习，用手和脚行走，胸部朝上，锻炼三头肌、肩部、臀部和腘绳肌。"
+  },
+  "dead-bug": {
+    "name": "死虫式",
+    "description": "一种核心练习，仰卧并缓慢降低对侧的手臂和腿，在不给背部施加压力的情况下提高腰盆稳定性。"
+  },
+  "decline-push-up": {
+    "name": "下斜俯卧撑",
+    "description": "一种将脚抬高的俯卧撑变式，增加了上胸部和肩部的负荷。"
+  },
+  "dolphin-plank": {
+    "name": "海豚式平板支撑",
+    "description": "一种高级的平板支撑变式，在前臂上进行，包括将臀部上下顶起，以挑战肩部和核心。"
+  },
+  "double-kettlebell-alternating-clean": {
+    "name": "双壶铃交替提铃",
+    "description": "一种手持两个壶铃的练习，交替将每个壶铃提至架式位置，挑战协调性和核心稳定性。"
+  },
+  "double-kettlebell-alternating-floor-press": {
+    "name": "双壶铃交替地面推举",
+    "description": "使用两个壶铃的地面推举，一次推举一只手臂，迫使核心抵抗旋转。"
+  },
+  "double-kettlebell-alternating-rotational-press": {
+    "name": "双壶铃交替旋转推举",
+    "description": "一种使用两个壶铃的过头推举，在一次推举一个壶铃时结合躯干旋转。"
+  },
+  "double-kettlebell-alternating-snatch": {
+    "name": "双壶铃交替抓举",
+    "description": "一种爆发性练习，以连续流畅的动作交替将每个壶铃抓举过头。"
+  },
+  "double-kettlebell-arching-swing": {
+    "name": "双壶铃弧线摆荡",
+    "description": "一种摆荡变式，将两个壶铃以弧形、腿外侧的路径摆动，以不同于标准摆荡的方式挑战臀部和核心。"
+  },
+  "double-kettlebell-bent-over-row": {
+    "name": "双壶铃俯身划船",
+    "description": "一种针对背部的力量练习，每只手持一个壶铃进行俯身划船。"
+  },
+  "double-kettlebell-clean": {
+    "name": "双壶铃提铃",
+    "description": "一种力量练习，同时将两个壶铃从摆荡位置提至胸前的架式位置。"
+  },
+  "double-kettlebell-clean-and-jerk": {
+    "name": "双壶铃提铃和挺举",
+    "description": "一种全身弹道式举重，将双壶铃提铃与有力的挺举相结合，将两个壶铃举过头顶。"
+  },
+  "double-kettlebell-clean-and-push-press": {
+    "name": "双壶铃提铃和借力推",
+    "description": "一种复合动作，将双壶铃提铃与借力推相结合，利用腿部驱动力帮助将壶铃推举过头。"
+  },
+  "double-kettlebell-clean-to-reverse-lunge": {
+    "name": "双壶铃提铃至反向弓步",
+    "description": "一种组合动作，将双壶铃提铃与每条腿的反向弓步相结合，然后重复。"
+  },
+  "double-kettlebell-complex-clean-squat-press": {
+    "name": "双壶铃复合动作（提铃-深蹲-推举）",
+    "description": "一种连续的复合动作，依次进行双壶铃提铃、前蹲和过头推举。"
+  },
+  "double-kettlebell-deadlift-to-swing": {
+    "name": "双壶铃硬拉至摆荡",
+    "description": "一种以双壶铃硬拉开始，直接流入壶铃摆荡的练习，有助于形成髋部铰链模式。"
+  },
+  "double-kettlebell-farmers-squat": {
+    "name": "双壶铃农夫深蹲",
+    "description": "一种深蹲变式，双手在身体两侧（农夫行走姿势）各持一个壶铃，对斜方肌和核心有很大锻炼。"
+  },
+  "double-kettlebell-floor-press": {
+    "name": "双壶铃地面推举",
+    "description": "一种胸部和三头肌的练习，躺在地上向上推举两个壶铃。地面限制了活动范围，专注于锁定力量。"
+  },
+  "double-kettlebell-front-squat": {
+    "name": "双壶铃前蹲",
+    "description": "双手持两个壶铃于前架式位置进行的深蹲，对股四头肌、臀大肌和核心有强烈的挑战。"
+  },
+  "double-kettlebell-front-squat-to-press-out": {
+    "name": "双壶铃前蹲至推出",
+    "description": "将双壶铃前蹲与在深蹲底部进行的等长推出相结合，增加了核心和肩部的参与度。"
+  },
+  "double-kettlebell-gorilla-row": {
+    "name": "双壶铃大猩猩划船",
+    "description": "从深髋铰链位置，用放在地上的两个壶铃进行的交替划船，建立背部力量和稳定性。"
+  },
+  "double-kettlebell-offset-carry-overhead-rack": {
+    "name": "双壶铃偏置负重行走（过头/架式）",
+    "description": "一种负重行走，一个壶铃举过头顶，另一个处于架式位置，对核心和肩部稳定性构成重大挑战。"
+  },
+  "double-kettlebell-offset-squat-rack-suitcase": {
+    "name": "双壶铃偏置深蹲（架式/手提箱式）",
+    "description": "一种深蹲，一个壶铃处于架式位置，另一个处于手提箱式位置（在身体一侧），挑战抗侧屈能力。"
+  },
+  "double-kettlebell-overhead-carry": {
+    "name": "双壶铃过头负重行走",
+    "description": "一种负重行走，双手将两个壶铃锁定在头顶上行走，建立巨大的肩部和核心稳定性。"
+  },
+  "double-kettlebell-overhead-lunge": {
+    "name": "双壶铃过头弓步",
+    "description": "双手持两个壶铃过头进行的弓步，要求显著的全身稳定性和力量。"
+  },
+  "double-kettlebell-press": {
+    "name": "双壶铃过头推举",
+    "description": "一种肩部力量练习，包括将两个壶铃从架式位置推举至头顶。"
+  },
+  "double-kettlebell-push-press": {
+    "name": "双壶铃借力推",
+    "description": "一种爆发性的过头推举，利用腿部的下蹲和驱动来帮助将两个壶铃推举过头。"
+  },
+  "double-kettlebell-push-up-to-renegade-row": {
+    "name": "双壶铃俯卧撑至叛徒划船",
+    "description": "一种复杂的动作，包括在两个壶铃上做一个俯卧撑，然后一次一个地将每个壶铃划向胸部。"
+  },
+  "double-kettlebell-rack-deadlift": {
+    "name": "双壶铃架式硬拉",
+    "description": "一种硬拉变式，将壶铃保持在前架式位置，重点锻炼股四头肌和核心。"
+  },
+  "double-kettlebell-renegade-row": {
+    "name": "双壶铃叛徒划船",
+    "description": "从在两个壶铃上的平板支撑位置开始，交替将每个壶铃划向胸部，挑战核心稳定性和背部力量。"
+  },
+  "double-kettlebell-rotational-press": {
+    "name": "双壶铃旋转推举",
+    "description": "一种结合躯干枢转和旋转以产生力量的过头推举。"
+  },
+  "double-kettlebell-see-saw-press": {
+    "name": "双壶铃跷跷板推举",
+    "description": "一种交替进行的过头推举，当一个壶铃向上时，另一个壶铃向下，产生持续的张力和稳定性挑战。"
+  },
+  "double-kettlebell-see-saw-row": {
+    "name": "双壶铃跷跷板划船",
+    "description": "一种交替进行的俯身划船，当一个壶铃向上划时，另一个壶铃向下，挑战背部和核心。"
+  },
+  "double-kettlebell-snatch": {
+    "name": "双壶铃抓举",
+    "description": "一种极具运动性的动作，将两个壶铃以一个爆发性的动作摆动并冲顶至过头锁定位置。"
+  },
+  "double-kettlebell-split-jerk": {
+    "name": "双壶铃分腿挺举",
+    "description": "一种有力的挺举变式，你下蹲、驱动并下落至分腿姿势，以在头顶接住壶铃。"
+  },
+  "double-kettlebell-split-snatch": {
+    "name": "双壶铃分腿抓举",
+    "description": "一种高级的抓举变式，通过将双脚移动成分腿姿势来在头顶接住两个壶铃。"
+  },
+  "double-kettlebell-suitcase-deadlift": {
+    "name": "双壶铃手提箱式硬拉",
+    "description": "每只脚外侧各有一个壶铃进行的硬拉，挑战腿部、背部和核心稳定性。"
+  },
+  "double-kettlebell-sumo-deadlift": {
+    "name": "双壶铃相扑硬拉",
+    "description": "以宽站距（相扑）进行的硬拉，双手在两腿之间各持一个壶铃，强调臀部和髋部。"
+  },
+  "double-kettlebell-thruster": {
+    "name": "双壶铃火箭推",
+    "description": "一种全身复合练习，将双壶铃前蹲与过头推举结合在一个流畅的动作中。"
+  },
+  "double-kettlebell-walking-lunge": {
+    "name": "双壶铃行走弓步",
+    "description": "双手持两个壶铃（通常在架式或农夫行走位置）进行的行走弓步，以增加显著的负荷。"
+  },
+  "double-kettlebell-windmill": {
+    "name": "双壶铃风车",
+    "description": "一种高级的风车变式，你一手持壶铃过头，另一手弯腰从地上拿起第二个壶铃，需要巨大的稳定性和活动度。"
+  },
+  "dumbbell-arnold-press": {
+    "name": "哑铃阿诺德推举",
+    "description": "一种肩部推举的变式，结合了旋转动作，可以锻炼到三角肌的全部三个头。"
+  },
+  "dumbbell-concentration-curl": {
+    "name": "哑铃集中弯举",
+    "description": "一种坐姿的二头肌弯举，肘部抵住大腿内侧，以孤立锻炼二头肌。"
+  },
+  "dumbbell-incline-bench-press": {
+    "name": "哑铃上斜卧推",
+    "description": "在上斜凳上推举哑铃，目标是上胸部、肩部和三头肌。"
+  },
+  "dumbbell-incline-fly": {
+    "name": "哑铃上斜飞鸟",
+    "description": "在上斜凳上进行的针对上胸部的孤立练习，以宽弧度打开和合拢手臂。"
+  },
+  "dumbbell-overhead-lunge": {
+    "name": "哑铃过头弓步",
+    "description": "在进行弓步的同时，将一个或两个哑铃举过头顶，挑战平衡、肩部稳定性和核心力量。"
+  },
+  "dumbbell-pistol-squat-double": {
+    "name": "哑铃手枪蹲（双）",
+    "description": "在进行单腿深蹲的同时，手持两个哑铃（通常在肩部或身体两侧），为动作增加显著的负荷。"
+  },
+  "dumbbell-pistol-squat-single": {
+    "name": "哑铃手枪蹲（单）",
+    "description": "在进行单腿深蹲的同时，手持一个哑铃（通常以高脚杯姿势），作为平衡并增加阻力。"
+  },
+  "dumbbell-row-to-deadlift-complex": {
+    "name": "哑铃划船至硬拉复合动作",
+    "description": "一种将哑铃罗马尼亚硬拉与每次重复中的俯身划船相结合的序列。"
+  },
+  "dumbbell-tate-press": {
+    "name": "哑铃泰特推举",
+    "description": "一种在长凳上进行的三头肌练习，将哑铃向胸部降低，肘部外展，然后向上推回。"
+  },
+  "explosive-clap-push-up": {
+    "name": "爆发力拍手俯卧撑",
+    "description": "一种增强式俯卧撑，你需要用足够的力量爆发性地推离地面，以便在空中拍手。"
+  },
+  "frog-stand": {
+    "name": "蛙式倒立",
+    "description": "体操和瑜伽中的基础手臂平衡动作，以屈膝的姿势将膝盖平衡在肘部上。"
+  },
+  "front-lever": {
+    "name": "前水平",
+    "description": "一种高级体操动作，身体与地面平行，面朝上，同时悬挂在杠上，需要巨大的背部和核心力量。"
+  },
+  "glute-squeezes-isometric": {
+    "name": "臀部挤压（等长）",
+    "description": "一种简单的激活练习，包括有意识地挤压和保持臀部肌肉，通常作为热身的一部分。"
+  },
+  "half-turkish-get-up": {
+    "name": "半土耳其起立",
+    "description": "完整土耳其起立的第一部分，从躺姿移动到坐姿，同时将重物举过头顶。非常适合核心和肩部稳定性。"
+  },
+  "handstand": {
+    "name": "倒立",
+    "description": "通过在手上平衡，使身体处于稳定、倒置的垂直位置的行为。"
+  },
+  "handstand-push-up": {
+    "name": "倒立俯卧撑",
+    "description": "从倒立姿势进行的高级推举练习，目标是肩部和三头肌。"
+  },
+  "heel-slides": {
+    "name": "脚跟滑动",
+    "description": "一种用于膝关节屈曲的温和康复练习，坐着或躺着时，将脚跟朝向和远离身体滑动。"
+  },
+  "hip-flexor-stretch": {
+    "name": "髋屈肌伸展",
+    "description": "一种针对髋部前侧肌肉的伸展，通常以半跪姿进行。"
+  },
+  "incline-chest-press-machine": {
+    "name": "上斜推胸机",
+    "description": "一种基于器械的练习，通过引导式的向上推举动作，针对上胸肌。"
+  },
+  "indian-club-double-circles": {
+    "name": "印度棍双圈",
+    "description": "一种使用两个印度棍的协调性和活动性训练，以圆形模式摆动，以改善肩部健康和活动范围。"
+  },
+  "indian-club-heart-shapes": {
+    "name": "印度棍心形",
+    "description": "一种有节奏的印度棍练习，将棍子以类似心形的模式摆动，促进肩部活动度和协调性。"
+  },
+  "inverted-row": {
+    "name": "反向划船",
+    "description": "一种自重背部练习，你悬挂在杠下，将胸部拉向杠，通常被认为是引体向上的前置动作。"
+  },
+  "jump-squat": {
+    "name": "跳蹲",
+    "description": "一种将深蹲与垂直跳跃相结合的增强式练习，以发展下半身的力量和爆发力。"
+  },
+  "kettlebell-360-mace-style": {
+    "name": "壶铃360（锤铃风格）",
+    "description": "一种模仿钢制锤铃360的旋转练习，将壶铃绕头摆动，以建立肩部和核心力量。"
+  },
+  "kettlebell-arm-bar": {
+    "name": "壶铃臂锁",
+    "description": "一种肩部稳定性和活动性练习，你侧躺着，同时用伸直的手臂在头顶平衡一个壶铃。"
+  },
+  "kettlebell-bent-press": {
+    "name": "壶铃屈体推举",
+    "description": "一种经典的大力士举重动作，包括在侧向弯曲的同时将壶铃推举过头顶，利用核心和背部力量。"
+  },
+  "kettlebell-bicep-curl": {
+    "name": "壶铃二头肌弯举",
+    "description": "一种通过弯举壶铃来锻炼二头肌的孤立练习。可以用标准握法或挤压握法进行。"
+  },
+  "kettlebell-bottoms-up-carry": {
+    "name": "壶铃底朝上负重行走",
+    "description": "一种将壶铃倒置持握的负重行走，挑战握力、肩袖和核心稳定性。"
+  },
+  "kettlebell-bottoms-up-clean": {
+    "name": "壶铃底朝上提铃",
+    "description": "将壶铃提至架式位置，但最终以倒置平衡的方式完成，要求极大的张力和控制力。"
+  },
+  "kettlebell-bottoms-up-press": {
+    "name": "壶铃底朝上推举",
+    "description": "一种将壶铃倒置持握进行的严格推举，非常适合建立肩部稳定性和推举技巧。"
+  },
+  "kettlebell-cheat-row": {
+    "name": "壶铃借力划船",
+    "description": "一种利用轻微的身体借力或动量来举起比严格形式下更重的重量的重型俯身划船。"
+  },
+  "kettlebell-clean-and-jerk-single-arm": {
+    "name": "壶铃提铃和挺举（单臂）",
+    "description": "经典的壶铃举重动作，包括将壶铃提至架式位置，然后用有力的挺举将其推举过头顶。"
+  },
+  "kettlebell-clean-ohp-complex": {
+    "name": "壶铃提铃和过头推举复合动作",
+    "description": "一种将单臂壶铃提铃直接转为每次重复的过头推举的复合动作。"
+  },
+  "kettlebell-close-grip-floor-press": {
+    "name": "壶铃窄握地面推举",
+    "description": "一种用双手以窄握方式持握单个壶铃进行的地面推举变式，目标是三头肌和胸部内侧。"
+  },
+  "kettlebell-cossack-squat": {
+    "name": "壶铃哥萨克蹲",
+    "description": "一种建立髋部活动度和单腿力量的侧向深蹲，在手持壶铃（通常以高脚杯姿势）的情况下向一侧下蹲。"
+  },
+  "kettlebell-crush-grip-curl": {
+    "name": "壶铃挤压握弯举",
+    "description": "一种通过握住壶铃的球体（在双手之间“挤压”它）来增加胸部和手臂等长张力的二头肌弯举。"
+  },
+  "kettlebell-crush-grip-floor-press": {
+    "name": "壶铃挤压握地面推举",
+    "description": "一种用双手握住壶铃的球体进行的地面推举，专注于胸部和三头肌。"
+  },
+  "kettlebell-curtsy-lunge": {
+    "name": "壶铃屈膝礼弓步",
+    "description": "一种后腿交叉在前腿后面的弓步变式，目标是臀中肌和大腿内侧，通常手持壶铃进行。"
+  },
+  "kettlebell-dead-bug-pullover": {
+    "name": "壶铃死虫式上拉",
+    "description": "一种将死虫式动作与壶铃上拉相结合的核心练习，挑战协调性和稳定性。"
+  },
+  "kettlebell-dead-clean": {
+    "name": "壶铃硬拉提铃",
+    "description": "每次重复都从地面上的静止状态开始的壶铃提铃，从头开始建立爆发力。"
+  },
+  "kettlebell-dead-swing": {
+    "name": "壶铃硬拉摆荡",
+    "description": "一种每次重复都从地面上的静止状态开始的壶铃摆荡，专注于为每次摆动产生最大功率。"
+  },
+  "kettlebell-deadstop-swing": {
+    "name": "壶铃静止摆荡",
+    "description": "也被称为硬拉摆荡，这个变式每次重复都从地面开始，以在没有动量的情况下建立爆发性的髋部驱动力。"
+  },
+  "kettlebell-deck-front-roll": {
+    "name": "壶铃甲板前滚翻",
+    "description": "一种将后滚翻与甲板深蹲相结合的动态动作，利用壶铃作为配重站起来并过渡到前滚翻。"
+  },
+  "kettlebell-deck-squat": {
+    "name": "壶铃甲板深蹲",
+    "description": "一种你进行深蹲，然后向后滚动，再利用动量和壶铃的重量滚回站立姿势的练习。"
+  },
+  "kettlebell-double-farmers-walk": {
+    "name": "壶铃双农夫行走",
+    "description": "一种全身练习，每只手持一个重壶铃行走一段距离。"
+  },
+  "kettlebell-double-hand-deadlift": {
+    "name": "壶铃双手硬拉",
+    "description": "一种使用单个壶铃，用双手持握进行的硬拉，非常适合学习髋部铰链模式。"
+  },
+  "kettlebell-double-hand-swing": {
+    "name": "壶铃双手摆荡",
+    "description": "基础的壶铃摆荡，用双手持握一个壶铃进行。"
+  },
+  "kettlebell-double-overhead-squat": {
+    "name": "壶铃双过头深蹲",
+    "description": "一种需要显著活动度和稳定性的高级深蹲变式，在双手将两个壶铃锁定在头顶上进行。"
+  },
+  "kettlebell-double-shrug": {
+    "name": "壶铃双耸肩",
+    "description": "一种通过在每只手持一个重壶铃时耸肩来加强斜方肌的练习。"
+  },
+  "kettlebell-figure-eight-to-hold": {
+    "name": "壶铃八字穿梭至保持",
+    "description": "壶铃八字穿梭的变式，在前方暂停并保持动作，以等长方式挑战核心和握力。"
+  },
+  "kettlebell-floor-skullcrusher": {
+    "name": "壶铃地面碎颅者",
+    "description": "一种躺在地上进行的三头肌伸展练习，将一个或两个壶铃降低至头部。"
+  },
+  "kettlebell-get-up-sit-up": {
+    "name": "壶铃起立仰卧起坐",
+    "description": "土耳其起立的初始仰卧起坐阶段，非常适合在头顶负重的情况下建立核心力量和稳定性。"
+  },
+  "kettlebell-glute-bridge-with-floor-press": {
+    "name": "壶铃臀桥加地面推举",
+    "description": "一种组合练习，在保持臀桥的同时进行交替或双壶铃地面推举。"
+  },
+  "kettlebell-goblet-alternating-reverse-lunge": {
+    "name": "壶铃高脚杯式交替反向弓步",
+    "description": "在手持壶铃于高脚杯姿势下进行的反向弓步，每次重复交替腿部。"
+  },
+  "kettlebell-goblet-clean": {
+    "name": "壶铃高脚杯式提铃",
+    "description": "一种将壶铃提至高脚杯深蹲姿势的提铃变式，用双手在胸前持握。"
+  },
+  "kettlebell-goblet-squat-with-curl": {
+    "name": "壶铃高脚杯深蹲加弯举",
+    "description": "一种将高脚杯深蹲与动作顶部的二头肌弯举相结合的复合动作。"
+  },
+  "kettlebell-goblet-walk": {
+    "name": "壶铃高脚杯行走",
+    "description": "一种在高脚杯姿势下持握壶铃行走的负重行走，建立核心稳定性和上半身耐力。"
+  },
+  "kettlebell-good-morning-squat": {
+    "name": "壶铃早安式深蹲",
+    "description": "一种混合练习，从早安式（髋部铰链）开始，然后过渡到深蹲，通常以高脚杯姿势持握壶铃。"
+  },
+  "kettlebell-gorilla-clean": {
+    "name": "壶铃大猩猩提铃",
+    "description": "从深蹲/铰链姿势进行的爆发性提铃，通常用两个壶铃并以交替方式进行。"
+  },
+  "kettlebell-half-kneeling-halo": {
+    "name": "壶铃半跪姿光环",
+    "description": "从半跪姿进行的壶铃光环，以增加核心稳定性挑战并孤立肩带。"
+  },
+  "kettlebell-half-kneeling-press": {
+    "name": "壶铃半跪姿推举",
+    "description": "从半跪姿进行的过头推举，以挑战核心稳定性并防止使用腿部驱动力。"
+  },
+  "kettlebell-halifax": {
+    "name": "壶铃哈利法克斯",
+    "description": "一种通常结合提铃、深蹲和旋转推举的复杂壶铃流程。"
+  },
+  "kettlebell-hang-clean": {
+    "name": "壶铃悬垂提铃",
+    "description": "一种从“悬垂”位置（第一次摆荡后）而不是从地面上的静止状态开始的壶铃提铃。"
+  },
+  "kettlebell-jefferson-curl": {
+    "name": "壶铃杰斐逊弯举",
+    "description": "一种使用壶铃的负重脊柱屈曲伸展，以改善后链柔韧性和脊柱活动度。"
+  },
+  "kettlebell-lateral-lunge": {
+    "name": "壶铃侧弓步",
+    "description": "一种在手持壶铃（通常在高脚杯或架式位置）的情况下向侧面进行的弓步，以锻炼大腿内外侧并改善髋部活动度。"
+  },
+  "kettlebell-lunge-pass-through": {
+    "name": "壶铃弓步穿梭",
+    "description": "一种包括将壶铃从前腿下穿过的弓步变式，挑战协调性和核心稳定性。"
+  },
+  "kettlebell-lying-triceps-extension": {
+    "name": "壶铃卧姿三头肌伸展",
+    "description": "一种躺在长凳或地上，将一个或两个壶铃从头后伸展的三头肌孤立练习。"
+  },
+  "kettlebell-outside-swing": {
+    "name": "壶铃外侧摆荡",
+    "description": "一种壶铃在腿外侧而不是在两腿之间行进的摆荡变式。"
+  },
+  "kettlebell-pistol-squat-double": {
+    "name": "壶铃手枪蹲（双）",
+    "description": "一种在双手持两个壶铃于前架式位置进行的高级单腿深蹲。"
+  },
+  "kettlebell-pistol-squat-single": {
+    "name": "壶铃手枪蹲（单）",
+    "description": "一种在手持一个壶铃于高脚杯姿势下进行的单腿深蹲，作为平衡。"
+  },
+  "kettlebell-plank-drag-pull-through": {
+    "name": "壶铃平板支撑拖拽（拉过）",
+    "description": "一种抗旋转核心练习，你保持平板支撑，将壶铃从身体一侧拖到另一侧。"
+  },
+  "kettlebell-pullover-to-sit-up-to-press": {
+    "name": "壶铃上拉至仰卧起坐至推举",
+    "description": "一种将上拉、仰卧起坐和过头推举结合在一个流畅序列中的复杂动作。"
+  },
+  "kettlebell-rack-carry": {
+    "name": "壶铃架式负重行走",
+    "description": "一种你手持一个或两个壶铃于前架式位置行走的负重行走，建立核心和上背部力量。"
+  },
+  "kettlebell-rack-walk": {
+    "name": "壶铃架式行走",
+    "description": "壶铃架式负重行走的另一个名称，强调行走距离或时间。"
+  },
+  "kettlebell-rotational-deadlift": {
+    "name": "壶铃旋转硬拉",
+    "description": "一种结合躯干旋转以拾取位于身体一侧的壶铃的硬拉变式。"
+  },
+  "kettlebell-rotational-swing": {
+    "name": "壶铃旋转摆荡",
+    "description": "一种带有旋转成分的壶铃摆荡，在动作过程中髋部和躯干会转动。"
+  },
+  "kettlebell-row-to-deadlift-complex": {
+    "name": "壶铃划船至硬拉复合动作",
+    "description": "一种涉及壶铃硬拉，紧接着是俯身划船的序列。"
+  },
+  "kettlebell-side-press": {
+    "name": "壶铃侧推举",
+    "description": "一种经典的推举变式，你向远离壶铃的方向倾斜，以获得机械优势将其推举过头顶。"
+  },
+  "kettlebell-single-arm-clean-and-thruster": {
+    "name": "壶铃单臂提铃和火箭推",
+    "description": "一种将单臂提铃、深蹲和过头推举结合在一个有力、流畅的动作中的复合动作。"
+  },
+  "kettlebell-single-arm-complex-clean-squat-press": {
+    "name": "壶铃单臂复合动作（提铃-深蹲-推举）",
+    "description": "一种在不放下壶铃的情况下进行的单臂提铃、深蹲和过头推举的序列。"
+  },
+  "kettlebell-single-arm-deadlift": {
+    "name": "壶铃单臂硬拉",
+    "description": "一种用一只手臂举起单个壶铃进行的硬拉，挑战抗旋转和握力。"
+  },
+  "kettlebell-single-arm-overhead-squat": {
+    "name": "壶铃单臂过头深蹲",
+    "description": "一种在手持单个壶铃锁定在头顶上进行的深蹲，要求非凡的活动度和稳定性。"
+  },
+  "kettlebell-single-arm-shrug": {
+    "name": "壶铃单臂耸肩",
+    "description": "一种用一个重壶铃进行的单侧耸肩，以锻炼一侧的斜方肌。"
+  },
+  "kettlebell-single-arm-thruster": {
+    "name": "壶铃单臂火箭推",
+    "description": "一种将单臂架式深蹲与过头推举相结合的复合练习。"
+  },
+  "kettlebell-single-leg-deadlift": {
+    "name": "壶铃单腿硬拉",
+    "description": "一种挑战平衡、稳定性和后链力量的单侧铰链动作，手持壶铃进行。"
+  },
+  "kettlebell-slingshot": {
+    "name": "壶铃弹弓",
+    "description": "一种将壶铃在身体周围从一只手传到另一只手的热身和协调性训练。"
+  },
+  "kettlebell-slingshot-to-goblet-squat": {
+    "name": "壶铃弹弓至高脚杯深蹲",
+    "description": "一种将壶铃弹弓与每次重复中的高脚杯深蹲相结合的流程。"
+  },
+  "kettlebell-snatch-to-overhead-reverse-lunge": {
+    "name": "壶铃抓举至过头反向弓步",
+    "description": "一种你进行壶铃抓举，然后在保持壶铃在头顶稳定的同时执行反向弓步的复合动作。"
+  },
+  "kettlebell-snatch-to-reverse-lunge": {
+    "name": "壶铃抓举至反向弓步",
+    "description": "一种将壶铃抓举与反向弓步相结合的复合动作。弓步可以用壶铃架式或举过头顶的方式进行。"
+  },
+  "kettlebell-somersault-squat": {
+    "name": "壶铃翻滚深蹲",
+    "description": "一种在深蹲过程中将壶铃滚过肩膀的高级深蹲变式，挑战活动度和协调性。"
+  },
+  "kettlebell-sots-press": {
+    "name": "壶铃索特斯推举",
+    "description": "一种从深蹲底部进行的过头推举，需要令人难以置信的活动度、稳定性和力量。"
+  },
+  "kettlebell-sport-style-swing": {
+    "name": "壶铃运动式摆荡",
+    "description": "在壶铃运动（Girevoy）比赛中使用的一种更有效率、类似钟摆的摆荡，旨在提高耐力而非最大功率。"
+  },
+  "kettlebell-stacked-stance-deadlift": {
+    "name": "壶铃交错站姿硬拉",
+    "description": "一种交错站姿（一只脚略微在另一只脚后面）的硬拉变式，以增加前腿的负荷。"
+  },
+  "kettlebell-standing-pullover": {
+    "name": "壶铃站姿上拉",
+    "description": "一种针对背阔肌和前锯肌的活动度和力量练习，站着时将壶铃降低到头后。"
+  },
+  "kettlebell-straight-leg-sit-up": {
+    "name": "壶铃直腿仰卧起坐",
+    "description": "一种在胸前或头顶持握壶铃，直腿进行的负重仰卧起坐。"
+  },
+  "kettlebell-suitcase-farmers-carry": {
+    "name": "壶铃手提箱/农夫行走",
+    "description": "一种用一只手（手提箱）或双手（农夫）持握壶铃进行的负重行走，建立握力、核心和姿势。"
+  },
+  "kettlebell-sumo-deadlift-high-pull": {
+    "name": "壶铃相扑硬拉高拉",
+    "description": "一种将相扑硬拉与有力的直立划船相结合的爆发性动作，发展全身力量。"
+  },
+  "kettlebell-swing-to-snatch": {
+    "name": "壶铃摆荡至抓举",
+    "description": "一种通过将其分解为摆荡，然后是向上冲顶锁定来帮助学习抓举的训练。"
+  },
+  "kettlebell-tactical-lunge": {
+    "name": "壶铃战术弓步",
+    "description": "一种通常包括穿梭或其他协调动作的弓步变式，强调运动能力和控制力。"
+  },
+  "kettlebell-tall-kneeling-press": {
+    "name": "壶铃高跪姿推举",
+    "description": "一种双膝跪地进行的过头推举，可以调动臀部和核心来创造一个稳定的基础。"
+  },
+  "kettlebell-tate-press": {
+    "name": "壶铃泰特推举",
+    "description": "一种将壶铃向胸部降低，肘部外展的三头肌推举，类似于哑铃版本。"
+  },
+  "kettlebell-towel-curl": {
+    "name": "壶铃毛巾弯举",
+    "description": "一种使用穿过壶铃手柄的毛巾进行的二头肌弯举，以挑战握力。"
+  },
+  "kettlebell-turkish-sit-up": {
+    "name": "壶铃土耳其式仰卧起坐",
+    "description": "土耳其起立的仰卧起坐部分，一种强大的核心和髋屈肌练习。"
+  },
+  "kettlebell-two-hand-bottoms-up-squat": {
+    "name": "壶铃双手底朝上深蹲",
+    "description": "一种用双手平衡一个倒置的壶铃进行的深蹲，需要巨大的全身张力。"
+  },
+  "kettlebell-upright-row": {
+    "name": "壶铃直立划船",
+    "description": "一种通过将一个或两个壶铃向上拉向턱部来锻炼肩部和斜方肌的练习。"
+  },
+  "kettlebell-waiters-walk": {
+    "name": "壶铃侍者行走",
+    "description": "一种单侧负重行走，将壶铃直举过头顶，就像端着托盘一样。建立肩部和核心稳定性。"
+  },
+  "l-sit": {
+    "name": "L-坐",
+    "description": "一种体操练习，身体呈“L”形，用手支撑自己，双腿伸直。需要显著的核心和三头肌力量。"
+  },
+  "leg-raises": {
+    "name": "抬腿",
+    "description": "一种针对下腹部的核心练习，仰卧并将腿抬向天花板。"
+  },
+  "lower-trunk-rotations-supine": {
+    "name": "下躯干旋转（仰卧）",
+    "description": "一种针对下背部的温和活动性练习，仰卧，膝盖弯曲，双腿左右旋转。"
+  },
+  "lying-leg-curl-machine": {
+    "name": "俯卧腿弯举机",
+    "description": "一种在器械上俯卧进行的腘绳肌孤立练习。"
+  },
+  "macebell-10-to-2": {
+    "name": "锤铃10点到2点",
+    "description": "一种基础的锤铃练习，包括在身体前方左右摆动，类似于时钟的指针从10点移动到2点。"
+  },
+  "macebell-360": {
+    "name": "锤铃360",
+    "description": "标志性的锤铃练习，包括将锤铃绕头完整地摆动一圈，建立握力、肩部和核心力量。"
+  },
+  "macebell-gravedigger": {
+    "name": "锤铃掘墓者",
+    "description": "一种模仿用铲子挖掘动作的旋转练习，目标是核心并提高旋转力量。"
+  },
+  "macebell-spear-stab": {
+    "name": "锤铃矛刺",
+    "description": "一种模仿用矛刺的全身练习，包括有力地向前推动锤铃。"
+  },
+  "machine-chest-press": {
+    "name": "器械推胸",
+    "description": "一种针对胸部的复合练习，类似于卧推，但由器械提供固定的运动路径。"
+  },
+  "machine-hip-abduction": {
+    "name": "器械髋外展",
+    "description": "一种基于器械的针对大腿外侧和臀中肌的孤立练习，通过将双腿分开抵抗阻力。"
+  },
+  "machine-hip-adduction": {
+    "name": "器械髋内收",
+    "description": "一种基于器械的针对大腿内侧的孤立练习，通过将双腿挤压在一起抵抗阻力。"
+  },
+  "machine-lateral-raise": {
+    "name": "器械侧平举",
+    "description": "一种使用器械为侧平举动作提供固定路径的针对三角肌中束的孤立练习。"
+  },
+  "military-press-barbell": {
+    "name": "杠铃军事推举",
+    "description": "一种站姿进行的严格的杠铃过头推举，没有腿部驱动力。这是对肩部力量的基本测试。"
+  },
+  "muscle-up": {
+    "name": "双力臂",
+    "description": "一种高级的体操技巧，将引体向上与双杠臂屈伸结合在一个流畅的动作中，从悬挂在杠或环下方过渡到支撑在上方。"
+  },
+  "parallette-deep-push-up": {
+    "name": "矮双杠深俯卧撑",
+    "description": "一种在矮双杠上进行的俯卧撑，允许更大的活动范围和更深的胸部拉伸。"
+  },
+  "parallette-l-sit": {
+    "name": "矮双杠L-坐",
+    "description": "一种在矮双杠上进行的L-坐，可能比在地上稍容易，因为它为腿部提供了更多的空间。"
+  },
+  "parallette-shoot-through": {
+    "name": "矮双杠穿梭",
+    "description": "一种在矮双杠上的动态体操动作，通过将腿“穿过”手臂，从平板支撑或俯卧撑位置过渡到屈膝或L-坐。"
+  },
+  "parallette-tuck-planche": {
+    "name": "矮双杠屈膝俄式挺身",
+    "description": "一种在矮双杠上进行的向完整俄式挺身发展的进阶动作，身体由手臂支撑，膝盖收拢到胸前。"
+  },
+  "pelvic-tilts": {
+    "name": "骨盆倾斜",
+    "description": "一种涉及前后倾斜骨盆的核心激活和脊柱活动性练习，通常仰卧进行。"
+  },
+  "pike-push-up": {
+    "name": "派克俯卧撑",
+    "description": "一种臀部高高抬起呈倒“V”形的俯卧撑变式，将重点转移到肩部。是向倒立俯卧撑发展的进阶动作。"
+  },
+  "piriformis-stretch-supine": {
+    "name": "梨状肌伸展（仰卧）",
+    "description": "一种针对臀部梨状肌的伸展，仰卧进行，通常通过将一只脚踝交叉在另一只膝盖上并向胸部拉动。"
+  },
+  "pistol-squat": {
+    "name": "手枪蹲",
+    "description": "一种高级的自重练习，包括单腿深蹲，需要显著的力量、平衡和活动度。"
+  },
+  "planche": {
+    "name": "俄式挺身",
+    "description": "一种高级的体操技巧，身体与地面平行，仅由双手支撑，需要令人难以置信的直臂力量和平衡。"
+  },
+  "plank-to-push-up": {
+    "name": "平板支撑至俯卧撑",
+    "description": "一种动态练习，你在前臂平板支撑和高位平板支撑（俯卧撑）位置之间交替，挑战核心稳定性和上半身力量。"
+  },
+  "proprioceptive-close-grip-push-up": {
+    "name": "本体感受窄握俯卧撑",
+    "description": "一种在不稳定的表面上进行的窄握俯卧撑，以挑战稳定性、控制力和身体意识。"
+  },
+  "proprioceptive-pause-goblet-squat": {
+    "name": "本体感受暂停高脚杯深蹲",
+    "description": "一种在底部暂停的高脚杯深蹲，通常闭眼或在不稳定的表面上进行，以增强本体感受和稳定性。"
+  },
+  "quad-sets-isometric": {
+    "name": "股四头肌等长收缩",
+    "description": "一种针对股四头肌的等长加强练习，包括在不移动膝关节的情况下收缩肌肉。通常用于早期康复。"
+  },
+  "ring-archer-pull-up": {
+    "name": "吊环弓箭手引体向上",
+    "description": "一种在体操吊环上的单侧引体向上变式，一只手臂拉动，另一只手臂向侧面伸展，类似于弓箭手拉弓。"
+  },
+  "ring-dip": {
+    "name": "吊环臂屈伸",
+    "description": "一种在体操吊环上进行的臂屈伸，增加了不稳定性，需要肩部和胸部更大的力量和稳定。"
+  },
+  "ring-muscle-up": {
+    "name": "吊环双力臂",
+    "description": "一种在体操吊环上进行的双力臂，由于吊环的移动，可以实现更自然的过渡。"
+  },
+  "ring-row": {
+    "name": "吊环划船",
+    "description": "一种使用体操吊环进行的反向划船，允许手的自然旋转，并通过改变身体角度来调整难度。"
+  },
+  "ring-skin-the-cat": {
+    "name": "吊环剥皮猫",
+    "description": "一种在吊环上的基础体操活动性练习，包括将脚和臀部穿过手臂并举过头顶进入悬挂状态，然后返回。"
+  },
+  "ring-support-hold": {
+    "name": "吊环支撑保持",
+    "description": "一种在体操吊环上的基础等长保持，你用伸直的手臂支撑体重，需要显著的稳定能力。"
+  },
+  "sandbag-bear-hug-squat": {
+    "name": "沙袋熊抱深蹲",
+    "description": "一种将沙袋垂直抱在躯干前进行的深蹲，对核心和上背部有强烈的锻炼。"
+  },
+  "sandbag-clean": {
+    "name": "沙袋提铃",
+    "description": "一种爆发性练习，将沙袋从地面以一个有力的动作举到肩膀。"
+  },
+  "sandbag-over-the-shoulder-carry": {
+    "name": "沙袋过肩负重行走",
+    "description": "一种将重沙袋扛在一侧肩膀上行走的负重行走，挑战核心和后链。"
+  },
+  "sandbag-rotational-lunge": {
+    "name": "沙袋旋转弓步",
+    "description": "一种结合躯干旋转的弓步，手持沙袋增加阻力并挑战核心。"
+  },
+  "sandbag-shouldering": {
+    "name": "沙袋上肩",
+    "description": "将沙袋从地面举起并放在一侧肩膀上的动作，一种基础的大力士和非标准器械举重技巧。"
+  },
+  "sandbag-zercher-squat": {
+    "name": "沙袋泽奇深蹲",
+    "description": "一种将沙袋放在肘弯处进行的深蹲，对核心、上背部和手臂有很大的负担。"
+  },
+  "scapular-retraction-shoulder-blade-squeezes": {
+    "name": "肩胛骨后缩（肩胛骨挤压）",
+    "description": "一种专注于将肩胛骨挤压在一起以加强菱形肌和中斜方肌的姿势练习。"
+  },
+  "seated-hamstring-stretch": {
+    "name": "坐姿腘绳肌伸展",
+    "description": "一种从坐姿进行的腘绳肌伸展，通常通过伸直腿向前够脚趾。"
+  },
+  "seated-pec-deck-fly": {
+    "name": "坐姿蝴蝶机飞鸟",
+    "description": "一种使用器械的胸部孤立练习，你坐着将带垫的杠杆以飞鸟动作合拢。"
+  },
+  "shoulder-external-rotation-banded": {
+    "name": "肩外旋（弹力带）",
+    "description": "一种针对肩袖肌肉的预防/康复练习，使用阻力带抵抗张力向外旋转手臂。"
+  },
+  "shoulder-pendulum-swings": {
+    "name": "肩部钟摆摆动",
+    "description": "一种针对肩关节的温和活动范围练习，通常用于早期康复，包括弯腰并轻轻摆动手臂。"
+  },
+  "shrimp-squat": {
+    "name": "虾式深蹲",
+    "description": "一种单腿深蹲变式，非工作腿弯曲并保持在身体后面，类似于手枪蹲，但腿的位置不同。"
+  },
+  "side-plank": {
+    "name": "侧平板支撑",
+    "description": "一种在一侧进行的等长核心练习，以锻炼斜肌并提高侧向稳定性。"
+  },
+  "single-kettlebell-alternating-swing": {
+    "name": "单壶铃交替摆荡",
+    "description": "一种在每次摆荡的顶点将壶铃从一只手传到另一只手的壶铃摆荡。"
+  },
+  "single-kettlebell-clean-and-press-to-pause-windmill": {
+    "name": "单壶铃提铃和推举至暂停风车",
+    "description": "一种将提铃、推举，然后是带暂停的风车相结合的复杂流程，挑战力量、稳定性和活动度。"
+  },
+  "single-kettlebell-clean-and-press": {
+    "name": "单壶铃提铃和推举",
+    "description": "一种经典的组合，将壶铃提至架式位置，然后立即推举过头顶。"
+  },
+  "single-kettlebell-figure-eight": {
+    "name": "单壶铃八字穿梭",
+    "description": "一种通过在两腿之间和周围以八字形传递壶铃来提高协调性、核心稳定性和握力的动态练习。"
+  },
+  "single-kettlebell-front-squat": {
+    "name": "单壶铃前蹲",
+    "description": "一种将单个壶铃保持在前架式位置进行的深蹲，产生偏置负荷，挑战核心稳定性。"
+  },
+  "single-kettlebell-high-pull": {
+    "name": "单壶铃高拉",
+    "description": "一种爆发性练习，包括将壶铃从摆荡位置向上拉至턱部高度，保持肘部高位。"
+  },
+  "single-kettlebell-jerk": {
+    "name": "单壶铃挺举",
+    "description": "一种有力的举重动作，你使用双次下蹲的“挺举”动作将单个壶铃推举过头顶。"
+  },
+  "single-kettlebell-overhead-lunge": {
+    "name": "单壶铃过头弓步",
+    "description": "一种在手持单个壶铃锁定在头顶上进行的弓步，产生显著的稳定性挑战。"
+  },
+  "single-kettlebell-overhead-press": {
+    "name": "单壶铃过头推举",
+    "description": "一种基础的上半身力量练习，包括将单个壶铃从架式位置推举至过头锁定。"
+  },
+  "single-kettlebell-russian-twist": {
+    "name": "单壶铃俄罗斯转体",
+    "description": "一种针对斜肌的核心练习，坐着时手持单个壶铃，从一侧向另一侧扭转躯干。"
+  },
+  "single-kettlebell-swing": {
+    "name": "单壶铃摆荡",
+    "description": "单手壶铃摆荡，为标准双手摆荡增加了抗旋转挑战。"
+  },
+  "single-leg-stance-balance": {
+    "name": "单腿站立（平衡）",
+    "description": "一种基础的平衡练习，包括单腿站立指定的时间。"
+  },
+  "skater-jumps": {
+    "name": "滑冰跳",
+    "description": "一种增强式练习，包括从一条腿到另一条腿的侧向跳跃，模仿速滑运动员的动作，以建立力量和敏捷性。"
+  },
+  "slow-eccentric-floor-skullcrusher": {
+    "name": "慢速离心地面碎颅者",
+    "description": "一种在地上进行的专注于非常缓慢、有控制的下降（离心）阶段的三头肌碎颅者。"
+  },
+  "slow-eccentric-floor-skullcrusher-to-close-grip-floor-press": {
+    "name": "慢速离心地面碎颅者至窄握地面推举",
+    "description": "一种专注于三头肌的复合动作，将慢速离心碎颅者与每次重复中的窄握地面推举相结合。"
+  },
+  "slow-eccentric-pause-towel-curls": {
+    "name": "慢速离心暂停毛巾弯举",
+    "description": "一种使用毛巾握持的二头肌弯举，强调缓慢的下降阶段和暂停，以最大限度地增加肌肉在张力下的时间。"
+  },
+  "standing-calf-raise": {
+    "name": "站姿提踵",
+    "description": "一种通过从站姿抬起脚跟来加强小腿腓肠肌的练习。"
+  },
+  "dip": {
+    "name": "直杠臂屈伸",
+    "description": "一种在单根直杠上进行的臂屈伸，比平行杠臂屈伸需要更多的核心稳定和不同的肩部角度。"
+  },
+  "straight-leg-raise": {
+    "name": "直腿抬高",
+    "description": "一种仰卧进行的核心和髋屈肌练习，将一条或两条腿伸直抬起，不弯曲膝盖。"
+  },
+  "suitcase-deadlift-to-anti-rotation-row": {
+    "name": "手提箱式硬拉至抗旋转划船",
+    "description": "一种将单臂手提箱式硬拉与顶部的划船相结合的复合动作，挑战核心抵抗旋转的能力。"
+  },
+  "superman-extensions": {
+    "name": "超人伸展",
+    "description": "一种自重练习，通过俯卧时同时抬起手臂和腿来加强下背部、臀部和腘绳肌。"
+  },
+  "terminal-knee-extension-tke": {
+    "name": "末端膝关节伸展（TKE）",
+    "description": "一种针对股四头肌（特别是股内侧肌）的康复和激活练习，专注于膝关节伸展的最后几度，通常使用阻力带。"
+  },
+  "towel-scrunches": {
+    "name": "毛巾卷曲",
+    "description": "一种针对足部内在肌肉的练习，用脚趾卷起放在地上的毛巾。"
+  },
+  "tuck-planche": {
+    "name": "屈膝俄式挺身",
+    "description": "一种向完整俄式挺身发展的基础进阶动作，身体平衡在手上，膝盖紧紧收拢到胸前。"
+  },
+  "twist-sit-up": {
+    "name": "扭转仰卧起坐",
+    "description": "一种在动作顶部结合躯干扭转以锻炼斜肌的仰卧起坐变式。"
+  },
+  "upper-trapezius-stretch": {
+    "name": "上斜方肌伸展",
+    "description": "一种通过轻轻地将头向一侧倾斜来拉伸上斜方肌的颈部伸展。"
+  },
+  "vipr-cylinder-drop-squat": {
+    "name": "ViPR筒下落深蹲",
+    "description": "一种使用ViPR的动态深蹲，在其中筒被放下和接住，整合了运动和负荷。"
+  },
+  "vipr-cylinder-lift": {
+    "name": "ViPR筒举",
+    "description": "一种基础的ViPR练习，包括在各种运动平面上举起筒，通常模仿功能性任务。"
+  },
+  "vipr-ice-skater": {
+    "name": "ViPR滑冰者",
+    "description": "一种使用ViPR的侧向移动练习，模仿滑冰的动作，在额状面上建立力量和敏捷性。"
+  },
+  "vipr-lateral-shift-with-rip": {
+    "name": "ViPR侧移加撕裂",
+    "description": "一种将ViPR的侧向移动与有力的推拉“撕裂”动作相结合的动态练习。"
+  },
+  "vipr-shoveling": {
+    "name": "ViPR铲地",
+    "description": "一种模仿铲地动作的全身旋转练习，通过臀部和核心发展力量和协调性。"
+  },
+  "vipr-thread-the-needle": {
+    "name": "ViPR穿针引线",
+    "description": "一种使用ViPR的活动性和稳定性练习，包括在身体下方进行旋转伸展，以提高胸椎活动度。"
+  },
+  "wall-handstand": {
+    "name": "靠墙倒立",
+    "description": "一种将脚靠在墙上以获得支撑的倒立，用于为自由倒立建立力量和信心。"
+  },
+  "rehab-wall-push-up": {
+    "name": "墙壁俯卧撑",
+    "description": "一种初学者的俯卧撑变式，你推着墙壁，减少了被举起的体重。"
+  },
+  "wall-sit": {
+    "name": "靠墙坐",
+    "description": "一种等长练习，你背靠墙壁保持深蹲姿势，主要加强股四头肌。"
+  },
+  "rehab-wall-sit-isometric": {
+    "name": "靠墙坐（等长）",
+    "description": "一种靠墙保持深蹲姿势的等长练习，以建立股四头肌、臀部和腘绳肌的肌肉耐力。"
+  }
+
+
   }
 }

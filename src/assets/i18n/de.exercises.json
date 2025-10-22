@@ -431,6 +431,999 @@
     "battle-ropes": {
       "name": "Battle Ropes",
       "description": "Eine hochintensive, gelenkschonende Übung, die den Oberkörper und den Rumpf trainiert und eine kardiovaskuläre Herausforderung darstellt."
-    }
+    },
+
+
+  "alternating-proprioceptive-reverse-lunge": {
+    "name": "Alternierender Propriozeptiver Ausfallschritt nach hinten",
+    "description": "Eine Variante des Ausfallschritts nach hinten, die Gleichgewicht und Körperwahrnehmung herausfordert, indem bei jeder Wiederholung die Beine abgewechselt werden. Wird oft auf einer instabilen Oberfläche oder mit geschlossenen Augen durchgeführt, um die Propriozeption zu verbessern."
+  },
+  "rehab-ankle-pumps": {
+    "name": "Fußwippen",
+    "description": "Eine einfache Mobilitätsübung, bei der die Sprunggelenke gebeugt und gestreckt werden. Wird oft verwendet, um die Durchblutung und den Bewegungsumfang nach Verletzungen oder Inaktivität zu verbessern."
+  },
+  "archer-push-up": {
+    "name": "Archer Liegestütz",
+    "description": "Eine einseitige Liegestütz-Variante, bei der ein Arm zur Seite ausgestreckt wird, während der andere den Liegestütz ausführt, um Kraft und Kontrolle auf einer Seite nach der anderen aufzubauen."
+  },
+  "barbell-skull-crusher": {
+    "name": "Stirndrücken mit der Langhantel",
+    "description": "Eine Isolationsübung für den Trizeps, die auf einer Bank liegend ausgeführt wird, indem eine Langhantel in Richtung Stirn abgesenkt und anschließend die Ellenbogen wieder gestreckt werden."
+  },
+  "bird-dog": {
+    "name": "Bird Dog",
+    "description": "Eine Übung zur Rumpfstabilität, bei der im Vierfüßlerstand gleichzeitig ein gegensätzlicher Arm und ein gegensätzliches Bein ausgestreckt werden, um Gleichgewicht und Wirbelsäulenstabilität zu verbessern."
+  },
+  "rehab-bird-dog-stability": {
+    "name": "Bird-Dog (Stabilitätsfokus)",
+    "description": "Eine Variante der Bird-Dog-Übung, die langsame, kontrollierte Bewegungen und Haltepositionen betont, um die Rumpfstabilisierung und -kontrolle zu maximieren."
+  },
+  "bulgarian-bag-arm-throw": {
+    "name": "Bulgarian Bag Arm Throw",
+    "description": "Eine dynamische Rotationsübung mit einem Bulgarian Bag, bei der der Sack über den Körper geschwungen und geworfen wird, um Rumpfkraft und Koordination zu entwickeln."
+  },
+  "bulgarian-bag-snatch": {
+    "name": "Bulgarian Bag Snatch",
+    "description": "Eine explosive Ganzkörperbewegung, bei der ein Bulgarian Bag in einer fließenden Bewegung von zwischen den Beinen in eine Überkopfposition geschwungen wird."
+  },
+  "bulgarian-bag-spin": {
+    "name": "Bulgarian Bag Spin",
+    "description": "Eine charakteristische Bulgarian Bag-Übung, bei der der Sack um Kopf und Körper geschleudert wird, um Schulterstabilität, Rumpf- und Griffkraft aufzubauen."
+  },
+  "bulgarian-bag-suplex": {
+    "name": "Bulgarian Bag Suplex",
+    "description": "Eine kraftorientierte Übung, die einen Wrestling-Suplex nachahmt und bei der der Bulgarian Bag angehoben und über die Schulter geworfen wird."
+  },
+  "burpee-box-jump": {
+    "name": "Burpee mit Box Jump",
+    "description": "Eine hochintensive Variante des Burpees, bei der der abschließende Sprung auf eine erhöhte Box ausgeführt wird, was die plyometrische Anforderung erhöht."
+  },
+  "cable-seated-row": {
+    "name": "Rudern am Kabelzug (sitzend)",
+    "description": "Eine Maschinenübung für die Rückendichte, die auf die mittleren Rückenmuskeln abzielt, indem Griffe aus einer sitzenden Position zum Rumpf gezogen werden."
+  },
+  "calf-stretch": {
+    "name": "Wadendehnung",
+    "description": "Eine Flexibilitätsübung zur Dehnung des Gastrocnemius- und Soleus-Muskels, die typischerweise gegen eine Wand oder auf einer Stufe ausgeführt wird."
+  },
+  "chin-tucks-cervical-retraction": {
+    "name": "Doppelkinn-Übung (Halswirbelsäulen-Retraktion)",
+    "description": "Eine Haltungsübung zur Korrektur einer vorgebeugten Kopfhaltung, bei der Kopf und Nacken sanft zurückgezogen werden, um die tiefen Halsbeugemuskeln zu stärken."
+  },
+  "rehab-clamshells": {
+    "name": "Muschel-Übung (Clamshells)",
+    "description": "Eine Hüftabduktionsübung, die auf der Seite liegend ausgeführt wird, um den Gluteus medius zu stärken, der für die Hüftstabilität entscheidend ist."
+  },
+  "clubbell-barbarian-squat": {
+    "name": "Clubbell Barbarian Squat",
+    "description": "Eine komplexe Übung, die eine Kniebeuge mit rotatorischen Clubbell-Bewegungen kombiniert und Koordination, Rumpfkraft und Unterkörperkraft herausfordert."
+  },
+  "clubbell-gamma-cast": {
+    "name": "Clubbell Gamma Cast",
+    "description": "Eine grundlegende Clubbell-Übung, die einen Pendelschwung von Seite zu Seite vor dem Körper beinhaltet und Griff-, Schulter- und Rumpfkraft aufbaut."
+  },
+  "clubbell-mill": {
+    "name": "Clubbell Mill",
+    "description": "Eine zirkuläre Kraftübung, bei der eine Clubbell in einem rotierenden Muster um den Körper geschwungen wird, ähnlich einer Windmühlenbewegung, um die Schultermobilität und -stabilität zu verbessern."
+  },
+  "clubbell-shield-cast": {
+    "name": "Clubbell Shield Cast",
+    "description": "Eine zentrale Clubbell-Bewegung, bei der die Keule in einer schützenden 'Schild'-Bewegung über die Schulter geworfen wird, ideal für die Schulter- und Brustwirbelsäulenmobilität."
+  },
+  "crab-walk": {
+    "name": "Krebsgang",
+    "description": "Eine Körpergewichtsübung, die auf Händen und Füßen mit nach oben gerichtetem Oberkörper ausgeführt wird und Trizeps, Schultern, Gesäß und Oberschenkelrückseiten beansprucht."
+  },
+  "dead-bug": {
+    "name": "Toter Käfer (Dead Bug)",
+    "description": "Eine Rumpfübung, bei der man auf dem Rücken liegt und langsam gegensätzliche Arme und Beine absenkt, um die Lenden-Becken-Stabilität zu verbessern, ohne den Rücken zu belasten."
+  },
+  "decline-push-up": {
+    "name": "Negativ-Liegestütz",
+    "description": "Eine Liegestütz-Variante mit erhöhten Füßen, die die Belastung auf die obere Brust und die Schultern erhöht."
+  },
+  "dolphin-plank": {
+    "name": "Delphin-Plank",
+    "description": "Eine fortgeschrittene Plank-Variante, die auf den Unterarmen ausgeführt wird und bei der die Hüften auf und ab bewegt werden, um Schultern und Rumpf herauszufordern."
+  },
+  "double-kettlebell-alternating-clean": {
+    "name": "Abwechselndes Umsetzen mit zwei Kettlebells",
+    "description": "Eine Übung mit zwei Kettlebells, bei der abwechselnd jede Kettlebell in die Rack-Position umgesetzt wird, was Koordination und Rumpfstabilität herausfordert."
+  },
+  "double-kettlebell-alternating-floor-press": {
+    "name": "Abwechselndes Bodendrücken mit zwei Kettlebells",
+    "description": "Ein Bodendrücken mit zwei Kettlebells, bei dem ein Arm nach dem anderen drückt, wodurch der Rumpf gezwungen wird, der Rotation zu widerstehen."
+  },
+  "double-kettlebell-alternating-rotational-press": {
+    "name": "Abwechselndes Rotationsdrücken mit zwei Kettlebells",
+    "description": "Ein Überkopfdrücken mit zwei Kettlebells, das eine Rumpfrotation beinhaltet, während jede Kettlebell einzeln nach oben gedrückt wird."
+  },
+  "double-kettlebell-alternating-snatch": {
+    "name": "Abwechselndes Reißen mit zwei Kettlebells",
+    "description": "Eine explosive Übung, bei der abwechselnd jede Kettlebell in einer kontinuierlichen, fließenden Bewegung über Kopf gerissen wird."
+  },
+  "double-kettlebell-arching-swing": {
+    "name": "Bogenswing mit zwei Kettlebells",
+    "description": "Eine Swing-Variante, bei der zwei Kettlebells in einer bogenförmigen Bahn außerhalb der Beine geschwungen werden, was die Hüften und den Rumpf anders als ein normaler Swing herausfordert."
+  },
+  "double-kettlebell-bent-over-row": {
+    "name": "Vorgebeugtes Rudern mit zwei Kettlebells",
+    "description": "Eine Kraftübung für den Rücken, bei der vorgebeugtes Rudern mit einer Kettlebell in jeder Hand ausgeführt wird."
+  },
+  "double-kettlebell-clean": {
+    "name": "Umsetzen mit zwei Kettlebells",
+    "description": "Eine Kraftübung, bei der zwei Kettlebells gleichzeitig aus einer Swing-Position in die Rack-Position auf der Brust umgesetzt werden."
+  },
+  "double-kettlebell-clean-and-jerk": {
+    "name": "Umsetzen und Stoßen mit zwei Kettlebells",
+    "description": "Ein ballistischer Ganzkörperlift, der das Umsetzen mit zwei Kettlebells mit einem kraftvollen Stoßen kombiniert, um beide Kettlebells über Kopf zu bringen."
+  },
+  "double-kettlebell-clean-and-push-press": {
+    "name": "Umsetzen und Schwungdrücken mit zwei Kettlebells",
+    "description": "Eine kombinierte Bewegung, die das Umsetzen mit zwei Kettlebells mit einem Schwungdrücken verbindet, wobei der Beinschwung hilft, die Kettlebells über Kopf zu drücken."
+  },
+  "double-kettlebell-clean-to-reverse-lunge": {
+    "name": "Umsetzen mit zwei Kettlebells zum Ausfallschritt nach hinten",
+    "description": "Eine Kombination, die ein Umsetzen mit zwei Kettlebells mit einem Ausfallschritt nach hinten auf jedem Bein verbindet, bevor sie wiederholt wird."
+  },
+  "double-kettlebell-complex-clean-squat-press": {
+    "name": "Komplex mit zwei Kettlebells (Umsetzen-Kniebeuge-Drücken)",
+    "description": "Eine Sequenz, bei der Sie ein Umsetzen mit zwei Kettlebells, gefolgt von einer Frontkniebeuge und dann einem Überkopfdrücken in einem kontinuierlichen Komplex ausführen."
+  },
+  "double-kettlebell-deadlift-to-swing": {
+    "name": "Kreuzheben zum Swing mit zwei Kettlebells",
+    "description": "Eine Übung, die mit einem Kreuzheben mit zwei Kettlebells beginnt und direkt in einen Kettlebell-Swing übergeht, was hilft, die Hüftbeugung zu trainieren."
+  },
+  "double-kettlebell-farmers-squat": {
+    "name": "Farmer's Squat mit zwei Kettlebells",
+    "description": "Eine Kniebeugen-Variante, die ausgeführt wird, während zwei Kettlebells an den Seiten gehalten werden (Farmer's Carry Position), was die Trapezmuskeln und den Rumpf stark beansprucht."
+  },
+  "double-kettlebell-floor-press": {
+    "name": "Bodendrücken mit zwei Kettlebells",
+    "description": "Eine Brust- und Trizepsübung, die auf dem Boden liegend ausgeführt wird, indem zwei Kettlebells nach oben gedrückt werden. Der Boden begrenzt den Bewegungsumfang und konzentriert sich auf die Kraft am Endpunkt der Bewegung."
+  },
+  "double-kettlebell-front-squat": {
+    "name": "Frontkniebeuge mit zwei Kettlebells",
+    "description": "Eine Kniebeuge, die ausgeführt wird, während zwei Kettlebells in der vorderen Rack-Position gehalten werden, was die Quadrizeps, das Gesäß und den Rumpf intensiv herausfordert."
+  },
+  "double-kettlebell-front-squat-to-press-out": {
+    "name": "Frontkniebeuge zum Ausdrücken mit zwei Kettlebells",
+    "description": "Kombiniert eine Frontkniebeuge mit zwei Kettlebells mit einem isometrischen Ausdrücken am unteren Ende der Kniebeuge, was die Rumpf- und Schulterbeteiligung erhöht."
+  },
+  "double-kettlebell-gorilla-row": {
+    "name": "Gorilla Row mit zwei Kettlebells",
+    "description": "Ein abwechselndes Rudern, das aus einer tiefen Hüftbeugeposition mit zwei Kettlebells auf dem Boden ausgeführt wird und die Rückenkraft und Stabilität aufbaut."
+  },
+  "double-kettlebell-offset-carry-overhead-rack": {
+    "name": "Versetztes Tragen mit zwei Kettlebells (Überkopf/Rack)",
+    "description": "Ein belastetes Tragen, bei dem eine Kettlebell über Kopf und die andere in der Rack-Position gehalten wird, was eine erhebliche Herausforderung für die Rumpf- und Schulterstabilität darstellt."
+  },
+  "double-kettlebell-offset-squat-rack-suitcase": {
+    "name": "Versetzte Kniebeuge mit zwei Kettlebells (Rack/Koffer)",
+    "description": "Eine Kniebeuge, die ausgeführt wird, während eine Kettlebell in der Rack-Position und die andere in der Koffer-Position (an Ihrer Seite) gehalten wird, was die seitliche Beugung verhindert."
+  },
+  "double-kettlebell-overhead-carry": {
+    "name": "Überkopftragen mit zwei Kettlebells",
+    "description": "Ein belastetes Tragen, bei dem man geht, während man zwei Kettlebells über Kopf ausgestreckt hält, was eine immense Schulter- und Rumpfstabilität aufbaut."
+  },
+  "double-kettlebell-overhead-lunge": {
+    "name": "Überkopf-Ausfallschritt mit zwei Kettlebells",
+    "description": "Ein Ausfallschritt, der ausgeführt wird, während zwei Kettlebells über Kopf gehalten werden und eine erhebliche Ganzkörperstabilität und Kraft erfordert."
+  },
+  "double-kettlebell-press": {
+    "name": "Überkopfdrücken mit zwei Kettlebells",
+    "description": "Eine Schulterkraftübung, bei der zwei Kettlebells aus der Rack-Position über Kopf gedrückt werden."
+  },
+  "double-kettlebell-push-press": {
+    "name": "Schwungdrücken mit zwei Kettlebells",
+    "description": "Ein explosives Überkopfdrücken, das einen Dip und Drive aus den Beinen nutzt, um zwei Kettlebells über Kopf zu befördern."
+  },
+  "double-kettlebell-push-up-to-renegade-row": {
+    "name": "Liegestütz zum Renegade Row mit zwei Kettlebells",
+    "description": "Ein Komplex, der einen Liegestütz auf zwei Kettlebells beinhaltet, gefolgt vom Rudern jeder Kettlebell zur Brust, eine nach der anderen."
+  },
+  "double-kettlbell-rack-deadlift": {
+    "name": "Rack-Kreuzheben mit zwei Kettlebells",
+    "description": "Eine Kreuzhebe-Variante, bei der die Kettlebells in der vorderen Rack-Position gehalten werden, was einen starken Schwerpunkt auf Quadrizeps und Rumpf legt."
+  },
+  "double-kettlebell-renegade-row": {
+    "name": "Renegade Row mit zwei Kettlebells",
+    "description": "Aus einer Plank-Position auf zwei Kettlebells rudern Sie abwechselnd jede Kugel zur Brust, was die Rumpfstabilität und Rückenkraft herausfordert."
+  },
+  "double-kettlebell-rotational-press": {
+    "name": "Rotationsdrücken mit zwei Kettlebells",
+    "description": "Ein Überkopfdrücken, das eine Drehung des Rumpfes beinhaltet, um Kraft zu erzeugen."
+  },
+  "double-kettlebell-see-saw-press": {
+    "name": "See-Saw-Press mit zwei Kettlebells",
+    "description": "Ein abwechselndes Überkopfdrücken, bei dem eine Kettlebell nach oben geht, während die andere nach unten kommt, was konstante Spannung und eine Stabilitätsherausforderung erzeugt."
+  },
+  "double-kettlebell-see-saw-row": {
+    "name": "See-Saw-Rudern mit zwei Kettlebells",
+    "description": "Ein abwechselndes vorgebeugtes Rudern, bei dem eine Kettlebell nach oben gerudert wird, während die andere abgesenkt wird, was den Rücken und den Rumpf herausfordert."
+  },
+  "double-kettlebell-snatch": {
+    "name": "Reißen mit zwei Kettlebells",
+    "description": "Eine hoch athletische Bewegung, bei der zwei Kettlebells in einer explosiven Bewegung geschwungen und in eine Überkopf-Arretierung gestoßen werden."
+  },
+  "double-kettlebell-split-jerk": {
+    "name": "Ausfallstoß mit zwei Kettlebells",
+    "description": "Eine kraftvolle Stoß-Variante, bei der Sie dippen, antreiben und sich unter die Kettlebells in eine Ausfallschrittposition fallen lassen, um sie über Kopf zu fangen."
+  },
+  "double-kettlebell-split-snatch": {
+    "name": "Ausfall-Reißen mit zwei Kettlebells",
+    "description": "Eine fortgeschrittene Reiß-Variante, bei der Sie die beiden Kettlebells über Kopf fangen, indem Sie Ihre Füße in eine Ausfallschrittposition bewegen."
+  },
+  "double-kettlebell-suitcase-deadlift": {
+    "name": "Koffer-Kreuzheben mit zwei Kettlebells",
+    "description": "Ein Kreuzheben, das mit einer Kettlebell an der Außenseite jedes Fußes ausgeführt wird und die Beine, den Rücken und die Rumpfstabilität herausfordert."
+  },
+  "double-kettlebell-sumo-deadlift": {
+    "name": "Sumo-Kreuzheben mit zwei Kettlebells",
+    "description": "Ein Kreuzheben, das mit einer weiten (Sumo-) Haltung ausgeführt wird, wobei zwei Kettlebells zwischen den Beinen gehalten werden, was die Gesäßmuskulatur und die Hüften betont."
+  },
+  "double-kettlebell-thruster": {
+    "name": "Thruster mit zwei Kettlebells",
+    "description": "Eine Ganzkörper-Verbundübung, die eine Frontkniebeuge mit zwei Kettlebells mit einem Überkopfdrücken in einer fließenden Bewegung kombiniert."
+  },
+  "double-kettlebell-walking-lunge": {
+    "name": "Gehender Ausfallschritt mit zwei Kettlebells",
+    "description": "Gehende Ausfallschritte, die ausgeführt werden, während zwei Kettlebells gehalten werden, typischerweise in der Rack- oder Farmer-Position, um eine erhebliche Last hinzuzufügen."
+  },
+  "double-kettlebell-windmill": {
+    "name": "Windmühle mit zwei Kettlebells",
+    "description": "Eine fortgeschrittene Windmühlen-Variante, bei der Sie eine Kettlebell über Kopf halten und sich beugen, um eine zweite vom Boden aufzuheben, was immense Stabilität und Mobilität erfordert."
+  },
+  "dumbbell-arnold-press": {
+    "name": "Arnold Press mit Kurzhanteln",
+    "description": "Eine Schulterdrück-Variante, die eine Rotation beinhaltet, um alle drei Köpfe des Deltamuskels zu trainieren."
+  },
+  "dumbbell-concentration-curl": {
+    "name": "Konzentrationscurl mit Kurzhantel",
+    "description": "Ein sitzender Bizepscurl, bei dem der Ellenbogen gegen die Innenseite des Oberschenkels gestützt wird, um den Bizepsmuskel zu isolieren."
+  },
+  "dumbbell-incline-bench-press": {
+    "name": "Schrägbankdrücken mit Kurzhanteln",
+    "description": "Zielt auf die obere Brust, die Schultern und den Trizeps ab, indem Kurzhanteln auf einer Schrägbank gedrückt werden."
+  },
+  "dumbbell-incline-fly": {
+    "name": "Fliegende auf der Schrägbank mit Kurzhanteln",
+    "description": "Eine Isolationsübung für die obere Brust, die auf einer Schrägbank ausgeführt wird, indem die Arme in einem weiten Bogen geöffnet und geschlossen werden."
+  },
+  "dumbbell-overhead-lunge": {
+    "name": "Überkopf-Ausfallschritt mit Kurzhantel",
+    "description": "Ein Ausfallschritt, der ausgeführt wird, während eine oder zwei Kurzhanteln über Kopf gehalten werden, was Gleichgewicht, Schulterstabilität und Rumpfkraft herausfordert."
+  },
+  "dumbbell-pistol-squat-double": {
+    "name": "Pistol Squat mit zwei Kurzhanteln",
+    "description": "Ein einbeiniger Squat, der ausgeführt wird, während zwei Kurzhanteln gehalten werden, typischerweise an den Schultern oder Seiten, was der Bewegung eine erhebliche Last hinzufügt."
+  },
+  "dumbbell-pistol-squat-single": {
+    "name": "Pistol Squat mit einer Kurzhantel",
+    "description": "Ein einbeiniger Squat, der ausgeführt wird, während eine Kurzhantel gehalten wird, oft in der Goblet-Position, um als Gegengewicht zu dienen und Widerstand hinzuzufügen."
+  },
+  "dumbbell-row-to-deadlift-complex": {
+    "name": "Komplex aus Rudern und Kreuzheben mit Kurzhanteln",
+    "description": "Eine Sequenz, die ein rumänisches Kreuzheben mit Kurzhanteln mit einem vorgebeugten Rudern in jeder Wiederholung kombiniert."
+  },
+  "dumbbell-tate-press": {
+    "name": "Tate Press mit Kurzhanteln",
+    "description": "Eine Trizepsübung, die auf einer Bank liegend ausgeführt wird, bei der Kurzhanteln mit ausgestellten Ellenbogen zur Brust abgesenkt und dann wieder nach oben gedrückt werden."
+  },
+  "explosive-clap-push-up": {
+    "name": "Explosiver Klatsch-Liegestütz",
+    "description": "Ein plyometrischer Liegestütz, bei dem Sie sich explosiv vom Boden abstoßen, mit genügend Kraft, um in der Luft in die Hände zu klatschen."
+  },
+  "frog-stand": {
+    "name": "Froschstand",
+    "description": "Ein grundlegendes Armbalance-Element in Gymnastik und Yoga, bei dem Sie Ihre Knie auf Ihren Ellenbogen in einer gehockten Position balancieren."
+  },
+  "front-lever": {
+    "name": "Front Lever (Waage vorlings)",
+    "description": "Eine fortgeschrittene Turnübung, bei der der Körper parallel zum Boden gehalten wird, mit dem Gesicht nach oben, während man an einer Stange hängt, was immense Rücken- und Rumpfkraft erfordert."
+  },
+  "glute-squeezes-isometric": {
+    "name": "Isometrisches Gesäßanspannen",
+    "description": "Eine einfache Aktivierungsübung, bei der die Gesäßmuskeln bewusst angespannt und gehalten werden, oft als Teil eines Aufwärmprogramms."
+  },
+  "half-turkish-get-up": {
+    "name": "Halber Turkish Get-Up",
+    "description": "Der erste Teil des vollständigen Turkish Get-Up, bei dem man sich von einer liegenden Position in eine sitzende Position mit dem Gewicht über Kopf bewegt. Hervorragend für die Rumpf- und Schulterstabilität."
+  },
+  "handstand": {
+    "name": "Handstand",
+    "description": "Das Halten des Körpers in einer stabilen, umgekehrten vertikalen Position durch Balancieren auf den Händen."
+  },
+  "handstand-push-up": {
+    "name": "Handstand-Liegestütz",
+    "description": "Eine fortgeschrittene Drückübung, die aus einer Handstandposition ausgeführt wird und auf die Schultern und den Trizeps abzielt."
+  },
+  "heel-slides": {
+    "name": "Fersengleiten",
+    "description": "Eine sanfte Rehabilitationsübung für die Kniebeugung, die ausgeführt wird, indem die Ferse im Sitzen oder Liegen zum und vom Körper weggeschoben wird."
+  },
+  "hip-flexor-stretch": {
+    "name": "Hüftbeugerdehnung",
+    "description": "Eine Dehnung, die auf die Muskeln an der Vorderseite der Hüfte abzielt und üblicherweise in einer halbknienden Position ausgeführt wird."
+  },
+  "incline-chest-press-machine": {
+    "name": "Schrägbankdrücken an der Maschine",
+    "description": "Eine maschinengestützte Übung, die mit einer geführten, aufwärts gerichteten Drückbewegung auf die oberen Brustmuskeln abzielt."
+  },
+  "indian-club-double-circles": {
+    "name": "Doppelkreise mit Indian Clubs",
+    "description": "Eine Koordinations- und Mobilitätsübung mit zwei Indian Clubs, die in kreisförmigen Mustern geschwungen werden, um die Schultergesundheit und den Bewegungsumfang zu verbessern."
+  },
+  "indian-club-heart-shapes": {
+    "name": "Herzformen mit Indian Clubs",
+    "description": "Eine rhythmische Übung mit Indian Clubs, bei der die Keulen in einem Muster geschwungen werden, das einem Herzen ähnelt, was die Schultermobilität und Koordination fördert."
+  },
+  "inverted-row": {
+    "name": "Invertiertes Rudern",
+    "description": "Eine Körpergewichts-Rückenübung, bei der man unter einer Stange hängt und die Brust zur Stange zieht, oft als Vorstufe zum Klimmzug angesehen."
+  },
+  "jump-squat": {
+    "name": "Sprunghocke",
+    "description": "Eine plyometrische Übung, die eine Kniebeuge mit einem vertikalen Sprung kombiniert, um die Kraft und Explosivität des Unterkörpers zu entwickeln."
+  },
+  "kettlebell-360-mace-style": {
+    "name": "Kettlebell 360 (im Stil einer Keule)",
+    "description": "Eine Rotationsübung, die einen 360er-Schwung mit einer Stahlkeule nachahmt, bei der eine Kettlebell um den Kopf geschwungen wird, um Schulter- und Rumpfkraft aufzubauen."
+  },
+  "kettlebell-arm-bar": {
+    "name": "Kettlebell Arm Bar",
+    "description": "Eine Schulterstabilitäts- und Mobilitätsübung, bei der man auf der Seite liegt und eine Kettlebell mit gestrecktem Arm über Kopf balanciert."
+  },
+  "kettlebell-bent-press": {
+    "name": "Bent Press mit Kettlebell",
+    "description": "Ein klassischer Kraftsport-Lift, bei dem eine Kettlebell seitlich gebeugt über Kopf gedrückt wird, wobei Rumpf- und Rückenkraft genutzt werden."
+  },
+  "kettlebell-bicep-curl": {
+    "name": "Bizepscurl mit Kettlebell",
+    "description": "Eine Isolationsübung für den Bizeps, die durch das Curlen einer Kettlebell ausgeführt wird. Kann mit einem Standard- oder Quetschgriff durchgeführt werden."
+  },
+  "kettlebell-bottoms-up-carry": {
+    "name": "Bottoms-Up Tragen mit Kettlebell",
+    "description": "Ein belastetes Tragen, bei dem die Kettlebell kopfüber gehalten wird, was Griff, Rotatorenmanschette und Rumpfstabilität herausfordert."
+  },
+  "kettlebell-bottoms-up-clean": {
+    "name": "Bottoms-Up Clean mit Kettlebell",
+    "description": "Das Umsetzen einer Kettlebell in die Rack-Position, jedoch mit dem Abschluss, dass sie kopfüber balanciert wird, was unglaubliche Spannung und Kontrolle erfordert."
+  },
+  "kettlebell-bottoms-up-press": {
+    "name": "Bottoms-Up Press mit Kettlebell",
+    "description": "Ein striktes Drücken, das mit der Kettlebell kopfüber gehalten wird, hervorragend zum Aufbau von Schulterstabilität und Drückmechanik."
+  },
+  "kettlebell-cheat-row": {
+    "name": "Cheat Row mit Kettlebell",
+    "description": "Ein schweres vorgebeugtes Rudern, das leichten Körpereinsatz oder Schwung nutzt, um ein schwereres Gewicht zu heben, als es mit strikter Form möglich wäre."
+  },
+  "kettlebell-clean-and-jerk-single-arm": {
+    "name": "Umsetzen und Stoßen mit einer Kettlebell (einarmig)",
+    "description": "Der klassische Kettlebell-Lift, der das Umsetzen der Kugel in die Rack-Position und das anschließende kraftvolle Stoßen über Kopf beinhaltet."
+  },
+  "kettlebell-clean-ohp-complex": {
+    "name": "Komplex aus Umsetzen & Überkopfdrücken mit Kettlebell",
+    "description": "Ein Komplex, der ein einarmiges Umsetzen mit der Kettlebell direkt mit einem Überkopfdrücken bei jeder Wiederholung kombiniert."
+  },
+  "kettlebell-close-grip-floor-press": {
+    "name": "Enggriffiges Bodendrücken mit Kettlebell",
+    "description": "Eine Variante des Bodendrückens, die ausgeführt wird, indem eine einzelne Kettlebell mit beiden Händen in einem engen Griff gehalten wird, um den Trizeps und die innere Brust zu trainieren."
+  },
+  "kettlebell-cossack-squat": {
+    "name": "Kosaken-Kniebeuge mit Kettlebell",
+    "description": "Eine seitliche Kniebeuge, die die Hüftmobilität und die einbeinige Kraft aufbaut, ausgeführt, indem man zu einer Seite hinunterbeugt, während man eine Kettlebell hält, oft in der Goblet-Position."
+  },
+  "kettlebell-crush-grip-curl": {
+    "name": "Quetschgriff-Curl mit Kettlebell",
+    "description": "Ein Bizepscurl, bei dem die Kettlebell an der Kugel gehalten wird ('zerquetscht' zwischen den Händen), um die isometrische Spannung in Brust und Armen zu erhöhen."
+  },
+  "kettlebell-crush-grip-floor-press": {
+    "name": "Quetschgriff-Bodendrücken mit Kettlebell",
+    "description": "Ein Bodendrücken, das ausgeführt wird, indem eine Kettlebell mit beiden Händen an der Kugel gehalten wird, wobei der Schwerpunkt auf Brust und Trizeps liegt."
+  },
+  "kettlebell-curtsy-lunge": {
+    "name": "Curtsy-Ausfallschritt mit Kettlebell",
+    "description": "Eine Ausfallschritt-Variante, bei der das hintere Bein hinter das vordere Bein gekreuzt wird, um den Gluteus medius und die inneren Oberschenkel zu trainieren, oft mit einer Kettlebell ausgeführt."
+  },
+  "kettlebell-dead-bug-pullover": {
+    "name": "Dead Bug Pullover mit Kettlebell",
+    "description": "Eine Rumpfübung, die die Dead-Bug-Bewegung mit einem Kettlebell-Pullover kombiniert und Koordination und Stabilität herausfordert."
+  },
+  "kettlebell-dead-clean": {
+    "name": "Dead Clean mit Kettlebell",
+    "description": "Ein Kettlebell Clean, der bei jeder Wiederholung aus dem Stillstand vom Boden aus initiiert wird, um explosive Kraft vom Boden aufzubauen."
+  },
+  "kettlebell-dead-swing": {
+    "name": "Dead Swing mit Kettlebell",
+    "description": "Ein Kettlebell Swing, bei dem jede Wiederholung aus dem Stillstand vom Boden aus beginnt, um maximale Kraft für jeden Schwung zu erzeugen."
+  },
+  "kettlebell-deadstop-swing": {
+    "name": "Deadstop Swing mit Kettlebell",
+    "description": "Auch als Dead Swing bekannt, beginnt diese Variante jede Wiederholung vom Boden aus, um einen explosiven Hüftantrieb ohne den Vorteil des Schwungs aufzubauen."
+  },
+  "kettlebell-deck-front-roll": {
+    "name": "Deck Front Roll mit Kettlebell",
+    "description": "Eine dynamische Bewegung, die eine Rückwärtsrolle in einen Deck Squat kombiniert, wobei die Kettlebell als Gegengewicht verwendet wird, um aufzustehen und in eine Vorwärtsrolle überzugehen."
+  },
+  "kettlebell-deck-squat": {
+    "name": "Deck Squat mit Kettlebell",
+    "description": "Eine Übung, bei der Sie eine Kniebeuge ausführen, auf den Rücken rollen und dann Schwung und das Gewicht der Kettlebell nutzen, um wieder in eine stehende Position zu rollen."
+  },
+  "kettlebell-double-farmers-walk": {
+    "name": "Doppelter Farmer's Walk mit Kettlebell",
+    "description": "Eine Ganzkörperübung, bei der Sie über eine Distanz gehen, während Sie in jeder Hand eine schwere Kettlebell halten."
+  },
+  "kettlebell-double-hand-deadlift": {
+    "name": "Kreuzheben mit beiden Händen an der Kettlebell",
+    "description": "Ein Kreuzheben mit einer einzelnen Kettlebell, die mit beiden Händen gehalten wird, hervorragend zum Erlernen des Hüftbeugemusters."
+  },
+  "kettlebell-double-hand-swing": {
+    "name": "Swing mit beiden Händen an der Kettlebell",
+    "description": "Der grundlegende Kettlebell-Swing, der ausgeführt wird, indem eine Kettlebell mit beiden Händen gehalten wird."
+  },
+  "kettlebell-double-overhead-squat": {
+    "name": "Überkopfkniebeuge mit zwei Kettlebells",
+    "description": "Eine fortgeschrittene Kniebeugen-Variante, die eine erhebliche Mobilität und Stabilität erfordert und ausgeführt wird, während zwei Kettlebells über Kopf ausgestreckt gehalten werden."
+  },
+  "kettlebell-double-shrug": {
+    "name": "Doppel-Shrug mit Kettlebell",
+    "description": "Eine Übung zur Stärkung des Trapezius, die ausgeführt wird, indem die Schultern gezuckt werden, während in jeder Hand eine schwere Kettlebell gehalten wird."
+  },
+  "kettlebell-figure-eight-to-hold": {
+    "name": "Figure Eight zum Halten mit Kettlebell",
+    "description": "Eine Variante der Kettlebell Figure Eight, bei der die Bewegung vorne angehalten und gehalten wird, was den Rumpf und den Griff isometrisch herausfordert."
+  },
+  "kettlebell-floor-skullcrusher": {
+    "name": "Boden-Stirndrücken mit Kettlebell",
+    "description": "Eine Trizeps-Extension-Übung, die auf dem Boden liegend ausgeführt wird, indem ein oder zwei Kettlebells in Richtung Kopf abgesenkt werden."
+  },
+  "kettlebell-get-up-sit-up": {
+    "name": "Get-Up Sit-Up mit Kettlebell",
+    "description": "Die anfängliche Sit-Up-Phase eines Turkish Get-Up, hervorragend zum Aufbau von Rumpfkraft und Stabilität mit dem Gewicht über Kopf."
+  },
+  "kettlebell-glute-bridge-with-floor-press": {
+    "name": "Gesäßbrücke mit Bodendrücken mit Kettlebell",
+    "description": "Eine kombinierte Übung, bei der Sie eine Gesäßbrücke halten, während Sie ein abwechselndes oder doppeltes Bodendrücken mit Kettlebells ausführen."
+  },
+  "kettlebell-goblet-alternating-reverse-lunge": {
+    "name": "Goblet abwechselnder Ausfallschritt nach hinten mit Kettlebell",
+    "description": "Ausfallschritte nach hinten, die ausgeführt werden, während eine Kettlebell in der Goblet-Position gehalten wird, wobei bei jeder Wiederholung die Beine abgewechselt werden."
+  },
+  "kettlebell-goblet-clean": {
+    "name": "Goblet Clean mit Kettlebell",
+    "description": "Eine Clean-Variante, bei der die Kettlebell in die Goblet-Squat-Position umgesetzt wird, gehalten mit zwei Händen auf Brusthöhe."
+  },
+  "kettlebell-goblet-squat-with-curl": {
+    "name": "Goblet Squat mit Curl mit Kettlebell",
+    "description": "Ein Komplex, bei dem ein Goblet Squat mit einem Bizepscurl an der Spitze der Bewegung kombiniert wird."
+  },
+  "kettlebell-goblet-walk": {
+    "name": "Goblet Walk mit Kettlebell",
+    "description": "Ein belastetes Tragen, bei dem Sie gehen, während Sie eine Kettlebell in der Goblet-Position halten, was Rumpfstabilität und Oberkörperausdauer aufbaut."
+  },
+  "kettlebell-good-morning-squat": {
+    "name": "Good Morning Squat mit Kettlebell",
+    "description": "Eine hybride Übung, die mit einem Good Morning (Hüftbeuge) beginnt und dann in einen tiefen Squat übergeht, wobei die Kettlebell oft in der Goblet-Position gehalten wird."
+  },
+  "kettlebell-gorilla-clean": {
+    "name": "Gorilla Clean mit Kettlebell",
+    "description": "Ein explosives Umsetzen aus einer tiefen Kniebeugen-/Hüftbeugeposition, oft mit zwei Kettlebells und abwechselnd ausgeführt."
+  },
+  "kettlebell-half-kneeling-halo": {
+    "name": "Halbkniender Halo mit Kettlebell",
+    "description": "Ein Kettlebell-Halo, der aus einer halbknienden Haltung ausgeführt wird, um die Herausforderung für die Rumpfstabilität zu erhöhen und den Schultergürtel zu isolieren."
+  },
+  "kettlebell-half-kneeling-press": {
+    "name": "Halbkniendes Drücken mit Kettlebell",
+    "description": "Ein Überkopfdrücken, das aus einer halbknienden Position ausgeführt wird, um die Rumpfstabilität herauszufordern und die Verwendung von Beinschwung zu verhindern."
+  },
+  "kettlebell-halifax": {
+    "name": "Kettlebell Halifax",
+    "description": "Ein komplexer Kettlebell-Flow, der typischerweise ein Umsetzen, eine Kniebeuge und ein Rotationsdrücken kombiniert."
+  },
+  "kettlebell-hang-clean": {
+    "name": "Hang Clean mit Kettlebell",
+    "description": "Ein Kettlebell Clean, der aus einer 'hängenden' Position (nach dem ersten Schwung) initiiert wird, anstatt aus dem Stillstand vom Boden."
+  },
+  "kettlebell-jefferson-curl": {
+    "name": "Jefferson Curl mit Kettlebell",
+    "description": "Eine belastete Dehnung der Wirbelsäulenbeugung mit einer Kettlebell zur Verbesserung der Flexibilität der hinteren Kette und der Wirbelsäulenmobilität."
+  },
+  "kettlebell-lateral-lunge": {
+    "name": "Seitlicher Ausfallschritt mit Kettlebell",
+    "description": "Ein Ausfallschritt zur Seite, während eine Kettlebell gehalten wird (oft in Goblet- oder Rack-Position), um die inneren und äußeren Oberschenkel zu trainieren und die Hüftmobilität zu verbessern."
+  },
+  "kettlebell-lunge-pass-through": {
+    "name": "Ausfallschritt mit Durchreichen der Kettlebell",
+    "description": "Eine Ausfallschritt-Variante, die das Durchreichen der Kettlebell unter dem vorderen Bein beinhaltet und Koordination und Rumpfstabilität herausfordert."
+  },
+  "kettlebell-lying-triceps-extension": {
+    "name": "Liegende Trizeps-Extension mit Kettlebell",
+    "description": "Eine Trizeps-Isolationsübung, die auf einer Bank oder dem Boden liegend ausgeführt wird, indem ein oder zwei Kettlebells von hinter dem Kopf ausgestreckt werden."
+  },
+  "kettlebell-outside-swing": {
+    "name": "Außen-Swing mit Kettlebell",
+    "description": "Eine Swing-Variante, bei der die Kettlebell außerhalb des Beines anstatt zwischen den Beinen verläuft."
+  },
+  "kettlebell-pistol-squat-double": {
+    "name": "Pistol Squat mit zwei Kettlebells",
+    "description": "Ein fortgeschrittener einbeiniger Squat, der ausgeführt wird, während zwei Kettlebells in der vorderen Rack-Position gehalten werden."
+  },
+  "kettlebell-pistol-squat-single": {
+    "name": "Pistol Squat mit einer Kettlebell",
+    "description": "Ein einbeiniger Squat, der ausgeführt wird, während eine Kettlebell in der Goblet-Position gehalten wird, um als Gegengewicht zu dienen."
+  },
+  "kettlebell-plank-drag-pull-through": {
+    "name": "Plank mit Kettlebell-Ziehen (Pull Through)",
+    "description": "Eine Anti-Rotations-Rumpfübung, bei der Sie eine Plank halten und eine Kettlebell von einer Seite Ihres Körpers zur anderen ziehen."
+  },
+  "kettlebell-pullover-to-sit-up-to-press": {
+    "name": "Pullover zum Sit-Up zum Drücken mit Kettlebell",
+    "description": "Eine komplexe Bewegung, die einen Pullover, einen Sit-Up und ein Überkopfdrücken in einer fließenden Sequenz kombiniert."
+  },
+  "kettlebell-rack-carry": {
+    "name": "Rack Carry mit Kettlebell",
+    "description": "Ein belastetes Tragen, bei dem Sie gehen, während Sie ein oder zwei Kettlebells in der vorderen Rack-Position halten, was Rumpf- und obere Rückenkraft aufbaut."
+  },
+  "kettlebell-rack-walk": {
+    "name": "Rack Walk mit Kettlebell",
+    "description": "Ein anderer Name für den Kettlebell Rack Carry, der das Gehen auf Distanz oder Zeit betont."
+  },
+  "kettlebell-rotational-deadlift": {
+    "name": "Rotatorisches Kreuzheben mit Kettlebell",
+    "description": "Eine Kreuzhebe-Variante, die eine Rotation des Rumpfes beinhaltet, um eine seitlich vom Körper positionierte Kettlebell aufzuheben."
+  },
+  "kettlebell-rotational-swing": {
+    "name": "Rotatorischer Swing mit Kettlebell",
+    "description": "Ein Kettlebell-Swing mit einer rotatorischen Komponente, bei dem Hüfte und Rumpf während der Bewegung schwenken."
+  },
+  "kettlebell-row-to-deadlift-complex": {
+    "name": "Komplex aus Rudern und Kreuzheben mit Kettlebell",
+    "description": "Eine Sequenz, die ein Kettlebell-Kreuzheben gefolgt von einem vorgebeugten Rudern beinhaltet."
+  },
+  "kettlebell-side-press": {
+    "name": "Side Press mit Kettlebell",
+    "description": "Eine klassische Drück-Variante, bei der Sie sich von der Kettlebell weglehnen, um einen mechanischen Vorteil zu erzielen und sie über Kopf zu drücken."
+  },
+  "kettlebell-single-arm-clean-and-thruster": {
+    "name": "Einarmiger Clean & Thruster mit Kettlebell",
+    "description": "Ein Komplex, der ein einarmiges Umsetzen, eine Kniebeuge und ein Überkopfdrücken in einer kraftvollen, fließenden Bewegung kombiniert."
+  },
+  "kettlebell-single-arm-complex-clean-squat-press": {
+    "name": "Einarmiger Komplex mit Kettlebell (Umsetzen-Kniebeuge-Drücken)",
+    "description": "Eine Sequenz aus einarmigem Umsetzen, einer Kniebeuge und einem Überkopfdrücken, die ausgeführt wird, ohne die Kettlebell abzusetzen."
+  },
+  "kettlebell-single-arm-deadlift": {
+    "name": "Einarmiges Kreuzheben mit Kettlebell",
+    "description": "Ein Kreuzheben, das durch das Heben einer einzelnen Kettlebell mit einem Arm ausgeführt wird und Anti-Rotation und Griffkraft herausfordert."
+  },
+  "kettlebell-single-arm-overhead-squat": {
+    "name": "Einarmige Überkopfkniebeuge mit Kettlebell",
+    "description": "Eine Kniebeuge, die ausgeführt wird, während eine einzelne Kettlebell über Kopf ausgestreckt gehalten wird, was außergewöhnliche Mobilität und Stabilität erfordert."
+  },
+  "kettlebell-single-arm-shrug": {
+    "name": "Einarmiger Shrug mit Kettlebell",
+    "description": "Ein einseitiger Shrug, der mit einer schweren Kettlebell ausgeführt wird, um den Trapeziusmuskel auf einer Seite zu trainieren."
+  },
+  "kettlebell-single-arm-thruster": {
+    "name": "Einarmiger Thruster mit Kettlebell",
+    "description": "Eine Verbundübung, die eine einarmige Rack-Kniebeuge mit einem Überkopfdrücken kombiniert."
+  },
+  "kettlebell-single-leg-deadlift": {
+    "name": "Einbeiniges Kreuzheben mit Kettlebell",
+    "description": "Eine einseitige Hüftbeuge-Bewegung, die Gleichgewicht, Stabilität und die Kraft der hinteren Kette herausfordert und mit einer Kettlebell ausgeführt wird."
+  },
+  "kettlebell-slingshot": {
+    "name": "Kettlebell Slingshot",
+    "description": "Eine Aufwärm- und Koordinationsübung, bei der eine Kettlebell von Hand zu Hand um den Körper gereicht wird."
+  },
+  "kettlebell-slingshot-to-goblet-squat": {
+    "name": "Kettlebell Slingshot zum Goblet Squat",
+    "description": "Ein Flow, der den Kettlebell Slingshot mit einem Goblet Squat in jeder Wiederholung kombiniert."
+  },
+  "kettlebell-snatch-to-overhead-reverse-lunge": {
+    "name": "Kettlebell Snatch zum Überkopf-Ausfallschritt nach hinten",
+    "description": "Ein Komplex, bei dem Sie einen Kettlebell Snatch ausführen und dann einen Ausfallschritt nach hinten machen, während Sie die Kettlebell stabil über Kopf halten."
+  },
+  "kettlebell-snatch-to-reverse-lunge": {
+    "name": "Kettlebell Snatch zum Ausfallschritt nach hinten",
+    "description": "Ein Komplex, der einen Kettlebell Snatch mit einem Ausfallschritt nach hinten kombiniert. Der Ausfallschritt kann mit der Kugel in der Rack-Position oder über Kopf gehalten ausgeführt werden."
+  },
+  "kettlebell-somersault-squat": {
+    "name": "Kettlebell Somersault Squat",
+    "description": "Eine fortgeschrittene Kniebeugen-Variante, bei der die Kettlebell während der Kniebeuge über die Schulter gerollt wird, was Mobilität und Koordination herausfordert."
+  },
+  "kettlebell-sots-press": {
+    "name": "Sots Press mit Kettlebell",
+    "description": "Ein Überkopfdrücken aus der tiefen Hocke, das unglaubliche Mobilität, Stabilität und Kraft erfordert."
+  },
+  "kettlebell-sport-style-swing": {
+    "name": "Kettlebell Swing im Sportstil",
+    "description": "Ein effizienterer, pendelartiger Schwung, der im Kettlebell-Sport (Girevoy) verwendet wird und auf Ausdauer statt auf maximale Kraft ausgelegt ist."
+  },
+  "kettlebell-stacked-stance-deadlift": {
+    "name": "Kettlebell Kreuzheben im versetzten Stand",
+    "description": "Eine Kreuzhebe-Variante mit versetztem Stand (ein Fuß leicht hinter dem anderen), um die Belastung auf das vordere Bein zu erhöhen."
+  },
+  "kettlebell-standing-pullover": {
+    "name": "Stehender Pullover mit Kettlebell",
+    "description": "Eine Mobilitäts- und Kraftübung für die Lats und den Serratus, die ausgeführt wird, indem eine Kettlebell im Stehen hinter den Kopf gesenkt wird."
+  },
+  "kettlebell-straight-leg-sit-up": {
+    "name": "Sit-Up mit gestreckten Beinen und Kettlebell",
+    "description": "Ein gewichteter Sit-Up mit gestreckten Beinen, während eine Kettlebell an der Brust oder über dem Kopf gehalten wird."
+  },
+  "kettlebell-suitcase-farmers-carry": {
+    "name": "Koffer-/Farmer's Carry mit Kettlebell",
+    "description": "Ein belastetes Tragen mit einer Kettlebell in einer Hand (Koffer) oder beiden Händen (Farmer), das Griff, Rumpf und Haltung aufbaut."
+  },
+  "kettlebell-sumo-deadlift-high-pull": {
+    "name": "Sumo-Kreuzheben mit hohem Zug mit Kettlebell",
+    "description": "Eine explosive Bewegung, die ein Sumo-Kreuzheben mit einem kraftvollen aufrechten Rudern kombiniert und die Ganzkörperkraft entwickelt."
+  },
+  "kettlebell-swing-to-snatch": {
+    "name": "Swing zum Snatch mit Kettlebell",
+    "description": "Eine Übung, die hilft, das Reißen zu lernen, indem sie es in einen Schwung, gefolgt vom Aufwärtsstoß in die Arretierung, aufteilt."
+  },
+  "kettlebell-tactical-lunge": {
+    "name": "Taktischer Ausfallschritt mit Kettlebell",
+    "description": "Eine Ausfallschritt-Variante, die oft ein Durchreichen oder eine andere koordinierte Bewegung beinhaltet und Athletik und Kontrolle betont."
+  },
+  "kettlebell-tall-kneeling-press": {
+    "name": "Hohes kniendes Drücken mit Kettlebell",
+    "description": "Ein Überkopfdrücken, das ausgeführt wird, während man auf beiden Knien kniet, was das Gesäß und den Rumpf aktiviert, um eine stabile Basis zu schaffen."
+  },
+  "kettlebell-tate-press": {
+    "name": "Tate Press mit Kettlebell",
+    "description": "Ein Trizepsdrücken, bei dem die Kettlebells mit ausgestellten Ellenbogen zur Brust gesenkt werden, ähnlich der Kurzhantelversion."
+  },
+  "kettlebell-towel-curl": {
+    "name": "Handtuch-Curl mit Kettlebell",
+    "description": "Ein Bizepscurl mit einem Handtuch, das durch den Kettlebell-Griff gefädelt ist, um die Griffkraft herauszufordern."
+  },
+  "kettlebell-turkish-sit-up": {
+    "name": "Türkischer Sit-Up mit Kettlebell",
+    "description": "Der Sit-Up-Teil des Turkish Get-Up, eine kraftvolle Übung für Rumpf und Hüftbeuger."
+  },
+  "kettlebell-two-hand-bottoms-up-squat": {
+    "name": "Zweihändige Bottoms-Up-Kniebeuge mit Kettlebell",
+    "description": "Eine Kniebeuge, die ausgeführt wird, während eine Kettlebell mit beiden Händen kopfüber balanciert wird, was immense Ganzkörperspannung erfordert."
+  },
+  "kettlebell-upright-row": {
+    "name": "Aufrechtes Rudern mit Kettlebell",
+    "description": "Eine Übung, die auf Schultern und Trapezmuskeln abzielt, indem ein oder zwei Kettlebells nach oben in Richtung Kinn gezogen werden."
+  },
+  "kettlebell-waiters-walk": {
+    "name": "Kellner-Gang mit Kettlebell",
+    "description": "Ein einseitiges belastetes Tragen, bei dem eine Kettlebell gerade über dem Kopf gehalten wird, als ob man ein Tablett trägt. Baut Schulter- und Rumpfstabilität auf."
+  },
+  "l-sit": {
+    "name": "L-Sitz",
+    "description": "Eine Turnübung, bei der der Körper in Form des Buchstabens 'L' gehalten wird, wobei man sich mit den Händen stützt, während die Beine gerade ausgestreckt sind. Erfordert erhebliche Rumpf- und Trizepskraft."
+  },
+  "leg-raises": {
+    "name": "Beinheben",
+    "description": "Eine Rumpfübung, die auf die unteren Bauchmuskeln abzielt und auf dem Rücken liegend ausgeführt wird, indem die Beine zur Decke gehoben werden."
+  },
+  "lower-trunk-rotations-supine": {
+    "name": "Untere Rumpfrotationen (in Rückenlage)",
+    "description": "Eine sanfte Mobilitätsübung für den unteren Rücken, die auf dem Rücken liegend mit gebeugten Knien ausgeführt wird, indem die Beine von Seite zu Seite gedreht werden."
+  },
+  "lying-leg-curl-machine": {
+    "name": "Beincurl liegend (Maschine)",
+    "description": "Eine Isolationsübung für die Oberschenkelrückseite, die an einer Maschine ausgeführt wird, während man mit dem Gesicht nach unten liegt."
+  },
+  "macebell-10-to-2": {
+    "name": "Macebell 10-zu-2",
+    "description": "Eine grundlegende Macebell-Übung, die einen Pendelschwung von Seite zu Seite vor dem Körper beinhaltet, ähnlich wie die Zeiger einer Uhr, die sich von 10 zu 2 bewegen."
+  },
+  "macebell-360": {
+    "name": "Macebell 360",
+    "description": "Die charakteristische Macebell-Übung, bei der die Keule in einem vollen Kreis um den Kopf geschwungen wird, um Griff-, Schulter- und Rumpfkraft aufzubauen."
+  },
+  "macebell-gravedigger": {
+    "name": "Macebell Totengräber",
+    "description": "Eine Rotationsübung, die die Bewegung des Grabens mit einer Schaufel nachahmt und auf den Rumpf abzielt sowie die Rotationskraft verbessert."
+  },
+  "macebell-spear-stab": {
+    "name": "Macebell Speerstoß",
+    "description": "Eine Ganzkörperübung, die das Stoßen mit einem Speer nachahmt und einen kraftvollen Vorwärtsstoß der Keule beinhaltet."
+  },
+  "machine-chest-press": {
+    "name": "Brustpresse an der Maschine",
+    "description": "Eine Verbundübung für die Brust, ähnlich dem Bankdrücken, aber mit einem festen Bewegungsweg, der von einer Maschine vorgegeben wird."
+  },
+  "machine-hip-abduction": {
+    "name": "Hüftabduktion an der Maschine",
+    "description": "Eine maschinengestützte Isolationsübung für die äußeren Oberschenkel und den Gluteus medius, indem die Beine gegen Widerstand auseinander gedrückt werden."
+  },
+  "machine-hip-adduction": {
+    "name": "Hüftadduktion an der Maschine",
+    "description": "Eine maschinengestützte Isolationsübung für die inneren Oberschenkel, indem die Beine gegen Widerstand zusammengedrückt werden."
+  },
+  "machine-lateral-raise": {
+    "name": "Seitheben an der Maschine",
+    "description": "Eine Isolationsübung für die mittleren Deltamuskeln mit einer Maschine, die einen festen Weg für die Seithebebewegung bietet."
+  },
+  "military-press-barbell": {
+    "name": "Military Press (Langhantel)",
+    "description": "Ein striktes Überkopfdrücken mit einer Langhantel, im Stehen ausgeführt, ohne Beinschwung. Es ist ein fundamentaler Test der Schulterkraft."
+  },
+  "muscle-up": {
+    "name": "Muscle-up",
+    "description": "Eine fortgeschrittene Turnfähigkeit, die einen Klimmzug mit einem Dip in einer fließenden Bewegung kombiniert, um vom Hängen unter einer Stange oder Ringen zum Stützen darüber zu gelangen."
+  },
+  "parallette-deep-push-up": {
+    "name": "Tiefer Liegestütz auf Parallettes",
+    "description": "Ein Liegestütz, der auf Parallettes ausgeführt wird, was einen größeren Bewegungsumfang und eine tiefere Dehnung in der Brust ermöglicht."
+  },
+  "parallette-l-sit": {
+    "name": "L-Sitz auf Parallettes",
+    "description": "Ein L-Sitz, der auf Parallettes ausgeführt wird, was etwas einfacher sein kann als auf dem Boden, da es mehr Freiraum für die Beine bietet."
+  },
+  "parallette-shoot-through": {
+    "name": "Shoot-Through auf Parallettes",
+    "description": "Eine dynamische Turnbewegung auf Parallettes, bei der von einer Plank- oder Liegestützposition in eine Hocke oder einen L-Sitz übergegangen wird, indem die Beine durch die Arme 'geschossen' werden."
+  },
+  "parallette-tuck-planche": {
+    "name": "Gehockte Planche auf Parallettes",
+    "description": "Eine Progression zur vollen Planche, die auf Parallettes ausgeführt wird, wobei der Körper von den Armen gestützt wird, während die Knie an die Brust gezogen sind."
+  },
+  "pelvic-tilts": {
+    "name": "Beckenkippung",
+    "description": "Eine Übung zur Rumpfaktivierung und Wirbelsäulenmobilität, bei der das Becken nach vorne und hinten gekippt wird, oft auf dem Rücken liegend ausgeführt."
+  },
+  "pike-push-up": {
+    "name": "Pike-Liegestütz",
+    "description": "Eine Liegestütz-Variante, die mit hochgestellten Hüften in einer umgekehrten 'V'-Form ausgeführt wird, was den Schwerpunkt auf die Schultern verlagert. Eine Progression zum Handstand-Liegestütz."
+  },
+  "piriformis-stretch-supine": {
+    "name": "Piriformis-Dehnung (in Rückenlage)",
+    "description": "Eine Dehnung für den Piriformis-Muskel in der Hüfte, die auf dem Rücken liegend ausgeführt wird, oft indem ein Knöchel über das gegenüberliegende Knie gekreuzt und zur Brust gezogen wird."
+  },
+  "pistol-squat": {
+    "name": "Pistol Squat",
+    "description": "Eine fortgeschrittene Körpergewichtsübung, die aus einer einbeinigen Kniebeuge besteht und erhebliche Kraft, Gleichgewicht und Mobilität erfordert."
+  },
+  "planche": {
+    "name": "Planche",
+    "description": "Eine fortgeschrittene Turnfähigkeit, bei der der Körper parallel zum Boden gehalten wird, nur von den Händen gestützt, was unglaubliche Kraft bei gestreckten Armen und Gleichgewicht erfordert."
+  },
+  "plank-to-push-up": {
+    "name": "Plank zum Liegestütz",
+    "description": "Eine dynamische Übung, bei der Sie zwischen einer Unterarmstütz- und einer hohen Stütz- (Liegestütz-) Position wechseln und so die Rumpfstabilität und die Kraft des Oberkörpers herausfordern."
+  },
+  "proprioceptive-close-grip-push-up": {
+    "name": "Propriozeptiver enger Liegestütz",
+    "description": "Ein enger Liegestütz, der auf einer instabilen Oberfläche ausgeführt wird, um Stabilität, Kontrolle und Körperbewusstsein herauszufordern."
+  },
+  "proprioceptive-pause-goblet-squat": {
+    "name": "Propriozeptiver Goblet Squat mit Pause",
+    "description": "Ein Goblet Squat mit einer Pause am unteren Ende, oft mit geschlossenen Augen oder auf einer instabilen Oberfläche ausgeführt, um die Propriozeption und Stabilität zu verbessern."
+  },
+  "quad-sets-isometric": {
+    "name": "Quad-Sets (Isometrisch)",
+    "description": "Eine isometrische Kräftigungsübung für den Quadrizeps, bei der der Muskel angespannt wird, ohne das Kniegelenk zu bewegen. Wird oft in der frühen Reha-Phase verwendet."
+  },
+  "ring-archer-pull-up": {
+    "name": "Archer-Klimmzug an Ringen",
+    "description": "Eine einseitige Klimmzug-Variante an Turnringen, bei der ein Arm zieht, während der andere zur Seite ausgestreckt wird, ähnlich wie ein Bogenschütze einen Bogen spannt."
+  },
+  "ring-dip": {
+    "name": "Dip an Ringen",
+    "description": "Ein Dip an Turnringen, der eine Instabilitätskomponente hinzufügt, die eine größere Kraft und Stabilisierung von Schultern und Brust erfordert."
+  },
+  "ring-muscle-up": {
+    "name": "Muscle-up an Ringen",
+    "description": "Ein Muscle-up an Turnringen, der aufgrund der Bewegung der Ringe einen natürlicheren Übergang ermöglicht."
+  },
+  "ring-row": {
+    "name": "Rudern an Ringen",
+    "description": "Ein invertiertes Rudern mit Turnringen, das eine natürliche Rotation der Hände und eine anpassbare Schwierigkeit durch Ändern des Körperwinkels ermöglicht."
+  },
+  "ring-skin-the-cat": {
+    "name": "Skin the Cat an Ringen",
+    "description": "Eine grundlegende gymnastische Mobilitätsübung an Ringen, bei der Füße und Hüften durch die Arme und über Kopf in den Hang geführt und dann zurückgebracht werden."
+  },
+  "ring-support-hold": {
+    "name": "Stütz an Ringen",
+    "description": "Ein grundlegendes isometrisches Halten an Turnringen, bei dem Sie Ihr Körpergewicht mit gestreckten Armen stützen, was eine erhebliche Stabilisierung erfordert."
+  },
+  "sandbag-bear-hug-squat": {
+    "name": "Bear Hug Squat mit Sandsack",
+    "description": "Eine Kniebeuge, die ausgeführt wird, während ein Sandsack senkrecht gegen den Oberkörper umarmt wird, was den Rumpf und den oberen Rücken intensiv beansprucht."
+  },
+  "sandbag-clean": {
+    "name": "Umsetzen mit Sandsack",
+    "description": "Eine explosive Übung, bei der ein Sandsack in einer kraftvollen Bewegung vom Boden zur Schulter gehoben wird."
+  },
+  "sandbag-over-the-shoulder-carry": {
+    "name": "Tragen über die Schulter mit Sandsack",
+    "description": "Ein belastetes Tragen, bei dem ein schwerer Sandsack über eine Schulter getragen wird, was den Rumpf und die hintere Kette herausfordert."
+  },
+  "sandbag-rotational-lunge": {
+    "name": "Rotatorischer Ausfallschritt mit Sandsack",
+    "description": "Ein Ausfallschritt, der eine Rotation des Rumpfes beinhaltet, wobei ein Sandsack gehalten wird, um Widerstand hinzuzufügen und den Rumpf herauszufordern."
+  },
+  "sandbag-shouldering": {
+    "name": "Auf die Schulter nehmen mit Sandsack",
+    "description": "Der Akt des Anhebens eines Sandsacks vom Boden und des Platzierens auf einer Schulter, eine grundlegende Fähigkeit im Strongman- und Odd-Object-Lifting."
+  },
+  "sandbag-zercher-squat": {
+    "name": "Zercher Squat mit Sandsack",
+    "description": "Eine Kniebeuge, die ausgeführt wird, während ein Sandsack in der Armbeuge gehalten wird, was den Rumpf, den oberen Rücken und die Arme stark beansprucht."
+  },
+  "scapular-retraction-shoulder-blade-squeezes": {
+    "name": "Skapulare Retraktion (Schulterblätter zusammenziehen)",
+    "description": "Eine Haltungsübung, die sich darauf konzentriert, die Schulterblätter zusammenzuziehen, um die Rhomboiden und die mittleren Trapezmuskeln zu stärken."
+  },
+  "seated-hamstring-stretch": {
+    "name": "Oberschenkelrückseiten-Dehnung im Sitzen",
+    "description": "Eine Dehnung für die Oberschenkelrückseite, die aus einer sitzenden Position ausgeführt wird, typischerweise durch Greifen nach den Zehen bei gestreckten Beinen."
+  },
+  "seated-pec-deck-fly": {
+    "name": "Pec Deck Fly im Sitzen",
+    "description": "Eine Isolationsübung für die Brust mit einer Maschine, bei der man sitzt und gepolsterte Hebel in einer fliegenden Bewegung zusammenführt."
+  },
+  "shoulder-external-rotation-banded": {
+    "name": "Schulter-Außenrotation (mit Band)",
+    "description": "Eine Prähab-/Reha-Übung für die Rotatorenmanschettenmuskeln, bei der ein Widerstandsband verwendet wird, um den Arm gegen Spannung nach außen zu drehen."
+  },
+  "shoulder-pendulum-swings": {
+    "name": "Schulter-Pendelschwünge",
+    "description": "Eine sanfte Bewegungsumfangsübung für das Schultergelenk, oft in der frühen Reha-Phase verwendet, bei der man sich vorbeugt und den Arm sanft schwingen lässt."
+  },
+  "shrimp-squat": {
+    "name": "Shrimp Squat",
+    "description": "Eine einbeinige Kniebeugen-Variante, bei der das nicht arbeitende Bein gebeugt und hinter dem Körper gehalten wird, ähnlich einem Pistol Squat, aber mit einer anderen Beinposition."
+  },
+  "side-plank": {
+    "name": "Seitstütz (Side Plank)",
+    "description": "Eine isometrische Rumpfübung, die auf einer Seite ausgeführt wird, um die schrägen Bauchmuskeln zu trainieren und die seitliche Stabilität zu verbessern."
+  },
+  "single-kettlebell-alternating-swing": {
+    "name": "Abwechselnder Swing mit einer Kettlebell",
+    "description": "Ein Kettlebell-Swing, bei dem die Kugel am Scheitelpunkt jedes Schwungs von einer Hand zur anderen übergeben wird."
+  },
+  "single-kettlebell-clean-and-press-to-pause-windmill": {
+    "name": "Clean & Press zur pausierten Windmühle mit einer Kettlebell",
+    "description": "Ein komplexer Flow, der ein Umsetzen, ein Drücken und dann eine Windmühle mit einer Pause kombiniert und Kraft, Stabilität und Mobilität herausfordert."
+  },
+  "single-kettlebell-clean-and-press": {
+    "name": "Umsetzen und Drücken mit einer Kettlebell",
+    "description": "Eine klassische Kombination, bei der eine Kettlebell in die Rack-Position umgesetzt und dann sofort über Kopf gedrückt wird."
+  },
+  "single-kettlebell-figure-eight": {
+    "name": "Figure Eight mit einer Kettlebell",
+    "description": "Eine dynamische Übung, die die Koordination, Rumpfstabilität und Griffkraft verbessert, indem die Kettlebell in einer Achterbewegung zwischen und um die Beine geführt wird."
+  },
+  "single-kettlebell-front-squat": {
+    "name": "Frontkniebeuge mit einer Kettlebell",
+    "description": "Eine Kniebeuge, die mit einer einzelnen Kettlebell in der vorderen Rack-Position ausgeführt wird und eine versetzte Last erzeugt, die die Rumpfstabilität herausfordert."
+  },
+  "single-kettlebell-high-pull": {
+    "name": "Hoher Zug mit einer Kettlebell",
+    "description": "Eine explosive Übung, bei der eine Kettlebell aus einer Schwingposition bis auf Kinnhöhe gezogen wird, wobei der Ellbogen hoch gehalten wird."
+  },
+  "single-kettlebell-jerk": {
+    "name": "Stoßen mit einer Kettlebell",
+    "description": "Ein kraftvoller Lift, bei dem eine doppelte Dip-'Jerk'-Bewegung mit den Beinen verwendet wird, um eine einzelne Kettlebell über den Kopf zu treiben."
+  },
+  "single-kettlebell-overhead-lunge": {
+    "name": "Überkopf-Ausfallschritt mit einer Kettlebell",
+    "description": "Ein Ausfallschritt, der ausgeführt wird, während eine einzelne Kettlebell über dem Kopf arretiert ist, was eine erhebliche Stabilitätsherausforderung darstellt."
+  },
+  "single-kettlebell-overhead-press": {
+    "name": "Überkopfdrücken mit einer Kettlebell",
+    "description": "Eine grundlegende Kraftübung für den Oberkörper, bei der eine einzelne Kettlebell aus der Rack-Position in eine Überkopf-Arretierung gedrückt wird."
+  },
+  "single-kettlebell-russian-twist": {
+    "name": "Russian Twist mit einer Kettlebell",
+    "description": "Eine Rumpfübung, die auf die schrägen Bauchmuskeln abzielt und im Sitzen ausgeführt wird, indem der Oberkörper von Seite zu Seite gedreht wird, während eine einzelne Kettlebell gehalten wird."
+  },
+  "single-kettlebell-swing": {
+    "name": "Einhand-Swing mit Kettlebell",
+    "description": "Der einhändige Kettlebell-Swing, der dem standardmäßigen zweihändigen Swing eine Anti-Rotations-Herausforderung hinzufügt."
+  },
+  "single-leg-stance-balance": {
+    "name": "Einbeinstand (Balance)",
+    "description": "Eine grundlegende Gleichgewichtsübung, bei der man für eine bestimmte Zeit auf einem Bein steht."
+  },
+  "skater-jumps": {
+    "name": "Skater Jumps",
+    "description": "Eine plyometrische Übung, die seitliche Sprünge von einem Bein zum anderen beinhaltet und die Bewegung eines Eisschnellläufers nachahmt, um Kraft und Beweglichkeit aufzubauen."
+  },
+  "slow-eccentric-floor-skullcrusher": {
+    "name": "Langsames exzentrisches Boden-Stirndrücken",
+    "description": "Ein Trizeps-Stirndrücken, das auf dem Boden mit Fokus auf eine sehr langsame, kontrollierte Absenkphase (exzentrisch) ausgeführt wird."
+  },
+  "slow-eccentric-floor-skullcrusher-to-close-grip-floor-press": {
+    "name": "Langsames exzentrisches Boden-Stirndrücken zum engen Bodendrücken",
+    "description": "Ein auf den Trizeps ausgerichteter Komplex, der ein langsames exzentrisches Stirndrücken mit einem engen Bodendrücken bei jeder Wiederholung kombiniert."
+  },
+  "slow-eccentric-pause-towel-curls": {
+    "name": "Langsamer exzentrischer Pausen-Handtuch-Curl",
+    "description": "Ein Bizepscurl mit einem Handtuch für den Griff, der eine langsame Absenkphase und eine Pause betont, um die Zeit unter Spannung zu maximieren."
+  },
+  "standing-calf-raise": {
+    "name": "Wadenheben im Stehen",
+    "description": "Eine Übung zur Stärkung des Gastrocnemius-Muskels der Wade durch Anheben der Fersen aus stehender Position."
+  },
+  "dip": {
+    "name": "Dip an der geraden Stange",
+    "description": "Ein Dip an einer einzelnen geraden Stange, der mehr Rumpfstabilisierung und einen anderen Schulterwinkel erfordert als Dips an parallelen Stangen."
+  },
+  "straight-leg-raise": {
+    "name": "Beinheben mit gestreckten Beinen",
+    "description": "Eine Rumpf- und Hüftbeugerübung, die auf dem Rücken liegend ausgeführt wird, indem ein oder beide Beine gerade nach oben gehoben werden, ohne die Knie zu beugen."
+  },
+  "suitcase-deadlift-to-anti-rotation-row": {
+    "name": "Koffer-Kreuzheben zum Anti-Rotations-Rudern",
+    "description": "Ein Komplex, der ein einarmiges Koffer-Kreuzheben mit einem Rudern an der Spitze kombiniert und den Rumpf herausfordert, der Rotation zu widerstehen."
+  },
+  "superman-extensions": {
+    "name": "Superman-Streckungen",
+    "description": "Eine Körpergewichtsübung, die den unteren Rücken, das Gesäß und die Oberschenkelrückseite stärkt, indem Arme und Beine gleichzeitig vom Boden gehoben werden, während man auf dem Bauch liegt."
+  },
+  "terminal-knee-extension-tke": {
+    "name": "Terminale Kniestreckung (TKE)",
+    "description": "Eine Rehabilitations- und Aktivierungsübung für den Quadrizeps (insbesondere den VMO), die sich auf die letzten Grade der Kniestreckung konzentriert, oft unter Verwendung eines Widerstandsbandes."
+  },
+  "towel-scrunches": {
+    "name": "Handtuchkrallen",
+    "description": "Eine Übung für die intrinsischen Fußmuskeln, die ausgeführt wird, indem man mit den Zehen ein auf dem Boden liegendes Handtuch zusammenzieht."
+  },
+  "tuck-planche": {
+    "name": "Gehockte Planche",
+    "description": "Eine grundlegende Progression für die volle Planche, bei der der Körper auf den Händen balanciert wird, während die Knie fest an die Brust gezogen sind."
+  },
+  "twist-sit-up": {
+    "name": "Twist-Sit-Up",
+    "description": "Eine Sit-Up-Variante, die eine Rumpfdrehung an der Spitze der Bewegung beinhaltet, um die schrägen Bauchmuskeln zu beanspruchen."
+  },
+  "upper-trapezius-stretch": {
+    "name": "Dehnung des oberen Trapezmuskels",
+    "description": "Eine Nackendehnung, die ausgeführt wird, indem der Kopf sanft zur Seite geneigt wird, um den oberen Trapezmuskel zu verlängern."
+  },
+  "vipr-cylinder-drop-squat": {
+    "name": "ViPR Zylinder Drop Squat",
+    "description": "Ein dynamischer Squat mit einem ViPR, bei dem der Zylinder fallen gelassen und gefangen wird, wodurch Bewegung und Last integriert werden."
+  },
+  "vipr-cylinder-lift": {
+    "name": "ViPR Zylinder Heben",
+    "description": "Eine grundlegende ViPR-Übung, die das Heben des Zylinders in verschiedenen Bewegungsebenen beinhaltet und oft funktionale Aufgaben nachahmt."
+  },
+  "vipr-ice-skater": {
+    "name": "ViPR Ice Skater",
+    "description": "Eine seitliche Bewegungsübung mit dem ViPR, die die Bewegung des Eislaufens nachahmt und Kraft und Beweglichkeit in der Frontalebene aufbaut."
+  },
+  "vipr-lateral-shift-with-rip": {
+    "name": "ViPR Laterale Verschiebung mit Rip",
+    "description": "Eine dynamische Übung, die eine seitliche Verschiebung des ViPR mit einer kraftvollen Push-Pull-'Rip'-Bewegung kombiniert."
+  },
+  "vipr-shoveling": {
+    "name": "ViPR Schaufeln",
+    "description": "Eine ganzkörperliche Rotationsübung, die die Bewegung des Schaufelns nachahmt und Kraft und Koordination durch Hüfte und Rumpf entwickelt."
+  },
+  "vipr-thread-the-needle": {
+    "name": "ViPR Faden durchs Nadelöhr",
+    "description": "Eine Mobilitäts- und Stabilitätsübung mit dem ViPR, die eine rotatorische Reichweite unter dem Körper beinhaltet, um die Mobilität der Brustwirbelsäule zu verbessern."
+  },
+  "wall-handstand": {
+    "name": "Handstand an der Wand",
+    "description": "Ein Handstand, der mit den Füßen an einer Wand zur Unterstützung ausgeführt wird, um Kraft und Vertrauen für einen freistehenden Handstand aufzubauen."
+  },
+  "rehab-wall-push-up": {
+    "name": "Liegestütz an der Wand",
+    "description": "Eine Anfänger-Liegestütz-Variante, bei der man gegen eine Wand drückt, wodurch das zu hebende Körpergewicht reduziert wird."
+  },
+  "wall-sit": {
+    "name": "Wandsitz",
+    "description": "Eine isometrische Übung, bei der man eine Kniebeugenposition mit dem Rücken an einer Wand hält, um hauptsächlich den Quadrizeps zu stärken."
+  },
+  "rehab-wall-sit-isometric": {
+    "name": "Wandsitz (Isometrisch)",
+    "description": "Eine isometrische Übung, bei der eine Kniebeugenposition an einer Wand gehalten wird, um die muskuläre Ausdauer in Quadrizeps, Gesäß und Oberschenkelrückseite aufzubauen."
   }
-}
+}}

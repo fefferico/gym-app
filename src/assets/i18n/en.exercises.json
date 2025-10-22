@@ -431,6 +431,998 @@
     "battle-ropes": {
       "name": "Battle Ropes",
       "description": "A high-intensity, low-impact exercise that works the upper body, core, and provides a cardiovascular challenge."
+    },
+    "alternating-proprioceptive-reverse-lunge": {
+      "name": "Alternating Proprioceptive Reverse Lunge",
+      "description": "A reverse lunge variation that challenges balance and body awareness by alternating legs with each repetition, often on an unstable surface or with eyes closed to enhance proprioception."
+    },
+    "rehab-ankle-pumps": {
+      "name": "Ankle Pumps",
+      "description": "A simple mobility exercise involving flexing and extending the ankles, often used to improve circulation and range of motion after injury or inactivity."
+    },
+    "archer-push-up": {
+      "name": "Archer Push-up",
+      "description": "A unilateral push-up variation where one arm extends out to the side while the other performs the push-up, building strength and control one side at a time."
+    },
+    "barbell-skull-crusher": {
+      "name": "Barbell Skull Crusher",
+      "description": "An isolation exercise for the triceps, performed by lying on a bench and lowering a barbell towards the forehead before extending the elbows."
+    },
+    "bird-dog": {
+      "name": "Bird Dog",
+      "description": "A core stability exercise where you simultaneously extend an opposite arm and leg while on all fours, improving balance and spinal stability."
+    },
+    "rehab-bird-dog-stability": {
+      "name": "Bird-Dog (Stability Focus)",
+      "description": "A variation of the Bird Dog exercise emphasizing slow, controlled movements and holds to maximize core stabilization and control."
+    },
+    "bulgarian-bag-arm-throw": {
+      "name": "Bulgarian Bag Arm Throw",
+      "description": "A dynamic rotational exercise using a Bulgarian Bag, involving swinging and throwing the bag across the body to develop core power and coordination."
+    },
+    "bulgarian-bag-snatch": {
+      "name": "Bulgarian Bag Snatch",
+      "description": "An explosive full-body movement where a Bulgarian Bag is swung from between the legs to an overhead position in one fluid motion."
+    },
+    "bulgarian-bag-spin": {
+      "name": "Bulgarian Bag Spin",
+      "description": "A signature Bulgarian Bag exercise involving spinning the bag around the head and body, building shoulder stability, core strength, and grip."
+    },
+    "bulgarian-bag-suplex": {
+      "name": "Bulgarian Bag Suplex",
+      "description": "A power-focused exercise that mimics a wrestling suplex, involving lifting and throwing the Bulgarian Bag over the shoulder."
+    },
+    "burpee-box-jump": {
+      "name": "Burpee with Box Jump",
+      "description": "A high-intensity variation of the burpee where the final jump is performed onto an elevated box, increasing the plyometric demand."
+    },
+    "cable-seated-row": {
+      "name": "Cable Seated Row",
+      "description": "A machine exercise for back thickness, targeting the middle back muscles by pulling handles towards the torso from a seated position."
+    },
+    "calf-stretch": {
+      "name": "Calf Stretch",
+      "description": "A flexibility exercise to lengthen the gastrocnemius and soleus muscles, typically performed against a wall or on a step."
+    },
+    "chin-tucks-cervical-retraction": {
+      "name": "Chin Tucks (Cervical Retraction)",
+      "description": "A postural exercise to correct forward head posture by gently retracting the head and neck, strengthening the deep cervical flexors."
+    },
+    "rehab-clamshells": {
+      "name": "Clamshells",
+      "description": "A hip abduction exercise performed lying on your side to strengthen the gluteus medius, crucial for hip stability."
+    },
+    "clubbell-barbarian-squat": {
+      "name": "Clubbell Barbarian Squat",
+      "description": "A complex exercise combining a squat with rotational clubbell movements, challenging coordination, core strength, and lower body power."
+    },
+    "clubbell-gamma-cast": {
+      "name": "Clubbell Gamma Cast",
+      "description": "A foundational clubbell exercise involving a pendulum swing from side to side in front of the body, building grip, shoulder, and core strength."
+    },
+    "clubbell-mill": {
+      "name": "Clubbell Mill",
+      "description": "A circular strength exercise where a clubbell is swung in a rotational pattern around the body, similar to a windmill motion, improving shoulder mobility and stability."
+    },
+    "clubbell-shield-cast": {
+      "name": "Clubbell Shield Cast",
+      "description": "A core clubbell movement where the club is cast over the shoulder in a protective 'shield' motion, great for shoulder and thoracic mobility."
+    },
+    "crab-walk": {
+      "name": "Crab Walk",
+      "description": "A bodyweight exercise performed by walking on hands and feet with the chest facing up, engaging the triceps, shoulders, glutes, and hamstrings."
+    },
+    "dead-bug": {
+      "name": "Dead Bug",
+      "description": "A core exercise where you lie on your back and slowly lower opposite arms and legs, improving lumbo-pelvic stability without stressing the back."
+    },
+    "decline-push-up": {
+      "name": "Decline Push-up",
+      "description": "A push-up variation with the feet elevated, which increases the load on the upper chest and shoulders."
+    },
+    "dolphin-plank": {
+      "name": "Dolphin Plank",
+      "description": "An advanced plank variation performed on the forearms, involving piking the hips up and down to challenge the shoulders and core."
+    },
+    "double-kettlebell-alternating-clean": {
+      "name": "Double Kettlebell Alternating Clean",
+      "description": "An exercise holding two kettlebells, where you alternate cleaning each one to the rack position, challenging coordination and core stability."
+    },
+    "double-kettlebell-alternating-floor-press": {
+      "name": "Double Kettlebell Alternating Floor Press",
+      "description": "A floor press using two kettlebells, where you press one arm at a time, forcing the core to resist rotation."
+    },
+    "double-kettlebell-alternating-rotational-press": {
+      "name": "Double Kettlebell Alternating Rotational Press",
+      "description": "An overhead press with two kettlebells, incorporating a torso rotation as you press each bell up one at a time."
+    },
+    "double-kettlebell-alternating-snatch": {
+      "name": "Double Kettlebell Alternating Snatch",
+      "description": "An explosive exercise where you alternate snatching each kettlebell overhead in a continuous, fluid motion."
+    },
+    "double-kettlebell-arching-swing": {
+      "name": "Double Kettlebell Arching Swing",
+      "description": "A swing variation where two kettlebells are swung in an arching, outside-the-legs path, challenging the hips and core differently than a standard swing."
+    },
+    "double-kettlebell-bent-over-row": {
+      "name": "Double Kettlebell Bent-Over Row",
+      "description": "A strength exercise for the back, performing a bent-over row while holding a kettlebell in each hand."
+    },
+    "double-kettlebell-clean": {
+      "name": "Double Kettlebell Clean",
+      "description": "A power exercise where two kettlebells are simultaneously cleaned from a swing position to the rack position on the chest."
+    },
+    "double-kettlebell-clean-and-jerk": {
+      "name": "Double Kettlebell Clean and Jerk",
+      "description": "A full-body ballistic lift combining the double kettlebell clean with a powerful jerk to drive both bells overhead."
+    },
+    "double-kettlebell-clean-and-push-press": {
+      "name": "Double Kettlebell Clean and Push Press",
+      "description": "A compound movement combining the double kettlebell clean with a push press, using leg drive to help press the bells overhead."
+    },
+    "double-kettlebell-clean-to-reverse-lunge": {
+      "name": "Double Kettlebell Clean to Reverse Lunge",
+      "description": "A complex that combines a double kettlebell clean with a reverse lunge on each leg before repeating."
+    },
+    "double-kettlebell-complex-clean-squat-press": {
+      "name": "Double Kettlebell Complex (Clean-Squat-Press)",
+      "description": "A sequence where you perform a double kettlebell clean, followed by a front squat, and then an overhead press in one continuous complex."
+    },
+    "double-kettlebell-deadlift-to-swing": {
+      "name": "Double Kettlebell Deadlift to Swing",
+      "description": "An exercise that begins with a double kettlebell deadlift and flows directly into a kettlebell swing, helping to pattern the hip hinge."
+    },
+    "double-kettlebell-farmers-squat": {
+      "name": "Double Kettlebell Farmer's Squat",
+      "description": "A squat variation performed while holding two kettlebells at your sides (farmer's carry position), heavily engaging the traps and core."
+    },
+    "double-kettlebell-floor-press": {
+      "name": "Double Kettlebell Floor Press",
+      "description": "A chest and triceps exercise performed by lying on the floor and pressing two kettlebells upward. The floor limits range of motion, focusing on lockout strength."
+    },
+    "double-kettlebell-front-squat": {
+      "name": "Double Kettlebell Front Squat",
+      "description": "A squat performed while holding two kettlebells in the front rack position, intensely challenging the quads, glutes, and core."
+    },
+    "double-kettlebell-front-squat-to-press-out": {
+      "name": "Double Kettlebell Front Squat to Press-Out",
+      "description": "Combines a double kettlebell front squat with an isometric press-out at the bottom of the squat, increasing core and shoulder engagement."
+    },
+    "double-kettlebell-gorilla-row": {
+      "name": "Double Kettlebell Gorilla Row",
+      "description": "An alternating row performed from a deep hip hinge position with two kettlebells on the floor, building back strength and stability."
+    },
+    "double-kettlebell-offset-carry-overhead-rack": {
+      "name": "Double Kettlebell Offset Carry (Overhead/Rack)",
+      "description": "A loaded carry where one kettlebell is held overhead and the other is in the rack position, creating a significant challenge for core and shoulder stability."
+    },
+    "double-kettlebell-offset-squat-rack-suitcase": {
+      "name": "Double Kettlebell Offset Squat (Rack/Suitcase)",
+      "description": "A squat performed while holding one kettlebell in the rack position and the other in the suitcase position (at your side), challenging anti-lateral flexion."
+    },
+    "double-kettlebell-overhead-carry": {
+      "name": "Double Kettlebell Overhead Carry",
+      "description": "A loaded carry that involves walking while holding two kettlebells locked out overhead, building immense shoulder and core stability."
+    },
+    "double-kettlebell-overhead-lunge": {
+      "name": "Double Kettlebell Overhead Lunge",
+      "description": "A lunge performed while holding two kettlebells overhead, demanding significant full-body stability and strength."
+    },
+    "double-kettlebell-press": {
+      "name": "Double Kettlebell Overhead Press",
+      "description": "A shoulder strength exercise involving pressing two kettlebells from the rack position to overhead."
+    },
+    "double-kettlebell-push-press": {
+      "name": "Double Kettlebell Push Press",
+      "description": "An explosive overhead press that uses a dip and drive from the legs to help propel two kettlebells overhead."
+    },
+    "double-kettlebell-push-up-to-renegade-row": {
+      "name": "Double Kettlebell Push-up to Renegade Row",
+      "description": "A complex involving a push-up on two kettlebells, followed by rowing each kettlebell to the chest one at a time."
+    },
+    "double-kettlebell-rack-deadlift": {
+      "name": "Double Kettlebell Rack Deadlift",
+      "description": "A deadlift variation where the kettlebells are held in the front rack position, placing a heavy emphasis on the quads and core."
+    },
+    "double-kettlebell-renegade-row": {
+      "name": "Double Kettlebell Renegade Row",
+      "description": "From a plank position on two kettlebells, you alternate rowing each bell to your chest, challenging core stability and back strength."
+    },
+    "double-kettlebell-rotational-press": {
+      "name": "Double Kettlebell Rotational Press",
+      "description": "An overhead press that incorporates a pivot and rotation of the torso to generate power."
+    },
+    "double-kettlebell-see-saw-press": {
+      "name": "Double Kettlebell See-Saw Press",
+      "description": "An alternating overhead press where as one kettlebell goes up, the other comes down, creating constant tension and a stability challenge."
+    },
+    "double-kettlebell-see-saw-row": {
+      "name": "Double Kettlebell See-Saw Row",
+      "description": "An alternating bent-over row where as one kettlebell is rowed up, the other is lowered, challenging the back and core."
+    },
+    "double-kettlebell-snatch": {
+      "name": "Double Kettlebell Snatch",
+      "description": "A highly athletic movement where two kettlebells are swung and punched into an overhead lockout in one explosive motion."
+    },
+    "double-kettlebell-split-jerk": {
+      "name": "Double Kettlebell Split Jerk",
+      "description": "A powerful jerk variation where you dip, drive, and drop under the kettlebells into a split stance to receive them overhead."
+    },
+    "double-kettlebell-split-snatch": {
+      "name": "Double Kettlebell Split Snatch",
+      "description": "An advanced snatch variation where you catch the two kettlebells overhead by moving your feet into a split stance."
+    },
+    "double-kettlebell-suitcase-deadlift": {
+      "name": "Double Kettlebell Suitcase Deadlift",
+      "description": "A deadlift performed with a kettlebell on the outside of each foot, challenging the legs, back, and core stability."
+    },
+    "double-kettlebell-sumo-deadlift": {
+      "name": "Double Kettlebell Sumo Deadlift",
+      "description": "A deadlift performed with a wide (sumo) stance, holding two kettlebells between the legs, emphasizing the glutes and hips."
+    },
+    "double-kettlebell-thruster": {
+      "name": "Double Kettlebell Thruster",
+      "description": "A full-body compound exercise combining a double kettlebell front squat with an overhead press in one fluid movement."
+    },
+    "double-kettlebell-walking-lunge": {
+      "name": "Double Kettlebell Walking Lunge",
+      "description": "Walking lunges performed while holding two kettlebells, typically in the rack or farmer's position, to add significant load."
+    },
+    "double-kettlebell-windmill": {
+      "name": "Double Kettlebell Windmill",
+      "description": "An advanced windmill variation where you hold one kettlebell overhead and hinge to pick up a second from the floor, requiring immense stability and mobility."
+    },
+    "dumbbell-arnold-press": {
+      "name": "Dumbbell Arnold Press",
+      "description": "A shoulder press variation that incorporates rotation to work all three heads of the deltoid."
+    },
+    "dumbbell-concentration-curl": {
+      "name": "Dumbbell Concentration Curl",
+      "description": "A seated bicep curl where the elbow is braced against the inner thigh to isolate the bicep muscle."
+    },
+    "dumbbell-incline-bench-press": {
+      "name": "Dumbbell Incline Bench Press",
+      "description": "Targets the upper chest, shoulders, and triceps by pressing dumbbells on an incline bench."
+    },
+    "dumbbell-incline-fly": {
+      "name": "Dumbbell Incline Fly",
+      "description": "An isolation exercise for the upper chest performed on an incline bench, opening and closing the arms in a wide arc."
+    },
+    "dumbbell-overhead-lunge": {
+      "name": "Dumbbell Overhead Lunge",
+      "description": "A lunge performed while holding one or two dumbbells overhead, challenging balance, shoulder stability, and core strength."
+    },
+    "dumbbell-pistol-squat-double": {
+      "name": "Dumbbell Pistol Squat (Double)",
+      "description": "A single-leg squat performed while holding two dumbbells, typically at the shoulders or sides, adding significant load to the movement."
+    },
+    "dumbbell-pistol-squat-single": {
+      "name": "Dumbbell Pistol Squat (Single)",
+      "description": "A single-leg squat performed while holding one dumbbell, often in the goblet position, to act as a counterbalance and add resistance."
+    },
+    "dumbbell-row-to-deadlift-complex": {
+      "name": "Dumbbell Row to Deadlift Complex",
+      "description": "A sequence combining a dumbbell Romanian deadlift with a bent-over row in each repetition."
+    },
+    "dumbbell-tate-press": {
+      "name": "Dumbbell Tate Press",
+      "description": "A triceps exercise performed lying on a bench, where dumbbells are lowered towards the chest with elbows flared out, and then pressed back up."
+    },
+    "explosive-clap-push-up": {
+      "name": "Explosive Clap Push-up",
+      "description": "A plyometric push-up where you explosively push off the floor with enough force to clap your hands in mid-air."
+    },
+    "frog-stand": {
+      "name": "Frog Stand",
+      "description": "A foundational arm balance in gymnastics and yoga, where you balance your knees on your elbows in a tucked position."
+    },
+    "front-lever": {
+      "name": "Front Lever",
+      "description": "An advanced gymnastics move where the body is held parallel to the ground, face up, while hanging from a bar, requiring immense back and core strength."
+    },
+    "glute-squeezes-isometric": {
+      "name": "Glute Squeezes (Isometric)",
+      "description": "A simple activation exercise involving consciously squeezing and holding the gluteal muscles, often done as part of a warm-up."
+    },
+    "half-turkish-get-up": {
+      "name": "Half Turkish Get-Up",
+      "description": "The first portion of the full Turkish Get-Up, moving from a lying position to a seated position with the weight overhead. Excellent for core and shoulder stability."
+    },
+    "handstand": {
+      "name": "Handstand",
+      "description": "The act of supporting the body in a stable, inverted vertical position by balancing on the hands."
+    },
+    "handstand-push-up": {
+      "name": "Handstand Push-up",
+      "description": "An advanced pressing exercise performed from a handstand position, targeting the shoulders and triceps."
+    },
+    "heel-slides": {
+      "name": "Heel Slides",
+      "description": "A gentle rehabilitation exercise for knee flexion, performed by sliding the heel towards and away from the body while seated or lying down."
+    },
+    "hip-flexor-stretch": {
+      "name": "Hip Flexor Stretch",
+      "description": "A stretch targeting the muscles at the front of the hip, commonly performed in a half-kneeling position."
+    },
+    "incline-chest-press-machine": {
+      "name": "Incline Chest Press (Machine)",
+      "description": "A machine-based exercise that targets the upper pectoral muscles with a guided, upward pressing motion."
+    },
+    "indian-club-double-circles": {
+      "name": "Indian Club Double Circles",
+      "description": "A coordination and mobility drill using two Indian clubs, swung in circular patterns to improve shoulder health and range of motion."
+    },
+    "indian-club-heart-shapes": {
+      "name": "Indian Club Heart Shapes",
+      "description": "A rhythmic Indian club exercise where the clubs are swung in a pattern resembling a heart, promoting shoulder mobility and coordination."
+    },
+    "inverted-row": {
+      "name": "Inverted Row",
+      "description": "A bodyweight back exercise where you hang underneath a bar and pull your chest up to it, often considered a precursor to the pull-up."
+    },
+    "jump-squat": {
+      "name": "Jump Squat",
+      "description": "A plyometric exercise combining a squat with a vertical jump to develop lower body power and explosiveness."
+    },
+    "kettlebell-360-mace-style": {
+      "name": "Kettlebell 360 (Mace Style)",
+      "description": "A rotational exercise mimicking a steel mace 360, where a kettlebell is swung around the head to build shoulder and core strength."
+    },
+    "kettlebell-arm-bar": {
+      "name": "Kettlebell Arm Bar",
+      "description": "A shoulder stability and mobility exercise, where you lie on your side while balancing a kettlebell overhead with a straight arm."
+    },
+    "kettlebell-bent-press": {
+      "name": "Kettlebell Bent Press",
+      "description": "A classic strongman lift involving pressing a kettlebell overhead while bending sideways, leveraging core and back strength."
+    },
+    "kettlebell-bicep-curl": {
+      "name": "Kettlebell Bicep Curl",
+      "description": "An isolation exercise for the biceps performed by curling a kettlebell. Can be done with a standard or crush grip."
+    },
+    "kettlebell-bottoms-up-carry": {
+      "name": "Kettlebell Bottoms-Up Carry",
+      "description": "A loaded carry where the kettlebell is held upside down, challenging grip, rotator cuff, and core stability."
+    },
+    "kettlebell-bottoms-up-clean": {
+      "name": "Kettlebell Bottoms-Up Clean",
+      "description": "Cleaning a kettlebell to the rack position but finishing with it balanced upside down, demanding incredible tension and control."
+    },
+    "kettlebell-bottoms-up-press": {
+      "name": "Kettlebell Bottoms-Up Press",
+      "description": "A strict press performed with the kettlebell held upside down, excellent for building shoulder stability and pressing mechanics."
+    },
+    "kettlebell-cheat-row": {
+      "name": "Kettlebell Cheat Row",
+      "description": "A heavy bent-over row that uses slight body english or momentum to lift a heavier weight than possible with strict form."
+    },
+    "kettlebell-clean-and-jerk-single-arm": {
+      "name": "Kettlebell Clean And Jerk (Single Arm)",
+      "description": "The classic kettlebell lift, involving cleaning the bell to the rack and then driving it overhead with a powerful jerk."
+    },
+    "kettlebell-clean-ohp-complex": {
+      "name": "Kettlebell Clean & OHP Complex",
+      "description": "A complex that combines a single-arm kettlebell clean directly into an overhead press for each repetition."
+    },
+    "kettlebell-close-grip-floor-press": {
+      "name": "Kettlebell Close Grip Floor Press",
+      "description": "A floor press variation performed by holding a single kettlebell with both hands in a close grip, targeting the triceps and inner chest."
+    },
+    "kettlebell-cossack-squat": {
+      "name": "Kettlebell Cossack Squat",
+      "description": "A lateral squat that builds hip mobility and single-leg strength, performed by squatting down to one side while holding a kettlebell, often in the goblet position."
+    },
+    "kettlebell-crush-grip-curl": {
+      "name": "Kettlebell Crush Grip Curl",
+      "description": "A bicep curl where the kettlebell is held by the bell ('crushing' it between the hands) to increase isometric tension in the chest and arms."
+    },
+    "kettlebell-crush-grip-floor-press": {
+      "name": "Kettlebell Crush Grip Floor Press",
+      "description": "A floor press performed by holding a kettlebell by the bell with both hands, focusing on the chest and triceps."
+    },
+    "kettlebell-curtsy-lunge": {
+      "name": "Kettlebell Curtsy Lunge",
+      "description": "A lunge variation where the rear leg crosses behind the front leg, targeting the gluteus medius and inner thighs, often performed holding a kettlebell."
+    },
+    "kettlebell-dead-bug-pullover": {
+      "name": "Kettlebell Dead Bug Pullover",
+      "description": "A core exercise combining the dead bug movement with a kettlebell pullover, challenging coordination and stability."
+    },
+    "kettlebell-dead-clean": {
+      "name": "Kettlebell Dead Clean",
+      "description": "A kettlebell clean initiated from a dead stop on the floor for each repetition, building explosive power from the ground up."
+    },
+    "kettlebell-dead-swing": {
+      "name": "Kettlebell Dead Swing",
+      "description": "A kettlebell swing where each repetition starts from a dead stop on the floor, focusing on generating maximum power for each swing."
+    },
+    "kettlebell-deadstop-swing": {
+      "name": "Kettlebell Deadstop Swing",
+      "description": "Also known as the Dead Swing, this variation starts each repetition from the floor to build explosive hip drive without the benefit of momentum."
+    },
+    "kettlebell-deck-front-roll": {
+      "name": "Kettlebell Deck Front Roll",
+      "description": "A dynamic movement combining a backward roll into a deck squat, using the kettlebell as a counterweight to stand up and transition into a forward roll."
+    },
+    "kettlebell-deck-squat": {
+      "name": "Kettlebell Deck Squat",
+      "description": "An exercise where you perform a squat, roll onto your back, and then use momentum and the kettlebell's weight to roll back up to a standing position."
+    },
+    "kettlebell-double-farmers-walk": {
+      "name": "Kettlebell Double Farmer's Walk",
+      "description": "A full-body exercise where you walk for distance while holding a heavy kettlebell in each hand."
+    },
+    "kettlebell-double-hand-deadlift": {
+      "name": "Kettlebell Double Hand Deadlift",
+      "description": "A deadlift using a single kettlebell held with both hands, excellent for learning the hip hinge pattern."
+    },
+    "kettlebell-double-hand-swing": {
+      "name": "Kettlebell Double Hand Swing",
+      "description": "The foundational kettlebell swing, performed by holding one kettlebell with both hands."
+    },
+    "kettlebell-double-overhead-squat": {
+      "name": "Kettlebell Double Overhead Squat",
+      "description": "An advanced squat variation requiring significant mobility and stability, performed while holding two kettlebells locked out overhead."
+    },
+    "kettlebell-double-shrug": {
+      "name": "Kettlebell Double Shrug",
+      "description": "A trapezius-strengthening exercise performed by shrugging the shoulders while holding a heavy kettlebell in each hand."
+    },
+    "kettlebell-figure-eight-to-hold": {
+      "name": "Kettlebell Figure Eight to a Hold",
+      "description": "A variation of the kettlebell figure eight where the movement is paused and held at the front, challenging core and grip isometrically."
+    },
+    "kettlebell-floor-skullcrusher": {
+      "name": "Kettlebell Floor Skullcrusher",
+      "description": "A triceps extension exercise performed lying on the floor, lowering one or two kettlebells towards the head."
+    },
+    "kettlebell-get-up-sit-up": {
+      "name": "Kettlebell Get-Up Sit-Up",
+      "description": "The initial sit-up phase of a Turkish Get-Up, excellent for building core strength and stability with the weight overhead."
+    },
+    "kettlebell-glute-bridge-with-floor-press": {
+      "name": "Kettlebell Glute Bridge with Floor Press",
+      "description": "A combination exercise where you hold a glute bridge while performing an alternating or double kettlebell floor press."
+    },
+    "kettlebell-goblet-alternating-reverse-lunge": {
+      "name": "Kettlebell Goblet Alternating Reverse Lunge",
+      "description": "Reverse lunges performed while holding a kettlebell in the goblet position, alternating legs with each repetition."
+    },
+    "kettlebell-goblet-clean": {
+      "name": "Kettlebell Goblet Clean",
+      "description": "A clean variation where the kettlebell is cleaned into the goblet squat position, held with two hands at chest level."
+    },
+    "kettlebell-goblet-squat-with-curl": {
+      "name": "Kettlebell Goblet Squat with Curl",
+      "description": "A complex where a goblet squat is combined with a bicep curl at the top of the movement."
+    },
+    "kettlebell-goblet-walk": {
+      "name": "Kettlebell Goblet Walk",
+      "description": "A loaded carry where you walk while holding a kettlebell in the goblet position, building core stability and upper body endurance."
+    },
+    "kettlebell-good-morning-squat": {
+      "name": "Kettlebell Good Morning Squat",
+      "description": "A hybrid exercise that starts with a good morning (hip hinge) and then transitions into a deep squat, often holding the kettlebell in the goblet position."
+    },
+    "kettlebell-gorilla-clean": {
+      "name": "Kettlebell Gorilla Clean",
+      "description": "An explosive clean performed from a deep squat/hinge position, often done with two kettlebells and in an alternating fashion."
+    },
+    "kettlebell-half-kneeling-halo": {
+      "name": "Kettlebell Half-Kneeling Halo",
+      "description": "A kettlebell halo performed from a half-kneeling stance to increase the core stability challenge and isolate the shoulder girdle."
+    },
+    "kettlebell-half-kneeling-press": {
+      "name": "Kettlebell Half-Kneeling Press",
+      "description": "An overhead press performed from a half-kneeling position to challenge core stability and prevent using leg drive."
+    },
+    "kettlebell-halifax": {
+      "name": "Kettlebell Halifax",
+      "description": "A complex kettlebell flow that typically combines a clean, a squat, and a rotational press."
+    },
+    "kettlebell-hang-clean": {
+      "name": "Kettlebell Hang Clean",
+      "description": "A kettlebell clean that is initiated from a 'hang' position (after the first swing) rather than from a dead stop on the floor."
+    },
+    "kettlebell-jefferson-curl": {
+      "name": "Kettlebell Jefferson Curl",
+      "description": "A loaded spinal flexion stretch using a kettlebell to improve posterior chain flexibility and spinal mobility."
+    },
+    "kettlebell-lateral-lunge": {
+      "name": "Kettlebell Lateral Lunge",
+      "description": "A lunge to the side while holding a kettlebell (often in goblet or rack position) to target the inner and outer thighs and improve hip mobility."
+    },
+    "kettlebell-lunge-pass-through": {
+      "name": "Kettlebell Lunge Pass-Through",
+      "description": "A lunge variation that includes passing the kettlebell under the front leg, challenging coordination and core stability."
+    },
+    "kettlebell-lying-triceps-extension": {
+      "name": "Kettlebell Lying Triceps Extension",
+      "description": "A triceps isolation exercise performed by lying on a bench or floor and extending one or two kettlebells from behind the head."
+    },
+    "kettlebell-outside-swing": {
+      "name": "Kettlebell Outside Swing",
+      "description": "A swing variation where the kettlebell travels outside the leg instead of between the legs."
+    },
+    "kettlebell-pistol-squat-double": {
+      "name": "Kettlebell Pistol Squat (Double)",
+      "description": "An advanced single-leg squat performed while holding two kettlebells in the front rack position."
+    },
+    "kettlebell-pistol-squat-single": {
+      "name": "Kettlebell Pistol Squat (Single)",
+      "description": "A single-leg squat performed while holding one kettlebell in the goblet position to act as a counterbalance."
+    },
+    "kettlebell-plank-drag-pull-through": {
+      "name": "Kettlebell Plank Drag (Pull Through)",
+      "description": "An anti-rotation core exercise where you hold a plank and drag a kettlebell from one side of your body to the other."
+    },
+    "kettlebell-pullover-to-sit-up-to-press": {
+      "name": "Kettlebell Pullover to Sit-up to Press",
+      "description": "A complex movement combining a pullover, a sit-up, and an overhead press in one fluid sequence."
+    },
+    "kettlebell-rack-carry": {
+      "name": "Kettlebell Rack Carry",
+      "description": "A loaded carry where you walk while holding one or two kettlebells in the front rack position, building core and upper back strength."
+    },
+    "kettlebell-rack-walk": {
+      "name": "Kettlebell Rack Walk",
+      "description": "Another name for the Kettlebell Rack Carry, emphasizing walking for distance or time."
+    },
+    "kettlebell-rotational-deadlift": {
+      "name": "Kettlebell Rotational Deadlift",
+      "description": "A deadlift variation that incorporates a rotation of the torso to pick up a kettlebell positioned to the side of the body."
+    },
+    "kettlebell-rotational-swing": {
+      "name": "Kettlebell Rotational Swing",
+      "description": "A kettlebell swing with a rotational component, where the hips and torso pivot during the movement."
+    },
+    "kettlebell-row-to-deadlift-complex": {
+      "name": "Kettlebell Row to Deadlift Complex",
+      "description": "A sequence involving a kettlebell deadlift followed immediately by a bent-over row."
+    },
+    "kettlebell-side-press": {
+      "name": "Kettlebell Side Press",
+      "description": "A classic pressing variation where you lean away from the kettlebell to gain a mechanical advantage to press it overhead."
+    },
+    "kettlebell-single-arm-clean-and-thruster": {
+      "name": "Kettlebell Single Arm Clean & Thruster",
+      "description": "A complex combining a single-arm clean, a squat, and an overhead press in one powerful, fluid movement."
+    },
+    "kettlebell-single-arm-complex-clean-squat-press": {
+      "name": "Kettlebell Single Arm Complex (Clean-Squat-Press)",
+      "description": "A sequence of a single-arm clean, a squat, and an overhead press performed without setting the kettlebell down."
+    },
+    "kettlebell-single-arm-deadlift": {
+      "name": "Kettlebell Single Arm Deadlift",
+      "description": "A deadlift performed by lifting a single kettlebell with one arm, challenging anti-rotation and grip strength."
+    },
+    "kettlebell-single-arm-overhead-squat": {
+      "name": "Kettlebell Single Arm Overhead Squat",
+      "description": "A squat performed while holding a single kettlebell locked out overhead, demanding exceptional mobility and stability."
+    },
+    "kettlebell-single-arm-shrug": {
+      "name": "Kettlebell Single Arm Shrug",
+      "description": "A unilateral shrug performed with a heavy kettlebell to target the trapezius muscle on one side."
+    },
+    "kettlebell-single-arm-thruster": {
+      "name": "Kettlebell Single Arm Thruster",
+      "description": "A compound exercise combining a single-arm racked squat with an overhead press."
+    },
+    "kettlebell-single-leg-deadlift": {
+      "name": "Kettlebell Single Leg Deadlift",
+      "description": "A unilateral hinge movement that challenges balance, stability, and posterior chain strength, performed while holding a kettlebell."
+    },
+    "kettlebell-slingshot": {
+      "name": "Kettlebell Slingshot",
+      "description": "A warm-up and coordination drill that involves passing a kettlebell around the body from hand to hand."
+    },
+    "kettlebell-slingshot-to-goblet-squat": {
+      "name": "Kettlebell Slingshot to Goblet Squat",
+      "description": "A flow that combines the kettlebell slingshot with a goblet squat in each repetition."
+    },
+    "kettlebell-snatch-to-overhead-reverse-lunge": {
+      "name": "Kettlebell Snatch to Overhead Reverse Lunge",
+      "description": "A complex where you perform a kettlebell snatch and then execute a reverse lunge while keeping the kettlebell stable overhead."
+    },
+    "kettlebell-snatch-to-reverse-lunge": {
+      "name": "Kettlebell Snatch to Reverse Lunge",
+      "description": "A complex combining a kettlebell snatch with a reverse lunge. The lunge can be done with the bell racked or held overhead."
+    },
+    "kettlebell-somersault-squat": {
+      "name": "Kettlebell Somersault Squat",
+      "description": "An advanced squat variation involving rolling the kettlebell over the shoulder during the squat, challenging mobility and coordination."
+    },
+    "kettlebell-sots-press": {
+      "name": "Kettlebell Sot's Press",
+      "description": "An overhead press performed from the bottom of a deep squat, requiring incredible mobility, stability, and strength."
+    },
+    "kettlebell-sport-style-swing": {
+      "name": "Kettlebell Sport Style Swing",
+      "description": "A more efficient, pendulum-like swing used in Kettlebell Sport (Girevoy) competitions, designed for endurance over maximum power."
+    },
+    "kettlebell-stacked-stance-deadlift": {
+      "name": "Kettlebell Stacked Stance Deadlift",
+      "description": "A deadlift variation with a staggered stance (one foot slightly behind the other) to increase the load on the front leg."
+    },
+    "kettlebell-standing-pullover": {
+      "name": "Kettlebell Standing Pullover",
+      "description": "A mobility and strength exercise for the lats and serratus, performed by lowering a kettlebell behind the head while standing."
+    },
+    "kettlebell-straight-leg-sit-up": {
+      "name": "Kettlebell Straight-Leg Sit-up",
+      "description": "A weighted sit-up performed with straight legs while holding a kettlebell at the chest or overhead."
+    },
+    "kettlebell-suitcase-farmers-carry": {
+      "name": "Kettlebell Suitcase/Farmer's Carry",
+      "description": "A loaded carry performed with a kettlebell in one hand (suitcase) or both hands (farmer's), building grip, core, and posture."
+    },
+    "kettlebell-sumo-deadlift-high-pull": {
+      "name": "Kettlebell Sumo Deadlift High Pull",
+      "description": "An explosive movement combining a sumo deadlift with a powerful upright row, developing full-body power."
+    },
+    "kettlebell-swing-to-snatch": {
+      "name": "Kettlebell Swing to Snatch",
+      "description": "A drill that helps learn the snatch by breaking it down into a swing followed by the upward punch to lockout."
+    },
+    "kettlebell-tactical-lunge": {
+      "name": "Kettlebell Tactical Lunge",
+      "description": "A lunge variation that often includes a pass-through or other coordinated movement, emphasizing athleticism and control."
+    },
+    "kettlebell-tall-kneeling-press": {
+      "name": "Kettlebell Tall Kneeling Press",
+      "description": "An overhead press performed while kneeling on both knees, which engages the glutes and core to create a stable base."
+    },
+    "kettlebell-tate-press": {
+      "name": "Kettlebell Tate Press",
+      "description": "A triceps press where the kettlebells are lowered towards the chest with elbows flared, similar to the dumbbell version."
+    },
+    "kettlebell-towel-curl": {
+      "name": "Kettlebell Towel Curl",
+      "description": "A bicep curl using a towel threaded through the kettlebell handle to challenge grip strength."
+    },
+    "kettlebell-turkish-sit-up": {
+      "name": "Kettlebell Turkish Sit-up",
+      "description": "The sit-up portion of the Turkish Get-Up, a powerful core and hip flexor exercise."
+    },
+    "kettlebell-two-hand-bottoms-up-squat": {
+      "name": "Kettlebell Two-Hand Bottoms-Up Squat",
+      "description": "A squat performed while balancing a kettlebell upside down with two hands, requiring immense full-body tension."
+    },
+    "kettlebell-upright-row": {
+      "name": "Kettlebell Upright Row",
+      "description": "An exercise that targets the shoulders and traps by pulling one or two kettlebells upward towards the chin."
+    },
+    "kettlebell-waiters-walk": {
+      "name": "Kettlebell Waiter's Walk",
+      "description": "A unilateral loaded carry holding a kettlebell straight overhead, as if carrying a tray. Builds shoulder and core stability."
+    },
+    "l-sit": {
+      "name": "L-Sit",
+      "description": "A gymnastic exercise where the body is held in a shape like the letter 'L', supporting oneself with the hands while legs are held straight out. Requires significant core and tricep strength."
+    },
+    "leg-raises": {
+      "name": "Leg Raises",
+      "description": "A core exercise targeting the lower abdominals, performed by lying on the back and raising the legs towards the ceiling."
+    },
+    "lower-trunk-rotations-supine": {
+      "name": "Lower Trunk Rotations (Supine)",
+      "description": "A gentle mobility exercise for the lower back, performed by lying on the back with knees bent and rotating the legs from side to side."
+    },
+    "lying-leg-curl-machine": {
+      "name": "Lying Leg Curl (Machine)",
+      "description": "An isolation exercise for the hamstrings performed on a machine while lying face down."
+    },
+    "macebell-10-to-2": {
+      "name": "Macebell 10-to-2",
+      "description": "A foundational macebell exercise involving a pendulum swing from side to side in front of the body, similar to a clock's hands moving from 10 to 2."
+    },
+    "macebell-360": {
+      "name": "Macebell 360",
+      "description": "The signature macebell exercise, involving swinging the mace in a full circle around the head, building grip, shoulder, and core strength."
+    },
+    "macebell-gravedigger": {
+      "name": "Macebell Gravedigger",
+      "description": "A rotational exercise that mimics the motion of digging with a shovel, targeting the core and improving rotational power."
+    },
+    "macebell-spear-stab": {
+      "name": "Macebell Spear Stab",
+      "description": "A full-body exercise that mimics stabbing with a spear, involving a powerful forward thrust of the mace."
+    },
+    "machine-chest-press": {
+      "name": "Machine Chest Press",
+      "description": "A compound exercise for the chest, similar to a bench press but with a fixed movement path provided by a machine."
+    },
+    "machine-hip-abduction": {
+      "name": "Machine Hip Abduction",
+      "description": "A machine-based isolation exercise for the outer thighs and gluteus medius by pushing the legs apart against resistance."
+    },
+    "machine-hip-adduction": {
+      "name": "Machine Hip Adduction",
+      "description": "A machine-based isolation exercise for the inner thighs by squeezing the legs together against resistance."
+    },
+    "machine-lateral-raise": {
+      "name": "Machine Lateral Raise",
+      "description": "An isolation exercise for the medial deltoids using a machine that provides a fixed path for the lateral raise motion."
+    },
+    "military-press-barbell": {
+      "name": "Military Press (Barbell)",
+      "description": "A strict overhead press with a barbell, performed standing, with no leg drive. It is a fundamental test of shoulder strength."
+    },
+    "muscle-up": {
+      "name": "Muscle-up",
+      "description": "An advanced gymnastics skill combining a pull-up with a dip in one fluid motion to transition from hanging below a bar or rings to being supported above them."
+    },
+    "parallette-deep-push-up": {
+      "name": "Parallette Deep Push-up",
+      "description": "A push-up performed on parallettes, allowing for an increased range of motion and a deeper stretch in the chest."
+    },
+    "parallette-l-sit": {
+      "name": "Parallette L-Sit",
+      "description": "An L-Sit performed on parallettes, which can be slightly easier than on the floor as it provides more clearance for the legs."
+    },
+    "parallette-shoot-through": {
+      "name": "Parallette Shoot-Through",
+      "description": "A dynamic gymnastic movement on parallettes, transitioning from a plank or push-up position to a tuck or L-sit by 'shooting' the legs through the arms."
+    },
+    "parallette-tuck-planche": {
+      "name": "Parallette Tuck Planche",
+      "description": "A progression towards the full planche, performed on parallettes, where the body is supported by the arms with the knees tucked into the chest."
+    },
+    "pelvic-tilts": {
+      "name": "Pelvic Tilts",
+      "description": "A core activation and spinal mobility exercise involving tilting the pelvis anteriorly and posteriorly, often performed lying on the back."
+    },
+    "pike-push-up": {
+      "name": "Pike Push-up",
+      "description": "A push-up variation performed with the hips high in an inverted 'V' shape, which shifts the emphasis to the shoulders. A progression towards the handstand push-up."
+    },
+    "piriformis-stretch-supine": {
+      "name": "Piriformis Stretch (Supine)",
+      "description": "A stretch for the piriformis muscle in the hip, performed lying on the back, often by crossing one ankle over the opposite knee and pulling towards the chest."
+    },
+    "pistol-squat": {
+      "name": "Pistol Squat",
+      "description": "An advanced bodyweight exercise consisting of a single-leg squat, requiring significant strength, balance, and mobility."
+    },
+    "planche": {
+      "name": "Planche",
+      "description": "An advanced gymnastics skill where the body is held parallel to the ground, supported only by the hands, requiring incredible straight-arm strength and balance."
+    },
+    "plank-to-push-up": {
+      "name": "Plank to Push-up",
+      "description": "A dynamic exercise where you alternate between a forearm plank and a high plank (push-up) position, challenging core stability and upper body strength."
+    },
+    "proprioceptive-close-grip-push-up": {
+      "name": "Proprioceptive Close Grip Push Up",
+      "description": "A close-grip push-up performed on an unstable surface to challenge stability, control, and body awareness."
+    },
+    "proprioceptive-pause-goblet-squat": {
+      "name": "Proprioceptive Pause Goblet Squat",
+      "description": "A goblet squat with a pause at the bottom, often performed with eyes closed or on an unstable surface to enhance proprioception and stability."
+    },
+    "quad-sets-isometric": {
+      "name": "Quad Sets (Isometric)",
+      "description": "An isometric strengthening exercise for the quadriceps, involving contracting the muscle without moving the knee joint. Often used in early-stage rehab."
+    },
+    "ring-archer-pull-up": {
+      "name": "Ring Archer Pull-up",
+      "description": "A unilateral pull-up variation on gymnastics rings, where one arm pulls while the other extends to the side, similar to an archer drawing a bow."
+    },
+    "ring-dip": {
+      "name": "Ring Dip",
+      "description": "A dip performed on gymnastics rings, which adds an instability component that requires greater strength and stabilization from the shoulders and chest."
+    },
+    "ring-muscle-up": {
+      "name": "Ring Muscle-up",
+      "description": "A muscle-up performed on gymnastics rings, which allows for a more natural transition due to the movement of the rings."
+    },
+    "ring-row": {
+      "name": "Ring Row",
+      "description": "An inverted row performed using gymnastics rings, allowing for natural rotation of the hands and adjustable difficulty by changing body angle."
+    },
+    "ring-skin-the-cat": {
+      "name": "Ring Skin the Cat",
+      "description": "A fundamental gymnastics mobility exercise on rings, involving passing the feet and hips through the arms and overhead into a hang, then returning."
+    },
+    "ring-support-hold": {
+      "name": "Ring Support Hold",
+      "description": "A foundational isometric hold on gymnastics rings, where you support your bodyweight with straight arms, requiring significant stabilization."
+    },
+    "sandbag-bear-hug-squat": {
+      "name": "Sandbag Bear Hug Squat",
+      "description": "A squat performed while hugging a sandbag vertically against the torso, intensely engaging the core and upper back."
+    },
+    "sandbag-clean": {
+      "name": "Sandbag Clean",
+      "description": "An explosive exercise where a sandbag is lifted from the floor to the shoulder in one powerful motion."
+    },
+    "sandbag-over-the-shoulder-carry": {
+      "name": "Sandbag Over-the-Shoulder Carry",
+      "description": "A loaded carry where a heavy sandbag is carried over one shoulder, challenging the core and posterior chain."
+    },
+    "sandbag-rotational-lunge": {
+      "name": "Sandbag Rotational Lunge",
+      "description": "A lunge that incorporates a rotation of the torso, holding a sandbag to add resistance and challenge the core."
+    },
+    "sandbag-shouldering": {
+      "name": "Sandbag Shouldering",
+      "description": "The act of lifting a sandbag from the floor and placing it on one shoulder, a fundamental strongman and odd-object lifting skill."
+    },
+    "sandbag-zercher-squat": {
+      "name": "Sandbag Zercher Squat",
+      "description": "A squat performed while holding a sandbag in the crook of the elbows, which heavily taxes the core, upper back, and arms."
+    },
+    "scapular-retraction-shoulder-blade-squeezes": {
+      "name": "Scapular Retraction (Shoulder Blade Squeezes)",
+      "description": "A postural exercise focused on squeezing the shoulder blades together to strengthen the rhomboids and mid-traps."
+    },
+    "seated-hamstring-stretch": {
+      "name": "Seated Hamstring Stretch",
+      "description": "A stretch for the hamstrings performed from a seated position, typically by reaching towards the toes with straight legs."
+    },
+    "seated-pec-deck-fly": {
+      "name": "Seated Pec Deck Fly",
+      "description": "An isolation exercise for the chest using a machine where you sit and bring padded levers together in a flying motion."
+    },
+    "shoulder-external-rotation-banded": {
+      "name": "Shoulder External Rotation (Banded)",
+      "description": "A prehab/rehab exercise for the rotator cuff muscles, using a resistance band to rotate the arm outward against tension."
+    },
+    "shoulder-pendulum-swings": {
+      "name": "Shoulder Pendulum Swings",
+      "description": "A gentle range of motion exercise for the shoulder joint, often used in early-stage rehab, involving leaning over and gently swinging the arm."
+    },
+    "shrimp-squat": {
+      "name": "Shrimp Squat",
+      "description": "A single-leg squat variation where the non-working leg is bent and held behind the body, similar to a pistol squat but with a different leg position."
+    },
+    "side-plank": {
+      "name": "Side Plank",
+      "description": "An isometric core exercise performed on one side to target the oblique muscles and improve lateral stability."
+    },
+    "single-kettlebell-alternating-swing": {
+      "name": "Single Kettlebell Alternating Swing",
+      "description": "A kettlebell swing where the bell is passed from one hand to the other at the apex of each swing."
+    },
+    "single-kettlebell-clean-and-press-to-pause-windmill": {
+      "name": "Single Kettlebell Clean & Press to Pause Windmill",
+      "description": "A complex flow combining a clean, a press, and then a windmill with a pause, challenging strength, stability, and mobility."
+    },
+    "single-kettlebell-clean-and-press": {
+      "name": "Single Kettlebell Clean and Press",
+      "description": "A classic combination where a kettlebell is cleaned to the rack and then immediately pressed overhead."
+    },
+    "single-kettlebell-figure-eight": {
+      "name": "Single Kettlebell Figure Eight",
+      "description": "A dynamic exercise that improves coordination, core stability, and grip strength by passing the kettlebell between and around the legs in a figure-eight motion."
+    },
+    "single-kettlebell-front-squat": {
+      "name": "Single Kettlebell Front Squat",
+      "description": "A squat performed with a single kettlebell held in the front rack position, creating an offset load that challenges core stability."
+    },
+    "single-kettlebell-high-pull": {
+      "name": "Single Kettlebell High Pull",
+      "description": "An explosive exercise that involves pulling a kettlebell from a swing position up towards chin height, keeping the elbow high."
+    },
+    "single-kettlebell-jerk": {
+      "name": "Single Kettlebell Jerk",
+      "description": "A powerful lift where you use a double-dip 'jerk' motion with your legs to drive a single kettlebell overhead."
+    },
+    "single-kettlebell-overhead-lunge": {
+      "name": "Single Kettlebell Overhead Lunge",
+      "description": "A lunge performed while holding a single kettlebell locked out overhead, creating a significant stability challenge."
+    },
+    "single-kettlebell-overhead-press": {
+      "name": "Single Kettlebell Overhead Press",
+      "description": "A fundamental upper body strength exercise involving pressing a single kettlebell from the rack position to an overhead lockout."
+    },
+    "single-kettlebell-russian-twist": {
+      "name": "Single Kettlebell Russian Twist",
+      "description": "A core exercise targeting the obliques, performed by sitting and twisting the torso from side to side while holding a single kettlebell."
+    },
+    "single-kettlebell-swing": {
+      "name": "Single Kettlebell Swing",
+      "description": "The one-handed kettlebell swing, which adds an anti-rotation challenge to the standard two-handed swing."
+    },
+    "single-leg-stance-balance": {
+      "name": "Single Leg Stance (Balance)",
+      "description": "A foundational balance exercise that involves standing on one leg for a designated amount of time."
+    },
+    "skater-jumps": {
+      "name": "Skater Jumps",
+      "description": "A plyometric exercise that involves lateral jumps from one leg to the other, mimicking the motion of a speed skater to build power and agility."
+    },
+    "slow-eccentric-floor-skullcrusher": {
+      "name": "Slow Eccentric Floor Skullcrusher",
+      "description": "A triceps skullcrusher performed on the floor with a focus on a very slow, controlled lowering (eccentric) phase."
+    },
+    "slow-eccentric-floor-skullcrusher-to-close-grip-floor-press": {
+      "name": "Slow Eccentric Floor Skullcrusher to Close Grip Floor Press",
+      "description": "A triceps-focused complex combining a slow eccentric skullcrusher with a close-grip floor press on each repetition."
+    },
+    "slow-eccentric-pause-towel-curls": {
+      "name": "Slow Eccentric Pause Towel Curls",
+      "description": "A bicep curl using a towel for grip, emphasizing a slow lowering phase and a pause to maximize time under tension."
+    },
+    "standing-calf-raise": {
+      "name": "Standing Calf Raise",
+      "description": "An exercise to strengthen the gastrocnemius muscle of the calf by raising the heels from a standing position."
+    },
+    "dip": {
+      "name": "Straight Bar Dip",
+      "description": "A dip performed on a single straight bar, requiring more core stabilization and a different shoulder angle than parallel bar dips."
+    },
+    "straight-leg-raise": {
+      "name": "Straight Leg Raise",
+      "description": "A core and hip flexor exercise performed by lying on the back and lifting one or both legs straight up without bending the knees."
+    },
+    "suitcase-deadlift-to-anti-rotation-row": {
+      "name": "Suitcase Deadlift to Anti-Rotation Row",
+      "description": "A complex that combines a single-arm suitcase deadlift with a row at the top, challenging the core to resist rotation."
+    },
+    "superman-extensions": {
+      "name": "Superman Extensions",
+      "description": "A bodyweight exercise that strengthens the lower back, glutes, and hamstrings by simultaneously lifting arms and legs off the floor while lying prone."
+    },
+    "terminal-knee-extension-tke": {
+      "name": "Terminal Knee Extension (TKE)",
+      "description": "A rehabilitation and activation exercise for the quadriceps (specifically the VMO) that focuses on the final few degrees of knee extension, often using a resistance band."
+    },
+    "towel-scrunches": {
+      "name": "Towel Scrunches",
+      "description": "An exercise for the intrinsic muscles of the feet, performed by using the toes to scrunch up a towel placed on the floor."
+    },
+    "tuck-planche": {
+      "name": "Tuck Planche",
+      "description": "A foundational progression for the full planche, where the body is balanced on the hands with the knees tucked tightly into the chest."
+    },
+    "twist-sit-up": {
+      "name": "Twist Sit-up",
+      "description": "A sit-up variation that incorporates a torso twist at the top of the movement to engage the oblique muscles."
+    },
+    "upper-trapezius-stretch": {
+      "name": "Upper Trapezius Stretch",
+      "description": "A neck stretch performed by gently tilting the head to one side to lengthen the upper trapezius muscle."
+    },
+    "vipr-cylinder-drop-squat": {
+      "name": "ViPR Cylinder Drop Squat",
+      "description": "A dynamic squat using a ViPR, where the cylinder is dropped and caught, integrating movement and load."
+    },
+    "vipr-cylinder-lift": {
+      "name": "ViPR Cylinder Lift",
+      "description": "A foundational ViPR exercise that involves lifting the cylinder in various planes of motion, often mimicking functional tasks."
+    },
+    "vipr-ice-skater": {
+      "name": "ViPR Ice Skater",
+      "description": "A lateral movement exercise using the ViPR that mimics the motion of ice skating, building power and agility in the frontal plane."
+    },
+    "vipr-lateral-shift-with-rip": {
+      "name": "ViPR Lateral Shift with Rip",
+      "description": "A dynamic exercise combining a lateral shift of the ViPR with a powerful push-pull 'rip' motion."
+    },
+    "vipr-shoveling": {
+      "name": "ViPR Shoveling",
+      "description": "A full-body rotational exercise that mimics the motion of shoveling, developing power and coordination through the hips and core."
+    },
+    "vipr-thread-the-needle": {
+      "name": "ViPR Thread the Needle",
+      "description": "A mobility and stability exercise using the ViPR, involving a rotational reach under the body to improve thoracic spine mobility."
+    },
+    "wall-handstand": {
+      "name": "Wall Handstand",
+      "description": "A handstand performed with the feet resting against a wall for support, used to build strength and confidence for a freestanding handstand."
+    },
+    "rehab-wall-push-up": {
+      "name": "Wall Push-up",
+      "description": "A beginner push-up variation where you push against a wall, reducing the amount of bodyweight being lifted."
+    },
+    "wall-sit": {
+      "name": "Wall Sit",
+      "description": "An isometric exercise where you hold a squat position with your back against a wall, primarily strengthening the quadriceps."
+    },
+    "rehab-wall-sit-isometric": {
+      "name": "Wall Sit (Isometric)",
+      "description": "An isometric exercise holding a squat position against a wall to build muscular endurance in the quadriceps, glutes, and hamstrings."
     }
   }
 }
