@@ -631,6 +631,18 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return base?.category === 'cardio';
   }
 
+  isCardioByIndex(exIndex: number): boolean {
+    const routine = this.routine();
+    if (!routine) return false;
+
+    const exercise = routine.exercises[exIndex];
+    if (!exercise) return false;
+
+    // Use the pre-loaded 'availableExercises' array for a fast, synchronous lookup
+    const baseExercise = this.availableExercises.find(ex => ex.id === exercise.exerciseId);
+    return !!(baseExercise?.category === 'cardio');
+  }
+
   isDistancedExercise(exIndex: number): boolean {
     const base = this.routine()?.exercises[exIndex];
     if (!base) {
@@ -2816,6 +2828,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     };
   }
 
+  protected isStandardSuperSet(exIndex: number): boolean {
+    return this.isSuperSet(exIndex) && !this.isEmom(exIndex);
+  }
+
   getExerciseClasses(exercise: WorkoutExercise, index: number): any {
     const isStandardSuperSet = this.isSuperSet(index) && !this.isEmom(index);
     const isEmomSet = this.isEmom(index);
@@ -2843,7 +2859,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       classes['rounded-md'] = true;       // Round all corners
       classes['border-t-2'] = true;       // Ensure it has a top border
       classes['border-b-2'] = true;       // Ensure it has a bottom border
-      classes['mb-4'] = true;             // Add margin to visually detach it from the item below
+      classes['mb-8'] = true;             // Add margin to visually detach it from the item below
 
     } else {
       // STATE 2: THE EXERCISE IS COLLAPSED (OR STANDALONE)
@@ -4449,6 +4465,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
    * If a metric doesn't exist on a set, it's added to its `fieldOrder`.
    * @param exIndex The index of the exercise in the routine.
    */
+  /**
+   * Applies the values entered in the "Set All" panel to every set of a specific exercise.
+   * If the exercise is part of a superset, the values are applied to all sets (rounds)
+   * for ALL exercises within that superset group.
+   * @param exIndex The index of the exercise where the action was triggered.
+   */
   applyToAllSets(exIndex: number): void {
     const routine = this.routine();
     if (!routine) return;
@@ -4457,10 +4479,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const targetPatch: { [key: string]: any } = {};
     const performancePatch: { [key: string]: any } = {};
 
-    // 1. Build patch objects for both routine targets and performance inputs
+    // 1. Build patch objects (this part is unchanged)
     if (this.repsToSetForAll() !== null) {
       targetPatch['targetReps'] = this.repsToSetForAll();
-      targetPatch['targetRepsMin'] = null; // Clear range if setting single value
+      targetPatch['targetRepsMin'] = null;
       targetPatch['targetRepsMax'] = null;
       performancePatch['actualReps'] = this.repsToSetForAll();
       metricsToApply.push(METRIC.reps);
@@ -4485,7 +4507,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       performancePatch['actualRest'] = this.restToSetForAll();
       metricsToApply.push(METRIC.rest);
     }
-    if (this.tempoToSetForAll() !== null && this.tempoToSetForAll()!.trim() !== '') {
+     if (this.tempoToSetForAll() !== null && this.tempoToSetForAll()!.trim() !== '') {
         targetPatch['targetTempo'] = this.tempoToSetForAll();
         performancePatch['tempoLogged'] = this.tempoToSetForAll();
         metricsToApply.push(METRIC.tempo);
@@ -4496,51 +4518,70 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // 2. Update the main routine signal immutably
+    // 2. Identify all target exercises (either a single exercise or all in a superset)
+    const clickedExercise = routine.exercises[exIndex];
+    const targetExercises = clickedExercise.supersetId
+      ? this.getSupersetExercises(clickedExercise.supersetId)
+      : [clickedExercise];
+
+    // 3. Update the main routine signal immutably
     this.routine.update(r => {
       if (!r) return r;
-      const newExercises = [...r.exercises];
-      const exerciseToUpdate = { ...newExercises[exIndex] };
-      
-      const newSets = exerciseToUpdate.sets.map(set => {
-        const newSet = { ...set };
-        Object.assign(newSet, targetPatch); // Apply new target values
 
-        // Ensure all applied metrics are in the fieldOrder
-        const currentFieldOrder = newSet.fieldOrder ? [...newSet.fieldOrder] : [];
-        let orderChanged = false;
-        metricsToApply.forEach(metric => {
-          if (!currentFieldOrder.includes(metric)) {
-            currentFieldOrder.push(metric);
-            orderChanged = true;
-          }
-        });
-        if (orderChanged) {
-          newSet.fieldOrder = currentFieldOrder;
+      const targetExerciseIds = new Set(targetExercises.map(ex => ex.id));
+
+      const newExercises = r.exercises.map(exercise => {
+        if (!targetExerciseIds.has(exercise.id)) {
+          return exercise; // Not a target, return as-is
         }
-        return newSet;
+
+        // This is a target exercise, so update all its sets
+        const newSets = exercise.sets.map(set => {
+          const newSet = { ...set };
+          Object.assign(newSet, targetPatch); // Apply new target values
+
+          // Ensure all applied metrics are in the fieldOrder
+          const currentFieldOrder = newSet.fieldOrder ? [...newSet.fieldOrder] : [];
+          let orderChanged = false;
+          metricsToApply.forEach(metric => {
+            if (!currentFieldOrder.includes(metric)) {
+              currentFieldOrder.push(metric);
+              orderChanged = true;
+            }
+          });
+          if (orderChanged) {
+            newSet.fieldOrder = currentFieldOrder;
+          }
+          return newSet;
+        });
+
+        return { ...exercise, sets: newSets };
       });
 
-      exerciseToUpdate.sets = newSets;
-      newExercises[exIndex] = exerciseToUpdate;
       return { ...r, exercises: newExercises };
     });
 
-    // 3. Update the performance input values signal
+    // 4. Update the performance input values signal for all affected exercises
     this.performanceInputValues.update(currentInputs => {
       const newInputs = { ...currentInputs };
-      const setsCount = routine.exercises[exIndex].sets.length;
-      for (let i = 0; i < setsCount; i++) {
-        const key = `${exIndex}-${i}`;
-        if (!newInputs[key]) {
-          newInputs[key] = {};
-        }
-        Object.assign(newInputs[key], performancePatch);
-      }
+
+      targetExercises.forEach(exercise => {
+        const originalExIndex = this.getOriginalExIndex(exercise.id);
+        if (originalExIndex === -1) return; // Failsafe
+
+        exercise.sets.forEach((set, setIndex) => {
+          const key = `${originalExIndex}-${setIndex}`;
+          if (!newInputs[key]) {
+            newInputs[key] = {};
+          }
+          Object.assign(newInputs[key], performancePatch);
+        });
+      });
+
       return newInputs;
     });
 
-    // 4. Reset UI
+    // 5. Reset UI and provide feedback
     this.repsToSetForAll.set(null);
     this.weightToSetForAll.set(null);
     this.durationToSetForAll.set(null);
@@ -4549,7 +4590,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.tempoToSetForAll.set(null);
     this.expandedSetAllPanel.set(null);
 
-    this.toastService.success(`Applied values to all ${routine.exercises[exIndex].sets.length} sets/rounds.`);
+    const setsCount = routine.exercises[exIndex].sets.length;
+    this.toastService.success(`Applied values to all ${setsCount} sets/rounds.`);
   }
 
 }

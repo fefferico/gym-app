@@ -141,7 +141,9 @@
 
           <!-- Sets Container -->
           <div *ngIf="expandedExerciseIndex() === exIndex"
-            class="bg-gray-100 dark:bg-gray-700/50 pt-2 pb-3 px-1 border-t border-gray-200 dark:border-gray-700 rounded-b-md">
+            class="bg-gray-100 dark:bg-gray-700/50 pt-2 pb-1 px-1 border-t border-gray-200 dark:border-gray-700 rounded-b-md"
+            [ngClass]="{' mb-8':!isSuperSet(exIndex)}"
+            >
 
             <!-- SET INFO FOR ALL THE SETS -->
             <div *ngIf="getExerciseSetsLength(exIndex) > 1" class="px-2 pb-2">
@@ -216,7 +218,7 @@
 
 
             <!-- Sets List -->
-            <div class="space-y-3">
+            <div class="space-y-2 pb-5">
 
               <!-- CASE 1: Standard Exercise (Not a Superset) -->
               <ng-container *ngIf="!isSuperSet(exIndex)">
@@ -385,8 +387,11 @@
                       </div>
 
                       <!-- Inputs Grid -->
-                      <div class="grid grid-cols-2 gap-x-4 gap-y-2 p-1"
-                        [ngClass]="{'disabled-div-lower-opacity': isSetCompleted(exIndex, setIndex)}">
+                      <div 
+  [class]="(getTrueGymMode() && isCardioByIndex(exIndex))
+    ? 'grid gap-x-4 gap-y-2 p-3 grid-cols-1'
+    : 'grid gap-x-4 gap-y-2 p-1 grid-cols-2'"
+  [class.disabled-div-lower-opacity]="isSetCompleted(exIndex, setIndex)">
                         <ng-container *ngIf="getFieldsForSet(exIndex, setIndex).visible as visibleFields">
                           <!-- Loop through the visible fields in their defined order -->
                           <ng-container
@@ -459,20 +464,19 @@
 
                 </ng-container>
                 <!-- Col 2: Set +/- Buttons STANDAR SET -->
-                <div class="flex items-center justify-center">
+                <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
                   <div
-                    class="flex w-fit items-center justify-center gap-1 bg-gray-300 dark:bg-gray-900/50 p-1 px-2 rounded-full">
-                    <label class="flex items-center justify-between text-s font-medium text-white dark:text-gray-400">{{
-                      'compactPlayer.setLabel' | translate }}:</label>
+                    class="flex w-fit items-center justify-center gap-2 bg-gray-800 dark:bg-gray-800 backdrop-blur-sm border-4 border-gray-700 py-1 px-3 rounded-full">
+                    <label class="text-sm font-medium text-gray-300">{{'compactPlayer.setLabel' | translate}}:</label>
                     <button appBumpClick type="button" (click)="removeSet(exIndex, -1)"
-                      class="flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
+                      class="p-1.5 rounded-full bg-red-500/80 hover:bg-red-500 text-white disabled:opacity-50 flex items-center"
                       [aria-label]="'compactPlayer.removeLastSet' | translate">
-                      <app-icon name="minus-circle" class="h-5 w-5"></app-icon>
+                      <app-icon name="minus" class="h-5 w-5"></app-icon>
                     </button>
                     <button appBumpClick type="button" (click)="addSet(exIndex, 'standard'); $event.stopPropagation()"
-                      class="flex items-center gap-1 text-xs font-semibold text-green-500 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 p-1 rounded-full hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
+                      class="p-1.5 rounded-full bg-green-500/80 hover:bg-green-500 text-white flex items-center"
                       [aria-label]="'compactPlayer.addSet' | translate">
-                      <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
+                      <app-icon name="plus" class="h-5 w-5"></app-icon>
                     </button>
                   </div>
                 </div>
@@ -490,8 +494,11 @@
                       <div class="flex items-start gap-2">
                         <!-- <app-icon name="chevron-down" class="h-5 w-5 transition-transform duration-200 flex-shrink-0"
                           [class.rotate-180]="isRoundExpanded(exIndex, roundIndex)"></app-icon> -->
-                        <h4 class="text-sm font-bold text-gray-700 dark:text-gray-100">{{ 'compactPlayer.roundHeader' |
-                          translate:{number: roundIndex + 1} }}</h4>
+                          <div class="flex-shrink-0 px-1 text-center"
+                            [ngClass]="{'bg-primary rounded-xl': isRoundExpanded(exIndex, roundIndex)}">
+                            <span class="font-bold text-lg text-gray-700 dark:text-gray-200">#{{ 'compactPlayer.roundHeader' |
+                              translate:{number: roundIndex + 1} }}</span>
+                          </div>
                         <div *ngIf="!isRoundExpanded(exIndex, roundIndex)">
                           <div (click)="$event.stopPropagation()">
                             <ng-container *ngIf="!isRoundCompleted(exIndex, roundIndex)">
@@ -514,7 +521,7 @@
                         <!-- +++ NEW BUTTON/STATUS ELEMENT +++ -->
 
                         <!-- ROUND NOTES BUTTON -->
-                        <button appBumpClick (click)="toggleSetNotes(exIndex, roundIndex, $event)"
+                        <button *ngIf="!isEmom(exIndex)" appBumpClick (click)="toggleSetNotes(exIndex, roundIndex, $event)"
                           [title]="'compactPlayer.toggleNotes' | translate"
                           class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center p-2">
                           <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
@@ -650,19 +657,28 @@
                   </div>
                 </ng-container>
                 <!-- Col 2: Set +/- Buttons SUPER SET -->
-                <div class="flex items-center justify-center gap-x-2">
-                  <label class="text-black dark:text-gray-100">{{ 'compactPlayer.roundLabel' | translate }}</label>
-                  <button appBumpClick type="button" (click)="removeSet(exIndex, -1)"
-                    class="p-1.5 rounded-full bg-red-200 hover:bg-red-300 text-red-700 disabled:opacity-50 flex items-center"
-                    [aria-label]="'compactPlayer.removeLastSet' | translate">
-                    <app-icon name="minus-circle" class="h-5 w-5"></app-icon>
-                  </button>
-                  <button appBumpClick type="button" (click)="addSet(exIndex, 'standard'); $event.stopPropagation()"
-                    class="p-1.5 rounded-full bg-green-200 hover:bg-green-300 text-green-700 flex items-center"
-                    [aria-label]="'compactPlayer.addSet' | translate">
-                    <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
-                  </button>
+                <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
+                  <div
+                    class="flex w-fit items-center justify-center gap-2 bg-gray-800 dark:bg-gray-800 backdrop-blur-sm py-1 px-3 rounded-full border-b-2 "
+                    [ngClass]="{
+                      'border-primary': isStandardSuperSet(exIndex),
+                      'border-teal-600': isEmom(exIndex),
+                    }"
+                    >
+                    <label class="text-sm font-medium text-gray-300">{{'compactPlayer.roundLabel' | translate}}:</label>
+                    <button appBumpClick type="button" (click)="removeSet(exIndex, -1)"
+                      class="p-1.5 rounded-full bg-red-500/80 hover:bg-red-500 text-white disabled:opacity-50 flex items-center"
+                      [aria-label]="'compactPlayer.removeLastSet' | translate">
+                      <app-icon name="minus" class="h-5 w-5"></app-icon>
+                    </button>
+                    <button appBumpClick type="button" (click)="addSet(exIndex, 'standard'); $event.stopPropagation()"
+                      class="p-1.5 rounded-full bg-green-500/80 hover:bg-green-500 text-white flex items-center"
+                      [aria-label]="'compactPlayer.addSet' | translate">
+                      <app-icon name="plus" class="h-5 w-5"></app-icon>
+                    </button>
+                  </div>
                 </div>
+
               </ng-container>
             </div>
           </div>
@@ -1050,3 +1066,13 @@
     }">
   </ng-container>
 </ng-template>
+
+
+<div class="hidden bottom-3"></div>
+<div class="hidden p-5"></div>
+<div class="hidden p-6"></div>
+<div class="hidden p-7"></div>
+<div class="hidden p-8"></div>
+<div class="hidden border-3"></div>
+<div class="hidden border-4"></div>
+<div class="hidden border-8"></div>
