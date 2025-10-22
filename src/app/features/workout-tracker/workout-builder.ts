@@ -46,6 +46,7 @@ import { WorkoutGenerationOptions, WorkoutGeneratorService } from '../../core/se
 import { PremiumFeature, SubscriptionService } from '../../core/services/subscription.service';
 import { PressDirective } from '../../shared/directives/press.directive';
 import { AUDIO_TYPES, AudioService } from '../../core/services/audio.service';
+import { BumpClickDirective } from '../../shared/directives/bump-click.directive';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
@@ -78,7 +79,7 @@ export enum SET_TYPE {
     ModalComponent, ClickOutsideDirective,
     ExerciseDetailComponent, IconComponent, ExerciseSelectionModalComponent, MillisecondsDatePipe, FabMenuComponent, TranslateModule, NgLetDirective,
     PressDirective,
-    GenerateWorkoutModalComponent],
+    GenerateWorkoutModalComponent, BumpClickDirective],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
   providers: [DecimalPipe]
