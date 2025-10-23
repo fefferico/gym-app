@@ -21,6 +21,7 @@ import { MuscleMapComponent } from '../../shared/components/muscle-map/muscle-ma
 import { WeightUnitPipe } from '../../shared/pipes/weight-unit-pipe';
 import { animate, group, query, style, transition, trigger } from '@angular/animations';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 type RepRecord = {
   reps: number;
@@ -692,5 +693,11 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     if (minutes > 0) result += `${minutes}m `;
     if (seconds > 0) result += `${seconds}s`;
     return result.trim();
+  }
+
+    private sanitizer = inject(DomSanitizer);
+    protected updateSanitizedDescription(value: string): SafeHtml {
+    // This tells Angular to trust this HTML string and render it as is.
+    return this.sanitizer.bypassSecurityTrustHtml(value);
   }
 }

@@ -1604,7 +1604,7 @@ export class WorkoutService {
         const isCardio = baseExercise?.category === 'cardio';
 
         const allowedFields = isCardio
-          ? [METRIC.duration] // Rest is handled by its own modal now
+          ? [METRIC.duration]
           : [METRIC.weight, METRIC.reps];
 
         removableFields = removableFields.filter(field => allowedFields.includes(field as METRIC));
@@ -1612,36 +1612,52 @@ export class WorkoutService {
     }
 
     if (removableFields.length === 0) {
-      this.toastService.info("No fields can be removed from this set.");
+      // Get translated toast message
+      const toastMessage = await firstValueFrom(this.translate.get("workoutService.alerts.removeField.noFieldsToast"));
+      this.toastService.info(toastMessage);
       return routine;
     };
 
+    // --- START OF TRANSLATION IMPLEMENTATION ---
 
+    // 1. Prepare all the translation keys we will need.
+    const metricTranslationKeys = removableFields.map(field => `metrics.${field}`);
+    const requiredKeys = [
+      'workoutService.alerts.removeField.title',
+      'workoutService.alerts.removeField.message',
+      'common.cancel',
+      ...metricTranslationKeys
+    ];
+
+    // 2. Fetch all translations in one network call for efficiency.
+    const translations = await firstValueFrom(this.translate.get(requiredKeys));
+
+    // 3. Build the buttons using the fetched translations.
     const buttons: AlertButton[] = removableFields.map(field => ({
-      text: field.charAt(0).toUpperCase() + field.slice(1),
+      text: translations[`metrics.${field}`], // Use translated metric name
       role: 'remove',
       data: field,
       icon: field,
       cssClass: 'bg-red-500 hover:bg-red-600'
     }));
 
-    // --- START OF CORRECTION ---
-    // Add a dedicated "Cancel" button to the array.
+    // Add a dedicated "Cancel" button with its translation.
     buttons.push({
-      text: 'Cancel',
+      text: translations['common.cancel'],
       role: 'cancel',
       data: null,
       icon: 'cancel'
     });
-    // --- END OF CORRECTION ---
 
+    // 4. Show the confirmation dialog with translated content.
     const choice = await this.alertService.showConfirmationDialog(
-      'Remove Field from Exercise',
-      'Which metric would you like to remove from this set of this exercise?',
+      translations['workoutService.alerts.removeField.title'],
+      translations['workoutService.alerts.removeField.message'],
       buttons,
       { showCloseButton: true }
     );
 
+    // --- END OF TRANSLATION IMPLEMENTATION ---
 
     if (!choice || !choice.data) {
       return null; // User cancelled

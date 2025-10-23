@@ -150,7 +150,7 @@
               <button (click)="toggleSetAllPanel(exIndex, $event)"
                 class="w-full flex justify-between items-center p-2 text-sm font-semibold text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-gray-800 rounded-xl  transition-transform duration-200"
                 [ngClass]="{'rounded-b-none' : expandedSetAllPanel() === exIndex}">
-                <span>Set values for all Sets/Rounds</span>
+                <span>{{'setValueForAllSets' |translate}}</span>
                 <app-icon name="chevron-down" class="h-5 w-5 transition-transform duration-200"
                   [class.rotate-180]="expandedSetAllPanel() === exIndex"></app-icon>
               </button>
@@ -164,14 +164,14 @@
 
                     <!-- Reps Input -->
                     <div *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.reps]">
-                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">Reps</label>
+                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{ 'metrics.reps' | translate }}</label>
                       <input type="number" [(ngModel)]="repsToSetForAll" [ngModelOptions]="{standalone: true}"
                         class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
                     </div>
 
                     <!-- Weight Input -->
                     <div *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.weight]">
-                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">Weight
+                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{ 'metrics.weight' | translate }}
                         ({{ unitService.getWeightUnitSuffix() }})</label>
                       <input type="number" [(ngModel)]="weightToSetForAll" [ngModelOptions]="{standalone: true}"
                         class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
@@ -179,7 +179,7 @@
 
                     <!-- Duration Input -->
                     <div *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.duration]">
-                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">Duration
+                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{ 'metrics.duration' | translate }}
                         (s)</label>
                       <input type="number" [(ngModel)]="durationToSetForAll" [ngModelOptions]="{standalone: true}"
                         class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
@@ -187,7 +187,7 @@
 
                     <!-- Distance Input -->
                     <div *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.distance]">
-                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">Distance
+                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{ 'metrics.distance' | translate }}
                         ({{ unitService.getDistanceMeasureUnitSuffix()
                         }})</label>
                       <input type="number" [(ngModel)]="distanceToSetForAll" [ngModelOptions]="{standalone: true}"
@@ -196,7 +196,7 @@
 
                     <!-- Rest Input -->
                     <div *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.rest]">
-                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">Rest
+                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{ 'metrics.rest' | translate }}
                         (s)</label>
                       <input type="number" [(ngModel)]="restToSetForAll" [ngModelOptions]="{standalone: true}"
                         class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
@@ -208,7 +208,7 @@
                     <button (click)="applyToAllSets(exIndex)"
                       [disabled]="repsToSetForAll() === null && weightToSetForAll() === null && durationToSetForAll() === null && distanceToSetForAll() === null && restToSetForAll() === null"
                       class="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-xl shadow-sm hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed">
-                      Apply to All
+                      {{ 'applyToAllSets' | translate }}
                     </button>
                   </div>
                 </div>
@@ -438,22 +438,30 @@
                           [placeholder]="'compactPlayer.setNotesPlaceholder' | translate"
                           class="w-full text-xs bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
                       </div>
-
                       <!-- LOWER EXPANDED SET COMPLETE BUTTON -->
-                      <div class="flex justify-center py-2">
-                        <button *ngIf="!isTimedSet(exIndex, setIndex)"
-                          (click)="toggleSetCompletion(exercise, set, exIndex, setIndex, 0); $event.stopPropagation()"
-                          [disabled]="!isSetDataValid(exIndex, setIndex)"
-                          class="py-2 px-4 rounded-full flex items-center font-semibold justify-center transition-all duration-200 ease-in-out transform active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none complete-set-button-animated"
-                          [ngClass]="isSetCompleted(exIndex, setIndex, 0) ? 'bg-green-500 text-white shadow-lg' : 'bg-gray-200 dark:bg-gray-700 text-white border-2 border-gray-200 dark:border-gray-100'"><app-icon
-                            name="done" class="h-6 w-6 mr-1"></app-icon>
-                          <span>
-                            {{(isSetCompleted(exIndex, setIndex, 0) ? 'compactPlayer.completedSet' :
-                            'compactPlayer.completeSet') | translate}}
-                          </span>
-                        </button>
+                      <div class="flex flex-col items-center text-center py-2">
+                        <div class="">
+                          <button *ngIf="!isTimedSet(exIndex, setIndex)"
+                            (click)="toggleSetCompletion(exercise, set, exIndex, setIndex, 0); $event.stopPropagation()"
+                            [disabled]="!isSetDataValid(exIndex, setIndex)"
+                            class="py-2 px-4 rounded-full flex items-center font-semibold justify-center transition-all duration-200 ease-in-out transform active:scale-90 disabled:cursor-not-allowed focus:outline-none complete-set-button-animated"
+                            [ngClass]="
+        {
+          'bg-green-500 text-white shadow-lg disabled:bg-opacity-50': isSetCompleted(exIndex, setIndex, 0),
+          'bg-gray-200 dark:bg-gray-700 text-white border-2 border-gray-200 dark:border-gray-100 disabled:bg-opacity-50': !isSetCompleted(exIndex, setIndex, 0)
+        }">
+                            <app-icon name="done" class="h-6 w-6 mr-1"></app-icon>
+                            <span>
+                              {{ (isSetCompleted(exIndex, setIndex, 0) ? 'compactPlayer.completedSet' :
+                              'compactPlayer.completeSet') | translate }}
+                            </span>
+                          </button>
+                        </div>
+                        <p *ngIf="!isSetDataValid(exIndex, setIndex)"
+                          class="text-red dark:text-primary-light font-semibold text-sm">
+                          {{ 'Add at least one metric to complete the set' }}
+                        </p>
                       </div>
-
                     </div>
                     <!-- END: Set Card Layout -->
 

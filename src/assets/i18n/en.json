@@ -2209,7 +2209,12 @@
         "discardButton": "Discard"
       },
       "supersetCreatedTitle": "INFO",
-      "supersetCreatedMessage": "Superset created with {{count}} exercises and {{rounds}} rounds: existing logs were cleared and sets standardized."
+      "supersetCreatedMessage": "Superset created with {{count}} exercises and {{rounds}} rounds: existing logs were cleared and sets standardized.",
+      "removeField": {
+        "title": "Remove Field from Exercise",
+        "message": "Which metric would you like to remove from this set of this exercise?",
+        "noFieldsToast": "No fields can be removed from this set."
+      }
     },
     "prompts": {
       "addExerciseTitle": "Add {{exerciseName}}",
@@ -2308,6 +2313,9 @@
       "reps": "reps",
       "noData": "No data logged for this set.",
       "noHistory": "No workout history found for this exercise."
+    },
+    "exercise": {
+      "noHistory": "Not enough history for <strong>{{name}}</strong> to plot a progress trend (need at least 2 workouts for this exercise). Keep logging!"
     }
   },
   "navigation": {
@@ -2490,11 +2498,11 @@
     }
   },
   "metrics": {
-    "rest": "Rest",
-    "weight": "Weight",
-    "tempo": "Tempo",
-    "duration": "Duration",
-    "distance": "Distance",
-    "reps": "Reps"
-  }
+      "rest": "Rest",
+      "weight": "Weight",
+      "tempo": "Tempo",
+      "duration": "Duration",
+      "distance": "Distance",
+      "reps": "Reps"
+    }
 }
