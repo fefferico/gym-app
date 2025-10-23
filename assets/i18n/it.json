@@ -2457,6 +2457,9 @@
       "reps": "rip",
       "noData": "Nessun dato registrato per questa serie.",
       "noHistory": "Nessuna cronologia di allenamento trovata per questo esercizio."
+    },
+    "exercise": {
+    "noHistory": "Non ci sono abbastanza dati storici di <strong>{{name}}</strong> per poter tracciare l'andamento dei progressi (servono almeno 2 sessioni di allenamento per questo esercizio). Continua ad allenarti!"
     }
   },
   "exerciseList": {
