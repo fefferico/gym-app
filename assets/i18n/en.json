@@ -172,6 +172,10 @@
       "countdownSoundDescription": "Play sound X seconds before a timed set ends",
       "countdownSoundSecondsLabel": "Countdown From (seconds)",
       "countdownSoundError": "Must be 1-20s.",
+      "showMetricTarget": {
+        "label": "Show Metric Targets",
+        "description": "If enabled, the player will display the planned target values (e.g., 8-12 reps, 100kg) for each set."
+      },
       "trueGymMode": {
         "label": "True GYM Mode",
         "description": "Simplifies the workout player to show only essential metrics (Weight/Reps for strength, Duration for cardio).",
@@ -2494,13 +2498,11 @@
     }
   },
   "metrics": {
-    "rest": "Rest",
-    "weight": "Weight",
-    "tempo": "Tempo",
-    "duration": "Duration",
-    "distance": "Distance",
-    "reps": "Reps"
-  },
-  "setValueForAllSets": "Set values for all Sets/Rounds",
-  "applyToAllSets": "Apply"
+      "rest": "Rest",
+      "weight": "Weight",
+      "tempo": "Tempo",
+      "duration": "Duration",
+      "distance": "Distance",
+      "reps": "Reps"
+    }
 }

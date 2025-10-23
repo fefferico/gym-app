@@ -1,0 +1,74 @@
+<svg width="600" height="800" viewBox="0 0 600 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .muscle-path {
+        fill: #E0E0E0; /* Default empty color */
+        stroke: #333333;
+        stroke-width: 2;
+        transition: fill 0.3s ease-in-out;
+      }
+    </style>
+  </defs>
+
+  <!-- Front View -->
+  <g id="front-view" transform="translate(50, 50)">
+    <!-- Head & Neck -->
+    <path id="front-head" class="muscle-path" d="M125,0 C110,0 100,15 100,30 L100,50 L110,60 L110,75 L125,90 L140,75 L140,60 L150,50 L150,30 C150,15 140,0 125,0 Z" />
+    <path id="neck-front" class="muscle-path" d="M110,75 L125,90 L140,75 L140,95 L125,105 L110,95 Z" />
+
+    <!-- Torso -->
+    <path id="chest-left" class="muscle-path" d="M125,105 L110,95 L70,110 L70,150 L125,160 Z" />
+    <path id="chest-right" class="muscle-path" d="M125,105 L140,95 L180,110 L180,150 L125,160 Z" />
+    <path id="shoulders-front-left" class="muscle-path" d="M70,110 L50,120 L50,160 L70,150 Z" />
+    <path id="shoulders-front-right" class="muscle-path" d="M180,110 L200,120 L200,160 L180,150 Z" />
+    <path id="abs-upper" class="muscle-path" d="M125,160 L115,162 L115,190 L125,195 L135,190 L135,162 Z" />
+    <path id="abs-middle" class="muscle-path" d="M115,190 L115,220 L125,225 L135,220 L135,190 L125,195 Z" />
+    <path id="abs-lower" class="muscle-path" d="M115,220 L115,250 L125,255 L135,250 L135,220 L125,225 Z" />
+    <path id="obliques-left" class="muscle-path" d="M115,162 L70,150 L70,230 L115,250 L115,162 Z" />
+    <path id="obliques-right" class="muscle-path" d="M135,162 L180,150 L180,230 L135,250 L135,162 Z" />
+
+    <!-- Arms -->
+    <path id="biceps-left" class="muscle-path" d="M50,160 L70,150 L70,200 L50,210 Z" />
+    <path id="biceps-right" class="muscle-path" d="M200,160 L180,150 L180,200 L200,210 Z" />
+    <path id="forearms-left" class="muscle-path" d="M50,210 L70,200 L65,280 L45,270 Z" />
+    <path id="forearms-right" class="muscle-path" d="M200,210 L180,200 L185,280 L205,270 Z" />
+
+    <!-- Legs -->
+    <path id="quads-left" class="muscle-path" d="M115,250 L70,230 L70,400 L115,410 Z" />
+    <path id="quads-right" class="muscle-path" d="M135,250 L180,230 L180,400 L135,410 Z" />
+    <path id="adductors-left" class="muscle-path" d="M125,255 L115,250 L115,410 L125,415 Z" />
+    <path id="adductors-right" class="muscle-path" d="M125,255 L135,250 L135,410 L125,415 Z" />
+    <path id="calves-front-left" class="muscle-path" d="M70,400 L115,410 L110,500 L75,490 Z" />
+    <path id="calves-front-right" class="muscle-path" d="M180,400 L135,410 L140,500 L175,490 Z" />
+  </g>
+
+  <!-- Back View -->
+  <g id="back-view" transform="translate(350, 50)">
+    <!-- Head & Neck -->
+    <path id="back-head" class="muscle-path" d="M125,0 C110,0 100,15 100,30 L100,50 L110,60 L110,75 L125,90 L140,75 L140,60 L150,50 L150,30 C150,15 140,0 125,0 Z" />
+    <path id="traps-upper" class="muscle-path" d="M110,75 L125,90 L140,75 L150,110 L125,120 L100,110 Z" />
+
+    <!-- Torso -->
+    <path id="traps-middle" class="muscle-path" d="M125,120 L150,110 L160,160 L125,170 Z" />
+    <path id="traps-lower" class="muscle-path" d="M125,120 L100,110 L90,160 L125,170 Z" />
+    <path id="shoulders-back-left" class="muscle-path" d="M100,110 L80,120 L80,170 L90,160 Z" />
+    <path id="shoulders-back-right" class="muscle-path" d="M150,110 L170,120 L170,170 L160,160 Z" />
+    <path id="lats-left" class="muscle-path" d="M90,160 L80,170 L90,240 L125,250 Z" />
+    <path id="lats-right" class="muscle-path" d="M160,160 L170,170 L160,240 L125,250 Z" />
+    <path id="lower-back" class="muscle-path" d="M125,170 L90,240 L125,250 L160,240 Z" />
+
+    <!-- Arms -->
+    <path id="triceps-left" class="muscle-path" d="M80,170 L90,160 L95,220 L80,230 Z" />
+    <path id="triceps-right" class="muscle-path" d="M170,170 L160,160 L155,220 L170,230 Z" />
+    <path id="forearms-back-left" class="muscle-path" d="M80,230 L95,220 L90,290 L75,280 Z" />
+    <path id="forearms-back-right" class="muscle-path" d="M170,230 L155,220 L160,290 L175,280 Z" />
+
+    <!-- Legs -->
+    <path id="glutes-left" class="muscle-path" d="M125,250 L90,240 L90,320 L125,330 Z" />
+    <path id="glutes-right" class="muscle-path" d="M125,250 L160,240 L160,320 L125,330 Z" />
+    <path id="hamstrings-left" class="muscle-path" d="M90,320 L125,330 L120,420 L90,410 Z" />
+    <path id="hamstrings-right" class="muscle-path" d="M160,320 L125,330 L130,420 L160,410 Z" />
+    <path id="calves-back-left" class="muscle-path" d="M90,410 L120,420 L115,510 L85,500 Z" />
+    <path id="calves-back-right" class="muscle-path" d="M160,410 L130,420 L135,510 L165,500 Z" />
+  </g>
+</svg>
