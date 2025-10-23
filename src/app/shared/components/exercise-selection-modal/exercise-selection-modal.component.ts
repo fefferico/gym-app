@@ -4,20 +4,18 @@ import { FormsModule } from '@angular/forms';
 import { Exercise } from '../../../core/models/exercise.model';
 import { ExerciseService } from '../../../core/services/exercise.service';
 import { IconComponent } from '../icon/icon.component';
-import { combineLatest, Observable, Subscription } from 'rxjs';
+import { combineLatest, Observable, Subscription, take } from 'rxjs';
 import { ToastService } from '../../../core/services/toast.service';
 import { TrackingService } from '../../../core/services/tracking.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BumpClickDirective } from '../../directives/bump-click.directive';
 
-// +++ NEW: Type definition for the list, which can now contain headers +++
 type ListItem = Exercise | { isHeader: true; label: string };
 
 @Component({
     selector: 'app-exercise-selection-modal',
     standalone: true,
-    // +++ Added AsyncPipe for the new filter dropdowns +++
     imports: [CommonModule, FormsModule, TitleCasePipe, DatePipe, IconComponent, AsyncPipe, TranslateModule, BumpClickDirective],
     templateUrl: './exercise-selection-modal.component.html',
 })
@@ -33,7 +31,6 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     // --- OUTPUTS ---
     @Output() exerciseSelected = new EventEmitter<Exercise>(); // For single-select mode
     @Output() exercisesSelected = new EventEmitter<Exercise[]>(); // <-- NEW OUTPUT for multi-select
-    // ... existing outputs
 
     // --- STATE SIGNALS ---
     selectedExerciseIds = signal<string[]>([]); // <-- NEW SIGNAL to track selections
@@ -43,7 +40,7 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['isOpen'] && changes['isOpen'].currentValue) {
-            if (this.isFocusInputOnStart()){
+            if (this.isFocusInputOnStart()) {
                 this.checkForInputFocus();
             }
             // When the modal opens, reset filters to default
@@ -62,21 +59,39 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     @ViewChild('exerciseSearchFied') myExerciseInput!: ElementRef;
     @ViewChild('scrollContainer') private scrollContainer!: ElementRef<HTMLDivElement>;
 
+    private translatedExercises = signal<Exercise[]>([]);
 
     constructor(@Inject(DOCUMENT) private document: Document) {
-        // This effect runs whenever the `exercises` input OR the `usageCounts` change.
+        // =================== START OF SNIPPET 2 ===================
+        // Effect 1: Translate the raw exercises list whenever the input changes.
         effect(() => {
-            const exercisesFromInput = this.exercises(); // Dependency 1: The input signal
-            const usageMap = this.usageCounts();         // Dependency 2: The usage count signal
+            const exercisesToTranslate = this.exercises(); // Dependency on the input signal
+            if (exercisesToTranslate && exercisesToTranslate.length > 0) {
+                // Unsubscribing is handled by `take(1)`
+                this.exerciseService.getTranslatedExerciseList(exercisesToTranslate)
+                    .pipe(take(1)) // Ensure the subscription auto-completes
+                    .subscribe(translated => {
+                        this.translatedExercises.set(translated);
+                    });
+            } else {
+                this.translatedExercises.set([]); // Handle empty input
+            }
+        });
 
-            // Enrich the list that was PASSED IN with the latest usage counts.
-            const exercisesWithData = exercisesFromInput.map(ex => ({
+        // Effect 2: Enrich the TRANSLATED exercises with usage counts.
+        // This runs whenever the translated list or usage counts change.
+        effect(() => {
+            const exercisesFromTranslation = this.translatedExercises(); // Dependency 1: The translated list
+            const usageMap = this.usageCounts();                       // Dependency 2: The usage count signal
+
+            const exercisesWithData = exercisesFromTranslation.map(ex => ({
                 ...ex,
                 usageCount: usageMap.get(ex.id) || 0
             }));
 
             this.enrichedExercises.set(exercisesWithData);
         });
+        // =================== END OF SNIPPET 2 ===================
 
         // Effect for scrolling remains the same
         effect(() => {

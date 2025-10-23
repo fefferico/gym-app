@@ -233,6 +233,30 @@
                 </div>
                 <!-- END: NEW "TRUE GYM MODE" TOGGLE -->
 
+                <!-- START: NEW SHOW METRIC TARGET TOGGLE -->
+                <div class="flex items-center justify-between py-2 rounded-md">
+                    <div>
+                        <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">{{
+                            'settings.player.showMetricTarget.label' | translate }}</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">{{
+                            'settings.player.showMetricTarget.description' | translate }}</p>
+                    </div>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <span class="sr-only">Toggle Show Metric Target</span>
+                        <input type="checkbox" class="sr-only peer"
+                            [checked]="appSettingsForm.get('showMetricTarget')?.value === true"
+                            (change)="toggleMetricTarget($event)">
+                        <div
+                            class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark peer-disabled:opacity-50">
+                        </div>
+                        <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                            {{ appSettingsForm.get('showMetricTarget')?.value ? ('common.on' | translate) :
+                            ('common.off' | translate) }}
+                        </span>
+                    </label>
+                </div>
+                <!-- END: NEW SHOW METRIC TARGET TOGGLE -->
+
                 <div class="border-b border-gray-200 dark:border-gray-600 pb-4">
                     <label for="weightStep" class="block text-md font-medium text-gray-700 dark:text-gray-300">{{
                         'settings.player.weightIncrementLabel' | translate }}</label>

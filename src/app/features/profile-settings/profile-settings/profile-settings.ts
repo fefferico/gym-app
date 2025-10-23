@@ -167,7 +167,8 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
       enableTrueGymMode: [false],
       durationStep: [5, [Validators.required, Validators.min(1), Validators.pattern("^[0-9]*$")]],
       distanceStep: [0.1, [Validators.required, Validators.min(0.01)]],
-      restStep: [5, [Validators.required, Validators.min(1), Validators.pattern("^[0-9]*$")]]
+      restStep: [5, [Validators.required, Validators.min(1), Validators.pattern("^[0-9]*$")]],
+      showMetricTarget: [false]
     });
 
     this.progressiveOverloadForm = this.fb.group({
@@ -199,6 +200,15 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
       this.appSettingsForm.get('enableTrueGymMode')?.setValue(isChecked);
       this.appSettingsService.saveSettings({ enableTrueGymMode: isChecked });
     }
+  }
+
+  toggleMetricTarget(event: Event): void {
+    this.workoutService.vibrate();
+    const inputElement = event.target as HTMLInputElement;
+    const isChecked = inputElement.checked;
+
+    this.appSettingsForm.get('showMetricTarget')?.setValue(isChecked);
+    this.appSettingsService.saveSettings({ showMetricTarget: isChecked });
   }
 
   togglePlayerMode(event: Event): void {

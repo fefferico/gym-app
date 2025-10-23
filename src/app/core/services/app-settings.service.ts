@@ -15,6 +15,7 @@ const DEFAULT_APP_SETTINGS: AppSettings = {
     playerMode: 'compact' as PlayerMode,
     menuMode: 'modal' as MenuMode,
     enableTrueGymMode: true,
+    showMetricTarget: false,
     durationStep: 5,
     distanceStep: 0.1,
     restStep: 5,
@@ -45,6 +46,7 @@ export class AppSettingsService {
     public presetTimerDurationSeconds = signal<number>(DEFAULT_APP_SETTINGS.presetTimerDurationSeconds);
     public menuMode = signal<MenuMode>(DEFAULT_APP_SETTINGS.menuMode);
     public enableTrueGymMode = signal<boolean>(DEFAULT_APP_SETTINGS.enableTrueGymMode);
+    public showMetricTarget = signal<boolean>(DEFAULT_APP_SETTINGS.showMetricTarget);
     public durationStep = signal<number>(DEFAULT_APP_SETTINGS.durationStep);
     public distanceStep = signal<number>(DEFAULT_APP_SETTINGS.distanceStep);
     public restStep = signal<number>(DEFAULT_APP_SETTINGS.restStep);
@@ -97,6 +99,7 @@ export class AppSettingsService {
         if (settings.enablePresetTimer !== undefined) this.enablePresetTimer.set(settings.enablePresetTimer);
         if (settings.presetTimerDurationSeconds !== undefined) this.presetTimerDurationSeconds.set(settings.presetTimerDurationSeconds);
         if (settings.enableTrueGymMode !== undefined) this.enableTrueGymMode.set(settings.enableTrueGymMode);
+        if (settings.showMetricTarget !== undefined) this.showMetricTarget.set(settings.showMetricTarget);
         if (settings.durationStep !== undefined) this.durationStep.set(settings.durationStep);
         if (settings.distanceStep !== undefined) this.distanceStep.set(settings.distanceStep);
         if (settings.restStep !== undefined) this.restStep.set(settings.restStep);
@@ -182,5 +185,9 @@ export class AppSettingsService {
 
     isTrueGymMode(): boolean {
         return this.enableTrueGymMode() && this.enableTrueGymMode() === true;
+    }
+
+    isShowMetricTarget(): boolean {
+        return this.showMetricTarget() && this.showMetricTarget() === true;
     }
 }

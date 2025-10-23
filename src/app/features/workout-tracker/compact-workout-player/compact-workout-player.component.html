@@ -142,8 +142,7 @@
           <!-- Sets Container -->
           <div *ngIf="expandedExerciseIndex() === exIndex"
             class="bg-gray-100 dark:bg-gray-700/50 pt-2 pb-1 px-1 border-t border-gray-200 dark:border-gray-700 rounded-b-md"
-            [ngClass]="{' mb-8':!isSuperSet(exIndex)}"
-            >
+            [ngClass]="{' mb-8':!isSuperSet(exIndex)}">
 
             <!-- SET INFO FOR ALL THE SETS -->
             <div *ngIf="getExerciseSetsLength(exIndex) > 1" class="px-2 pb-2">
@@ -387,11 +386,9 @@
                       </div>
 
                       <!-- Inputs Grid -->
-                      <div 
-  [class]="(getTrueGymMode() && isCardioByIndex(exIndex))
+                      <div [class]="(getTrueGymMode() && isCardioByIndex(exIndex))
     ? 'grid gap-x-4 gap-y-2 p-3 grid-cols-1'
-    : 'grid gap-x-4 gap-y-2 p-1 grid-cols-2'"
-  [class.disabled-div-lower-opacity]="isSetCompleted(exIndex, setIndex)">
+    : 'grid gap-x-4 gap-y-2 p-1 grid-cols-2'" [class.disabled-div-lower-opacity]="isSetCompleted(exIndex, setIndex)">
                         <ng-container *ngIf="getFieldsForSet(exIndex, setIndex).visible as visibleFields">
                           <!-- Loop through the visible fields in their defined order -->
                           <ng-container
@@ -494,14 +491,14 @@
                       <div class="flex items-start gap-2">
                         <!-- <app-icon name="chevron-down" class="h-5 w-5 transition-transform duration-200 flex-shrink-0"
                           [class.rotate-180]="isRoundExpanded(exIndex, roundIndex)"></app-icon> -->
-                          <div class="flex-shrink-0 px-1 text-center"
-                            [ngClass]="{
+                        <div class="flex-shrink-0 px-1 text-center" [ngClass]="{
                               'bg-primary rounded-lg': isRoundExpanded(exIndex, roundIndex) && isStandardSuperSet(exIndex),
                               'bg-teal-500 rounded-lg': isRoundExpanded(exIndex, roundIndex) && isEmom(exIndex),
                             }">
-                            <span class="font-bold text-lg text-gray-700 dark:text-gray-200">#{{ 'compactPlayer.roundHeader' |
-                              translate:{number: roundIndex + 1} }}</span>
-                          </div>
+                          <span class="font-bold text-lg text-gray-700 dark:text-gray-200">#{{
+                            'compactPlayer.roundHeader' |
+                            translate:{number: roundIndex + 1} }}</span>
+                        </div>
                         <div *ngIf="!isRoundExpanded(exIndex, roundIndex)">
                           <div (click)="$event.stopPropagation()">
                             <ng-container *ngIf="!isRoundCompleted(exIndex, roundIndex)">
@@ -524,7 +521,8 @@
                         <!-- +++ NEW BUTTON/STATUS ELEMENT +++ -->
 
                         <!-- ROUND NOTES BUTTON -->
-                        <button *ngIf="!isEmom(exIndex)" appBumpClick (click)="toggleSetNotes(exIndex, roundIndex, $event)"
+                        <button *ngIf="!isEmom(exIndex)" appBumpClick
+                          (click)="toggleSetNotes(exIndex, roundIndex, $event)"
                           [title]="'compactPlayer.toggleNotes' | translate"
                           class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center p-2">
                           <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
@@ -666,8 +664,7 @@
                     [ngClass]="{
                       'border-primary': isStandardSuperSet(exIndex),
                       'border-teal-600': isEmom(exIndex),
-                    }"
-                    >
+                    }">
                     <label class="text-sm font-medium text-gray-300">{{'compactPlayer.roundLabel' | translate}}:</label>
                     <button appBumpClick type="button" (click)="removeSet(exIndex, -1)"
                       class="p-1.5 rounded-full bg-red-500/80 hover:bg-red-500 text-white disabled:opacity-50 flex items-center"
@@ -948,7 +945,8 @@
     <input type="text" [ngModel]="getInitialInputValue(exIndex, setIndex, metricEnum.tempo)"
       (change)="updateSetData(exIndex, setIndex, 0, metricEnum.tempo, $event)" placeholder="e.g. 4010"
       class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
-    <div *ngIf="getSetTargetDisplay(exIndex, setIndex, metricEnum.tempo) as target" class="target-class text-xs">
+    <div *ngIf="getShowMetricTarget() && getSetTargetDisplay(exIndex, setIndex, metricEnum.tempo) as target"
+      class="target-class text-xs">
       <span class="flex items-center justify-center">
         <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ target }}
       </span>
@@ -992,10 +990,13 @@
           class="relative z-0 bottom-0 w-full bg-gray-300 dark:bg-gray-700 border-gray-300 dark:border-gray-700">
           <span
             class="flex items-center justify-center gap-1 py-0.5 text-white dark:text-gray-100 text-xs font-semibold">
-            <app-icon name="target" class="h-3 w-3"></app-icon>
-            <span>
-              {{ (field === metricEnum.duration || field === metricEnum.rest) ? formatSecondsToTime(target) : target }}
-            </span>
+            <ng-container *ngIf="getShowMetricTarget()">
+              <app-icon name="target" class="h-3 w-3"></app-icon>
+              <span>
+                {{ (field === metricEnum.duration || field === metricEnum.rest) ? formatSecondsToTime(target) : target
+                }}
+              </span>
+            </ng-container>
           </span>
         </div>
       </div>

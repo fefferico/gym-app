@@ -8,6 +8,7 @@ export interface AppSettings {
   playerMode: PlayerMode;
   menuMode: MenuMode;
   enableTrueGymMode: boolean;
+  showMetricTarget: boolean;
   durationStep: number;
   distanceStep: number;
   restStep: number;
