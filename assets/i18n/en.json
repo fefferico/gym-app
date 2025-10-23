@@ -172,7 +172,10 @@
       "countdownSoundDescription": "Play sound X seconds before a timed set ends",
       "countdownSoundSecondsLabel": "Countdown From (seconds)",
       "countdownSoundError": "Must be 1-20s.",
-      
+      "showMetricTarget": {
+        "label": "Show Metric Targets",
+        "description": "If enabled, the player will display the planned target values (e.g., 8-12 reps, 100kg) for each set."
+      },
       "trueGymMode": {
         "label": "True GYM Mode",
         "description": "Simplifies the workout player to show only essential metrics (Weight/Reps for strength, Duration for cardio).",
@@ -748,7 +751,7 @@
     }
   },
   "compactPlayer": {
-    "warmupSet":"Warmup set",
+    "warmupSet": "Warmup set",
     "completedSet": "COMPLETED SET",
     "completeSet": "COMPLETE SET",
     "takeABreak": "Take a break",
@@ -1132,7 +1135,7 @@
       "restPlaceholder": "Rest",
       "notesPlaceholder": "e.g. Good form",
       "collapse": "Collapse set",
-      "removeSet":"Remove Set",
+      "removeSet": "Remove Set",
       "metrics": "Metrics"
     },
     "restDayMessage": "This is a rest day routine. No exercises are needed",
@@ -1774,7 +1777,6 @@
       "sinclair": "Primarily used in Olympic Weightlifting to compare athletes in the Snatch and Clean & Jerk. Included here for comparison."
     }
   },
-
   "logActivity": {
     "logTitle": "Log an Activity",
     "editTitle": "Edit Activity Log",
@@ -1919,11 +1921,6 @@
     },
     "mergeInfo": "No new activity logs to import."
   },
-
-
-
-
-
   "alertService": {
     "buttons": {
       "ok": "OK",
@@ -2253,7 +2250,6 @@
       "cancel": "Cancel"
     }
   },
-
   "exerciseDetail": {
     "tabs": {
       "description": "Description",
@@ -2322,7 +2318,6 @@
     "stats": "STATS",
     "profile": "PROFILE"
   },
-
   "generateWorkoutModal": {
     "title": "Generate Workout",
     "durationLabel": "Duration",
@@ -2351,7 +2346,7 @@
       "detailed": "GENERATE CUSTOM WORKOUT",
       "quick": "SURPRISE ME!"
     }
-},
+  },
   "personalGym": {
     "list": {
       "title": "My Personal Gym",
@@ -2495,11 +2490,11 @@
     }
   },
   "metrics": {
-      "rest": "Rest",
-      "weight": "Weight",
-      "tempo": "Tempo",
-      "duration": "Duration",
-      "distance": "Distance",
-      "reps": "Reps"
-    }
+    "rest": "Rest",
+    "weight": "Weight",
+    "tempo": "Tempo",
+    "duration": "Duration",
+    "distance": "Distance",
+    "reps": "Reps"
+  }
 }

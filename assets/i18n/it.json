@@ -17,25 +17,25 @@
     "defaultName": "Appassionato di Fitness"
   },
   "pausedWorkout": {
-      "inProgress": "Hai un allenamento in corso!",
-      "routineLabel": "Routine",
-      "programLabel": "Programma",
-      "loggedOn": "Registrato il",
-      "pausedAt": "In pausa alle",
-      "defaultRoutineName": "Nuova sessione",
-      "fallbackRoutineName": "il tuo allenamento",
-      "adHocWorkout": "Allenamento Ad-hoc",
-      "resumeButton": "RIPRENDI ALLENAMENTO",
-      "detailsButton": "DETTAGLI",
-      "discardButton": "SCARTA",
-      "discardTitle": "Scartare l'allenamento in pausa?",
-      "discardMessage": "Sei sicuro di voler scartare questa sessione di allenamento in pausa? L'azione non può essere annullata.",
-      "summaryTitle": "In pausa: {{routineName}}",
-      "summaryMessage": "Hai eseguito {{exercisesDone}} di {{exercisesAvailable}} esercizi, con {{setsDone}} set registrati{{targetSetsInfo}}. Tempo trascorso: {{timeElapsed}}. Riprendi l'allenamento per continuare.",
-      "noPausedWorkoutFound": "Nessun allenamento in pausa trovato da riprendere",
-      "sessionDiscarded": "Sessione di allenamento in pausa scartata.",
-      "status": "Il tuo allenamento è in pausa"
-    },
+    "inProgress": "Hai un allenamento in corso!",
+    "routineLabel": "Routine",
+    "programLabel": "Programma",
+    "loggedOn": "Registrato il",
+    "pausedAt": "In pausa alle",
+    "defaultRoutineName": "Nuova sessione",
+    "fallbackRoutineName": "il tuo allenamento",
+    "adHocWorkout": "Allenamento Ad-hoc",
+    "resumeButton": "RIPRENDI ALLENAMENTO",
+    "detailsButton": "DETTAGLI",
+    "discardButton": "SCARTA",
+    "discardTitle": "Scartare l'allenamento in pausa?",
+    "discardMessage": "Sei sicuro di voler scartare questa sessione di allenamento in pausa? L'azione non può essere annullata.",
+    "summaryTitle": "In pausa: {{routineName}}",
+    "summaryMessage": "Hai eseguito {{exercisesDone}} di {{exercisesAvailable}} esercizi, con {{setsDone}} set registrati{{targetSetsInfo}}. Tempo trascorso: {{timeElapsed}}. Riprendi l'allenamento per continuare.",
+    "noPausedWorkoutFound": "Nessun allenamento in pausa trovato da riprendere",
+    "sessionDiscarded": "Sessione di allenamento in pausa scartata.",
+    "status": "Il tuo allenamento è in pausa"
+  },
   "quickActions": {
     "startNewSessionTitle": "Inizia una nuova sessione",
     "startNewSessionDescription": "Inizia una sessione da zero e definiscila mentre ti alleni",
@@ -119,6 +119,10 @@
       "countdownSoundDescription": "Riproduci un suono X secondi prima della fine di una serie a tempo",
       "countdownSoundSecondsLabel": "Inizia da (secondi)",
       "countdownSoundError": "Deve essere tra 1-20s.",
+      "showMetricTarget": {
+        "label": "Mostra Obiettivi Metriche",
+        "description": "Se abilitato, il player mostrerà i valori target pianificati (es. 8-12 ripetizioni, 100kg) per ogni set."
+      },
       "trueGymMode": {
         "label": "Modalità PALESTRA",
         "description": "Semplifica la schermata di esecuzione della scheda per mostrare soltanto le metriche essenziali (Peso/Ripetizioni per la forza, Durata per cardio).",
@@ -743,7 +747,7 @@
     }
   },
   "compactPlayer": {
-    "warmupSet":"Serie di riscaldamento",
+    "warmupSet": "Serie di riscaldamento",
     "completedSet": "SERIE COMPLETATA",
     "completeSet": "COMPLETA SERIE",
     "takeABreak": "Prenditi una pausa",
@@ -2508,11 +2512,11 @@
     }
   },
   "metrics": {
-      "rest": "Riposo",
-      "weight": "Peso",
-      "tempo": "Tempo",
-      "duration": "Durata",
-      "distance": "Distanza",
-      "reps": "Ripetizioni"
-    }
+    "rest": "Riposo",
+    "weight": "Peso",
+    "tempo": "Tempo",
+    "duration": "Durata",
+    "distance": "Distanza",
+    "reps": "Ripetizioni"
+  }
 }
