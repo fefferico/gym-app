@@ -28,6 +28,7 @@ import { PerformanceComparisonModalComponent } from './performance-comparison-mo
 import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { METRIC, WorkoutExercise } from '../../../core/models/workout.model';
+import { BumpClickDirective } from '../../../shared/directives/bump-click.directive';
 
 export interface DisplayLoggedExercise extends LoggedWorkoutExercise {
   baseExercise?: Exercise | null;
@@ -83,7 +84,8 @@ interface TargetComparisonData {
   selector: 'app-workout-log-detail',
   standalone: true,
   imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, ModalComponent, ExerciseDetailComponent,
-    ActionMenuComponent, PressDirective, IconComponent, TooltipDirective, WeightUnitPipe, PerformanceComparisonModalComponent, FabMenuComponent, TranslateModule],
+    ActionMenuComponent, PressDirective, IconComponent, TooltipDirective, WeightUnitPipe, PerformanceComparisonModalComponent, FabMenuComponent, TranslateModule,
+  BumpClickDirective],
   templateUrl: './workout-log-detail.html',
   providers: [DecimalPipe]
 })
@@ -412,12 +414,20 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     return loggedEx?.sets.map(set => set.repsLogged).join(' - ');
   }
 
-  checkIfTimedExercise(loggedEx: LoggedWorkoutExercise): boolean {
-    return loggedEx.sets.some(set => (set.durationLogged !== undefined && set.durationLogged !== null) && set.durationLogged > 0);
+  checkIfDurationAvailable(loggedEx: LoggedWorkoutExercise): boolean {
+    return loggedEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.duration) && (set.durationLogged !== undefined && set.durationLogged !== null) && set.durationLogged > 0);
   }
 
-  checkIfWeightedExercise(loggedEx: LoggedWorkoutExercise): boolean {
-    return loggedEx?.sets.some(set => (set.weightLogged !== undefined && set.weightLogged !== null) && set.weightLogged >= 0);
+  checkIfRepsAvailable(loggedEx: DisplayLoggedExercise): boolean {
+    return loggedEx?.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.reps) && (set.repsLogged !== undefined && set.repsLogged !== null) && set.repsLogged >= 0);
+  }
+
+  checkIfDistanceAvailable(loggedEx: DisplayLoggedExercise): boolean {
+    return loggedEx?.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.distance) && (set.distanceLogged !== undefined && set.distanceLogged !== null) && set.distanceLogged >= 0);
+  }
+
+  checkIfWeightAvailable(loggedEx: LoggedWorkoutExercise): boolean {
+    return loggedEx?.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.weight) && (set.weightLogged !== undefined && set.weightLogged !== null) && set.weightLogged >= 0);
   }
 
   protected checkRange(performed: number | string, min?: number | string | null, max?: number | string | null): string {
@@ -689,14 +699,6 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     return this.translate.instant('logDetail.adHocWorkout');
   }
 
-  protected hasPerformedTimedSets(loggedEx: DisplayLoggedExercise): boolean {
-    return loggedEx?.sets?.some(set => (set.durationLogged ?? 0) > 0) ?? false;
-  }
-
-  protected hasPerformedReps(loggedEx: DisplayLoggedExercise): boolean {
-    return loggedEx?.sets?.some(set => (set.repsLogged ?? 0) > 0) ?? false;
-  }
-
   protected emomLabel(exercise: EMOMDisplayBlock): string {
     const rounds = exercise.totalRounds || 1;
     let roundString = this.translate.instant(rounds > 1 ? 'trainingPrograms.card.roundsLabel' : 'trainingPrograms.card.roundLabel', { count: rounds });
@@ -783,18 +785,13 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     let cols = 2;
 
     // Conditionally add a column for each additional metric found
-    if (this.hasPerformedReps(item)) cols++;
-    if (this.checkIfWeightedExercise(item)) cols++;
-    if (this.hasPerformedTimedSets(item)) cols++;
-    if (this.hasPerformedDistanceSets(item)) cols++;
+    if (this.checkIfRepsAvailable(item)) cols++;
+    if (this.checkIfWeightAvailable(item)) cols++;
+    if (this.checkIfDurationAvailable(item)) cols++;
+    if (this.checkIfDistanceAvailable(item)) cols++;
     if (this.hasNotes(item)) cols++;
 
     return `grid-cols-${cols}`;
-  }
-
-  // +++ NEW: Helper method specifically for distance +++
-  protected hasPerformedDistanceSets(loggedEx: DisplayLoggedExercise): boolean {
-    return loggedEx?.sets?.some(set => (set.distanceLogged ?? 0) > 0) ?? false;
   }
 
   protected hasNotes(loggedEx: DisplayLoggedExercise): boolean {

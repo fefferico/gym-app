@@ -312,7 +312,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           // Use a small timeout to ensure the main view has initialized before the modal opens.
           setTimeout(() => {
             this.openWorkoutGenerator();
-          }, 150); 
+          }, 150);
         }
 
         this.currentRoutineId = this.route.snapshot.paramMap.get('routineId'); // For editing/viewing a Routine, or prefilling a Log
@@ -1405,15 +1405,22 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   private scrollExpandedExerciseIntoView(): void {
-    const path = this.expandedSetPath();
+    const path = this.expandedExercisePath();
     if (path) {
-      const exerciseElem = this.expandedSetElements.get(path.exerciseIndex)?.nativeElement;
+      const exerciseElem = this.expandedExerciseCard.get(path.exerciseIndex)?.nativeElement;
       if (exerciseElem) {
+        setTimeout(() => {
+          exerciseElem.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+            inline: 'nearest'
+          });
+        }, 100)
         // add a few pixels of offset from the top
-        const offset = 50;
-        const elementPosition = exerciseElem.getBoundingClientRect().top + window.pageYOffset;
-        const offsetPosition = elementPosition - offset;
-        window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+        //const offset = 150;
+        //const elementPosition = exerciseElem.getBoundingClientRect().top + window.pageYOffset;
+        //const offsetPosition = elementPosition - offset;
+        //window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
       }
     }
   }
@@ -1474,12 +1481,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       const isCardio = this.isExerciseCardioOnly(exerciseFromLibrary.id);
 
       let fieldOrder = [];
-      if (isCardio){
+      if (isCardio) {
         fieldOrder = [
           METRIC.duration, METRIC.distance, METRIC.rest
         ];
       } else {
-         fieldOrder = [
+        fieldOrder = [
           METRIC.reps, METRIC.weight, METRIC.rest
         ];
       }
@@ -2580,13 +2587,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         this.toastService.error("Invalid input for custom exercise", 0, "Error"); return;
       }
       const newExerciseSets: ExerciseTargetSetParams[] = Array.from({ length: numSets }, () => ({
-        id: `custom-adhoc-set-${uuidv4()}`, 
+        id: `custom-adhoc-set-${uuidv4()}`,
         fieldOrder: [METRIC.reps, METRIC.weight, METRIC.rest],
-        targetReps: 8, 
-        targetWeight: 10, 
-        targetDuration: undefined, 
-        targetRest: 60, type: 
-        'standard', 
+        targetReps: 8,
+        targetWeight: 10,
+        targetDuration: undefined,
+        targetRest: 60, type:
+          'standard',
         notes: '',
       }));
       const slug = exerciseName.trim().toLowerCase().replace(/\s+/g, '-');
@@ -3077,7 +3084,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     } else {
       // Switch FROM Single TO Range
       let singleValue = durationCtrl?.value ?? 30; // Default to 30s
-      if (typeof singleValue === 'string'){
+      if (typeof singleValue === 'string') {
         singleValue = Number(singleValue);
       }
       const offset = 30;
@@ -3315,14 +3322,19 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   public expandExerciseCard(exIndex: number, event?: Event): void {
     this.closeExerciseActionMenu();
-    // --- START OF THE FIX ---
     if (event) {
       const target = event.target as HTMLElement;
       if (target.closest('button') || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) {
         return;
       }
+
+
+      // Ignore clicks inside the #expandedExerciseSetsContainer
+      if (target.closest('#expandedExerciseSetsContainer')) {
+        return;
+      }
+
     }
-    // --- END OF THE FIX ---
 
     // If the guards above did not return, proceed with the original expansion logic.
     event?.stopPropagation();
@@ -3337,16 +3349,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const supersetId = clickedExercise.get('supersetId')?.value;
 
     let masterIndexToExpand = exIndex;
-    // if (supersetId) {
-    //   const firstIndex = this.exercisesFormArray.controls.findIndex(c =>
-    //     (c as FormGroup).get('supersetId')?.value === supersetId &&
-    //     (c as FormGroup).get('supersetOrder')?.value === 0
-    //   );
-    //   if (firstIndex !== -1) {
-    //     masterIndexToExpand = firstIndex;
-    //   }
-    // }
-
     const expandedExIndex = this.expandedExercisePath();
     if (expandedExIndex?.exerciseIndex === masterIndexToExpand) {
       // If the clicked exercise is already expanded, collapse it and its notes

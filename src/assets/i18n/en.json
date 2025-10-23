@@ -2309,6 +2309,9 @@
       "reps": "reps",
       "noData": "No data logged for this set.",
       "noHistory": "No workout history found for this exercise."
+    },
+    "exercise": {
+      "noHistory": "Not enough history for <strong>{{name}}</strong> to plot a progress trend (need at least 2 workouts for this exercise). Keep logging!"
     }
   },
   "navigation": {

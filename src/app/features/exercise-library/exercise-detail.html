@@ -172,8 +172,8 @@
               <ng-container *ngIf="trackingService.workoutLogs$ | async as workoutLogs">
                 <div *ngIf="exercise() && exercisePBs().length === 0 && workoutLogs.length > 0"
                   class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                  <p class="text-md text-gray-600 dark:text-gray-400 italic">No personal bests recorded for this
-                    exercise yet.
+                  <p class="text-md text-gray-600 dark:text-gray-400 italic">{{ 'compactPlayer.insights.noPBs' | translate
+                    }} 
                   </p>
                 </div>
               </ng-container>
@@ -209,11 +209,7 @@
               <ng-container *ngIf="exercise() && (trackingService.workoutLogs$ | async) as allLogsGlobally">
                 <div *ngIf="allLogsGlobally && allLogsGlobally.length > 0 && !hasSufficientProgressData"
                   class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-                  <p class="text-md text-gray-600 dark:text-gray-400 italic">
-                    Not enough history for <strong class="dark:text-gray-200">{{ exercise()?.name }}</strong> to plot
-                    a
-                    progress trend (need at least 2 workouts for this exercise). Keep logging!
-                  </p>
+                  <p class="text-md text-gray-600 dark:text-gray-400 italic" [innerHTML]="updateSanitizedDescription('exerciseDetail.exercise.noHistory' | translate:{ name: exercise()?.name })"></p>
                 </div>
               </ng-container>
             </div>
@@ -259,7 +255,7 @@
           <div class="">
             <!-- --- START: CONDITIONAL CHARTS FOR STRENGTH --- -->
 
-                      <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4 px-4">{{ 'exerciseDetail.tabs.graphs' | translate }}</h2>
+            <!-- <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4 px-4">{{ 'exerciseDetail.tabs.graphs' | translate }}</h2> -->
 
             <ng-container *ngIf="ex.category !== 'cardio'">
               <div>

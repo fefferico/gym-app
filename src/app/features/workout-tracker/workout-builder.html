@@ -714,7 +714,7 @@
 
                                     <!-- EXPANDED Only EDIT MODE - START -->
                                     <div *ngIf="shouldShowExpandedExercise(exIndex) && isEditableMode()"
-                                        class="space-y-1">
+                                        class="space-y-1" id="expandedExerciseSetsContainer">
                                         <!-- START: Control Panel for Standard Exercises -->
                                         <div class="flex-col py-2 px-1 flex gap-y-2">
 
@@ -835,26 +835,21 @@
                                                         <div class="flex items-center justify-start gap-x-4">
                                                             <div *ngIf="visibleCols[metricEnum.reps]"
                                                                 class="w-16 text-center">{{
-                                                                mode === 'manualLogEntry' ?
-                                                                ('workoutBuilder.set.repsLogged' | translate) :
-                                                                ('workoutBuilder.set.reps' | translate) }}</div>
+                                                                'workoutBuilder.set.reps' | translate }}</div>
                                                             <div *ngIf="visibleCols[metricEnum.weight]"
-                                                                class="w-20 text-center truncate">{{ mode ===
-                                                                'manualLogEntry' ? ('workoutBuilder.set.weightLogged' |
-                                                                translate) : ('workoutBuilder.set.weight' | translate)
+                                                                class="w-20 text-center truncate">{{
+                                                                'workoutBuilder.set.weight' | translate
                                                                 }} ({{unitService.getWeightUnitSuffix()}})</div>
                                                             <div *ngIf="visibleCols[metricEnum.distance]"
                                                                 class="w-20 text-center truncate">{{
                                                                 'workoutBuilder.set.distance' | translate }}
                                                                 ({{unitService.getDistanceMeasureUnitSuffix()}})</div>
                                                             <div *ngIf="visibleCols[metricEnum.duration]"
-                                                                class="w-16 text-center">{{ mode === 'manualLogEntry' ?
-                                                                ('workoutBuilder.set.timePerformed' | translate) :
-                                                                ('workoutBuilder.set.time' | translate) }} (s)</div>
+                                                                class="w-16 text-center">{{ 'workoutBuilder.set.time' |
+                                                                translate }} (s)</div>
                                                             <div *ngIf="visibleCols[metricEnum.rest]"
-                                                                class="w-24 text-center">{{ mode === 'manualLogEntry' ?
-                                                                ('workoutBuilder.set.rest' | translate) :
-                                                                ('workoutBuilder.set.rest' | translate) }} (s)</div>
+                                                                class="w-24 text-center">{{
+                                                                'workoutBuilder.set.rest' | translate }} (s)</div>
                                                         </div>
                                                     </div>
 
@@ -1170,7 +1165,7 @@
             <div *ngIf="mode === 'manualLogEntry' && exercisesFormArray.length === 0 && !builderForm.get('routineIdForLog')?.value"
                 class="text-center text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-xl mt-4">
                 <p class="mb-2">Select a routine or ADD EXERCISEs manually to log</p>
-                <button type="button" (click)="openExerciseSelectionModal()"
+                <button appBumpClick type="button" (click)="openExerciseSelectionModal()"
                     class="bg-green-500 hover:bg-green-600 text-white text-m font-medium py-2 px-3 rounded-xl">
                     + {{ 'workoutBuilder.logEntry.addFirstExercise' | translate }}
                 </button>
@@ -1190,7 +1185,7 @@
 
             <div *ngIf="mode !== 'manualLogEntry' && (builderForm.get('goal')?.value !== metricEnum.rest)"
                 class="text-center text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-xl mt-4">
-                <button type="button" (click)="openExerciseSelectionModal()"
+                <button appBumpClick type="button" (click)="openExerciseSelectionModal()"
                     class="flex items-center justify-center px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800 disabled:opacity-50 min-w-[220px] ">
                     <app-icon name="plus-circle" class="h-6 w-6 mr-1"></app-icon>
                     <!-- Button Text -->
@@ -1199,7 +1194,7 @@
             </div>
 
             <!-- Button 2: SUBMIT -->
-            <button type="button" [disabled]="isFormInvalid()" (click)="onSubmit()"
+            <button appBumpClick type="button" [disabled]="isFormInvalid()" (click)="onSubmit()"
                 class="flex items-center justify-center px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50 min-w-[220px]">
                 <app-icon name="save" class="h-6 w-6 mr-1"></app-icon>
                 <!-- Button Text -->
@@ -1209,7 +1204,7 @@
 
             <!-- WORKOUT GENERATOR -->
             <div *ngIf="isGeneratedRoutine()">
-                <button *ngIf="isGeneratedRoutine()" type="button" (click)="regenerateWorkout()"
+                <button appBumpClick *ngIf="isGeneratedRoutine()" type="button" (click)="regenerateWorkout()"
                     class="flex items-center justify-center px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 min-w-[220px]">
                     <app-icon name="random" class="h-6 w-6 mr-1"></app-icon>
                     {{'workoutBuilder.buttons.regenButton' | translate }}
@@ -1308,8 +1303,7 @@
     <div [formGroup]="setControl">
         <label [for]="'duration-exp-' + exIndex + '-' + setIndex"
             class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
-            <span>{{ 'workoutBuilder.set.time' | translate }} (s) {{ mode === 'manualLogEntry' ? '(Performed)' :
-                ''}}</span>
+            <span>{{ 'workoutBuilder.set.time' | translate }} (s) </span>
             <button *ngIf="mode === 'routineBuilder'" type="button" (click)="toggleDurationMode(setControl, $event)"
                 [title]="'workoutBuilder.set.toggleRange' | translate"
                 class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
@@ -1372,8 +1366,7 @@
     <div [formGroup]="setControl">
         <label [for]="'rest-exp-' + exIndex + '-' + setIndex"
             class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
-            <span>{{ 'workoutBuilder.set.rest' | translate }} (s) {{ mode === 'manualLogEntry' ? '(Performed)' :
-                ''}}</span>
+            <span>{{ 'workoutBuilder.set.rest' | translate }} (s) </span>
             <button *ngIf="mode === 'routineBuilder'" type="button" (click)="toggleRestMode(setControl, $event)"
                 [title]="'workoutBuilder.set.toggleRange' | translate"
                 class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
@@ -1449,8 +1442,7 @@
     <div [formGroup]="setControl">
         <label [for]="'reps-exp-' + exIndex + '-' + setIndex"
             class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
-            <span>{{ 'workoutBuilder.set.reps' | translate }} {{ mode === 'manualLogEntry' ? ('(Achieved)') :
-                ''}}</span>
+            <span>{{ 'workoutBuilder.set.reps' | translate }} </span>
             <button *ngIf="mode === 'routineBuilder'" type="button" (click)="toggleRepsMode(setControl, $event)"
                 [title]="'workoutBuilder.set.toggleRange' | translate"
                 class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
@@ -1490,7 +1482,7 @@
     <div [formGroup]="setControl">
         <label [for]="'weight-exp-' + exIndex + '-' + setIndex"
             class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
-            <span>{{ 'workoutBuilder.set.weight' | translate }} {{ mode === 'manualLogEntry' ? '(Used)' : ''}}
+            <span>{{ 'workoutBuilder.set.weight' | translate }}
                 ({{unitService.getWeightUnitSuffix()}})</span>
             <button *ngIf="mode === 'routineBuilder'" type="button" (click)="toggleWeightMode(setControl, $event)"
                 [title]="'workoutBuilder.set.toggleRange' | translate"

@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { LoggedWorkoutExercise, LoggedSet } from './workout-log.model';
-import { WorkoutExercise, ExerciseTargetSetParams, ExerciseTargetExecutionSetParams } from './workout.model';
+import { WorkoutExercise, ExerciseTargetSetParams, ExerciseTargetExecutionSetParams, METRIC } from './workout.model';
 import { log } from 'console';
 
 /**
@@ -118,49 +118,87 @@ export function mapRoutineSnapshotToLoggedExercises(
  */
 function mapLegacyLoggedSet(set: any): LoggedSet {
     const newSet: any = { ...set };
-    // const newSet: LoggedSet = { ...set };
+    newSet.fieldOrder = Array.isArray(newSet.fieldOrder) ? [...newSet.fieldOrder] : [];
 
-    // Map legacy target properties to their new names.
-    if (newSet.hasOwnProperty('reps') && !newSet.hasOwnProperty('targetReps')) {
-        newSet.targetReps = newSet.reps;
-        delete newSet.reps;
-    }
-    if (newSet.hasOwnProperty('weight') && !newSet.hasOwnProperty('targetWeight')) {
-        newSet.targetWeight = newSet.weight;
-        delete newSet.weight;
-    }
-    if (newSet.hasOwnProperty('duration') && !newSet.hasOwnProperty('targetDuration')) {
-        newSet.targetDuration = newSet.duration;
-        delete newSet.duration;
-    }
-    if (newSet.hasOwnProperty('distance') && !newSet.hasOwnProperty('targetDistance')) {
-        newSet.targetDistance = newSet.distance;
-        delete newSet.distance;
+    const migrateMetric = (
+        legacyTarget: string,
+        newTarget: string,
+        legacyLogged: string,
+        newLogged: string,
+        metricKey: keyof typeof METRIC
+    ) => {
+        let fieldToAdd = false;
+        let value = null;
+
+        if (newSet.hasOwnProperty(legacyTarget) && !newSet.hasOwnProperty(newTarget)) {
+            newSet[newTarget] = newSet[legacyTarget];
+            delete newSet[legacyTarget];
+            fieldToAdd = true;
+            value = newSet[newTarget];
+        }
+
+        if (newSet.hasOwnProperty(legacyLogged) && !newSet.hasOwnProperty(newLogged)) {
+            newSet[newLogged] = newSet[legacyLogged];
+            delete newSet[legacyLogged];
+            fieldToAdd = true;
+            value = newSet[newLogged];
+        }
+
+        if (fieldToAdd && !newSet.fieldOrder.includes(metricKey)) {
+            newSet.fieldOrder.push(METRIC[metricKey]);
+        }
+
+        if (!value) {
+            newSet.fieldOrder = newSet.fieldOrder.filter((metric: METRIC) => metric !== METRIC[metricKey]);
+        }
+    };
+
+    migrateMetric('reps', 'targetReps', 'repsAchieved', 'repsLogged', 'reps');
+    migrateMetric('weight', 'targetWeight', 'weightUsed', 'weightLogged', 'weight');
+    migrateMetric('duration', 'targetDuration', 'durationPerformed', 'durationLogged', 'duration');
+    migrateMetric('distance', 'targetDistance', 'distanceAchieved', 'distanceLogged', 'distance');
+
+    // Handle rest separately due to its more complex legacy structure
+    let restFieldToAdd = false;
+    let restValue = null;
+
+    if (newSet.targetRest == null) {
+        if (typeof newSet.targetRestAfterSet === 'number') {
+            newSet.targetRest = newSet.targetRestAfterSet;
+            restFieldToAdd = true;
+            restValue = newSet.targetRest;
+        } else if (typeof newSet.restAfterSet === 'number') {
+            newSet.targetRest = newSet.restAfterSet;
+            restFieldToAdd = true;
+            restValue = newSet.targetRest;
+        }
     }
 
-     // --- NEW: MIGRATE REST PROPERTIES ---
-    // Migrate planned rest values if the new property doesn't exist
-    if (newSet.targetRest === undefined || newSet.targetRest === null) {
-      if (typeof newSet.targetRestAfterSet === 'number') {
-        newSet.targetRest = newSet.targetRestAfterSet;
-      } else if (typeof newSet.restAfterSet === 'number') {
-        newSet.targetRest = newSet.restAfterSet;
-      }
+    if (newSet.restLogged == null) {
+        if (typeof newSet.restLogged === 'number') {
+            restFieldToAdd = true;
+            restValue = newSet.restLogged;
+        } else if (typeof newSet.targetRestAfterSet === 'number') {
+            newSet.restLogged = newSet.targetRestAfterSet;
+            restFieldToAdd = true;
+            restValue = newSet.restLogged;
+        }
     }
 
-    // Migrate performed rest value if the new property doesn't exist
-    if (newSet.restLogged === undefined || newSet.restLogged === null) {
-      if (typeof newSet.restLogged === 'number') {
-        newSet.restLogged = newSet.restLogged;
-      }else if (typeof newSet.targetRestAfterSet === 'number') {
-        newSet.restLogged = newSet.targetRestAfterSet;
-      }
+    if (restFieldToAdd && !newSet.fieldOrder.includes('rest')) {
+        newSet.fieldOrder.push(METRIC.rest);
     }
 
-    // Clean up old legacy properties to standardize the object
+    if (!restValue) {
+        newSet.fieldOrder = newSet.fieldOrder.filter((metric: METRIC) => metric !== METRIC.rest);
+    }
+
     delete newSet.targetRestAfterSet;
     delete newSet.restAfterSet;
-    // --- END NEW ---
+
+    if (!newSet.hasOwnProperty('type')) {
+        newSet.type = 'standard';
+    }
 
     return newSet;
 }
@@ -310,7 +348,7 @@ export function mapLoggedSetToExerciseTargetSetParams(loggedSet: LoggedSet): Exe
         targetDistance: loggedSet.distanceLogged,
         targetRest: loggedSet.restLogged,
         targetRpe: loggedSet.rpe,
-            targetTempo: loggedSet.tempoLogged,
+        targetTempo: loggedSet.tempoLogged,
 
         // Set other optional target values to null as they are not explicitly tracked
         // in the single performance log entry. These can be refined in the routine editor.
