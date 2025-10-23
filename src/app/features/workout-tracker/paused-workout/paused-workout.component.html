@@ -26,7 +26,7 @@
         <!-- <span class="text-sm font-bold text-white">{{ 'pausedWorkout.resumeButton' | translate }}</span> -->
       </button>
 
-      <button appPress (shortPress)="discardWorkout()" class="p-2 hover:bg-white/20 rounded-full transition"
+      <button appPress (shortPress)="discardWorkout()" class="flex items-center gap-1.5 px-3 py-1 bg-white/20 hover:bg-white/30 rounded-md transition"
         [title]="'pausedWorkout.discardTooltip' | translate">
         <app-icon name="trash" class="h-5 w-5 text-white"></app-icon>
       </button>

@@ -121,6 +121,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
 
   weekName = signal<string | null>(null);
   dayInfo = signal<ProgramDayInfo | null>(null);
+  private allExercisesMap = new Map<string, Exercise>();
 
   constructor() { }
 
@@ -132,24 +133,47 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     );
 
     this.subscriptions.add(
-      this.route.paramMap.pipe(
+      this.exerciseService.getExercises().pipe(
+        take(1),
+        tap(exercises => {
+          // Keep the original map for non-translated details like icons, categories etc.
+          exercises.forEach(ex => this.allExercisesMap.set(ex.id, ex));
+        }),
+        switchMap(() => this.route.paramMap),
         map(params => params.get('logId')),
-
         // MODIFIED: Call the single, comprehensive reset method.
         tap(() => this.resetComponentState()),
-
         switchMap(id => id ? this.trackingService.getWorkoutLogById(id) : of(null)),
+        // Use switchMap to handle the async translation process cleanly
+        switchMap(log => {
+          if (!log || !log.exercises?.length) {
+            // If no log or no exercises, just pass the log through
+            return of({ log, translatedExercises: new Map<string, Exercise>() });
+          }
 
-        tap(async (log) => {
+          // Create a list of base exercises from the log to be translated
+          const exercisesToTranslate = log.exercises
+            .map(loggedEx => this.allExercisesMap.get(loggedEx.exerciseId))
+            .filter((ex): ex is Exercise => !!ex);
+
+          // Return an observable that emits both the log and the translated exercises map
+          return this.exerciseService.getTranslatedExerciseList(exercisesToTranslate).pipe(
+            map(translated => {
+              const translatedMap = new Map(translated.map(ex => [ex.id, ex]));
+              return { log, translatedExercises: translatedMap };
+            })
+          );
+        }),
+        tap(async ({ log, translatedExercises }) => {
           this.workoutLog.set(log);
           if (log?.exercises?.length) {
-            this.prepareDisplayExercises(log.exercises);
+            // Pass the translated map to the display preparation method
+            this.prepareDisplayExercises(log.exercises, translatedExercises);
             await this.enrichLoggedExercisesWithTargets();
             this.trainingService.getWeekNameForLog(log).pipe(take(1)).subscribe(name => this.weekName.set(name));
             this.trainingService.getDayOfWeekForLog(log).pipe(take(1)).subscribe(info => this.dayInfo.set(info));
           }
         }),
-
         catchError(err => {
           console.error("Error fetching workout log:", err);
           this.workoutLog.set(null);
@@ -192,96 +216,99 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     this.workoutLog.set({ ...log });
   }
 
-  private prepareDisplayExercises(loggedExercises: LoggedWorkoutExercise[]): void {
+  private prepareDisplayExercises(loggedExercises: LoggedWorkoutExercise[], translatedExercisesMap: Map<string, Exercise>): void {
     const processedSupersetIds = new Set<string>();
-    const exercisesWithBaseInfo$ = loggedExercises.map(ex =>
-      this.exerciseService.getExerciseById(ex.exerciseId).pipe(
-        map(baseEx => ({
-          ...ex,
-          baseExercise: baseEx || null,
-          isExpanded: true,
-          iconName: this.exerciseService.determineExerciseIcon(baseEx ?? null, ex.exerciseName),
-        })),
-        catchError(() => of({ ...ex, baseExercise: null, isExpanded: true } as DisplayLoggedExercise))
-      )
-    );
 
-    forkJoin(exercisesWithBaseInfo$).subscribe(exercisesWithDetails => {
-      const displayItems: DisplayItem[] = [];
+    const exercisesWithDetails: DisplayLoggedExercise[] = loggedExercises.map(ex => {
+      // Get the original, untranslated base exercise for non-name properties
+      const baseEx = this.allExercisesMap.get(ex.exerciseId) || null;
+      // Get the translated exercise for the name
+      const translatedEx = translatedExercisesMap.get(ex.exerciseId);
 
-      for (const ex of exercisesWithDetails) {
-        if (ex.supersetId && !processedSupersetIds.has(ex.supersetId)) {
-          processedSupersetIds.add(ex.supersetId);
+      return {
+        ...ex,
+        // Prioritize the translated name, falling back to the name stored in the log
+        exerciseName: translatedEx?.name || ex.exerciseName,
+        baseExercise: baseEx,
+        isExpanded: true,
+        iconName: this.exerciseService.determineExerciseIcon(baseEx, ex.exerciseName),
+      };
+    });
 
-          const blockExercises = exercisesWithDetails.filter(e => e.supersetId === ex.supersetId);
-          if (blockExercises.length === 0) continue;
+    const displayItems: DisplayItem[] = [];
 
-          const firstInBlock = blockExercises[0];
-          const totalRounds = firstInBlock.sets.length || 1;
-          const blockName = blockExercises
-            .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0))
-            .map(e => e.exerciseName)
-            .join(' / ');
+    for (const ex of exercisesWithDetails) {
+      if (ex.supersetId && !processedSupersetIds.has(ex.supersetId)) {
+        processedSupersetIds.add(ex.supersetId);
 
-          if (firstInBlock.supersetType === 'emom') {
-            const rounds = Array.from({ length: totalRounds }, (_, i) => ({
-              roundNumber: i + 1,
-              sets: blockExercises.map(bex => bex.sets.find((s, index) => index === i))
-            })).filter(r => r.sets.some(s => s !== undefined));
+        const blockExercises = exercisesWithDetails.filter(e => e.supersetId === ex.supersetId);
+        if (blockExercises.length === 0) continue;
 
+        const firstInBlock = blockExercises[0];
+        const totalRounds = firstInBlock.sets.length || 1;
+        const blockName = blockExercises
+          .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0))
+          .map(e => e.exerciseName)
+          .join(' / ');
+
+        if (firstInBlock.supersetType === 'emom') {
+          const rounds = Array.from({ length: totalRounds }, (_, i) => ({
+            roundNumber: i + 1,
+            sets: blockExercises.map(bex => bex.sets.find((s, index) => index === i))
+          })).filter(r => r.sets.some(s => s !== undefined));
+
+          displayItems.push({
+            isEmomBlock: true,
+            supersetId: ex.supersetId,
+            blockName,
+            totalRounds,
+            emomTimeSeconds: firstInBlock.emomTimeSeconds || 60,
+            exercises: blockExercises,
+            rounds,
+            isExpanded: true,
+          });
+        } else {
+          // STANDARD SUPERSET: Group all rounds into a single block
+          const rounds = Array.from({ length: totalRounds }, (_, i) => {
+            const roundNumber = i + 1;
+            const exercisesForRound = blockExercises
+              .map(e => {
+                // Find the set for this round
+                const setForRound = e.sets.find((s, index) => (index ?? -1) + 1 === roundNumber);
+                if (setForRound) {
+                  // Return a shallow copy with only the set for this round
+                  return {
+                    ...e,
+                    sets: [setForRound]
+                  };
+                }
+                return null;
+              })
+              .filter(e => e !== null)
+              .sort((a, b) => (a!.supersetOrder ?? 0) - (b!.supersetOrder ?? 0)) as DisplayLoggedExercise[];
+            const totalExercisesForRound = blockExercises.length
+            return { roundNumber, exercisesForRound, totalExercisesForRound };
+          }).filter(r => r.exercisesForRound.length > 0);
+
+          if (rounds.length > 0) {
             displayItems.push({
-              isEmomBlock: true,
+              isSupersetBlock: true,
               supersetId: ex.supersetId,
               blockName,
               totalRounds,
-              emomTimeSeconds: firstInBlock.emomTimeSeconds || 60,
               exercises: blockExercises,
               rounds,
               isExpanded: true,
             });
-          } else {
-            // STANDARD SUPERSET: Group all rounds into a single block
-            const rounds = Array.from({ length: totalRounds }, (_, i) => {
-              const roundNumber = i + 1;
-              const exercisesForRound = blockExercises
-                .map(e => {
-                  // Find the set for this round
-                  const setForRound = e.sets.find((s, index) => (index ?? -1) + 1 === roundNumber);
-                  if (setForRound) {
-                    // Return a shallow copy with only the set for this round
-                    return {
-                      ...e,
-                      sets: [setForRound]
-                    };
-                  }
-                  return null;
-                })
-                .filter(e => e !== null)
-                .sort((a, b) => (a!.supersetOrder ?? 0) - (b!.supersetOrder ?? 0)) as DisplayLoggedExercise[];
-              const totalExercisesForRound = blockExercises.length
-              return { roundNumber, exercisesForRound, totalExercisesForRound };
-            }).filter(r => r.exercisesForRound.length > 0);
-
-            if (rounds.length > 0) {
-              displayItems.push({
-                isSupersetBlock: true,
-                supersetId: ex.supersetId,
-                blockName,
-                totalRounds,
-                exercises: blockExercises,
-                rounds,
-                isExpanded: true,
-              });
-            }
           }
-        } else if (!ex.supersetId) {
-          displayItems.push(ex);
         }
+      } else if (!ex.supersetId) {
+        displayItems.push(ex);
       }
+    }
 
-      this.displayItems.set(displayItems);
-      this.fetchPersonalBestsForLog(exercisesWithDetails);
-    });
+    this.displayItems.set(displayItems);
+    this.fetchPersonalBestsForLog(exercisesWithDetails);
   }
 
   isEmomBlock(item: DisplayItem): item is EMOMDisplayBlock {

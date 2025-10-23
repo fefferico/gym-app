@@ -382,6 +382,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.routine.set({ ...routine });
   }
 
+  // src/app/features/workout-player/compact-workout-player/compact-workout-player.component.ts
+
   private async loadNewWorkoutFromRoute(): Promise<void> {
     this.sessionState.set(SessionState.Loading);
     this.isSessionConcluded = false;
@@ -413,6 +415,41 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
         // We capture the routine before adjustments so we can apply them to a copy
         let routineForSession = JSON.parse(JSON.stringify(routine)) as Routine;
+
+        // =================== START OF SNIPPET ===================
+        // When in True Gym Mode, ensure all non-cardio exercises have weight and reps fields.
+        if (this.appSettingsService.isTrueGymMode()) {
+          const exercisesMap = new Map(this.availableExercises.map(ex => [ex.id, ex]));
+
+          routineForSession.exercises.forEach(exercise => {
+            const baseExercise = exercisesMap.get(exercise.exerciseId);
+            // Check if it's a non-cardio exercise
+            if (baseExercise && baseExercise.category !== 'cardio') {
+              exercise.sets.forEach(set => {
+                if (!set.fieldOrder) {
+                  set.fieldOrder = [];
+                }
+
+                // Check for and add Reps if missing
+                if (!set.fieldOrder.includes(METRIC.reps)) {
+                  set.fieldOrder.push(METRIC.reps);
+                  if (set.targetReps === undefined || set.targetReps === null) {
+                    set.targetReps = 8; // Default reps
+                  }
+                }
+
+                // Check for and add Weight if missing
+                if (!set.fieldOrder.includes(METRIC.weight)) {
+                  set.fieldOrder.push(METRIC.weight);
+                  if (set.targetWeight === undefined || set.targetWeight === null) {
+                    set.targetWeight = 10; // Default weight
+                  }
+                }
+              });
+            }
+          });
+        }
+        // =================== END OF SNIPPET ===================
 
         const lastLogArray = await firstValueFrom(this.trackingService.getLogsForRoutine(routine.id, 1));
         const lastLog = lastLogArray.length > 0 ? lastLogArray[0] : null;

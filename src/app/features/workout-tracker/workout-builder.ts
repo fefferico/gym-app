@@ -907,7 +907,48 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   private loadAvailableExercises(): void {
-    this.exerciseService.getExercises().pipe(take(1)).subscribe(exs => this.availableExercises = exs);
+    this.exerciseService.getExercises().pipe(
+      take(1),
+      // Use switchMap to chain the call to the translation service
+      switchMap(untranslatedExercises => {
+        if (!untranslatedExercises || untranslatedExercises.length === 0) {
+          return of([]); // Return empty if there's nothing to translate
+        }
+        return this.exerciseService.getTranslatedExerciseList(untranslatedExercises);
+      })
+    ).subscribe(translatedExercises => {
+      // The component's master list of exercises is now translated
+      this.availableExercises = translatedExercises;
+
+      // As a safeguard, update any exercises that might have been rendered
+      // before this async operation completed.
+      if (this.exercisesFormArray && this.exercisesFormArray.length > 0) {
+        this.updateExerciseNamesInForm();
+      }
+    });
+  }
+
+  /**
+   * Iterates through the existing exercises in the form and updates their names
+   * from the master list of available exercises. This ensures names are correctly
+   * translated if the form was built before the exercise list was fully loaded.
+   */
+  private updateExerciseNamesInForm(): void {
+    const exercisesMap = new Map(this.availableExercises.map(ex => [ex.id, ex.name]));
+
+    this.exercisesFormArray.controls.forEach(control => {
+      const exerciseGroup = control as FormGroup;
+      const exerciseId = exerciseGroup.get('exerciseId')?.value;
+      const currentName = exerciseGroup.get('exerciseName')?.value;
+
+      if (exerciseId) {
+        const translatedName = exercisesMap.get(exerciseId);
+        // Only patch the value if the translated name is available and different
+        if (translatedName && translatedName !== currentName) {
+          exerciseGroup.get('exerciseName')?.patchValue(translatedName, { emitEvent: false });
+        }
+      }
+    });
   }
 
   patchFormWithRoutineData(routine: Routine): void {
@@ -975,12 +1016,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.builderForm.markAsPristine();
   }
 
-  // +++ NEW: Helper to create exercise group FROM LOG data +++
   private createExerciseFormGroupFromLoggedExercise(loggedEx: LoggedWorkoutExercise): FormGroup {
+    const baseExercise = this.availableExercises.find(e => e.id === loggedEx.exerciseId);
     const fg = this.fb.group({
       id: [loggedEx.id || uuidv4()],
       exerciseId: [loggedEx.exerciseId, Validators.required],
-      exerciseName: [loggedEx.exerciseName, Validators.required],
+      exerciseName: [baseExercise?.name || loggedEx.exerciseName, Validators.required],
       notes: [loggedEx.notes || ''],
       sets: this.fb.array(loggedEx.sets.map(set => this.createSetFormGroup(set, true))),
       supersetId: [loggedEx.supersetId || null],
@@ -1044,6 +1085,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   private createRoutineExerciseFromLoggedExercise(loggedEx: LoggedWorkoutExercise): FormGroup {
+    const baseExercise = this.availableExercises.find(e => e.id === loggedEx.exerciseId);
     const sets = loggedEx.sets.map(loggedSet => {
       // For the new routine, the 'target' is what was 'achieved' in the log.
       const newSetParams: ExerciseTargetSetParams = {
@@ -1064,7 +1106,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const exerciseFg = this.fb.group({
       id: this.workoutService.generateWorkoutExerciseId(), // New ID
       exerciseId: [loggedEx.exerciseId, Validators.required],
-      exerciseName: [loggedEx.exerciseName],
+      exerciseName: [baseExercise?.name || loggedEx.exerciseName],
       notes: [loggedEx.notes || ''],
       sets: this.fb.array(sets),
       // Carry over superset info from the log
@@ -1086,7 +1128,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const fg = this.fb.group({
       id: [exerciseData?.id || this.workoutService.generateWorkoutExerciseId()],
       exerciseId: [exerciseData?.exerciseId || '', Validators.required],
-      exerciseName: [exerciseData?.exerciseName || baseExercise?.name || 'Select Exercise'],
+      exerciseName: [baseExercise?.name || exerciseData?.exerciseName || 'Select Exercise'],
       notes: [exerciseData?.notes || ''],
       sets: this.fb.array(
         sets.map(set => this.createSetFormGroup(set, forLogging))
