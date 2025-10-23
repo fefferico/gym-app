@@ -21,8 +21,8 @@
                         class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
                         <app-icon name="menu-action" class="h-10 w-10"></app-icon>
                     </button>
-                    <app-action-menu *ngIf="areActionsVisible(routine.id)" 
-                        displayMode="dropdown"  [gridClass]="' grid grid-cols-2 '"
+                    <app-action-menu *ngIf="areActionsVisible(routine.id)" displayMode="dropdown"
+                        [gridClass]="' grid grid-cols-2 '"
                         [items]="getRoutineDropdownActionItems(routine.id, 'dropdown')"
                         [isVisible]="areActionsVisible(routine.id)" (itemClick)="handleActionMenuItemClick($event)"
                         (closeMenu)="onCloseActionMenu()">
@@ -440,7 +440,8 @@
                                                     <ng-container
                                                         *ngIf="getUniformSetValues(exerciseControl) as uniformValues; else detailedSetView">
                                                         <!-- UNIFORM VIEW: Dynamically shows all uniform metrics -->
-                                                        <p class="max-w-[250px] sm:max-w-full text-wrap text-sm text-gray-500 dark:text-gray-400">
+                                                        <p
+                                                            class="max-w-[250px] sm:max-w-full text-wrap text-sm text-gray-500 dark:text-gray-400">
                                                             <!-- Part 1: Sets/Rounds Count -->
                                                             <span>
                                                                 {{ (!isSuperSet(exIndex) ?
@@ -715,8 +716,7 @@
                                     <div *ngIf="shouldShowExpandedExercise(exIndex) && isEditableMode()"
                                         class="space-y-1">
                                         <!-- START: Control Panel for Standard Exercises -->
-                                        <div 
-                                            class="flex-col py-2 px-1 flex gap-y-2">
+                                        <div class="flex-col py-2 px-1 flex gap-y-2">
 
                                             <!-- Col 1: Sets Count -->
                                             <div class="flex items-center gap-x-2">
@@ -728,11 +728,12 @@
                                             </div>
 
                                             <!-- +++ START: NEW COLLAPSIBLE "SET ALL" PANEL +++ -->
-                                            <div *ngIf="isEditableMode() && getExerciseSetsLength(exIndex) > 1" class="px-2 pt-2">
+                                            <div *ngIf="isEditableMode() && getExerciseSetsLength(exIndex) > 1"
+                                                class="px-2 pt-2">
                                                 <!-- Toggle Button -->
                                                 <button appBumpClick (click)="toggleSetAllPanel(exIndex, $event)"
                                                     class="w-full flex justify-between items-center p-2 text-sm font-semibold text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-gray-700/60 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-700">
-                                                    <span>Set values for all Sets/Rounds</span>
+                                                    <span>{{'setValueForAllSets' | translate}}</span>
                                                     <app-icon name="chevron-down"
                                                         class="h-5 w-5 transition-transform duration-200"
                                                         [class.rotate-180]="expandedSetAllPanel() === exIndex"></app-icon>
@@ -749,7 +750,8 @@
                                                             <div
                                                                 *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.reps]">
                                                                 <label
-                                                                    class="block text-xs font-medium text-gray-500 dark:text-gray-200">Reps</label>
+                                                                    class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{
+                                                                    'metrics.reps' | translate }}</label>
                                                                 <input type="number" [(ngModel)]="repsToSetForAll"
                                                                     [ngModelOptions]="{standalone: true}"
                                                                     class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
@@ -759,7 +761,8 @@
                                                             <div
                                                                 *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.weight]">
                                                                 <label
-                                                                    class="block text-xs font-medium text-gray-500 dark:text-gray-200">Weight
+                                                                    class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{
+                                                                    'metrics.weight' | translate }}
                                                                     ({{ unitService.getWeightUnitSuffix() }})</label>
                                                                 <input type="number" [(ngModel)]="weightToSetForAll"
                                                                     [ngModelOptions]="{standalone: true}"
@@ -770,7 +773,8 @@
                                                             <div
                                                                 *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.duration]">
                                                                 <label
-                                                                    class="block text-xs font-medium text-gray-500 dark:text-gray-200">Duration
+                                                                    class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{
+                                                                    'metrics.duration' | translate }}
                                                                     (s)</label>
                                                                 <input type="number" [(ngModel)]="durationToSetForAll"
                                                                     [ngModelOptions]="{standalone: true}"
@@ -781,7 +785,8 @@
                                                             <div
                                                                 *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.distance]">
                                                                 <label
-                                                                    class="block text-xs font-medium text-gray-500 dark:text-gray-200">Distance
+                                                                    class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{
+                                                                    'metrics.ditance' | translate }}
                                                                     ({{ unitService.getDistanceMeasureUnitSuffix()
                                                                     }})</label>
                                                                 <input type="number" [(ngModel)]="distanceToSetForAll"
@@ -793,7 +798,8 @@
                                                             <div
                                                                 *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.rest]">
                                                                 <label
-                                                                    class="block text-xs font-medium text-gray-500 dark:text-gray-200">Rest
+                                                                    class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{
+                                                                    'metrics.rest' | translate }}
                                                                     (s)</label>
                                                                 <input type="number" [(ngModel)]="restToSetForAll"
                                                                     [ngModelOptions]="{standalone: true}"
@@ -806,7 +812,7 @@
                                                             <button appBumpClick (click)="applyToAllSets(exIndex)"
                                                                 [disabled]="repsToSetForAll() === null && weightToSetForAll() === null && durationToSetForAll() === null && distanceToSetForAll() === null && restToSetForAll() === null"
                                                                 class="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-xl shadow-sm hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed">
-                                                                Apply to All
+                                                                {{ 'applyToAllSets' | translate }}
                                                             </button>
                                                         </div>
                                                     </div>
@@ -1147,8 +1153,7 @@
                                         class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
                                         <app-icon name="menu-action" class="h-10 w-10"></app-icon>
                                     </button>
-                                    <app-action-menu *ngIf="isExerciseActionMenuVisible(exIndex)" 
-                                        displayMode="dropdown"
+                                    <app-action-menu *ngIf="isExerciseActionMenuVisible(exIndex)" displayMode="dropdown"
                                         [items]="getExerciseActionMenuItems(exerciseControl)"
                                         [isVisible]="isExerciseActionMenuVisible(exIndex)"
                                         (itemClick)="handleExerciseActionMenuItemClick($event, exIndex, exerciseControl)"
@@ -1216,10 +1221,9 @@
 </div>
 
 <app-exercise-selection-modal [isOpen]="isExerciseModalOpen" [(searchTerm)]="modalSearchTerm" [isMultiSelect]="true"
-    [title]="'workoutBuilder.modal.addTitle' | translate" [exercises]="availableExercises" 
-    itemIconName="plus-circle" itemIconClass="text-primary dark:text-primary-light"
-    (exercisesSelected)="selectExercisesFromLibrary($event)" (createCustomClicked)="handleTrulyCustomExerciseEntry()"
-    (close)="closeExerciseSelectionModal()">
+    [title]="'workoutBuilder.modal.addTitle' | translate" [exercises]="availableExercises" itemIconName="plus-circle"
+    itemIconClass="text-primary dark:text-primary-light" (exercisesSelected)="selectExercisesFromLibrary($event)"
+    (createCustomClicked)="handleTrulyCustomExerciseEntry()" (close)="closeExerciseSelectionModal()">
 </app-exercise-selection-modal>
 
 <app-exercise-selection-modal [isOpen]="isSwitchExerciseModalOpen()" [(searchTerm)]="modalSearchTerm"
@@ -1240,11 +1244,11 @@
             id="">{{data}}</textarea>
         <div class="flex justify-center">
             <button appBumpClick (click)="notesModalsData.set(null)"
-            class="w-fit px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light flex items-center">
-            <app-icon name="done" class="h-6 w-6 mr-1"></app-icon>
-            {{ 'workoutBuilder.modal.close' | translate }}
-        </button>
-    </div>
+                class="w-fit px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light flex items-center">
+                <app-icon name="done" class="h-6 w-6 mr-1"></app-icon>
+                {{ 'workoutBuilder.modal.close' | translate }}
+            </button>
+        </div>
     </div>
 
 </app-modal>

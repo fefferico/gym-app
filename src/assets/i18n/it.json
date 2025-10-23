@@ -2227,7 +2227,12 @@
         "discardButton": "Scarta"
       },
       "supersetCreatedTitle": "INFO",
-      "supersetCreatedMessage": "Superset creato con {{count}} esercizi e {{rounds}} round: i log esistenti sono stati cancellati e le serie standardizzate."
+      "supersetCreatedMessage": "Superset creato con {{count}} esercizi e {{rounds}} round: i log esistenti sono stati cancellati e le serie standardizzate.",
+      "removeField": {
+      "title": "Rimuovi campo dall'esercizio dalla serie",
+      "message": "Quale campo vuoi rimuovere da questa serie?",
+      "noFieldsToast": "Non può essere rimosso alcun campo da questa serie"
+    }
     },
     "prompts": {
       "addExerciseTitle": "Aggiungi {{exerciseName}}",
@@ -2514,5 +2519,7 @@
       "duration": "Durata",
       "distance": "Distanza",
       "reps": "Ripetizioni"
-    }
+    },
+  "setValueForAllSets": "Imposta i valori per tutte le Serie/Turni",
+  "applyToAllSets": "Applica"
 }

@@ -1446,12 +1446,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       const setToRemove = exercise.sets[newSetIndex];
       const isLastSet = exercise.sets.length <= 1;
 
-      let confirmMessage = `Are you sure you want to remove the set from ${exercise.exerciseName}?`;
+      let confirmMessage = this.translate.instant('compactPlayer.alerts.removeSetMessage', {name: exercise.exerciseName});
       if (isLastSet) {
-        confirmMessage = `This will also remove the exercise from the workout. Continue?`;
+        confirmMessage = this.translate.instant('compactPlayer.alerts.removeLastSetMessage');
       }
 
-      const confirm = await this.alertService.showConfirm("Remove Set", confirmMessage);
+      const confirm = await this.alertService.showConfirm(this.translate.instant('compactPlayer.alerts.removeSetTitle'), confirmMessage);
       if (!confirm?.data) return;
 
       // Clear log for this specific set
@@ -1559,10 +1559,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       // --- CASE 2: Removing a Standard (standalone) Exercise ---
       const isExerciseLogged = this.isExerciseLogged(exIndex);
       const confirmMessage = isExerciseLogged
-        ? `Are you sure you want to remove ${exerciseToRemove.exerciseName}? All logged data for this exercise in this session will be lost.`
-        : `Are you sure you want to remove ${exerciseToRemove.exerciseName}?`;
+        ? this.translate.instant('compactPlayer.alerts.removeExerciseLoggedMessage', { name: exerciseToRemove.exerciseName })
+        : this.translate.instant('compactPlayer.alerts.removeExerciseMessage', { name: exerciseToRemove.exerciseName });
 
-      const confirm = await this.alertService.showConfirm("Remove Exercise", confirmMessage);
+      const confirm = await this.alertService.showConfirm(this.translate.instant('compactPlayer.alerts.removeExerciseTitle'), confirmMessage);
 
       if (confirm?.data) {
         this.removeExerciseNoPrompt(exIndex);

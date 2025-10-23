@@ -162,6 +162,13 @@ input::-webkit-inner-spin-button {
   // Apply the keyframe animation
   animation: morph-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
+button.complete-set-button-animated:disabled {
+  /* Stop any running animation and reset it */
+  animation: none;
+  
+  /* Explicitly set the desired opacity for the disabled state */
+  opacity: 0.5;
+}
 
 .animate-bump-in, .animate-bump-out {
   /* This is the key fix: It creates a strict boundary around the element.
