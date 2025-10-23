@@ -1202,7 +1202,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // 1. Initialize all local variables with defaults for a "new blank set".
     // This handles the case where `setData` is null from the beginning.
     let id = uuidv4();
-    let fieldOrderValue: string[] | undefined = [this.metricEnum.reps, this.metricEnum.weight];
+    let fieldOrderValue: METRIC[] | undefined = [this.metricEnum.reps, this.metricEnum.weight];
     let notesValue = '';
     let typeValue = 'standard';
     let tempoValue = '';
@@ -1238,7 +1238,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       tempoValue = 'targetTempo' in setData ? (setData.targetTempo || '') : '';
 
       // Overwrite specific properties based on the object type
-      if (this.workoutService.isLoggedSet(setData)) {
+      if (this.workoutService.isLoggedSet(setData) && !forLogging) {
         // It's a LoggedSet: map performance fields
         targetRepsValue = setData.repsLogged;
         targetWeighValue = setData.weightLogged;
@@ -1247,42 +1247,34 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         targetRestValue = setData.restLogged;
         plannedSetIdValue = setData.plannedSetId;
         timestampValue = setData.timestamp;
-      } else {
-        // It's ExerciseTargetSetParams: map planned fields and ranges
+      }  else {
+        // It's ExerciseTargetSetParams OR a mixed object from a form state
+        const potentialLog = setData as LoggedSet;
+        const potentialPlan = setData as ExerciseTargetSetParams;
 
-        if (setData.fieldOrder && setData.fieldOrder.find(field => field && field === METRIC.reps)) {
-          targetRepsValue = setData.targetReps;
-          targetRepsMinValue = setData.targetRepsMin;
-          targetRepsMaxValue = setData.targetRepsMax;
-        }
+        // --- START OF FIX ---
+        // When creating a form for logging, prioritize existing logged values.
+        // Otherwise, use the planned target values. This handles both creating a new log
+        // from a routine and rebuilding an existing log's set after adding a metric.
+        targetRepsValue = forLogging ? potentialLog.repsLogged ?? potentialPlan.targetReps : potentialPlan.targetReps;
+        targetWeighValue = forLogging ? potentialLog.weightLogged ?? potentialPlan.targetWeight : potentialPlan.targetWeight;
+        targetDurationValue = forLogging ? potentialLog.durationLogged ?? potentialPlan.targetDuration : potentialPlan.targetDuration;
+        targetDistanceValue = forLogging ? potentialLog.distanceLogged ?? potentialPlan.targetDistance : potentialPlan.targetDistance;
+        targetRestValue = forLogging ? potentialLog.restLogged ?? potentialPlan.targetRest : potentialPlan.targetRest;
+        // --- END OF FIX ---
 
-        if (setData.fieldOrder && setData.fieldOrder.find(field => field && field === METRIC.weight)) {
-          targetWeighValue = setData.targetWeight;
-          targetWeightMinValue = setData.targetWeightMin;
-          targetWeightMaxValue = setData.targetWeightMax;
-
-        }
-
-        if (setData.fieldOrder && setData.fieldOrder.find(field => field && field === METRIC.duration)) {
-          targetDurationValue = setData.targetDuration;
-          targetDurationMinValue = setData.targetDurationMin;
-          targetDurationMaxValue = setData.targetDurationMax;
-
-        }
-
-        if (setData.fieldOrder && setData.fieldOrder.find(field => field && field === METRIC.distance)) {
-          targetDistanceValue = setData.targetDistance;
-          targetDistanceMinValue = setData.targetDistanceMin;
-          targetDistanceMaxValue = setData.targetDistanceMax;
-        }
-
-        if (setData.fieldOrder && setData.fieldOrder.find(field => field && field === METRIC.rest)) {
-          targetRestValue = setData.targetRest;
-          targetRestMinValue = setData.targetRestMin;
-          targetRestMaxValue = setData.targetRestMax;
-        }
-
-        plannedSetIdValue = setData.id; // The template set's ID is the planned ID
+        // Map the rest of the planned fields (ranges), which are only for routine builder
+        targetRepsMinValue = potentialPlan.targetRepsMin;
+        targetRepsMaxValue = potentialPlan.targetRepsMax;
+        targetWeightMinValue = potentialPlan.targetWeightMin;
+        targetWeightMaxValue = potentialPlan.targetWeightMax;
+        targetDurationMinValue = potentialPlan.targetDurationMin;
+        targetDurationMaxValue = potentialPlan.targetDurationMax;
+        targetDistanceMinValue = potentialPlan.targetDistanceMin;
+        targetDistanceMaxValue = potentialPlan.targetDistanceMax;
+        targetRestMinValue = potentialPlan.targetRestMin;
+        targetRestMaxValue = potentialPlan.targetRestMax;
+        plannedSetIdValue = potentialPlan.id;
       }
     }
 
@@ -1294,8 +1286,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     const setDataBk = { ...setData } as any;
     if (!forLogging && fieldOrderValue && !fieldOrderValue.includes(METRIC.rest) && setDataBk && (setDataBk.targetRest || setDataBk.restAfterSet)) {
-      fieldOrderValue.push(METRIC.rest);
-
+      fieldOrderValue = [...fieldOrderValue, METRIC.rest];
       if (setDataBk.restAfterSet) {
         targetRestValue = setDataBk.restAfterSet;
       } else {
@@ -2322,7 +2313,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         const logExercises: LoggedWorkoutExercise[] = formValue.exercises.map((exInput: any): LoggedWorkoutExercise => {
           // *** NEW SIMPLIFIED LOGIC ***
           // The logic is now the same for ALL exercises. We just map the sets from the form.
-          const loggedSets: LoggedSet[] = exInput.sets.map((setInput: any): LoggedSet => ({
+          const loggedSets: LoggedSet[] = exInput.sets.map((setInput: LoggedSet): LoggedSet => ({
             id: setInput.id || uuidv4(),
             exerciseName: exInput.exerciseName,
             plannedSetId: setInput.plannedSetId,
@@ -2341,6 +2332,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             targetRest: setInput.targetRest,
             rpe: undefined,
             timestamp: setInput.timestamp || new Date().toISOString(),
+            fieldOrder: setInput.fieldOrder
           }));
 
 

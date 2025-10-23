@@ -747,8 +747,8 @@
                                                         <div class="grid grid-cols-2 gap-4">
 
                                                             <!-- Reps Input -->
-                                                            <div
-                                                                *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.reps]">
+                                                            <div>
+                                                                <!-- *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.reps]"> -->
                                                                 <label
                                                                     class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{
                                                                     'metrics.reps' | translate }}</label>
@@ -758,8 +758,8 @@
                                                             </div>
 
                                                             <!-- Weight Input -->
-                                                            <div
-                                                                *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.weight]">
+                                                            <div>
+                                                                <!-- *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.weight]"> -->
                                                                 <label
                                                                     class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{
                                                                     'metrics.weight' | translate }}
@@ -770,8 +770,8 @@
                                                             </div>
 
                                                             <!-- Duration Input -->
-                                                            <div
-                                                                *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.duration]">
+                                                            <div>
+                                                                <!-- *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.duration]"> -->
                                                                 <label
                                                                     class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{
                                                                     'metrics.duration' | translate }}
@@ -782,11 +782,11 @@
                                                             </div>
 
                                                             <!-- Distance Input -->
-                                                            <div
-                                                                *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.distance]">
+                                                            <div>
+                                                                <!-- *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.distance]"> -->
                                                                 <label
                                                                     class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{
-                                                                    'metrics.ditance' | translate }}
+                                                                    'metrics.distance' | translate }}
                                                                     ({{ unitService.getDistanceMeasureUnitSuffix()
                                                                     }})</label>
                                                                 <input type="number" [(ngModel)]="distanceToSetForAll"
@@ -795,8 +795,8 @@
                                                             </div>
 
                                                             <!-- Rest Input -->
-                                                            <div
-                                                                *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.rest]">
+                                                            <div>
+                                                                <!-- *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.rest]"> -->
                                                                 <label
                                                                     class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{
                                                                     'metrics.rest' | translate }}

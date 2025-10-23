@@ -144,7 +144,13 @@ function mapLegacyLoggedSet(set: any): LoggedSet {
             value = newSet[newLogged];
         }
 
+        // handle old cases
         if (fieldToAdd && !newSet.fieldOrder.includes(metricKey)) {
+            newSet.fieldOrder.push(METRIC[metricKey]);
+        }
+        // handle new cases
+        if (newSet.hasOwnProperty(newLogged) && !newSet.fieldOrder.includes(metricKey)) {
+            value = newSet[newLogged];
             newSet.fieldOrder.push(METRIC[metricKey]);
         }
 
@@ -186,6 +192,12 @@ function mapLegacyLoggedSet(set: any): LoggedSet {
     }
 
     if (restFieldToAdd && !newSet.fieldOrder.includes('rest')) {
+        newSet.fieldOrder.push(METRIC.rest);
+    }
+
+    // handle new cases
+    if (newSet.hasOwnProperty('restLogged') && !newSet.fieldOrder.includes(METRIC.rest)) {
+        restValue = newSet['restLogged'];
         newSet.fieldOrder.push(METRIC.rest);
     }
 
