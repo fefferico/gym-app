@@ -291,7 +291,7 @@
                                     [disabled]="routine.isDisabled"
                                     [ngClass]="{ 'cursor-not-allowed opacity-50': routine.isDisabled } "
                                     class="bg-blue-100 text-xs text-blue-700 dark:bg-blue-700 dark:text-blue-200 px-1.5 py-0.5 rounded-full hover:bg-blue-200 dark:hover:bg-blue-600">
-                                    {{ routine.primaryCategory | titlecase }}
+                                        {{ getCategoryNameById(routine.primaryCategory) }}
                                 </button>
                             </div>
                         </div>

@@ -1104,7 +1104,15 @@
       "switch": "Switch exercise",
       "toggleNotes": "Toggle exercise notes",
       "removeLastSet": "This is the last set. This will remove the entire exercise. Continue?",
-      "exerciseRemoved": "Exercise removed"
+      "exerciseRemoved": "Exercise removed",
+      "newCustomExerciseTitle": "Add New Custom Exercise",
+      "newCustomExerciseMsg": "Define exercise name and sets:",
+      "newCustomExerciseBtn": "Add exercise",
+      "newCustomExerciseInvalidInput": "Invalid input for custom exercise",
+      "newCustomExerciseName": "Custom Exercise Name",
+      "newCustomExerciseSets": "Number of Sets",
+      "newCustomExerciseEquipment": "Equipment",
+      "newCustomExerciseDescription": "Description"
     },
     "set": {
       "set": "Set",
@@ -2027,7 +2035,15 @@
       "functionalBodyweight": "Functional & Bodyweight",
       "accessories": "Accessories",
       "cardio": "Cardio",
-      "freeWeights": "Free Weights"
+      "freeWeights": "Free Weights",
+      "barbells": "Barbells",
+      "dumbbells": "Dumbbells",
+      "bodyweight/calisthenics": "Bodyweight / Calisthenics",
+      "cables": "Cables",
+      "kettlebells": "Kettlebells",
+      "bands": "Bands",
+      "other": "Other",
+      "stretching": "Stretching"
     },
     "names": {
       "abdominalCrunchMachine": "Abdominal Crunch Machine",
@@ -2634,15 +2650,16 @@
     }
   },
   "categories": {
-    "barbells": "Barbells",
-    "dumbbells": "Dumbbells",
-    "bodyweight/calisthenics": "Bodyweight / Calisthenics",
-    "machines": "Machines",
-    "cables": "Cables",
-    "kettlebells": "Kettlebells",
-    "bands": "Bands",
-    "other": "Other",
-    "stretching": "Stretching",
-    "cardio": "Cardio"
+    "strengthTraining": "Strength Training",
+    "cardioEndurance": "Cardio & Endurance",
+    "flexibilityMobility": "Flexibility & Mobility",
+    "mindBodyRecovery": "Mind-Body & Recovery",
+    "sportSpecific": "Sport-Specific Training",
+    "quickWorkouts": "Quick Workouts",
+    "specialty": "Specialty/Unique Classes",
+    "targetedWorkouts": "Targeted Workouts",
+    "guidedPrograms": "Guided Programs/Challenges",
+    "equipmentSpecific": "Equipment-Specific",
+    "custom": "Custom"
   }
 }

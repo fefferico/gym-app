@@ -35,6 +35,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ColorsService } from '../../core/services/colors.service';
 import { BumpClickDirective } from '../../shared/directives/bump-click.directive';
 import { Muscle } from '../../core/models/muscle.model';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CategoryService } from '../../core/services/workout-category.service';
 
 @Component({
   selector: 'app-routine-list',
@@ -98,6 +100,9 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   protected subscriptionService = inject(SubscriptionService);
   private translate = inject(TranslateService);
   protected colorsService = inject(ColorsService);
+  protected categoryService = inject(CategoryService);
+
+  categories = toSignal(this.categoryService.getTranslatedCategories(), { initialValue: [] });
 
   private sanitizer = inject(DomSanitizer);
   public sanitizedDescription: SafeHtml = '';
@@ -150,12 +155,37 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     return Array.from(equipments).sort();
   });
 
-  uniquePrimaryCategories = computed<string[]>(() => {
+ uniquePrimaryCategories = computed<string[]>(() => {
     const routines = this.allRoutinesForList();
-    const categories = new Set<string>();
-    routines.forEach(r => { if (r.primaryCategory) categories.add(r.primaryCategory) });
-    return Array.from(categories).sort();
-  });
+    const categories = this.categories();
+
+    // 1. Create a Map for efficient, O(1) average time lookups.
+    const categoryNameMap = new Map<string, string>(
+      categories.map(cat => [cat.id, cat.name])
+    );
+
+    // 2. Pluck all the 'primaryCategory' IDs from the routines.
+    //    This results in an array of type: (string | undefined)[]
+    const usedCategoryIdsWithUndefineds = routines.map(r => r.primaryCategory);
+
+    // 3. Use a valid type predicate to filter out undefined values.
+    //    The type is now a clean: string[]
+    const usedCategoryIds = usedCategoryIdsWithUndefineds.filter((id): id is string => !!id);
+
+    // 4. Use a Set to get only the unique IDs.
+    const uniqueIds = new Set(usedCategoryIds);
+
+    // 5. Map the unique IDs back to their translated names.
+    //    Since map.get() can return undefined, the type is now: (string | undefined)[]
+    const namesWithUndefineds = Array.from(uniqueIds).map(id => categoryNameMap.get(id));
+
+    // 6. Use the type predicate again to filter out any potential misses from the map.
+    //    The type is now a clean, final: string[]
+    const names = namesWithUndefineds.filter((name): name is string => !!name);
+
+    // 7. Sort the final array of names alphabetically.
+    return names.sort((a, b) => a.localeCompare(b));
+});
 
   uniqueRoutineColors = computed<string[]>(() => {
     const routines = this.allRoutinesForList();
@@ -822,18 +852,18 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   toggleActions(routineId: string, event: MouseEvent): void {
     event.stopPropagation();
 
-        const clickedRoutine = this.allRoutinesForList().find(routine => routine.id === routineId);
+    const clickedRoutine = this.allRoutinesForList().find(routine => routine.id === routineId);
 
-        if (clickedRoutine?.isDisabled){
-const totalRoutines = this.allRoutinesForList() ? this.allRoutinesForList().length : 0;
-    if (!this.subscriptionService.canAccess(PremiumFeature.UNLIMITED_ROUTINES, totalRoutines)) {
-      this.subscriptionService.showUpgradeModal('You have reached the maximum number of custom routines available to Free Tier users. Upgrade now to unlock the possibility to create endless routines and much more!');
-      return;
+    if (clickedRoutine?.isDisabled) {
+      const totalRoutines = this.allRoutinesForList() ? this.allRoutinesForList().length : 0;
+      if (!this.subscriptionService.canAccess(PremiumFeature.UNLIMITED_ROUTINES, totalRoutines)) {
+        this.subscriptionService.showUpgradeModal('You have reached the maximum number of custom routines available to Free Tier users. Upgrade now to unlock the possibility to create endless routines and much more!');
+        return;
+      }
     }
-        }
 
 
-    
+
 
     this.activeRoutineIdActions.update(current => (current === routineId ? null : routineId));
   }
@@ -993,7 +1023,7 @@ const totalRoutines = this.allRoutinesForList() ? this.allRoutinesForList().leng
 
   openGenerateWorkoutModal() {
     this.isFabActionsOpen.set(false);
-          this.router.navigate(['/workout/routine/new'], { queryParams: { openGenerator: 'true' } });
+    this.router.navigate(['/workout/routine/new'], { queryParams: { openGenerator: 'true' } });
   }
 
   /**
@@ -1205,5 +1235,15 @@ const totalRoutines = this.allRoutinesForList() ? this.allRoutinesForList().leng
     this.selectedPrimaryCategory.update(current => (current === category ? null : category));
     this.workoutService.vibrate();
   }
+
+  private categoryNameMap = computed(() => 
+    new Map<string, string>(this.categories().map(cat => [cat.id, cat.name]))
+  );
+
+  public getCategoryNameById(id: string): string {
+    // Look up the name in the map. Fallback to the ID itself if not found.
+    return this.categoryNameMap().get(id) || id;
+  }
+  
 
 }

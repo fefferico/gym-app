@@ -48,6 +48,7 @@ import { PressDirective } from '../../shared/directives/press.directive';
 import { AUDIO_TYPES, AudioService } from '../../core/services/audio.service';
 import { BumpClickDirective } from '../../shared/directives/bump-click.directive';
 import { RoutineGoal } from '../../core/models/routine-goal.model';
+import { CategoryService } from '../../core/services/workout-category.service';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
@@ -105,6 +106,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private workoutGeneratorService = inject(WorkoutGeneratorService);
   private subscriptionService = inject(SubscriptionService);
   protected audioService = inject(AudioService);
+  protected categoryService = inject(CategoryService);
 
   @ViewChildren('setRepsInput') setRepsInputs!: QueryList<ElementRef<HTMLInputElement>>;
   @ViewChildren('expandedSetElement') expandedSetElements!: QueryList<ElementRef<HTMLDivElement>>;
@@ -293,6 +295,9 @@ readonly routineGoals: RoutineGoal[] = [
     });
   }
 
+    categories = toSignal(this.categoryService.getTranslatedCategories(), { initialValue: [] });
+
+
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) { window.scrollTo(0, 0); }
     this.loadAvailableExercises(); // For exercise selection modal
@@ -386,7 +391,7 @@ readonly routineGoals: RoutineGoal[] = [
             this.prefillLogFormFromRoutine(loadedData as Routine);
           }
         } else if (!this.isNewMode && (this.currentRoutineId || this.currentLogId)) {
-          this.toastService.error(`Data not found.`, 0, "Error");
+          this.toastService.error(`Data not found.`, 0, this.translate.instant('common.error'));
           this.router.navigate([this.mode === 'routineBuilder' ? '/workout' : '/history/list']);
         }
 
@@ -475,13 +480,13 @@ readonly routineGoals: RoutineGoal[] = [
                 this.builderForm.get('iterationIdForLog')?.setValue(scheduledDayInfo.iterationId, { emitEvent: false });
               }
             } else {
-              this.toastService.error(`Routine with ID ${scheduledDayInfo.routineId} not found.`, 0, "Error");
+              this.toastService.error(`Routine with ID ${scheduledDayInfo.routineId} not found.`, 0, this.translate.instant('common.error'));
               this.exercisesFormArray.clear();
             }
           })
           .catch(error => {
             console.error("Failed to fetch routine for scheduled day:", error);
-            this.toastService.error("Could not load routine details.", 0, "Error");
+            this.toastService.error("Could not load routine details.", 0, this.translate.instant('common.error'));
             this.exercisesFormArray.clear();
           });
       });
@@ -2451,7 +2456,7 @@ readonly routineGoals: RoutineGoal[] = [
       const playerRoute = this.workoutService.checkPlayerMode(this.currentRoutineId);
       this.router.navigate([playerRoute, this.currentRoutineId]);
     } else {
-      this.toastService.error("Cannot start workout: Routine ID is missing", 0, "Error");
+      this.toastService.error("Cannot start workout: Routine ID is missing", 0, this.translate.instant('common.error'));
     }
   }
 
@@ -2571,23 +2576,23 @@ readonly routineGoals: RoutineGoal[] = [
   // Called if user wants to define a completely new exercise not in the library
   async handleTrulyCustomExerciseEntry(showError: boolean = false): Promise<void> {
     const inputs: AlertInput[] = [
-      { name: 'exerciseName', type: 'text', placeholder: 'Custom Exercise Name', value: '', attributes: { required: true }, label: 'Custom Exercise Name', },
-      { name: 'numSets', type: 'number', placeholder: 'Number of Sets (e.g., 3)', value: '3', attributes: { min: '1', required: true }, label: 'Number of Sets' },
-      { name: 'equipmentNeeded', type: 'text', placeholder: 'Equipment', value: '', attributes: { required: false }, label: 'Equipment' },
-      { name: 'description', type: 'textarea', placeholder: 'Description', value: '', attributes: { required: false }, label: 'Description' },
+      { name: 'exerciseName', type: 'text', placeholder: this.translate.instant('workoutBuilder.exercise.newCustomExerciseName'), value: '', attributes: { required: true }, label: this.translate.instant('workoutBuilder.exercise.newCustomExerciseName'), },
+      { name: 'numSets', type: 'number', placeholder: this.translate.instant('workoutBuilder.exercise.newCustomExerciseSets'), value: '3', attributes: { min: '1', required: true }, label: this.translate.instant('workoutBuilder.exercise.newCustomExerciseSets') },
+      { name: 'equipmentNeeded', type: 'text', placeholder: this.translate.instant('workoutBuilder.exercise.newCustomExerciseEquipment'), value: '', attributes: { required: false }, label: this.translate.instant('workoutBuilder.exercise.newCustomExerciseEquipment') },
+      { name: 'description', type: 'textarea', placeholder: this.translate.instant('workoutBuilder.exercise.newCustomExerciseDescription'), value: '', attributes: { required: false }, label: this.translate.instant('workoutBuilder.exercise.newCustomExerciseDescription') },
     ];
 
     if (showError) {
-      this.toastService.error("Invalid input for custom exercise", 0, "Error");
+      this.toastService.error(this.translate.instant('newCustomExerciseInvalidInput'), 0, this.translate.instant('common.error'));
     }
-    const result = await this.alertService.showPromptDialog('Add New Custom Exercise', 'Define exercise name and sets:', inputs, 'Add Exercise');
+    const result = await this.alertService.showPromptDialog(this.translate.instant('workoutBuilder.exercise.newCustomExerciseTitle'), this.translate.instant('workoutBuilder.exercise.newCustomExerciseMsg'), inputs, this.translate.instant('workoutBuilder.exercise.newCustomExerciseBtn'));
 
     if (result && result['exerciseName']) {
       const exerciseName = String(result['exerciseName']).trim();
       const description = String(result['description']).trim();
       const numSets = result['numSets'] ? parseInt(String(result['numSets']), 10) : 3;
       if (!exerciseName || numSets <= 0) {
-        this.toastService.error("Invalid input for custom exercise", 0, "Error"); return;
+        this.toastService.error(this.translate.instant('newCustomExerciseInvalidInput'), 0, this.translate.instant('common.error')); return;
       }
       const newExerciseSets: ExerciseTargetSetParams[] = Array.from({ length: numSets }, () => ({
         id: `custom-adhoc-set-${uuidv4()}`,
@@ -2903,7 +2908,7 @@ readonly routineGoals: RoutineGoal[] = [
   async cloneAndEditRoutine(routineId: string, event?: MouseEvent): Promise<void> {
     const originalRoutine = this.liveFormAsRoutine();
     if (!originalRoutine) {
-      this.toastService.error("Routine not found for cloning", 0, "Error");
+      this.toastService.error("Routine not found for cloning", 0, this.translate.instant('common.error'));
       return;
     }
 
@@ -4414,7 +4419,7 @@ readonly routineGoals: RoutineGoal[] = [
 
     } catch (error) {
       console.error("Failed to load performance data:", error);
-      this.toastService.error("Could not load performance data.", 0, "Error");
+      this.toastService.error("Could not load performance data.", 0, this.translate.instant('common.error'));
     } finally {
       this.spinnerService.hide();
     }
@@ -4555,22 +4560,6 @@ readonly routineGoals: RoutineGoal[] = [
     }
     return '';
   }
-
-  // --- START: ADD NEW PROPERTY FOR CATEGORY OPTIONS ---
-  primaryCategories: { value: Routine['primaryCategory'], label: string }[] = [
-    { value: 'Strength Training', label: 'Strength Training' },
-    { value: 'Cardio & Endurance', label: 'Cardio & Endurance' },
-    { value: 'Flexibility & Mobility', label: 'Flexibility & Mobility' },
-    { value: 'Mind-Body & Recovery', label: 'Mind-Body & Recovery' },
-    { value: 'Sport-Specific Training', label: 'Sport-Specific Training' },
-    { value: 'Quick Workouts', label: 'Quick Workouts' },
-    { value: 'Specialty/Unique Classes', label: 'Specialty/Unique Classes' },
-    { value: 'Targeted Workouts (by Body Part/Focus)', label: 'Targeted Workouts' },
-    { value: 'Guided Programs/Challenges', label: 'Guided Programs/Challenges' },
-    { value: 'Equipment-Specific (Beyond weights)', label: 'Equipment-Specific' },
-    { value: 'custom', label: 'Custom' }
-  ];
-  // --- END: ADD NEW PROPERTY ---
 
   private previousGoalValue: Routine['goal'] | null = null;
 
@@ -5249,5 +5238,7 @@ readonly routineGoals: RoutineGoal[] = [
     if (!setsArray) return 0;
     return setsArray.length;
   }
+
+
 
 }

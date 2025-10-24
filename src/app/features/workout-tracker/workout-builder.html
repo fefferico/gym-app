@@ -103,7 +103,9 @@
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 text-gray-700 dark:text-gray-200">
                         <option value="">{{ 'workoutBuilder.routineBuilder.primaryCategoryPlaceholder' | translate }}
                         </option>
-                        <option *ngFor="let cat of primaryCategories" [value]="cat.value">{{ cat.label }}</option>
+                        <option *ngFor="let category of categories()" [value]="category.id">
+                            {{ category.name }}
+                        </option>
                     </select>
                 </div>
 
@@ -372,7 +374,7 @@
                                             {{ (exerciseControl.get('supersetType')?.value || 'standard') |
                                             titlecase }}
                                         </strong>
-                                        <button appBumpClick type="button"(click)="changeSupersetType(exerciseControl)"
+                                        <button appBumpClick type="button" (click)="changeSupersetType(exerciseControl)"
                                             class="flex items-center ml-2 text-xs font-semibold text-white hover:underline bg-blue-300 hover:bg-blue-500 rounded-xl p-1">
                                             <app-icon name="change" class="h-5 w-5 mr-1"></app-icon>
                                             {{ 'workoutBuilder.changeType' | translate }}
@@ -982,8 +984,7 @@
                                                             <button appBumpClick
                                                                 (click)="promptRemoveField(exIndex, setIndex); $event.stopPropagation()"
                                                                 class="p-1.5 rounded-full bg-red-500 dark:bg-red-500/80 hover:bg-red-500 text-white disabled:opacity-50 flex items-center">
-                                                                <app-icon name="minus"
-                                                                    class="h-5 w-5"></app-icon>
+                                                                <app-icon name="minus" class="h-5 w-5"></app-icon>
                                                             </button>
                                                             <!-- ADD metric -->
                                                             <button appBumpClick
@@ -1095,7 +1096,8 @@
                                                     class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">{{'workoutBuilder.set.set'
                                                     |
                                                     translate}}:</label>
-                                                <button appBumpClick type="button"(click)="removeLastSet(exerciseControl, $event)"
+                                                <button appBumpClick type="button"
+                                                    (click)="removeLastSet(exerciseControl, $event)"
                                                     class="p-1.5 rounded-full bg-red-500 dark:bg-red-500/80 hover:bg-red-500 text-white disabled:opacity-50 flex items-center"
                                                     [aria-label]="'workoutBuilder.set.removeLastSet' | translate">
                                                     <app-icon name="minus" class="h-5 w-5"></app-icon>
@@ -1122,13 +1124,15 @@
                                     <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
                                         {{ 'workoutBuilder.superset.rounds' | translate }}:
                                     </span>
-                                    <button appBumpClick type="button"(click)="removeRoundFromSuperset(exerciseControl, $event)"
+                                    <button appBumpClick type="button"
+                                        (click)="removeRoundFromSuperset(exerciseControl, $event)"
                                         [disabled]="getSetsFormArray(exerciseControl).length <= 1"
                                         class="p-1.5 rounded-full bg-red-500 dark:bg-red-500/80 hover:bg-red-500 text-white disabled:opacity-50 flex items-center"
                                         [aria-label]="'workoutBuilder.set.removeLastSet' | translate">
                                         <app-icon name="minus" class="h-6 w-6"></app-icon>
                                     </button>
-                                    <button appBumpClick type="button"(click)="addRoundToSuperset(exerciseControl, $event)"
+                                    <button appBumpClick type="button"
+                                        (click)="addRoundToSuperset(exerciseControl, $event)"
                                         class="p-1.5 rounded-full bg-green-500 dark:bg-green-500/80 hover:bg-green-500 text-white disabled:opacity-50 flex items-center"
                                         [aria-label]="'workoutBuilder.set.addSet' | translate">
                                         <app-icon name="plus" class="h-6 w-6"></app-icon>
@@ -1413,7 +1417,7 @@
     <!-- THE FIX: Add [formGroup]="setControl" here to provide context to the input inside -->
     <div [formGroup]="setControl">
         <div class="flex items-stretch w-full shadow-sm mt-0.5">
-            <button appBumpClick type="button"appPress (shortPress)="onShortPressDecrement(setControl, field)"
+            <button appBumpClick type="button" appPress (shortPress)="onShortPressDecrement(setControl, field)"
                 (longPress)="onLongPressDecrement(setControl, field)" (pressRelease)="onPressRelease()"
                 class="flex items-center p-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-l-xl border-y border-l border-gray-200 dark:border-gray-700 transition-colors">
                 <app-icon name="minus" class="h-5 w-5 pointer-events-none"></app-icon>
@@ -1427,7 +1431,7 @@
             </div>
 
 
-            <button appBumpClick type="button"appPress (shortPress)="onShortPressIncrement(setControl, field)"
+            <button appBumpClick type="button" appPress (shortPress)="onShortPressIncrement(setControl, field)"
                 (longPress)="onLongPressIncrement(setControl, field)" (pressRelease)="onPressRelease()"
                 class="flex items-center p-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-r-xl border-y border-r border-gray-200 dark:border-gray-700 transition-colors">
                 <app-icon name="plus" class="h-5 w-5 pointer-events-none"></app-icon>
