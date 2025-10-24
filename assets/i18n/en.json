@@ -102,11 +102,6 @@
     "weightToolkitTitle": "Weight toolkit",
     "weightToolkitDescription": "An all-in-one lifting toolkit. Instantly calculate plate math, percentages, 1RM, RPE, and official powerlifting scores"
   },
-  "common": {
-    "cancel": "Cancel",
-    "discard": "Discard",
-    "premium": "PREMIUM"
-  },
   "settings": {
     "title": "Profile & Settings",
     "subscription": {
@@ -281,7 +276,10 @@
     "warning": "WARNING",
     "info": "Info",
     "cancel": "Cancel",
-    "cancelled": "Cancelled"
+    "cancelled": "Cancelled",
+    "discard": "Discard",
+    "undo": "UNDO",
+    "actionCompleted": "Action completed"
   },
   "toasts": {
     "statusUpdated": "Status Updated",
@@ -1013,18 +1011,18 @@
       "hypertrophy": "Hypertrophy",
       "strength": "Strength",
       "tabata": "Tabata",
-      "muscularEndurance": "Muscular endurance",
-      "cardiovascularEndurance": "Cardiovascular endurance",
-      "fatLoss": "Fat loss / body composition",
-      "mobility": "Mobility & flexibility",
-      "power": "Power / explosiveness",
-      "speed": "Speed & agility",
-      "balance": "Balance & coordination",
-      "skill": "Skill acquisition",
-      "rehabilitation": "Rehabilitation / injury prevention",
-      "mentalHealth": "Mental health",
-      "generalHealth": "General health & longevity",
-      "sportSpecific": "Sport-specific performance",
+      "muscularEndurance": "Muscular Endurance",
+      "cardiovascularEndurance": "Cardiovascular Endurance",
+      "fatLoss": "Fat Loss / Body Composition",
+      "mobility": "Mobility & Flexibility",
+      "power": "Power / Explosiveness",
+      "speed": "Speed & Agility",
+      "balance": "Balance & Coordination",
+      "skill": "Skill Acquisition",
+      "rehabilitation": "Rehabilitation / Injury Prevention",
+      "mentalHealth": "Mental Health / Stress Relief",
+      "generalHealth": "General Health & Longevity",
+      "sportSpecific": "Sport-Specific Performance",
       "maintenance": "Maintenance",
       "rest": "Rest",
       "custom": "Custom"
@@ -1104,7 +1102,9 @@
       "fillWithLast": "Fill with latest performance data",
       "makeEmom": "Make EMOM",
       "switch": "Switch exercise",
-      "toggleNotes": "Toggle exercise notes"
+      "toggleNotes": "Toggle exercise notes",
+      "removeLastSet": "This is the last set. This will remove the entire exercise. Continue?",
+      "exerciseRemoved":"Exercise removed"
     },
     "set": {
       "set": "Set",
@@ -1136,7 +1136,8 @@
       "notesPlaceholder": "e.g. Good form",
       "collapse": "Collapse set",
       "removeSet": "Remove Set",
-      "metrics": "Metrics"
+      "metrics": "Metrics",
+      "setRemoved": "Set removed"
     },
     "restDayMessage": "This is a rest day routine. No exercises are needed",
     "addExerciseButton": "ADD EXERCISE",
@@ -1161,6 +1162,7 @@
       "editMode": "Edit mode enabled",
       "supersetSizeError": "Select at least two exercises",
       "supersetOrderError": "Selected exercises must be next to each other to form a superset",
+      "superSetError": "Superset error",
       "groupingCancelled": "Grouping cancelled.",
       "emomCreationCancelled": "EMOM creation cancelled.",
       "supersetCreationCancelled": "Superset creation cancelled.",
@@ -2504,5 +2506,53 @@
       "duration": "Duration",
       "distance": "Distance",
       "reps": "Reps"
-    }
+    },
+    "muscles": {
+    "core": "Core",
+    "rectusAbdominis": "Abs (Rectus Abdominis)",
+    "obliques": "Obliques",
+    "transverseAbdominis": "Transverse Abdominis",
+    "back": "Back",
+    "lats": "Lats",
+    "traps": "Traps",
+    "trapsUpper": "Upper Traps",
+    "trapsMiddle": "Middle Traps",
+    "trapsLower": "Lower Traps",
+    "rhomboids": "Rhomboids",
+    "lowerBack": "Lower Back",
+    "erectorSpinae": "Erector Spinae",
+    "upperBack": "Upper Back",
+    "legs": "Legs",
+    "quadriceps": "Quadriceps",
+    "hamstrings": "Hamstrings",
+    "glutes": "Glutes",
+    "gluteusMedius": "Gluteus Medius",
+    "gluteusMinimus": "Gluteus Minimus",
+    "calves": "Calves",
+    "adductors": "Adductors",
+    "abductors": "Abductors",
+    "hipFlexors": "Hip Flexors",
+    "hips": "Hips",
+    "piriformis": "Piriformis",
+    "tfl": "Tensor Fasciae Latae",
+    "chest": "Chest",
+    "chestUpper": "Upper Chest",
+    "chestLower": "Lower Chest",
+    "serratusAnterior": "Serratus Anterior",
+    "arms": "Arms",
+    "biceps": "Biceps",
+    "triceps": "Triceps",
+    "forearms": "Forearms",
+    "brachialis": "Brachialis",
+    "wrists": "Wrists",
+    "shoulders": "Shoulders",
+    "anteriorDeltoid": "Anterior Deltoid",
+    "lateralDeltoid": "Lateral Deltoid",
+    "posteriorDeltoid": "Posterior Deltoid",
+    "rotatorCuff": "Rotator Cuff",
+    "fullBody": "Full Body",
+    "posteriorChain": "Posterior Chain",
+    "cardio": "Cardiovascular System",
+    "neck": "Neck"
+  }
 }
