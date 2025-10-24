@@ -40,6 +40,7 @@ import { PremiumFeature, SubscriptionService } from '../../../core/services/subs
 import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language.service';
+import { Muscle } from '../../../core/models/muscle.model';
 
 interface ScheduledItemWithLogs {
   routine: Routine;
@@ -248,7 +249,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   selectedProgramMuscleGroup = signal<string | null>(null);
 
   uniqueProgramGoals = signal<string[]>([]);
-  uniqueProgramMuscleGroups = signal<string[]>([]);
+  uniqueProgramMuscleGroups = signal<Muscle[]>([]);
 
   private subscriptions = new Subscription();
   private allRoutinesMap = new Map<string, Routine>();
@@ -450,29 +451,6 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
         });
       });
     }
-  }
-
-  private populateFilterOptions(): void {
-    const programs = this.allProgramsForList();
-    if (programs.length === 0 || this.allRoutinesMap.size === 0) {
-      this.uniqueProgramGoals.set([]); this.uniqueProgramMuscleGroups.set([]);
-      return;
-    }
-    const goals = new Set<string>(); const muscles = new Set<string>();
-    programs.forEach(program => {
-      program.schedule.forEach(day => {
-        const routine = this.allRoutinesMap.get(day.routineId);
-        if (routine) {
-          if (routine.goal) { goals.add(routine.goal); }
-          routine.exercises.forEach(exDetail => {
-            const fullExercise = this.allExercisesMap.get(exDetail.exerciseId);
-            if (fullExercise?.primaryMuscleGroup) { muscles.add(fullExercise.primaryMuscleGroup); }
-          });
-        }
-      });
-    });
-    this.uniqueProgramGoals.set(Array.from(goals).sort((a, b) => a.localeCompare(b)));
-    this.uniqueProgramMuscleGroups.set(Array.from(muscles).sort((a, b) => a.localeCompare(b)));
   }
 
   toggleFilterAccordion(): void { this.isFilterAccordionOpen.update(isOpen => !isOpen); }

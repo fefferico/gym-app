@@ -19,6 +19,7 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
 import { deleteBtn, editBtn, hideBtn, unhideBtn, viewBtn } from '../../core/services/buttons-data';
 import { TrackingService } from '../../core/services/tracking.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Muscle } from '../../core/models/muscle.model';
 
 @Component({
   selector: 'app-exercise-list',

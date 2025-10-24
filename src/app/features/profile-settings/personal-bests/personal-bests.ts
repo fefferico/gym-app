@@ -20,13 +20,14 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { WorkoutService } from '../../../core/services/workout.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
+import { Muscle } from '../../../core/models/muscle.model';
 
 
 // Interface to combine PB data with Exercise details
 interface DisplayPersonalBest extends PersonalBestSet {
   exerciseName: string;
   exerciseCategory: string;
-  primaryMuscleGroup: string;
+  primaryMuscleGroup: string | undefined;
 }
 
 @Component({

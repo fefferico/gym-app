@@ -10,6 +10,7 @@ import { EXERCISES_DATA } from './exercises-data';
 import { WorkoutExercise } from '../models/workout.model';
 import { ToastService } from './toast.service';
 import { TranslateService } from '@ngx-translate/core';
+import { Muscle } from '../models/muscle.model';
 
 /**
  * Maps standardized muscle group names to the unique IDs of the paths in muscle-anatomy.svg.
@@ -307,7 +308,7 @@ export class ExerciseService {
       map(exercises =>
         [...new Set(
           exercises
-            .map(ex => ex.primaryMuscleGroup)
+            .map(ex => ex.primaryMuscleGroup || '')
             .filter(group => group && group.trim() !== '')
         )].sort()
       ),

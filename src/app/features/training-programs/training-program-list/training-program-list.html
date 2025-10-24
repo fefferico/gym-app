@@ -88,7 +88,7 @@
                   [value]="selectedProgramMuscleGroup() || ''"
                   class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
                   <option value="">{{ 'trainingPrograms.filters.anyMuscle' | translate }}</option>
-                  <option *ngFor="let muscle of uniqueProgramMuscleGroups()" [value]="muscle">{{ muscle | titlecase }}
+                  <option *ngFor="let muscle of uniqueProgramMuscleGroups()" [value]="muscle">{{ muscle.name | titlecase }}
                   </option>
                 </select>
               </div>

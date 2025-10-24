@@ -1,3 +1,5 @@
+import { Muscle } from "./muscle.model";
+
 // src/app/core/models/exercise.model.ts
 export const EXERCISE_CATEGORIES = [
   'bodyweight/calisthenics',

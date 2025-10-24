@@ -10,6 +10,7 @@ import { TrackingService } from '../../../core/services/tracking.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BumpClickDirective } from '../../directives/bump-click.directive';
+import { Muscle } from '../../../core/models/muscle.model';
 
 type ListItem = Exercise | { isHeader: true; label: string };
 

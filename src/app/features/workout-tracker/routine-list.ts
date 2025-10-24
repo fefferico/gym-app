@@ -34,6 +34,7 @@ import { FabAction, FabMenuComponent } from '../../shared/components/fab-menu/fa
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ColorsService } from '../../core/services/colors.service';
 import { BumpClickDirective } from '../../shared/directives/bump-click.directive';
+import { Muscle } from '../../core/models/muscle.model';
 
 @Component({
   selector: 'app-routine-list',
@@ -260,7 +261,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       routines = routines.filter(r =>
         r.exercises.some(exDetail => {
           const fullExercise = this.allExercisesMap.get(exDetail.exerciseId);
-          return fullExercise?.primaryMuscleGroup.toLowerCase() === muscleFilter.toLowerCase();
+          return fullExercise?.primaryMuscleGroup?.toLowerCase() === muscleFilter.toLowerCase();
         })
       );
     }

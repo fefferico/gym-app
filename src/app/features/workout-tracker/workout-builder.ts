@@ -47,6 +47,7 @@ import { PremiumFeature, SubscriptionService } from '../../core/services/subscri
 import { PressDirective } from '../../shared/directives/press.directive';
 import { AUDIO_TYPES, AudioService } from '../../core/services/audio.service';
 import { BumpClickDirective } from '../../shared/directives/bump-click.directive';
+import { RoutineGoal } from '../../core/models/routine-goal.model';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
@@ -166,16 +167,25 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     { value: SET_TYPE.restpause, label: this.translate.instant('workoutBuilder.setTypes.restpause') },
     { value: SET_TYPE.custom, label: this.translate.instant('workoutBuilder.setTypes.custom') }
   ];
-  routineGoals: { value: Routine['goal'], label: string }[] = [
-    { value: 'hypertrophy', label: this.translate.instant('workoutBuilder.goals.hypertrophy') }, { value: 'strength', label: this.translate.instant('workoutBuilder.goals.strength') },
-    { value: 'tabata', label: this.translate.instant('workoutBuilder.goals.tabata') },
-    { value: 'muscular endurance', label: this.translate.instant('workoutBuilder.goals.muscularEndurance') }, { value: 'cardiovascular endurance', label: this.translate.instant('workoutBuilder.goals.cardiovascularEndurance') },
-    { value: 'fat loss / body composition', label: this.translate.instant('workoutBuilder.goals.fatLoss') }, { value: 'mobility & flexibility', label: this.translate.instant('workoutBuilder.goals.mobility') },
-    { value: 'power / explosiveness', label: this.translate.instant('workoutBuilder.goals.power') }, { value: 'speed & agility', label: this.translate.instant('workoutBuilder.goals.speed') },
-    { value: 'balance & coordination', label: this.translate.instant('workoutBuilder.goals.balance') }, { value: 'skill acquisition', label: this.translate.instant('workoutBuilder.goals.skill') },
-    { value: 'rehabilitation / injury prevention', label: this.translate.instant('workoutBuilder.goals.rehabilitation') }, { value: 'mental health / stress relief', label: this.translate.instant('workoutBuilder.goals.mentalHealth') },
-    { value: 'general health & longevity', label: this.translate.instant('workoutBuilder.goals.generalHealth') }, { value: 'sport-specific performance', label: this.translate.instant('workoutBuilder.goals.sportSpecific') },
-    { value: 'maintenance', label: this.translate.instant('workoutBuilder.goals.maintenance') }, { value: METRIC.rest, label: this.translate.instant('workoutBuilder.goals.rest') }, { value: 'custom', label: this.translate.instant('workoutBuilder.goals.custom') }
+readonly routineGoals: RoutineGoal[] = [
+    { value: 'hypertrophy', label: 'workoutBuilder.goals.hypertrophy' },
+    { value: 'strength', label: 'workoutBuilder.goals.strength' },
+    { value: 'tabata', label: 'workoutBuilder.goals.tabata' },
+    { value: 'muscular endurance', label: 'workoutBuilder.goals.muscularEndurance' },
+    { value: 'cardiovascular endurance', label: 'workoutBuilder.goals.cardiovascularEndurance' },
+    { value: 'fat loss / body composition', label: 'workoutBuilder.goals.fatLoss' },
+    { value: 'mobility & flexibility', label: 'workoutBuilder.goals.mobility' },
+    { value: 'power / explosiveness', label: 'workoutBuilder.goals.power' },
+    { value: 'speed & agility', label: 'workoutBuilder.goals.speed' },
+    { value: 'balance & coordination', label: 'workoutBuilder.goals.balance' },
+    { value: 'skill acquisition', label: 'workoutBuilder.goals.skill' },
+    { value: 'rehabilitation / injury prevention', label: 'workoutBuilder.goals.rehabilitation' },
+    { value: 'mental health / stress relief', label: 'workoutBuilder.goals.mentalHealth' },
+    { value: 'general health & longevity', label: 'workoutBuilder.goals.generalHealth' },
+    { value: 'sport-specific performance', label: 'workoutBuilder.goals.sportSpecific' },
+    { value: 'maintenance', label: 'workoutBuilder.goals.maintenance' },
+    { value: 'rest', label: 'workoutBuilder.goals.rest' }, // Assuming METRIC.rest is 'rest'
+    { value: 'custom', label: 'workoutBuilder.goals.custom' }
   ];
 
   isExerciseModalOpen = false;

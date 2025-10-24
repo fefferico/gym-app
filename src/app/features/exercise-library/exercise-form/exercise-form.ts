@@ -48,8 +48,8 @@ export class ExerciseFormComponent implements OnInit {
   availableMuscleGroups = computed(() => {
     return this.allMuscles
       .map(m => m.name)
-      .filter(name => !name.includes('(') && !name.includes('&'))
-      .sort((a, b) => a.localeCompare(b));
+      .filter(name => !name?.includes('(') && !name?.includes('&'))
+      .sort((a, b) => a?.localeCompare(b));
   });
 
   constructor() {
@@ -137,7 +137,7 @@ export class ExerciseFormComponent implements OnInit {
     if (!query) return [];
     const lowerCaseQuery = query.toLowerCase();
     const currentMuscles = this.getFormArray('muscleGroups').value;
-    return this.allMuscles.filter(m => m.name.toLowerCase().includes(lowerCaseQuery) && !currentMuscles.includes(m.name));
+    return this.allMuscles.filter(m => m?.name?.toLowerCase().includes(lowerCaseQuery) && !currentMuscles.includes(m.name));
   }
 
   selectMuscle(muscle: Muscle): void {

@@ -80,7 +80,8 @@
                     <select id="goal" formControlName="goal"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 dark:text-gray-200">
                         <option value="">{{ 'workoutBuilder.routineBuilder.goalPlaceholder' | translate }}</option>
-                        <option *ngFor="let goalOpt of routineGoals" [value]="goalOpt.value">{{ goalOpt.label }}
+                        <option *ngFor="let goalOpt of routineGoals" [value]="goalOpt.value">
+                            {{ goalOpt.label | translate }}
                         </option>
                     </select>
                 </div>
