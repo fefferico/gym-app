@@ -1104,7 +1104,7 @@
       "switch": "Switch exercise",
       "toggleNotes": "Toggle exercise notes",
       "removeLastSet": "This is the last set. This will remove the entire exercise. Continue?",
-      "exerciseRemoved":"Exercise removed"
+      "exerciseRemoved": "Exercise removed"
     },
     "set": {
       "set": "Set",
@@ -2033,7 +2033,61 @@
       "abdominalCrunchMachine": "Abdominal Crunch Machine",
       "abRollerCoaster": "Ab Roller Coaster",
       "abWheel": "Ab Wheel"
-    }
+    },
+    "barbell": "Barbell",
+    "dumbbell": "Dumbbell",
+    "kettlebell": "Kettlebell",
+    "ezCurlBar": "EZ-Curl Bar",
+    "plates": "Plates",
+    "machine": "Machine",
+    "cableMachine": "Cable Machine",
+    "abductorMachine": "Abductor Machine",
+    "adductorMachine": "Adductor Machine",
+    "pecDeckMachine": "Pec Deck Machine",
+    "chestPressMachine": "Chest Press Machine",
+    "inclineChestPressMachine": "Incline Chest Press Machine",
+    "latPulldownMachine": "Lat Pulldown Machine",
+    "seatedRowMachine": "Seated Row Machine",
+    "legPressMachine": "Leg Press Machine",
+    "legExtensionMachine": "Leg Extension Machine",
+    "legCurlMachine": "Leg Curl Machine",
+    "shoulderPressMachine": "Shoulder Press Machine",
+    "reversePecDeckMachine": "Reverse Pec Deck Machine",
+    "calfRaiseMachine": "Calf Raise Machine",
+    "hackSquatMachine": "Hack Squat Machine",
+    "seatedCalfRaiseMachine": "Seated Calf Raise Machine",
+    "abdominalCrunchMachine": "Abdominal Crunch Machine",
+    "hyperextensionMachine": "Hyperextension Machine",
+    "treadmill": "Treadmill",
+    "stationaryBike": "Stationary Bike",
+    "ellipticalTrainer": "Elliptical Trainer",
+    "stairClimbingMachine": "Stair Climbing Machine",
+    "bodyweight": "Bodyweight",
+    "pullUpBar": "Pull-up Bar",
+    "dipStation": "Dip Station / Parallel Bars",
+    "parallettes": "Parallettes",
+    "gymnasticRings": "Gymnastic Rings",
+    "bench": "Bench",
+    "inclineBench": "Incline Bench",
+    "rack": "Rack / Squat Rack",
+    "resistanceBand": "Resistance Band",
+    "plyoBox": "Plyo Box / Platform",
+    "medicineBall": "Medicine Ball / Slam Ball",
+    "jumpRope": "Jump Rope",
+    "padding": "Padding",
+    "towel": "Towel",
+    "prowlerSled": "Prowler Sled",
+    "largeTire": "Large Tire",
+    "battleRopes": "Battle Ropes",
+    "sandbag": "Sandbag",
+    "bulgarianBag": "Bulgarian Bag",
+    "steelMace": "Steel Mace / Macebell",
+    "steelClubs": "Steel Clubs / Clubbell",
+    "indianClubs": "Indian Clubs",
+    "vipr": "ViPR",
+    "doorway": "Doorway",
+    "anchorPoint": "Anchor Point",
+    "stairs": "Stairs"
   },
   "storageService": {
     "clearAllWarning": {
@@ -2500,14 +2554,14 @@
     }
   },
   "metrics": {
-      "rest": "Rest",
-      "weight": "Weight",
-      "tempo": "Tempo",
-      "duration": "Duration",
-      "distance": "Distance",
-      "reps": "Reps"
-    },
-    "muscles": {
+    "rest": "Rest",
+    "weight": "Weight",
+    "tempo": "Tempo",
+    "duration": "Duration",
+    "distance": "Distance",
+    "reps": "Reps"
+  },
+  "muscles": {
     "core": "Core",
     "rectusAbdominis": "Abs (Rectus Abdominis)",
     "obliques": "Obliques",
@@ -2554,5 +2608,41 @@
     "posteriorChain": "Posterior Chain",
     "cardio": "Cardiovascular System",
     "neck": "Neck"
+  },
+  "exerciseForm": {
+    "addTitle": "Add New Exercise",
+    "editTitle": "Edit Exercise",
+    "labels": {
+      "name": "Name",
+      "description": "Description",
+      "category": "Category",
+      "primaryMuscle": "Primary Muscle Group",
+      "otherMuscles": "Other Muscle Groups",
+      "equipment": "Equipment Needed",
+      "videoUrl": "Video URL (Optional)",
+      "notes": "Notes & Tips (Optional)"
+    },
+    "placeholders": {
+      "selectPrimary": "Select Primary Muscle",
+      "searchMuscles": "Search to add muscles...",
+      "searchEquipment": "Search or add equipment..."
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "add": "Add Exercise",
+      "update": "Update Exercise"
+    }
+  },
+  "categories": {
+    "barbells": "Barbells",
+    "dumbbells": "Dumbbells",
+    "bodyweight/calisthenics": "Bodyweight / Calisthenics",
+    "machines": "Machines",
+    "cables": "Cables",
+    "kettlebells": "Kettlebells",
+    "bands": "Bands",
+    "other": "Other",
+    "stretching": "Stretching",
+    "cardio": "Cardio"
   }
 }

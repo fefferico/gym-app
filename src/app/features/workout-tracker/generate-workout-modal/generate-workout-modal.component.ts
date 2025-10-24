@@ -2,13 +2,15 @@
 import { Component, computed, EventEmitter, inject, Input, OnChanges, OnInit, Output, signal, SimpleChanges, effect, Inject, DOCUMENT } from '@angular/core';
 import { CommonModule, TitleCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { firstValueFrom } from 'rxjs';
+import { combineLatest, firstValueFrom, map } from 'rxjs';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { WorkoutGenerationOptions } from '../../../core/services/workout-generator.service';
 import { ExerciseService } from '../../../core/services/exercise.service';
 import { Equipment } from '../../../core/models/equipment.model';
 import { PersonalGymService } from '../../../core/services/personal-gym.service';
 import { TranslateModule } from '@ngx-translate/core'; // +++ IMPORT TRANSLATE MODULE
+import { MuscleMapService } from '../../../core/services/muscle-map.service';
+import { Muscle } from '../../../core/models/muscle.model';
 
 @Component({
     selector: 'app-generate-workout-modal',
@@ -23,7 +25,7 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
 
     private exerciseService = inject(ExerciseService);
     private personalGymService = inject(PersonalGymService);
-
+    private muscleMapService = inject(MuscleMapService);
     // --- START: SCROLL LOCK LOGIC ---
     constructor(@Inject(DOCUMENT) private document: Document) {
         effect(() => {
@@ -41,7 +43,7 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
     }
     // --- END: SCROLL LOCK LOGIC ---
 
-    allMuscleGroups = signal<string[]>([]);
+    allMuscleGroups = signal<Muscle[]>([]);
     allAvailableEquipment = signal<string[]>([]);
     allPersonalGymEquipment = signal<string[]>([]);
     equipmentSearchTerm = signal<string>('');
@@ -69,8 +71,26 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
     };
 
     async ngOnInit() {
-        const muscles = await firstValueFrom(this.exerciseService.getUniquePrimaryMuscleGroups());
+        // --- START: REPLACEMENT FOR ngOnInit LOGIC ---
+        const uniqueMuscleIds$ = this.exerciseService.getUniquePrimaryMuscleGroups();
+        const musclesMap$ = this.muscleMapService.musclesMap$;
+
+        const uniqueMuscles$ = combineLatest([uniqueMuscleIds$, musclesMap$]).pipe(
+            map(([ids, muscleMap]) => {
+                const muscles = ids
+                    .map(id => muscleMap.get(id))
+                    // Filter out any potential undefined values if an ID has no match
+                    .filter((muscle): muscle is Muscle => muscle !== undefined);
+                
+                // Sort the full muscle objects alphabetically by name (translation key)
+                return muscles.sort((a, b) => a.name.localeCompare(b.name));
+            })
+        );
+        
+        const muscles = await firstValueFrom(uniqueMuscles$);
         this.allMuscleGroups.set(muscles);
+        
+        // (The rest of your ngOnInit logic for equipment remains the same)
         const equipment = await firstValueFrom(this.exerciseService.getUniqueEquipment());
         this.allAvailableEquipment.set(equipment);
 
@@ -78,6 +98,7 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
         this.allPersonalGymEquipment.set(personalGymEquipment.map((eq: Equipment) => eq.category));
 
         this.updateEquipmentFromPersonalGym();
+        // --- END: REPLACEMENT FOR ngOnInit LOGIC ---
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -87,13 +108,15 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
         }
     }
 
-    toggleMuscle(type: 'target' | 'avoid', muscle: string) {
+    toggleMuscle(type: 'target' | 'avoid', muscle: Muscle) {
+        // We now store the muscle ID, not the object or name string
         const list = type === 'target' ? this.options.targetMuscles : this.options.avoidMuscles;
-        const index = list.indexOf(muscle);
+        const index = list.indexOf(muscle.id);
+
         if (index > -1) {
             list.splice(index, 1);
         } else {
-            list.push(muscle);
+            list.push(muscle.id);
         }
     }
 

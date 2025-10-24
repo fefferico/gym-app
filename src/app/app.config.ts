@@ -1,5 +1,5 @@
 // src/app/app.config.ts
-import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom, LOCALE_ID, PLATFORM_ID, provideZoneChangeDetection } from '@angular/core';
+import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom, inject, LOCALE_ID, PLATFORM_ID, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withFetch, HttpClient } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -11,7 +11,7 @@ import { HAMMER_GESTURE_CONFIG, HammerGestureConfig, HammerModule } from '@angul
 import * as Hammer from 'hammerjs';
 
 // ngx-translate imports
-import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
+import { TranslateModule, TranslateLoader, TranslateService } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
 // =========================================================================================
@@ -38,6 +38,7 @@ import localeAr from '@angular/common/locales/ar';
 import { isPlatformBrowser, registerLocaleData } from '@angular/common';
 import { LanguageService } from './core/services/language.service';
 import { MultiHttpLoader } from './core/services/multi-http-loader';
+import { firstValueFrom } from 'rxjs';
 
 // Register the locale data
 registerLocaleData(localeEn);
@@ -73,7 +74,20 @@ const dbConfig: DBConfig = {
 };
 
 export function appInitializerFactory(languageService: LanguageService) {
-  return () => languageService.init();
+  // return () => languageService.init();
+  const translate = inject(TranslateService);
+  return () => {
+    // 1. Set your default language.
+    translate.setDefaultLang('en');
+
+    // 2. Set the language you want to load initially (e.g., from user settings or browser lang).
+    //    For this example, we'll use Italian ('it').
+    const langToUse = 'it'; 
+
+    // 3. The `use` method returns an Observable that completes when the language file is loaded.
+    //    We convert it to a promise so the APP_INITIALIZER can wait for it.
+    return firstValueFrom(translate.use(langToUse));
+  };
 }
 
 export const appConfig: ApplicationConfig = {
@@ -95,7 +109,7 @@ export const appConfig: ApplicationConfig = {
     {
       provide: APP_INITIALIZER,
       useFactory: appInitializerFactory,
-      deps: [LanguageService],
+      deps: [LanguageService, TranslateService],
       multi: true
     },
     importProvidersFrom(

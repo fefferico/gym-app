@@ -48,7 +48,7 @@
                 </label>
               </div>
 
-              <!-- +++ NEW: Radio Input Type +++ -->
+              <!-- Radio Input Type -->
               <div *ngSwitchCase="'radio'" class="flex items-center">
                 <input type="radio" [id]="input.id || ('alert-input-' + i)" [name]="input.name" [value]="input.value"
                   [(ngModel)]="inputValues[input.name]"

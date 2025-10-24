@@ -1,4 +1,8 @@
-import { Injectable, Renderer2 } from '@angular/core';
+import { inject, Injectable, Renderer2 } from '@angular/core';
+import { map, Observable, ObservableInput, of, shareReplay, startWith, switchMap } from 'rxjs';
+import { Muscle } from '../models/muscle.model';
+import { MUSCLES_DATA } from './muscles-data';
+import { TranslateService } from '@ngx-translate/core';
 
 /**
  * Maps standardized muscle group names to the unique IDs of the paths in the SVG.
@@ -102,5 +106,47 @@ export class MuscleMapService {
         });
 
         return Array.from(ids);
+    }
+
+    muscles$: Observable<Muscle[]> = of(MUSCLES_DATA);
+    private translate = inject(TranslateService);
+
+    // Create a quick-lookup map for muscles
+    musclesMap$: Observable<Map<string, Muscle>> = this.muscles$.pipe(
+        map(muscles => new Map(muscles.map(m => [m.id, m])))
+    );
+
+     /**
+     * An observable stream that provides the complete list of muscles with all names
+     * fully translated. This stream automatically updates whenever the application's
+     * language changes.
+     */
+    public readonly translatedMuscles$: Observable<Muscle[]> = this.translate.onLangChange.pipe(
+        startWith(null), // Trigger immediately
+        switchMap(() => {
+            return this.muscles$.pipe(
+                switchMap(muscles => {
+                    // This now correctly gets an array of keys like ['muscles.core', 'muscles.lats', ...]
+                    const translationKeys = muscles.map(m => m.name); 
+
+                    return this.translate.get(translationKeys).pipe(
+                        map(translations => {
+                            return muscles.map(muscle => ({
+                                ...muscle,
+                                // It finds 'muscles.lats' in the translations object and returns "Dorsali"
+                                name: translations[muscle.name] || muscle.name 
+                            }));
+                        })
+                    );
+                })
+            );
+        }),
+        shareReplay(1)
+    );
+
+    // The old method can be removed or kept for non-reactive scenarios,
+    // but using translatedMuscles$ is now the recommended approach.
+    public getTranslatedMuscles(): Observable<Muscle[]> {
+        return this.translatedMuscles$;
     }
 }

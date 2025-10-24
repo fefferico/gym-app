@@ -1,7 +1,7 @@
 import { Component, inject, Input, OnInit, signal, OnDestroy, PLATFORM_ID, OnChanges, SimpleChanges, computed, ElementRef, Output, EventEmitter, effect, Inject, DOCUMENT } from '@angular/core'; // Added OnDestroy
 import { CommonModule, TitleCasePipe, DatePipe, isPlatformBrowser, DecimalPipe } from '@angular/common'; // Added DatePipe
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Observable, of, Subscription, forkJoin, map, take, tap, switchMap } from 'rxjs'; // Added Subscription, forkJoin
+import { Observable, of, Subscription, forkJoin, map, take, tap, switchMap, combineLatest } from 'rxjs'; // Added Subscription, forkJoin
 import { Exercise } from '../../core/models/exercise.model';
 import { ExerciseService } from '../../core/services/exercise.service';
 import { TrackingService, ExercisePerformanceDataPoint } from '../../core/services/tracking.service'; // Import new type
@@ -16,12 +16,22 @@ import { ActionMenuItem } from '../../core/models/action-menu.model';
 import { MenuMode } from '../../core/models/app-settings.model';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { UnitsService } from '../../core/services/units.service';
-import { MuscleHighlight } from '../../core/services/muscle-map.service';
+import { MuscleHighlight, MuscleMapService } from '../../core/services/muscle-map.service';
 import { MuscleMapComponent } from '../../shared/components/muscle-map/muscle-map.component';
 import { WeightUnitPipe } from '../../shared/pipes/weight-unit-pipe';
 import { animate, group, query, style, transition, trigger } from '@angular/animations';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { EquipmentService } from '../../core/services/equipment.service';
+import { Muscle } from '../../core/models/muscle.model';
+import { Equipment } from '../../core/models/equipment.model';
+
+
+export interface HydratedExercise extends Omit<Exercise, 'primaryMuscleGroup' | 'muscleGroups' | 'equipmentNeeded'> {
+  primaryMuscleGroup?: Muscle;
+  muscleGroups: Muscle[];
+  equipmentNeeded: Equipment[];
+}
 
 type RepRecord = {
   reps: number;
@@ -88,15 +98,15 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
 
   private decimalPipe = inject(DecimalPipe);
   private route = inject(ActivatedRoute);
-  private router = inject(Router); 
+  private router = inject(Router);
   private exerciseService = inject(ExerciseService);
   protected trackingService = inject(TrackingService);
-  private alertService = inject(AlertService); 
-  unitService = inject(UnitsService); 
+  private alertService = inject(AlertService);
+  unitService = inject(UnitsService);
   protected translate = inject(TranslateService);
 
   // Using a signal for the exercise data
-  exercise = signal<Exercise | undefined | null>(undefined);
+  exercise = signal<HydratedExercise | undefined | null>(undefined);
   muscleDataForMap: MuscleHighlight = { primary: [], secondary: [] };
 
   // For image carousel
@@ -152,10 +162,10 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     });
 
     effect((onCleanup) => {
-            onCleanup(() => {
-                this.document.body.classList.remove('overflow-hidden');
-            });
-        });
+      onCleanup(() => {
+        this.document.body.classList.remove('overflow-hidden');
+      });
+    });
   }
 
   // This hook is called whenever an @Input() property changes.
@@ -213,7 +223,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   public onCloseModal(): void {
     this.close.emit();
   }
-  
+
   private resetComponentState(): void {
     this.exercise.set(undefined);
     this.exercisePBs.set([]);
@@ -221,8 +231,10 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   loadExercise(exerciseId: string): void {
-    this.exerciseService.getExerciseById(exerciseId).subscribe(ex => {
-      this.exercise.set(ex || null);
+    // Call the correct service method that returns a HydratedExercise
+    this.exerciseService.getHydratedExerciseById(exerciseId).subscribe(hydratedEx => {
+      // The type now matches what the signal expects
+      this.exercise.set(hydratedEx || null);
       this.currentImageIndex.set(0);
     });
   }
@@ -281,46 +293,47 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private loadExerciseData(exerciseId: string): void {
-    forkJoin({
-      baseExercise: this.exerciseService.getExerciseById(exerciseId).pipe(take(1)),
-      pbs: this.trackingService.getAllPersonalBestsForExercise(exerciseId).pipe(take(1)),
-      history: this.trackingService.getLogsForExercise(exerciseId).pipe(take(1))
-    }).pipe(
-      // Use switchMap to chain the translation observable
-      switchMap(({ baseExercise, pbs, history }) => {
-        if (!baseExercise) {
-          // If no base exercise, just pass the other data through with a null exercise
-          return of({ translatedExercise: null, pbs, history });
+    this.exerciseDetailSub?.unsubscribe();
+
+    // --- START: CORRECTED DATA LOADING PIPELINE ---
+    this.exerciseDetailSub = this.exerciseService.getHydratedExerciseById(exerciseId).pipe(
+      switchMap(hydratedExercise => {
+        // If the exercise is not found, stop here and return empty data for the other calls.
+        if (!hydratedExercise) {
+          return of({ exercise: null, pbs: [], history: [] });
         }
-        // If we have a base exercise, call the translation service
-        return this.exerciseService.getTranslatedExercise(baseExercise).pipe(
-          // Use map to combine the translated exercise with the other data
-          map(translatedExercise => ({ translatedExercise, pbs, history }))
-        );
+
+        // If the exercise was found, now fetch its PBs and history.
+        return forkJoin({
+          exercise: of(hydratedExercise), // Pass the already-hydrated exercise through
+          pbs: this.trackingService.getAllPersonalBestsForExercise(exerciseId).pipe(take(1)),
+          history: this.trackingService.getLogsForExercise(exerciseId).pipe(take(1))
+        });
       })
-    ).subscribe(({ translatedExercise, pbs, history }) => {
-      // The `subscribe` block now receives the fully translated exercise
-      this.exercise.set(translatedExercise || null);
+    ).subscribe(({ exercise, pbs, history }) => {
+      // The 'exercise' object is now the fully HydratedExercise, matching the signal's type.
+      this.exercise.set(exercise);
       this.currentImageIndex.set(0);
 
-      const sortedPBs = pbs.sort((a, b) => (b.weightLogged ?? 0) - (a.weightLogged ?? 0) || a.pbType.localeCompare(b.pbType));
+      const sortedPBs = pbs.sort((a, b) => (b.weightLogged ?? 0) - (a.weightLogged ?? 0));
       this.exercisePBs.set(sortedPBs);
-
       this.exerciseHistory.set(history);
 
-      if (translatedExercise) {
+      if (exercise) {
         this.muscleDataForMap = {
-          primary: [translatedExercise.primaryMuscleGroup],
-          secondary: translatedExercise.muscleGroups.filter(m => m !== translatedExercise.primaryMuscleGroup)
+          primary: exercise.primaryMuscleGroup ? [exercise.primaryMuscleGroup.name] : [],
+          secondary: exercise.muscleGroups
+            .filter(m => m.id !== exercise.primaryMuscleGroup?.id)
+            .map(m => m.name)
         };
+
+        this.prepareChartData(history, exercise.name);
       }
-
-      this.prepareChartData(history, translatedExercise?.name || 'Progress');
-
     }, error => {
-      console.error("Error loading exercise details page data:", error);
+      console.error("Error loading hydrated exercise details:", error);
       this.exercise.set(null);
     });
+    // --- END: CORRECTED DATA LOADING PIPELINE ---
   }
 
   // Chart click handler (optional)
@@ -340,7 +353,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
       chartData[0].series.length > 1; // Ensure more than 1 point for a line
   }
 
-  async confirmDeleteExercise(exerciseToDelete: Exercise): Promise<void> {
+  async confirmDeleteExercise(exerciseToDelete: HydratedExercise): Promise<void> {
     if (!exerciseToDelete) return;
 
     const customBtns: AlertButton[] = [{
@@ -366,13 +379,13 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
       try {
         await this.exerciseService.deleteExercise(exerciseToDelete.id);
         this.alertService.showAlert(
-          this.translate.instant('exerciseDetail.delete.successTitle'), 
+          this.translate.instant('exerciseDetail.delete.successTitle'),
           this.translate.instant('exerciseDetail.delete.successMessage', { name: exerciseToDelete.name })
         );
         this.router.navigate(['/library']);
       } catch (error) {
         this.alertService.showAlert(
-          this.translate.instant('exerciseDetail.delete.errorTitle'), 
+          this.translate.instant('exerciseDetail.delete.errorTitle'),
           this.translate.instant('exerciseDetail.delete.errorMessage', { error: (error as Error).message || 'Unknown error' })
         );
       }
@@ -695,8 +708,8 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     return result.trim();
   }
 
-    private sanitizer = inject(DomSanitizer);
-    protected updateSanitizedDescription(value: string): SafeHtml {
+  private sanitizer = inject(DomSanitizer);
+  protected updateSanitizedDescription(value: string): SafeHtml {
     // This tells Angular to trust this HTML string and render it as is.
     return this.sanitizer.bypassSecurityTrustHtml(value);
   }

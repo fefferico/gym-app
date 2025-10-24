@@ -58,10 +58,11 @@
                     <div class="max-h-32 overflow-y-auto p-2 border rounded-md dark:border-gray-600">
                         <div *ngFor="let muscle of allMuscleGroups()">
                             <label class="flex items-center gap-2">
-                                <input type="checkbox" [value]="muscle" (change)="toggleMuscle('target', muscle)"
-                                    [checked]="options.targetMuscles.includes(muscle)"
-                                    [disabled]="options.avoidMuscles.includes(muscle)">
-                                {{ muscle | titlecase }}
+                                <input type="checkbox" [value]="muscle.id" (change)="toggleMuscle('target', muscle)"
+                                    [checked]="options.targetMuscles.includes(muscle.id)"
+                                    [disabled]="options.avoidMuscles.includes(muscle.id)">
+                                <!-- Use the translate pipe on the muscle name (which is now a key) -->
+                                {{ muscle.name | translate }}
                             </label>
                         </div>
                     </div>
@@ -74,10 +75,11 @@
                     <div class="max-h-32 overflow-y-auto p-2 border rounded-md dark:border-gray-600">
                         <div *ngFor="let muscle of allMuscleGroups()">
                             <label class="flex items-center gap-2">
-                                <input type="checkbox" [value]="muscle" (change)="toggleMuscle('avoid', muscle)"
-                                    [checked]="options.avoidMuscles.includes(muscle)"
-                                    [disabled]="options.targetMuscles.includes(muscle)">
-                                {{ muscle | titlecase }}
+                                <input type="checkbox" [value]="muscle.id" (change)="toggleMuscle('avoid', muscle)"
+                                    [checked]="options.avoidMuscles.includes(muscle.id)"
+                                    [disabled]="options.targetMuscles.includes(muscle.id)">
+                                <!-- Use the translate pipe on the muscle name -->
+                                {{ muscle.name | translate }}
                             </label>
                         </div>
                     </div>

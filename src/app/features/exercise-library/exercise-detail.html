@@ -1,6 +1,5 @@
 <ng-container *ngIf="exercise() as ex; else loadingOrNotFound"
-  class="{{ isModal ? 'fixed inset-0 z-[70] flex flex-col bg-white dark:bg-gray-800 transition-opacity' : '' }}"
-  >
+  class="{{ isModal ? 'fixed inset-0 z-[70] flex flex-col bg-white dark:bg-gray-800 transition-opacity' : '' }}">
   <header class="flex items-center justify-between p-2">
     <div *ngIf="!isModal" class="flex justify-between items-center">
       <button [routerLink]="'/library'"
@@ -112,32 +111,38 @@
               </div>
 
               <div class="mb-6">
-                <h2 class="text-xl font-semibold mb-2 text-gray-700 dark:text-gray-300">{{ 'exerciseDetail.tabs.description' | translate }}</h2>
+                <h2 class="text-xl font-semibold mb-2 text-gray-700 dark:text-gray-300">{{
+                  'exerciseDetail.tabs.description' | translate }}</h2>
                 <p class="text-gray-600 dark:text-gray-400 leading-relaxed">{{ ex.description }}</p>
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <h3 class="text-lg font-semibold mb-2 text-gray-700 dark:text-gray-300">{{ 'exerciseDetail.tabs.primaryMuscleGroup' | translate }}</h3>
-                  <p class="text-gray-600 dark:text-gray-400">{{ ex.primaryMuscleGroup }}</p>
+                  <h3 class="text-lg font-semibold mb-2 text-gray-700 dark:text-gray-300">{{
+                    'exerciseDetail.tabs.primaryMuscleGroup' | translate }}</h3>
+                  <p class="text-gray-600 dark:text-gray-400">{{ ex.primaryMuscleGroup?.name ?? '' | translate }}</p>
                 </div>
                 <div>
-                  <h3 class="text-lg font-semibold mb-2 text-gray-700 dark:text-gray-300">{{ 'exerciseDetail.tabs.otherMuscleGroup' | translate }}</h3>
+                  <h3 class="text-lg font-semibold mb-2 text-gray-700 dark:text-gray-300">{{
+                    'exerciseDetail.tabs.otherMuscleGroup' | translate }}</h3>
                   <ul class="list-disc list-inside text-gray-600 dark:text-gray-400">
-                    <li *ngFor="let group of ex.muscleGroups">{{ group }}</li>
+                    <li *ngFor="let group of ex.muscleGroups">{{ group.name | translate }}</li>
                   </ul>
                 </div>
               </div>
 
               <div *ngIf="ex.equipmentNeeded && ex.equipmentNeeded.length > 0" class="mb-6">
-                <h3 class="text-lg font-semibold mb-2 text-gray-700 dark:text-gray-300">{{ 'exerciseDetail.tabs.equipment' | translate }}</h3>
+                <h3 class="text-lg font-semibold mb-2 text-gray-700 dark:text-gray-300">{{
+                  'exerciseDetail.tabs.equipment' | translate }}</h3>
                 <ul class="list-disc list-inside text-gray-600 dark:text-gray-400">
-                  <li *ngFor="let item of ex.equipmentNeeded">{{ item }}</li>
+                  <li *ngFor="let item of ex.equipmentNeeded"> {{ item.name | translate }}
+                  </li>
                 </ul>
               </div>
 
               <div *ngIf="ex.notes" class="mb-6">
-                <h3 class="text-lg font-semibold mb-2 text-gray-700 dark:text-gray-300">{{ 'exerciseDetail.tabs.notes' | translate }}</h3>
+                <h3 class="text-lg font-semibold mb-2 text-gray-700 dark:text-gray-300">{{ 'exerciseDetail.tabs.notes' |
+                  translate }}</h3>
                 <p class="text-gray-600 dark:text-gray-400 whitespace-pre-line">{{ ex.notes }}</p>
               </div>
 
@@ -152,18 +157,19 @@
               <!-- PBs -->
 
               <div *ngIf="exercisePBs().length > 0" class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                <h3 class="text-xl font-semibold mb-3 text-gray-700 dark:text-gray-300">{{ 'exerciseDetail.records.title' | translate }}</h3>
+                <h3 class="text-xl font-semibold mb-3 text-gray-700 dark:text-gray-300">{{
+                  'exerciseDetail.records.title' | translate }}</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-2">
                   <div *ngFor="let pb of exercisePBs()"
                     class="p-4 bg-gray-50 dark:bg-gray-700 rounded-md border dark:border-gray-600 shadow-sm">
                     <p class="text-sm font-medium text-primary dark:text-primary-light">{{ pb.pbType }}</p>
                     <p class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">{{ formatPbValue(pb) }}</p>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    {{ 'exerciseDetail.records.achievedOn' | translate }}: {{ pb.timestamp | date:'mediumDate' }}
+                      {{ 'exerciseDetail.records.achievedOn' | translate }}: {{ pb.timestamp | date:'mediumDate' }}
                     </p>
                     <p *ngIf="pb.notes" class="mt-2 text-xs italic text-gray-500 dark:text-gray-400 line-clamp-2"
                       [title]="pb.notes">
-                    {{ 'exerciseDetail.records.notes' | translate }}: {{ pb.notes }}
+                      {{ 'exerciseDetail.records.notes' | translate }}: {{ pb.notes }}
                     </p>
                   </div>
                 </div>
@@ -172,8 +178,9 @@
               <ng-container *ngIf="trackingService.workoutLogs$ | async as workoutLogs">
                 <div *ngIf="exercise() && exercisePBs().length === 0 && workoutLogs.length > 0"
                   class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                  <p class="text-md text-gray-600 dark:text-gray-400 italic">{{ 'compactPlayer.insights.noPBs' | translate
-                    }} 
+                  <p class="text-md text-gray-600 dark:text-gray-400 italic">{{ 'compactPlayer.insights.noPBs' |
+                    translate
+                    }}
                   </p>
                 </div>
               </ng-container>
@@ -209,7 +216,9 @@
               <ng-container *ngIf="exercise() && (trackingService.workoutLogs$ | async) as allLogsGlobally">
                 <div *ngIf="allLogsGlobally && allLogsGlobally.length > 0 && !hasSufficientProgressData"
                   class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-                  <p class="text-md text-gray-600 dark:text-gray-400 italic" [innerHTML]="updateSanitizedDescription('exerciseDetail.exercise.noHistory' | translate:{ name: exercise()?.name })"></p>
+                  <p class="text-md text-gray-600 dark:text-gray-400 italic"
+                    [innerHTML]="updateSanitizedDescription('exerciseDetail.exercise.noHistory' | translate:{ name: exercise()?.name })">
+                  </p>
                 </div>
               </ng-container>
             </div>
@@ -245,7 +254,8 @@
             </div>
           </div>
           <ng-template #noHistory>
-            <p class="text-center text-gray-500 dark:text-gray-400 py-8">{{ 'exerciseDetail.historyDisplay.noHistory' | translate }}</p>
+            <p class="text-center text-gray-500 dark:text-gray-400 py-8">{{ 'exerciseDetail.historyDisplay.noHistory' |
+              translate }}</p>
           </ng-template>
         </div>
 
@@ -259,7 +269,8 @@
 
             <ng-container *ngIf="ex.category !== 'cardio'">
               <div>
-                <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">{{ 'exerciseDetail.charts.est1rmSeries' | translate }}</h3>
+                <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">{{ 'exerciseDetail.charts.est1rmSeries'
+                  | translate }}</h3>
                 <div *ngIf="est1rmChartData().length > 0; else noChartData"
                   class="bg-white dark:bg-gray-700 p-1 rounded-md shadow-md h-64">
                   <ngx-charts-line-chart [results]="est1rmChartData()" [scheme]="progressChartColorScheme"
@@ -267,7 +278,8 @@
                 </div>
               </div>
               <div>
-                <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">{{ 'exerciseDetail.charts.maxWeightSeries' | translate }}</h3>
+                <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">{{
+                  'exerciseDetail.charts.maxWeightSeries' | translate }}</h3>
                 <div *ngIf="maxWeightChartData().length > 0; else noChartData"
                   class="bg-white dark:bg-gray-700 p-1 rounded-md shadow-md h-64">
                   <ngx-charts-line-chart [results]="maxWeightChartData()" [scheme]="progressChartColorScheme"
@@ -275,7 +287,8 @@
                 </div>
               </div>
               <div>
-                <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">{{ 'exerciseDetail.charts.totalVolumeSeries' | translate }}</h3>
+                <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">{{
+                  'exerciseDetail.charts.totalVolumeSeries' | translate }}</h3>
                 <div *ngIf="totalVolumeChartData().length > 0; else noChartData"
                   class="bg-white dark:bg-gray-700 p-1 rounded-md shadow-md h-64">
                   <ngx-charts-line-chart [results]="totalVolumeChartData()" [scheme]="progressChartColorScheme"
@@ -288,7 +301,9 @@
           <!-- --- START: CONDITIONAL CHARTS FOR CARDIO --- -->
           <ng-container *ngIf="ex.category === 'cardio'">
             <div>
-                <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">{{ 'exerciseDetail.charts.maxDistanceTitle' | translate: { unit: unitService.getDistanceMeasureUnitSuffix() } }}</h3>
+              <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">{{
+                'exerciseDetail.charts.maxDistanceTitle' | translate: { unit: unitService.getDistanceMeasureUnitSuffix()
+                } }}</h3>
 
               <div *ngIf="maxDistanceChartData().length > 0; else noChartData"
                 class="bg-white dark:bg-gray-700 p-1 rounded-md shadow-md h-64">
@@ -297,7 +312,8 @@
               </div>
             </div>
             <div>
-                <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">{{ 'exerciseDetail.charts.maxDurationTitle' | translate }}</h3>
+              <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">{{
+                'exerciseDetail.charts.maxDurationTitle' | translate }}</h3>
               <div *ngIf="maxDurationChartData().length > 0; else noChartData"
                 class="bg-white dark:bg-gray-700 p-1 rounded-md shadow-md h-64">
                 <ngx-charts-line-chart [results]="maxDurationChartData()" [scheme]="progressChartColorScheme"
@@ -308,7 +324,8 @@
           <!-- --- END: CONDITIONAL CHARTS FOR CARDIO --- -->
 
           <ng-template #noChartData>
-              <p class="text-center text-gray-500 dark:text-gray-400 py-8 text-sm">{{ 'exerciseDetail.charts.noData' | translate }}</p>
+            <p class="text-center text-gray-500 dark:text-gray-400 py-8 text-sm">{{ 'exerciseDetail.charts.noData' |
+              translate }}</p>
 
           </ng-template>
         </div>
@@ -317,7 +334,8 @@
         <div *ngSwitchCase="'records'" class="tab-content bg-white dark:bg-gray-800 p-2"
           [class.tab-content-active]="activeTab() === 'records'">
           <div class="p-4">
-                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">{{ 'exerciseDetail.records.title' | translate | uppercase }}</h3>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">{{ 'exerciseDetail.records.title' |
+              translate | uppercase }}</h3>
             <div *ngIf="personalRecords().length > 0; else noRecords" class="grid grid-cols-3 gap-4 mb-8">
               <div *ngFor="let record of personalRecords()"
                 class="text-center bg-gray-100 dark:bg-gray-700 p-3 rounded-lg">
@@ -327,7 +345,8 @@
               </div>
             </div>
             <ng-template #noRecords>
-                    <p class="text-center text-gray-500 dark:text-gray-400 mb-8">{{ 'exerciseDetail.records.noRecords' | translate }}</p>
+              <p class="text-center text-gray-500 dark:text-gray-400 mb-8">{{ 'exerciseDetail.records.noRecords' |
+                translate }}</p>
 
             </ng-template>
 
@@ -338,8 +357,9 @@
                   <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
                       <th scope="col" class="py-3 px-4">{{ 'exerciseDetail.repRecords.repsHeader' | translate }}</th>
-                                    <th scope="col" class="py-3 px-4">{{ 'exerciseDetail.repRecords.bestHeader' | translate }}</th>
-                                    <th scope="col" class="py-3 px-4 text-right">{{ 'exerciseDetail.repRecords.est1rmHeader' | translate }}</th>
+                      <th scope="col" class="py-3 px-4">{{ 'exerciseDetail.repRecords.bestHeader' | translate }}</th>
+                      <th scope="col" class="py-3 px-4 text-right">{{ 'exerciseDetail.repRecords.est1rmHeader' |
+                        translate }}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -363,7 +383,8 @@
               </div>
             </ng-container>
             <ng-template #cardioRepRecords>
-                    <p class="text-center text-gray-500 dark:text-gray-400 text-sm">{{ 'exerciseDetail.repRecords.notApplicable' | translate }}</p>
+              <p class="text-center text-gray-500 dark:text-gray-400 text-sm">{{
+                'exerciseDetail.repRecords.notApplicable' | translate }}</p>
             </ng-template>
             <!-- --- END: CONDITIONALLY HIDE REP RECORDS TABLE --- -->
           </div>

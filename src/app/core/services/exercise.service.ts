@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { BehaviorSubject, forkJoin, Observable, of, throwError } from 'rxjs';
-import { catchError, map, shareReplay, take, tap, finalize, filter } from 'rxjs/operators'; // Added finalize
+import { BehaviorSubject, combineLatest, forkJoin, Observable, of, throwError } from 'rxjs';
+import { catchError, map, shareReplay, take, tap, finalize, filter, switchMap } from 'rxjs/operators'; // Added finalize
 import { Exercise } from '../models/exercise.model';
 import { StorageService } from './storage.service';
 import { TrackingService } from './tracking.service';
@@ -11,6 +11,9 @@ import { WorkoutExercise } from '../models/workout.model';
 import { ToastService } from './toast.service';
 import { TranslateService } from '@ngx-translate/core';
 import { Muscle } from '../models/muscle.model';
+import { Equipment } from '../models/equipment.model';
+import { EquipmentService } from './equipment.service';
+import { MuscleMapService } from './muscle-map.service';
 
 /**
  * Maps standardized muscle group names to the unique IDs of the paths in muscle-anatomy.svg.
@@ -40,6 +43,11 @@ export interface MuscleHighlightData {
   secondary: string[];
 }
 
+export interface HydratedExercise extends Omit<Exercise, 'primaryMuscleGroup' | 'muscleGroups' | 'equipmentNeeded'> {
+  primaryMuscleGroup?: Muscle;
+  muscleGroups: Muscle[];
+  equipmentNeeded: Equipment[];
+}
 
 @Injectable({
   providedIn: 'root',
@@ -50,6 +58,8 @@ export class ExerciseService {
   private trackingService = inject(TrackingService);
   private toastService = inject(ToastService);
   private translate = inject(TranslateService);
+  private equipmentService = inject(EquipmentService);
+  private muscleMapService = inject(MuscleMapService);
 
   private readonly EXERCISES_STORAGE_KEY = 'fitTrackPro_exercises';
   // private readonly EXERCISES_JSON_PATH = 'assets/data/exercises.json'; // Not used if EXERCISES_DATA is primary
@@ -308,7 +318,7 @@ export class ExerciseService {
       map(exercises =>
         [...new Set(
           exercises
-            .map(ex => ex.primaryMuscleGroup || '')
+            .map(ex => ex.primaryMuscleGroup)
             .filter(group => group && group.trim() !== '')
         )].sort()
       ),
@@ -851,6 +861,57 @@ export class ExerciseService {
     // and completed. It will then emit a single value: an array containing the
     // results (the translated exercises) from each of the inner observables.
     return forkJoin(translationObservables);
+  }
+
+  
+  /**
+   * Retrieves a single exercise by its ID and returns a "hydrated" version
+   * with fully resolved and translated muscle and equipment objects.
+   * @param id The ID of the exercise to retrieve.
+   * @returns An Observable of the HydratedExercise.
+   */
+  getHydratedExerciseById(id: string): Observable<HydratedExercise | null> {
+    return this.getExerciseById(id).pipe(
+      switchMap(exercise => {
+        if (!exercise) {
+          return of(null); // If no exercise, return null immediately.
+        }
+
+        // Combine streams for all necessary lookup maps
+        return combineLatest([
+          this.muscleMapService.musclesMap$,
+          this.equipmentService.equipmentMap$, 
+          this.translate.get([exercise.name, exercise.description]) // Translate name/desc
+        ]).pipe(
+          map(([musclesMap, equipmentMap, translations]) => {
+            // Hydrate Primary Muscle Group
+            const primaryMuscleGroup = exercise.primaryMuscleGroup
+              ? musclesMap.get(exercise.primaryMuscleGroup.toLowerCase())
+              : undefined;
+
+            // Hydrate Secondary Muscle Groups
+            const muscleGroups = (exercise.muscleGroups || [])
+              .map(muscleId => musclesMap.get(muscleId))
+              .filter((m): m is Muscle => !!m);
+
+            // +++ HYDRATE EQUIPMENT +++
+            const equipmentNeeded = (exercise.equipmentNeeded || [])
+              .map(eqId => equipmentMap.get(eqId))
+              .filter((eq): eq is Equipment => !!eq);
+            
+            // Assemble the final hydrated object
+            return {
+              ...exercise,
+              name: translations[exercise.name], // Use translated name
+              description: translations[exercise.description], // Use translated desc
+              primaryMuscleGroup,
+              muscleGroups,
+              equipmentNeeded
+            };
+          })
+        );
+      })
+    );
   }
 
 }

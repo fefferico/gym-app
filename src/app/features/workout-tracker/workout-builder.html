@@ -979,14 +979,14 @@
                                                             <label
                                                                 class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">{{
                                                                 'workoutBuilder.set.metrics' | translate }}:</label>
-                                                            <button
+                                                            <button appBumpClick
                                                                 (click)="promptRemoveField(exIndex, setIndex); $event.stopPropagation()"
                                                                 class="p-1.5 rounded-full bg-red-500 dark:bg-red-500/80 hover:bg-red-500 text-white disabled:opacity-50 flex items-center">
                                                                 <app-icon name="minus"
                                                                     class="h-5 w-5"></app-icon>
                                                             </button>
                                                             <!-- ADD metric -->
-                                                            <button
+                                                            <button appBumpClick
                                                                 *ngIf="getFieldsForSet(exIndex, setIndex).hidden.length > 0"
                                                                 (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
                                                                 class="p-1.5 rounded-full bg-blue-500 dark:bg-blue-500/80 hover:bg-blue-500 text-white disabled:opacity-50 flex items-center">
@@ -1058,7 +1058,7 @@
                                                             <!-- Renders in the next available grid slot if there are fields left to add -->
                                                             <div *ngIf="isGhostFieldVisible(fieldOrder, exIndex)"
                                                                 class="flex items-center justify-center h-full">
-                                                                <button
+                                                                <button appBumpClick
                                                                     (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
                                                                     class="flex items-center justify-center w-full p-2 h-16 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors">
                                                                     <app-icon name="plus-circle"

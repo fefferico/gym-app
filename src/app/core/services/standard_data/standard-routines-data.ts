@@ -2230,7 +2230,7 @@ export const ROUTINES_DATA: Routine[] = [
             }
         ],
         goal: 'hypertrophy',
-        targetMuscleGroups: ['Shoulders', 'Core', 'Chest', 'Triceps', 'Full Body'],
+        targetMuscleGroups: ['Shoulders', "core", 'Chest', 'Triceps', 'Full Body'],
         notes: 'Workout by Chandler Marchman. **Weight Used In Workout: 71 lb. Kettlebells**. Rest 2-3 minutes between rounds - Do 3 Rounds Total. Video: https://www.youtube.com/watch?v=9Ri9Yqc9HZ8'
     },
 
@@ -2299,7 +2299,7 @@ export const ROUTINES_DATA: Routine[] = [
             }
         ],
         goal: 'strength',
-        targetMuscleGroups: ['Core', 'Obliques', 'Shoulders', 'Full Body'],
+        targetMuscleGroups: ["core", 'Obliques', 'Shoulders', 'Full Body'],
         notes: 'Workout by Chandler Marchman. **Weight Used In Workout: 71 lb. Kettlebell**. Rest 2-3 minutes between rounds - Do 3 Rounds Total. Video: https://www.youtube.com/watch?v=B5HLwfebDeA'
     },
 
@@ -2453,7 +2453,7 @@ export const ROUTINES_DATA: Routine[] = [
             }
         ],
         goal: 'strength',
-        targetMuscleGroups: ['Lats', 'Traps', 'Back', 'Core', 'Shoulders'],
+        targetMuscleGroups: ['Lats', 'Traps', 'Back', "core", 'Shoulders'],
         notes: 'Workout by Chandler Marchman. **Kettlebell Weight Used: 71 lb. Kettlebell Kings KB\'s**. Rest No More Than 3 Minutes Between Rounds - Do 3 Rounds Total. Video: https://www.youtube.com/watch?v=PdzeItxrws8'
     },
 
@@ -2522,7 +2522,7 @@ export const ROUTINES_DATA: Routine[] = [
             }
         ],
         goal: 'strength',
-        targetMuscleGroups: ['quadriceps', 'Glutes', 'Hamstrings', 'Core'],
+        targetMuscleGroups: ["quadriceps", "glutes", "hamstrings", "core"],
         notes: 'Workout by Chandler Marchman. **Weight Used During Workout: 71 lb. Kettlebell**. Perform 3 Rounds - Rest 2-3 Minutes Between Rounds. Video: https://www.youtube.com/watch?v=aizRvVEz-m8'
     },
     // Routine 6: Home Kettlebell Bodybuilding [Chest & Triceps Routine]
@@ -2590,7 +2590,7 @@ export const ROUTINES_DATA: Routine[] = [
             }
         ],
         goal: 'hypertrophy',
-        targetMuscleGroups: ['Chest', 'Triceps', 'Core'],
+        targetMuscleGroups: ['Chest', 'Triceps', "core"],
         notes: 'Workout by Chandler Marchman. **Weight Used During Workout: 71 Lb. Kettlebells**. Rest No More Than 3 Minutes Between Rounds - Perform 3 Rounds Total. Video: https://www.youtube.com/watch?v=QBjT913kc_o'
     },
 
@@ -2685,7 +2685,7 @@ export const ROUTINES_DATA: Routine[] = [
             }
         ],
         goal: 'fat loss / body composition',
-        targetMuscleGroups: ['Full Body', 'Core', 'Glutes', 'Hamstrings', 'Back', 'Shoulders'],
+        targetMuscleGroups: ['Full Body', "core", "glutes", "hamstrings", 'Back', 'Shoulders'],
         notes: 'Workout by Chandler Marchman. **Weight Used= 71 lb. Kettlebell Kings powder coated kettlebell**. Rest 2-3 Minutes Between Each Round. Video: https://www.youtube.com/watch?v=Oo5mfamYm58'
     },
 
@@ -2746,7 +2746,7 @@ export const ROUTINES_DATA: Routine[] = [
             }
         ],
         goal: 'sport-specific performance',
-        targetMuscleGroups: ['Full Body', 'Core', 'Power / explosiveness'],
+        targetMuscleGroups: ['Full Body', "core", 'Power / explosiveness'],
         notes: 'Workout by Chandler Marchman. **Weights used in workout: 71 lb. Powder Coated KB from "Kettlebell Kings"**. Perform as fast as possible - Rest 2-3 Minutes Between Each Round. Video: https://www.youtube.com/watch?v=y7Safm7wLqk'
     },
 
@@ -2827,7 +2827,7 @@ export const ROUTINES_DATA: Routine[] = [
             }
         ],
         goal: 'general health & longevity',
-        targetMuscleGroups: ['Full Body', 'Core'],
+        targetMuscleGroups: ['Full Body', "core"],
         notes: 'Workout by Chandler Marchman. **Weight Used During Workout: 53 lb. Kettlebells**. {Rest no more than 3 minutes between rounds}. Video: https://www.youtube.com/watch?v=IwqIawUrma4'
     },
 
@@ -2912,7 +2912,7 @@ export const ROUTINES_DATA: Routine[] = [
             }
         ],
         goal: 'strength',
-        targetMuscleGroups: ['Full Body', 'Glutes', 'Hamstrings', 'Shoulders', 'Core'],
+        targetMuscleGroups: ['Full Body', "glutes", "hamstrings", 'Shoulders', "core"],
         notes: 'Workout by Chandler Marchman. **Kettlebells used during this workout: 97 lb. (44 kg) kettlebells**. Rest No More Than 3 Minutes Between Rounds - Do 3 Rounds Total. Video: https://www.youtube.com/watch?v=faqGuUgGEio'
     }
 ]
