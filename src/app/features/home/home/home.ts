@@ -45,6 +45,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private subscriptions = new Subscription(); // To manage subscriptions
 
+  bumpTimeOut: number = 200;
+
   constructor() {
     // Effect to update pausedRoutineName when pausedWorkoutInfo changes
     effect(() => {
@@ -70,13 +72,11 @@ export class HomeComponent implements OnInit, OnDestroy {
       window.scrollTo(0, 0);
       this.checkPausedWorkout();
 
-      // --- NEW: Subscribe to pausedWorkoutDiscarded$ event ---
       this.subscriptions.add(
         this.workoutService.pausedWorkoutDiscarded$.subscribe(() => {
           this.pausedWorkoutInfo.set(null); // Clear the paused workout info
         })
       );
-      // --- END NEW ---
     }
   }
 
@@ -167,12 +167,16 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   startNewSession(): void {
     this.workoutService.vibrate();
-    this.workoutService.navigateToPlayer('-1', { queryParams: { resume: 'true' } });
+    setTimeout(() => {
+      this.workoutService.navigateToPlayer('-1', { queryParams: { resume: 'true' } });
+    }, this.bumpTimeOut);
   }
 
   navigateToRoutines(): void {
     this.workoutService.vibrate();
-    this.router.navigate(['/workout']);
+    setTimeout(() => {
+      this.router.navigate(['/workout']);
+    }, this.bumpTimeOut);
   }
 
   navigateToPrograms(): void {
@@ -181,28 +185,35 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.subscriptionService.showUpgradeModal();
       return;
     } else {
-      this.router.navigate(['/training-programs']);
+      setTimeout(() => {
+        this.router.navigate(['/training-programs']);
+      }, this.bumpTimeOut);
     }
   }
 
   navigateToHistory(): void {
     this.workoutService.vibrate();
-    this.router.navigate(['/history']);
+    setTimeout(() => {
+      this.router.navigate(['/history']);
+    }, this.bumpTimeOut);
   }
 
   navigateToProfile(): void {
     this.workoutService.vibrate();
-    this.router.navigate(['/profile']);
+    setTimeout(() => {
+      this.router.navigate(['/profile']);
+    }, this.bumpTimeOut);
   }
 
-  // +++ ADD THIS NEW NAVIGATION METHOD +++
   navigateToLogActivity(): void {
     this.workoutService.vibrate();
     if (!this.subscriptionService.isPremium()) {
       this.subscriptionService.showUpgradeModal();
       return;
     } else {
-      this.router.navigate(['/activities/log']);
+      setTimeout(() => {
+        this.router.navigate(['/activities/log']);
+      }, this.bumpTimeOut);
     }
   }
 
@@ -213,7 +224,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.subscriptionService.showUpgradeModal();
       return;
     } else {
-      this.router.navigate(['/personal-gym']);
+      setTimeout(() => {
+        this.router.navigate(['/personal-gym']);
+      }, this.bumpTimeOut);
     }
   }
 
@@ -224,7 +237,10 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   isCalculatorModalVisible: boolean = false;
   openCalculatorModal(): void {
-    this.isCalculatorModalVisible = true;
+    setTimeout(() => {
+      this.isCalculatorModalVisible = true;
+    }, this.bumpTimeOut);
+
   }
 
   closeCalculatorModal(): void {

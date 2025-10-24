@@ -1578,6 +1578,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       const newSetIndex = setsArray.length - 1;
       this.toggleSetExpansion(exerciseIndex, newSetIndex);
     }
+    this.audioService.playSound(AUDIO_TYPES.correct);
   }
 
   /**
@@ -1602,7 +1603,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    * - If it's the last set of a standard exercise, it prompts to remove the exercise.
    * - Otherwise, it removes the set/round as expected.
    */
-  async removeSet(exerciseControl: AbstractControl, exerciseIndex: number, setIndex: number, event?: MouseEvent): Promise<void> {
+  async removeSet(exerciseControl: AbstractControl, exerciseIndex: number, setIndex: number, event?: Event): Promise<void> {
     event?.stopPropagation();
     if (this.isViewMode) return;
 
@@ -1659,7 +1660,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           }
         });
         actionTaken = true;
-        this.showUndoWithToast("Round removed");
+        this.showUndoWithToast(this.translate.instant('workoutBuilder.toasts.roundRemoved'));
         this.audioService.playSound(AUDIO_TYPES.whoosh);
       }
     }
@@ -1667,15 +1668,15 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     else {
       if (setsArray.length === 1) {
         const confirm = await this.alertService.showConfirm(
-          'Remove Last Set?',
-          'This is the last set. This will remove the entire exercise. Continue?',
-          'Remove Exercise',
-          'Cancel'
+          this.translate.instant('compactPlayer.removeLastSet'), 
+          this.translate.instant('workoutBuilder.exercise.removeLastSet'), 
+          this.translate.instant('workoutBuilder.exercise.remove'), 
+          this.translate.instant('common.cancel')
         );
         if (confirm && confirm.data) {
           this.exercisesFormArray.removeAt(exerciseIndex);
           actionTaken = true;
-          this.showUndoWithToast("Exercise removed");
+          this.showUndoWithToast(this.translate.instant("workoutBuilder.toasts.exerciseRemoved"));
           this.audioService.playSound(AUDIO_TYPES.whoosh);
         } else {
           return; // User cancelled
@@ -1684,7 +1685,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         // Standard behavior: more than one set exists, just remove one.
         setsArray.removeAt(setIndex);
         actionTaken = true;
-        this.showUndoWithToast("Set removed");
+        this.showUndoWithToast(this.translate.instant("workoutBuilder.set.setRemoved"));
         this.audioService.playSound(AUDIO_TYPES.whoosh);
       }
     }
@@ -1710,10 +1711,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   showUndoWithToast(msg: string) {
     this.toastService.showWithAction(
       msg,
-      "Undo", // Button Label
+      this.translate.instant('common.undo'),
       () => this.undoLastChange(), // Callback function
-      'info',
-      "Action Completed"
+      this.translate.instant('common.info'),
+      this.translate.instant('common.actionCompleted')
     );
   }
 
@@ -1953,7 +1954,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     for (let i = 1; i < selectedIndices.length; i++) {
       if (selectedIndices[i] !== selectedIndices[i - 1] + 1) {
-        this.toastService.warning("Selected exercises must be next to each other to form a superset", 5000, "Superset Error");
+        this.toastService.warning(this.translate.instant("workoutBuilder.toasts.supersetOrderError"), 5000, "Superset Error");
         return;
       }
     }
@@ -4307,23 +4308,22 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    * @param exerciseControl The form control of the exercise that triggered the action.
    * @param event The mouse event to stop propagation.
    */
-  public removeLastSet(exerciseControl: AbstractControl, event: Event): void {
+  public async removeLastSet(exerciseControl: AbstractControl, event: Event): Promise<void> {
     event.stopPropagation();
     if (this.isViewMode) return;
 
     const setsArray = this.getSetsFormArray(exerciseControl);
-    // Only remove if there is more than one set
-    if (setsArray.length > 1) {
-      setsArray.removeAt(setsArray.length - 1);
-      this.showUndoWithToast("Set removed");
+    if (setsArray.length === 0) {
+      // If there are no sets, there's nothing to remove.
+      return;
     }
 
-    // Collapse UI if the currently expanded set was the one removed.
-    const lastIndex = setsArray.length; // The index of the set that was just removed
-    const currentExpanded = this.expandedSetPath();
-    if (currentExpanded && currentExpanded.exerciseIndex === this.getExerciseIndexByControl(exerciseControl) && currentExpanded.setIndex === lastIndex) {
-      this.expandedSetPath.set(null);
-    }
+    const exerciseIndex = this.getExerciseIndexByControl(exerciseControl);
+    const lastSetIndex = setsArray.length - 1;
+
+    // Delegate the action to the main removeSet function.
+    // It already contains the logic to confirm with the user if it's the last set.
+    await this.removeSet(exerciseControl, exerciseIndex, lastSetIndex, event);
   }
 
   /**

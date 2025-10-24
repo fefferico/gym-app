@@ -1,4 +1,3 @@
-<!-- +++ MODIFIED: Added touch events for swipe navigation +++ -->
 <div class="modal-overlay overflow-hidden" (click)="onClose()">
     <div class="calculator-modal" (click)="$event.stopPropagation()" (touchstart)="onSwipeStart($event)"
         (touchmove)="onSwipeMove($event)" (touchend)="onSwipeEnd($event)">
@@ -29,18 +28,18 @@
                              'left-1 right-1/2': mode() === 'calculate',
                              'left-1/2 right-1': mode() === 'reverse',
                          }"></div>
-                        <button type="button" (click)="setMode('calculate')"
+                        <button appBumpClick type="button" (click)="setMode('calculate')"
                             class="relative z-10 flex-1 px-8 py-2 text-sm font-bold text-center transition-colors duration-300"
                             [ngClass]="{'text-white': mode() === 'calculate', 'text-gray-700 dark:text-gray-300': mode() !== 'calculate'}">{{
                             'barbellCalculator.calculator.calculate' | translate }}</button>
-                        <button type="button" (click)="setMode('reverse')"
+                        <button appBumpClick type="button" (click)="setMode('reverse')"
                             class="relative z-10 flex-1 px-8 py-2 text-sm font-bold text-center transition-colors duration-300"
                             [ngClass]="{'text-white': mode() === 'reverse', 'text-gray-700 dark:text-gray-300': mode() !== 'reverse'}">{{
                             'barbellCalculator.calculator.reverse' | translate }}</button>
                     </div>
                 </div>
 
-                <button class="close-btn" (click)="onClose()">&times;</button>
+                <button appBumpClick class="close-btn" (click)="onClose()">&times;</button>
             </div>
 
             <!-- Visualization, Weight Display, Inputs... -->
@@ -91,7 +90,7 @@
             <div class="input-group calculate-mode-input" *ngIf="mode() === 'calculate'">
                 <div class="weight-control">
                     <!-- Decrease Button -->
-                    <button type="button" class="stepper-btn" (mousedown)="startChangingWeight('decrease')"
+                    <button appBumpClick type="button" class="stepper-btn" (mousedown)="startChangingWeight('decrease')"
                         (mouseup)="stopChangingWeight()" (mouseleave)="stopChangingWeight()"
                         (touchstart)="startChangingWeight('decrease'); $event.preventDefault()"
                         (touchend)="stopChangingWeight()"
@@ -104,7 +103,7 @@
                         [step]="weightStep()" [min]="minPossibleWeight()" />
 
                     <!-- Increase Button -->
-                    <button type="button" class="stepper-btn" (mousedown)="startChangingWeight('increase')"
+                    <button appBumpClick type="button" class="stepper-btn" (mousedown)="startChangingWeight('increase')"
                         (mouseup)="stopChangingWeight()" (mouseleave)="stopChangingWeight()"
                         (touchstart)="startChangingWeight('increase'); $event.preventDefault()"
                         (touchend)="stopChangingWeight()"
@@ -134,7 +133,7 @@
             <div class="reverse-mode-controls" *ngIf="mode() === 'reverse'">
                 <p>{{ 'barbellCalculator.calculator.tapToLoad' | translate }}</p>
                 <div class="plate-selection">
-                    <div *ngFor="let plate of availablePlates()" class="plate-option" (click)="addPlate(plate)">
+                    <div *ngFor="let plate of availablePlates()" class="plate-option" appBumpClick (click)="addPlate(plate)">
                         <div class="visual-plate">
                             <div class="visual-plate-circle" [style.background-color]="plate.color"
                                 [style.border-color]="plate.color === '#FFFFFF' ? 'white' : plate.color">
@@ -149,7 +148,7 @@
                         </div>
                     </div>
                 </div>
-                <button class="clear-btn" (click)="clearLoadout()">
+                <button appBumpClick class="clear-btn" (click)="clearLoadout()">
                     <app-icon name="cancel" class="h-5 w-5 mr-2" [strokeWidth]="1"></app-icon>
                     {{ 'barbellCalculator.calculator.clearBar' | translate }}
                 </button>
@@ -229,7 +228,7 @@
         <div class="modal-body custom-scrollbar page-view">
             <div class="header">
                 <h3>{{ 'barbellCalculator.percentages.title' | translate }}</h3>
-                <button class="close-btn" (click)="onClose()">&times;</button>
+                <button appBumpClick class="close-btn" (click)="onClose()">&times;</button>
             </div>
             <!-- Percentage Form -->
             <div class="percentage-form-header">
@@ -304,7 +303,7 @@
         <div class="modal-body custom-scrollbar page-view">
             <div class="header">
                 <h3>{{ 'barbellCalculator.oneRepMax.title' | translate }}</h3>
-                <button class="close-btn" (click)="onClose()">&times;</button>
+                <button appBumpClick class="close-btn" (click)="onClose()">&times;</button>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="form-group">
@@ -348,7 +347,7 @@
         <div class="modal-body custom-scrollbar page-view">
             <div class="header">
                 <h3>{{ 'barbellCalculator.rpe.title' | translate }}</h3>
-                <button class="close-btn" (click)="onClose()">&times;</button>
+                <button appBumpClick class="close-btn" (click)="onClose()">&times;</button>
             </div>
 
             <div class="flex w-full justify-center">
@@ -358,11 +357,11 @@
                              'left-1 right-1/2': rpeInputMode() === 'rpe',
                              'left-1/2 right-1': rpeInputMode() === 'rir',
                          }"></div>
-                    <button type="button" (click)="rpeInputMode.set('rpe')"
+                    <button appBumpClick type="button" (click)="rpeInputMode.set('rpe')"
                         class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
                         [ngClass]="{'text-white': rpeInputMode() === 'rpe', 'text-gray-700 dark:text-gray-300': rpeInputMode() !== 'rpe'}">{{
                         'barbellCalculator.rpe.rpe' | translate }}</button>
-                    <button type="button" (click)="rpeInputMode.set('rir')"
+                    <button appBumpClick type="button" (click)="rpeInputMode.set('rir')"
                         class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
                         [ngClass]="{'text-white': rpeInputMode() === 'rir', 'text-gray-700 dark:text-gray-300': rpeInputMode() !== 'rir'}">{{
                         'barbellCalculator.rpe.rir' | translate }}</button>
@@ -419,7 +418,7 @@
         <div class="modal-body custom-scrollbar page-view">
             <div class="header">
                 <h3>{{ 'barbellCalculator.powerlifting.title' | translate }}</h3>
-                <button class="close-btn" (click)="onClose()">&times;</button>
+                <button appBumpClick class="close-btn" (click)="onClose()">&times;</button>
             </div>
             <!-- Powerlifting Form -->
             <div class="calc-form">

@@ -102,11 +102,6 @@
     "weightToolkitTitle": "Weight toolkit",
     "weightToolkitDescription": "An all-in-one lifting toolkit. Instantly calculate plate math, percentages, 1RM, RPE, and official powerlifting scores"
   },
-  "common": {
-    "cancel": "Cancel",
-    "discard": "Discard",
-    "premium": "PREMIUM"
-  },
   "settings": {
     "title": "Profile & Settings",
     "subscription": {
@@ -281,7 +276,10 @@
     "warning": "WARNING",
     "info": "Info",
     "cancel": "Cancel",
-    "cancelled": "Cancelled"
+    "cancelled": "Cancelled",
+    "discard": "Discard",
+    "undo": "UNDO",
+    "actionCompleted": "Action completed"
   },
   "toasts": {
     "statusUpdated": "Status Updated",
@@ -1104,7 +1102,9 @@
       "fillWithLast": "Fill with latest performance data",
       "makeEmom": "Make EMOM",
       "switch": "Switch exercise",
-      "toggleNotes": "Toggle exercise notes"
+      "toggleNotes": "Toggle exercise notes",
+      "removeLastSet": "This is the last set. This will remove the entire exercise. Continue?",
+      "exerciseRemoved":"Exercise removed"
     },
     "set": {
       "set": "Set",
@@ -1136,7 +1136,8 @@
       "notesPlaceholder": "e.g. Good form",
       "collapse": "Collapse set",
       "removeSet": "Remove Set",
-      "metrics": "Metrics"
+      "metrics": "Metrics",
+      "setRemoved": "Set removed"
     },
     "restDayMessage": "This is a rest day routine. No exercises are needed",
     "addExerciseButton": "ADD EXERCISE",
@@ -1161,6 +1162,7 @@
       "editMode": "Edit mode enabled",
       "supersetSizeError": "Select at least two exercises",
       "supersetOrderError": "Selected exercises must be next to each other to form a superset",
+      "superSetError": "Superset error",
       "groupingCancelled": "Grouping cancelled.",
       "emomCreationCancelled": "EMOM creation cancelled.",
       "supersetCreationCancelled": "Superset creation cancelled.",

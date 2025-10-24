@@ -352,9 +352,9 @@
     transition: transform 0.15s ease-in-out;
     position: relative;
 
-    &:hover {
-      transform: scale(1.05);
-    }
+    // &:hover {
+    //   transform: scale(1.05);
+    // }
 
     span {
       font-size: 1rem;
@@ -1079,7 +1079,7 @@
 
   // We no longer need the gap or flex-direction here
   // since the visual-plate component handles its own layout.
-  &:hover {
-    transform: scale(1.05);
-  }
+  // &:hover {
+  //   transform: scale(1.05);
+  // }
 }

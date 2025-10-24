@@ -371,7 +371,7 @@
                                             {{ (exerciseControl.get('supersetType')?.value || 'standard') |
                                             titlecase }}
                                         </strong>
-                                        <button type="button" (click)="changeSupersetType(exerciseControl)"
+                                        <button appBumpClick type="button"(click)="changeSupersetType(exerciseControl)"
                                             class="flex items-center ml-2 text-xs font-semibold text-white hover:underline bg-blue-300 hover:bg-blue-500 rounded-xl p-1">
                                             <app-icon name="change" class="h-5 w-5 mr-1"></app-icon>
                                             {{ 'workoutBuilder.changeType' | translate }}
@@ -933,7 +933,7 @@
 
                                                             <!-- Remove Button (Fixed Width, Non-Shrinking, Pushed to the Right) -->
                                                             <div class="flex-shrink-0">
-                                                                <button type="button"
+                                                                <button appBumpClick type="button"
                                                                     (click)="removeSet(exerciseControl, exIndex, setIndex, $event)"
                                                                     [title]="'workoutBuilder.set.removeSet' | translate"
                                                                     class="flex items-center text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 p-0.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30">
@@ -961,7 +961,7 @@
                                                             <div *ngIf="isEditableMode()"
                                                                 class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/70 p-2 rounded-full">
                                                                 <!-- Remove metric button -->
-                                                                <button type="button"
+                                                                <button appBumpClick type="button"
                                                                     (click)="removeSet(exerciseControl, exIndex, setIndex, $event)"
                                                                     [title]="'workoutBuilder.set.removeSet' | translate"
                                                                     class="flex items-center text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 p-0.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30">
@@ -980,16 +980,16 @@
                                                                 'workoutBuilder.set.metrics' | translate }}:</label>
                                                             <button
                                                                 (click)="promptRemoveField(exIndex, setIndex); $event.stopPropagation()"
-                                                                class="flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors">
-                                                                <app-icon name="minus-circle"
+                                                                class="p-1.5 rounded-full bg-red-500 dark:bg-red-500/80 hover:bg-red-500 text-white disabled:opacity-50 flex items-center">
+                                                                <app-icon name="minus"
                                                                     class="h-5 w-5"></app-icon>
                                                             </button>
                                                             <!-- ADD metric -->
                                                             <button
                                                                 *ngIf="getFieldsForSet(exIndex, setIndex).hidden.length > 0"
                                                                 (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
-                                                                class="flex items-center gap-1 text-xs font-semibold text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 p-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors">
-                                                                <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
+                                                                class="p-1.5 rounded-full bg-blue-500 dark:bg-blue-500/80 hover:bg-blue-500 text-white disabled:opacity-50 flex items-center">
+                                                                <app-icon name="plus" class="h-5 w-5"></app-icon>
                                                             </button>
                                                         </div>
 
@@ -1091,18 +1091,17 @@
                                             <div
                                                 class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/70 py-1 px-2 rounded-full shadow-md">
                                                 <label
-                                                    class="text-sm font-medium text-gray-300">{{'workoutBuilder.set.set'
+                                                    class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">{{'workoutBuilder.set.set'
                                                     |
                                                     translate}}:</label>
-                                                <button type="button" (click)="removeLastSet(exerciseControl, $event)"
-                                                    [disabled]="getSetsFormArray(exerciseControl).length <= 1"
-                                                    class="p-1.5 rounded-full bg-red-500/80 hover:bg-red-500 text-white disabled:opacity-50 flex items-center"
+                                                <button appBumpClick type="button"(click)="removeLastSet(exerciseControl, $event)"
+                                                    class="p-1.5 rounded-full bg-red-500 dark:bg-red-500/80 hover:bg-red-500 text-white disabled:opacity-50 flex items-center"
                                                     [aria-label]="'workoutBuilder.set.removeLastSet' | translate">
                                                     <app-icon name="minus" class="h-5 w-5"></app-icon>
                                                 </button>
-                                                <button type="button"
+                                                <button appBumpClick type="button"
                                                     (click)="addSet(exerciseControl, exIndex); $event.stopPropagation()"
-                                                    class="p-1.5 rounded-full bg-green-500/80 hover:bg-green-500 text-white flex items-center"
+                                                    class="p-1.5 rounded-full bg-green-500 dark:bg-green-500/80 hover:bg-green-500 text-white flex items-center"
                                                     [aria-label]="'workoutBuilder.set.addSet' | translate">
                                                     <app-icon name="plus" class="h-5 w-5"></app-icon>
                                                 </button>
@@ -1122,16 +1121,16 @@
                                     <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
                                         {{ 'workoutBuilder.superset.rounds' | translate }}:
                                     </span>
-                                    <button type="button" (click)="removeRoundFromSuperset(exerciseControl, $event)"
+                                    <button appBumpClick type="button"(click)="removeRoundFromSuperset(exerciseControl, $event)"
                                         [disabled]="getSetsFormArray(exerciseControl).length <= 1"
-                                        class="flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
+                                        class="p-1.5 rounded-full bg-red-500 dark:bg-red-500/80 hover:bg-red-500 text-white disabled:opacity-50 flex items-center"
                                         [aria-label]="'workoutBuilder.set.removeLastSet' | translate">
-                                        <app-icon name="minus-circle" class="h-6 w-6"></app-icon>
+                                        <app-icon name="minus" class="h-6 w-6"></app-icon>
                                     </button>
-                                    <button type="button" (click)="addRoundToSuperset(exerciseControl, $event)"
-                                        class="flex items-center gap-1 text-xs font-semibold text-green-500 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 p-1 rounded-full hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
+                                    <button appBumpClick type="button"(click)="addRoundToSuperset(exerciseControl, $event)"
+                                        class="p-1.5 rounded-full bg-green-500 dark:bg-green-500/80 hover:bg-green-500 text-white disabled:opacity-50 flex items-center"
                                         [aria-label]="'workoutBuilder.set.addSet' | translate">
-                                        <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
+                                        <app-icon name="plus" class="h-6 w-6"></app-icon>
                                     </button>
                                 </div>
 
@@ -1413,7 +1412,7 @@
     <!-- THE FIX: Add [formGroup]="setControl" here to provide context to the input inside -->
     <div [formGroup]="setControl">
         <div class="flex items-stretch w-full shadow-sm mt-0.5">
-            <button type="button" appPress (shortPress)="onShortPressDecrement(setControl, field)"
+            <button appBumpClick type="button"appPress (shortPress)="onShortPressDecrement(setControl, field)"
                 (longPress)="onLongPressDecrement(setControl, field)" (pressRelease)="onPressRelease()"
                 class="flex items-center p-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-l-xl border-y border-l border-gray-200 dark:border-gray-700 transition-colors">
                 <app-icon name="minus" class="h-5 w-5 pointer-events-none"></app-icon>
@@ -1427,7 +1426,7 @@
             </div>
 
 
-            <button type="button" appPress (shortPress)="onShortPressIncrement(setControl, field)"
+            <button appBumpClick type="button"appPress (shortPress)="onShortPressIncrement(setControl, field)"
                 (longPress)="onLongPressIncrement(setControl, field)" (pressRelease)="onPressRelease()"
                 class="flex items-center p-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-r-xl border-y border-r border-gray-200 dark:border-gray-700 transition-colors">
                 <app-icon name="plus" class="h-5 w-5 pointer-events-none"></app-icon>

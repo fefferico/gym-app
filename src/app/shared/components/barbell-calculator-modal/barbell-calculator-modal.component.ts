@@ -10,6 +10,7 @@ import { PlateSummaryComponent } from './plate-summary/plate-summary.component';
 import { PlateType } from '../../../core/models/personal-gym.model';
 import { TooltipDirective } from '../../directives/tooltip.directive';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { BumpClickDirective } from '../../directives/bump-click.directive';
 
 
 interface GymPlate {
@@ -144,7 +145,7 @@ const ALGORITHM_EXPLANATIONS: AlgorithmExplanation[] = [
 @Component({
   selector: 'app-barbell-calculator-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent, PlateSummaryComponent, TooltipDirective, TranslateModule],
+  imports: [CommonModule, FormsModule, IconComponent, PlateSummaryComponent, TooltipDirective, TranslateModule, BumpClickDirective],
   templateUrl: './barbell-calculator-modal.component.html',
   styleUrls: ['./barbell-calculator-modal.component.scss']
 })
