@@ -1103,7 +1103,15 @@
       "switch": "Sostituisci esercizio",
       "toggleNotes": "Note esercizio",
       "removeLastSet": "Questas l'ultima serie. Così facendo verrà rimosso l'intero esercizio. Continuare?",
-      "exerciseRemoved":"Esercizio rimosso"
+      "exerciseRemoved": "Esercizio rimosso",
+      "newCustomExerciseTitle": "Aggiungi nuovo esercizio personalizzato",
+      "newCustomExerciseMsg": "Definisci il nome dell'esercizio e le serie:",
+      "newCustomExerciseBtn": "Aggiungi esercizio",
+      "newCustomExerciseInvalidInput": "Dati non validi",
+      "newCustomExerciseName": "Nome esercizio",
+      "newCustomExerciseSets": "Numero serie",
+      "newCustomExerciseEquipment": "Equipaggiamento",
+      "newCustomExerciseDescription": "Descrizione"
     },
     "set": {
       "set": "Serie",
@@ -2053,7 +2061,15 @@
       "functionalBodyweight": "Funzionale e Corpo Libero",
       "accessories": "Accessori",
       "cardio": "Cardio",
-      "freeWeights": "Pesi Liberi"
+      "freeWeights": "Pesi Liberi",
+      "barbells": "Bilancieri",
+      "dumbbells": "Manubri",
+      "bodyweight/calisthenics": "Corpo Libero / Calistenia",
+      "cables": "Cavi",
+      "kettlebells": "Kettlebell",
+      "bands": "Bande Elastiche",
+      "other": "Altro",
+      "stretching": "Stretching"
     },
     "names": {
       "abdominalCrunchMachine": "Macchina per Crunch Addominale",
@@ -2662,15 +2678,16 @@
     }
   },
   "categories": {
-    "barbells": "Bilancieri",
-    "dumbbells": "Manubri",
-    "bodyweight/calisthenics": "Corpo Libero / Calistenia",
-    "machines": "Macchinari",
-    "cables": "Cavi",
-    "kettlebells": "Kettlebell",
-    "bands": "Bande Elastiche",
-    "other": "Altro",
-    "stretching": "Stretching",
-    "cardio": "Cardio"
+    "strengthTraining": "Allenamento di Forza",
+    "cardioEndurance": "Cardio e Resistenza",
+    "flexibilityMobility": "Flessibilità e Mobilità",
+    "mindBodyRecovery": "Mente-Corpo e Recupero",
+    "sportSpecific": "Allenamento Sport-Specifico",
+    "quickWorkouts": "Allenamenti Veloci",
+    "specialty": "Corsi Speciali/Unici",
+    "targetedWorkouts": "Allenamenti Mirati",
+    "guidedPrograms": "Programmi Guidati/Sfide",
+    "equipmentSpecific": "Specifico per Attrezzatura",
+    "custom": "Personalizzato"
   }
 }
