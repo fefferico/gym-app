@@ -2522,7 +2522,7 @@ export const ROUTINES_DATA: Routine[] = [
             }
         ],
         goal: 'strength',
-        targetMuscleGroups: ['Quadriceps', 'Glutes', 'Hamstrings', 'Core'],
+        targetMuscleGroups: ['quadriceps', 'Glutes', 'Hamstrings', 'Core'],
         notes: 'Workout by Chandler Marchman. **Weight Used During Workout: 71 lb. Kettlebell**. Perform 3 Rounds - Rest 2-3 Minutes Between Rounds. Video: https://www.youtube.com/watch?v=aizRvVEz-m8'
     },
     // Routine 6: Home Kettlebell Bodybuilding [Chest & Triceps Routine]

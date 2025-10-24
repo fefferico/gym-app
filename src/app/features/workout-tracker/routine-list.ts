@@ -619,7 +619,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     routine.exercises.forEach(exDetail => {
       const fullExercise = this.allExercisesMap.get(exDetail.exerciseId);
       if (fullExercise?.primaryMuscleGroup) {
-        muscles.add(fullExercise.primaryMuscleGroup);
+        muscles.add(fullExercise.primaryMuscleGroup.toLowerCase());
       }
     });
     return Array.from(muscles).slice(0, 3); // Show up to 3 for brevity on card

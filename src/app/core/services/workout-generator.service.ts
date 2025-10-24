@@ -54,7 +54,7 @@ export class WorkoutGeneratorService {
             excludeEquipment: []
         };
 
-        // 'Chest', 'Quadriceps', 'Core','Arms','Back'
+        // 'Chest', 'quadriceps', 'Core','Arms','Back'
         // The cast to WorkoutGenerationOptions is no longer needed as the object is complete.
         const availableExercises = await this.getSelectableExercises(optionsForFiltering);
         // --- END OF FIX ---
@@ -77,7 +77,7 @@ export class WorkoutGeneratorService {
 
         // 3. Define major muscle categories for a balanced workout
         const muscleCategories = {
-            legs: ['Quadriceps', 'Hamstrings', 'Glutes', 'Calves'],
+            legs: ['quadriceps', 'Hamstrings', 'Glutes', 'Calves'],
             push: ['Chest', 'Shoulders', 'Triceps'],
             pull: ['Lats', 'Traps', 'Biceps', 'Lower back', 'Back'],
             core: ['Abs', 'Obliques', 'Core']
