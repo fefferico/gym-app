@@ -12,6 +12,7 @@ export const WORKOUT_TRACKER_ROUTES: Routes = [
   {
     path: '',
     component: RoutineListComponent,
+  data: { animation: 'RoutineListPage' },
     title: 'My Routines'
   },
   // --- Routine Builder Routes ---
@@ -30,13 +31,13 @@ export const WORKOUT_TRACKER_ROUTES: Routes = [
   {
     path: 'routine/edit/:routineId', // Changed path for clarity
     component: WorkoutBuilderComponent,
-    data: { mode: 'routineBuilder', isNew: false,showPausedWorkoutBanner: false }, // Pass mode and isNew
+    data: { mode: 'routineBuilder', isNew: false,showPausedWorkoutBanner: false, animation: 'RoutineEditDetail' }, // Pass mode and isNew
     title: 'Edit Routine'
   },
   {
     path: 'routine/view/:routineId', // Changed path for clarity
     component: WorkoutBuilderComponent,
-    data: { mode: 'routineBuilder', isNew: false, isView: true,showPausedWorkoutBanner: false }, // Pass mode, isNew, and isView
+    data: { mode: 'routineBuilder', isNew: false, isView: true,showPausedWorkoutBanner: false, animation: 'RoutineViewDetail' }, // Pass mode, isNew, and isView
     title: 'View Routine'
   },
   // --- Manual Log Entry Routes ---

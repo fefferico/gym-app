@@ -15,6 +15,7 @@ import { ThemeService } from '../../../core/services/theme.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { WorkoutService } from '../../../core/services/workout.service';
+import { repsTypeToReps } from '../../../core/services/workout-helper.service';
 
 interface ChartSeriesPoint {
     name: Date;
@@ -198,12 +199,18 @@ private setYAxisLabel(pbType: string): void {
     private prepareChartData(pb: PersonalBestSet): void {
         const seriesData: ChartSeriesPoint[] = [];
 
-        const currentValue = this.extractValueForChart(pb, pb.pbType);
+        let newPb = {...pb} as any;
+
+        if (pb.repsLogged){
+            newPb.repsLogged = repsTypeToReps(pb.repsLogged)
+        }
+
+        const currentValue = this.extractValueForChart(newPb, pb.pbType);
         if (currentValue !== null && pb.timestamp) {
             seriesData.push({
                 name: new Date(pb.timestamp),
                 value: currentValue,
-                extra: { reps: pb.repsLogged, notes: pb.notes, workoutLogId: pb.workoutLogId }
+                extra: { reps: repsTypeToReps(pb.repsLogged), notes: pb.notes, workoutLogId: pb.workoutLogId }
             });
         }
 

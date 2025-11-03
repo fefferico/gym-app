@@ -33,7 +33,7 @@ import localeDe from '@angular/common/locales/de';
 import localeRu from '@angular/common/locales/ru';
 import localeJa from '@angular/common/locales/ja';
 import localeZh from '@angular/common/locales/zh';
-import localePr from '@angular/common/locales/pt';
+import localePt from '@angular/common/locales/pt';
 import localeAr from '@angular/common/locales/ar';
 import { isPlatformBrowser, registerLocaleData } from '@angular/common';
 import { LanguageService } from './core/services/language.service';
@@ -41,7 +41,7 @@ import { MultiHttpLoader } from './core/services/multi-http-loader';
 import { firstValueFrom } from 'rxjs';
 
 // Register the locale data
-registerLocaleData(localeEn);
+registerLocaleData(localeEn, 'en'); // Register with explicit locale id
 registerLocaleData(localeEs);
 registerLocaleData(localeIt);
 registerLocaleData(localeFr);
@@ -49,7 +49,7 @@ registerLocaleData(localeDe);
 registerLocaleData(localeRu);
 registerLocaleData(localeJa);
 registerLocaleData(localeZh);
-registerLocaleData(localePr);
+registerLocaleData(localePt);
 registerLocaleData(localeAr);
 
 export class CustomHammerConfig extends HammerGestureConfig {
@@ -73,19 +73,20 @@ const dbConfig: DBConfig = {
   }]
 };
 
-export function appInitializerFactory(languageService: LanguageService) {
-  // return () => languageService.init();
-  const translate = inject(TranslateService);
+// --- APP_INITIALIZER FACTORY ---
+// This factory must ensure the LanguageService has determined the initial language
+// AND that ngx-translate has loaded its translations before the app starts.
+export function appInitializerFactory(languageService: LanguageService, translate: TranslateService): () => Promise<void> {
   return () => {
-    // 1. Set your default language.
-    translate.setDefaultLang('en');
-
-    // 2. Set the language you want to load initially (e.g., from user settings or browser lang).
-    //    For this example, we'll use Italian ('it').
-    const langToUse = 'it'; 
-
-    // 3. The `use` method returns an Observable that completes when the language file is loaded.
-    //    We convert it to a promise so the APP_INITIALIZER can wait for it.
+    // 1. Initialize the language service to determine the starting language
+    languageService.initializeLanguage();
+    
+    // 2. Get the language that was determined by the language service
+    const langToUse = languageService.currentLang();
+    
+    // 3. Use ngx-translate to load the translation files for this language
+    //    and return a Promise so APP_INITIALIZER waits for it.
+    // console.log(`APP_INITIALIZER: Using language: ${langToUse}`); // For debugging
     return firstValueFrom(translate.use(langToUse));
   };
 }
@@ -105,20 +106,21 @@ export const appConfig: ApplicationConfig = {
     
     // ==========================================================
     // START: CORRECTED PROVIDER ORDER
+    // (LanguageService MUST be provided before APP_INITIALIZER and LOCALE_ID)
     // ==========================================================
+    LanguageService, // Provide LanguageService first
     {
       provide: APP_INITIALIZER,
       useFactory: appInitializerFactory,
-      deps: [LanguageService, TranslateService],
+      // APP_INITIALIZER needs LanguageService and TranslateService
+      deps: [LanguageService, TranslateService], 
       multi: true
     },
     importProvidersFrom(
       TranslateModule.forRoot({
         loader: {
           provide: TranslateLoader,
-          // useFactory: createTranslateLoader,
           useFactory: (http: HttpClient) => {
-            // 3. Provide the paths to ALL your translation files
             return new MultiHttpLoader(http, [
               { prefix: './assets/i18n/', suffix: '.json' },
               { prefix: './assets/i18n/', suffix: '.exercises.json' },
@@ -130,8 +132,9 @@ export const appConfig: ApplicationConfig = {
     ),
     {
       provide: LOCALE_ID,
-      deps: [LanguageService], // Now this depends on the already-initialized service
-      useFactory: (languageService: LanguageService) => languageService.currentLang()
+      deps: [LanguageService], // LOCALE_ID depends on LanguageService
+      useFactory: (languageService: LanguageService) => languageService.currentLang() 
+      // This factory will now read the correctly initialized signal value from LanguageService
     },
     // ==========================================================
     // END: CORRECTED PROVIDER ORDER

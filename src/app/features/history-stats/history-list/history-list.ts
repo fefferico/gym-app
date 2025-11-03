@@ -48,6 +48,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language.service';
 import { ColorsService } from '../../../core/services/colors.service';
 import { BumpClickDirective } from '../../../shared/directives/bump-click.directive';
+import { repsTypeToReps, genRepsTypeFromRepsNumber, getDurationValue, getWeightValue, weightToExact } from '../../../core/services/workout-helper.service';
 
 
 interface CalendarMonth {
@@ -444,7 +445,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
           if (candidateSet.repsLogged) {
             checkForAndAddPb('Max Reps (Bodyweight)', candidateSet);
           }
-          if (candidateSet.durationLogged && candidateSet.durationLogged > 0) {
+          if (candidateSet.durationLogged && getDurationValue(candidateSet.durationLogged) > 0) {
             checkForAndAddPb('Max Duration', candidateSet);
           }
           return; // Move to the next set
@@ -452,23 +453,23 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
         // Weight-based PBs
         checkForAndAddPb('Heaviest Lifted', candidateSet);
-        if (candidateSet.repsLogged === 1) {
+        if (repsTypeToReps(candidateSet.repsLogged) === 1) {
           checkForAndAddPb('1RM (Actual)', candidateSet);
         }
-        if (candidateSet.repsLogged === 3) {
+        if (repsTypeToReps(candidateSet.repsLogged) === 3) {
           checkForAndAddPb('3RM (Actual)', candidateSet);
         }
-        if (candidateSet.repsLogged === 5) {
+        if (repsTypeToReps(candidateSet.repsLogged) === 5) {
           checkForAndAddPb('5RM (Actual)', candidateSet);
         }
 
         // Estimated 1RM
-        if (candidateSet.repsLogged && candidateSet.repsLogged > 1) {
-          const e1RM = candidateSet.weightLogged * (1 + candidateSet.repsLogged / 30);
+        if (candidateSet.repsLogged && repsTypeToReps(candidateSet.repsLogged) > 1) {
+          const e1RM = getWeightValue(candidateSet.weightLogged) * (1 + repsTypeToReps(candidateSet.repsLogged) / 30);
           const e1RMSet: LoggedSet = {
             ...candidateSet,
-            repsLogged: 1, // The result is for 1 rep
-            weightLogged: parseFloat(e1RM.toFixed(2)), // The calculated weight
+            repsLogged: genRepsTypeFromRepsNumber(1), // The result is for 1 rep
+            weightLogged: weightToExact(parseFloat(e1RM.toFixed(2))), // The calculated weight
           };
           // For estimated 1RM, the check needs to be against the calculated value
           checkForAndAddPb('1RM (Estimated)', e1RMSet, true);
@@ -1081,8 +1082,12 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       const dayOfWeekForFirst = monthStart.getDay();
       const effectiveStartOfWeek = (this.weekStartsOn === 1) ? (dayOfWeekForFirst === 0 ? 6 : dayOfWeekForFirst - 1) : dayOfWeekForFirst;
 
+
+      const currentLang = this.languageService.currentLang();
+      const locale = this.dateFnsLocales[currentLang] || enUS;
+
       newMonths.push({
-        monthName: format(targetDate, 'LLLL'),
+        monthName: format(targetDate, 'LLLL', { locale }),
         monthDate: targetDate, // +++ ADD this line
         year: targetDate.getFullYear(),
         spacers: Array(effectiveStartOfWeek).fill(0),

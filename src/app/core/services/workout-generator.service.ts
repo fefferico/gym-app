@@ -4,11 +4,12 @@ import { firstValueFrom } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Exercise, ExerciseCategory } from '../models/exercise.model';
-import { Routine, WorkoutExercise, ExerciseTargetSetParams, METRIC } from '../models/workout.model';
+import { Routine, WorkoutExercise, ExerciseTargetSetParams, METRIC, RepsTargetType } from '../models/workout.model';
 import { ExerciseService } from './exercise.service';
 import { PersonalGymService } from './personal-gym.service';
 import { WorkoutService } from './workout.service'; // Import WorkoutService
 import { ToastService } from './toast.service';
+import { distanceToExact, durationToExact, repsNumberToExactRepsTarget, restToExact, weightToExact } from './workout-helper.service';
 
 // Interface for the detailed generation options
 export interface WorkoutGenerationOptions {
@@ -372,22 +373,19 @@ export class WorkoutGeneratorService {
         if (exercise.category === 'cardio') {
             templateSet = {
                 fieldOrder: [METRIC.duration, METRIC.distance, METRIC.rest],
-                targetDuration: duration,
-                targetDistance: 1,
+                targetDuration: durationToExact(duration),
+                targetDistance: distanceToExact(1),
             };
         } else if (exercise.category === 'bodyweight/calisthenics') {
             templateSet = {
                 fieldOrder: [METRIC.reps, METRIC.rest],
-                targetRepsMin: repRange.min,
-                targetRepsMax: repRange.max,
-                targetWeight: null,
+                targetReps: { type: RepsTargetType.range, min: repRange.min, max: repRange.max },
             };
         } else { // Default for strength-based exercises
             templateSet = {
                 fieldOrder: [METRIC.reps, METRIC.weight, METRIC.rest],
-                targetRepsMin: repRange.min,
-                targetRepsMax: repRange.max,
-                targetWeight: 10, // Default placeholder weight
+                targetReps: { type: RepsTargetType.range, min: repRange.min, max: repRange.max },
+                targetWeight: weightToExact(10), // Default placeholder weight
             };
         }
         // =================== END OF NEW LOGIC ===================
@@ -428,9 +426,9 @@ export class WorkoutGeneratorService {
                 id: uuidv4(),
                 type: 'standard',
                 fieldOrder: [METRIC.duration, METRIC.distance, METRIC.rest],
-                targetDuration: 300, // Default to 5 minutes
-                targetDistance: 1,   // Default to 1 km/mi
-                targetRest: 90,
+                targetDuration: durationToExact(300), // Default to 5 minutes
+                targetDistance: distanceToExact(1),   // Default to 1 km/mi
+                targetRest: restToExact(90),
             }));
         } else if (exercise.category === 'bodyweight/calisthenics') {
             // Bodyweight exercises get reps but no weight
@@ -438,9 +436,8 @@ export class WorkoutGeneratorService {
                 id: uuidv4(),
                 type: 'standard',
                 fieldOrder: [METRIC.reps, METRIC.rest],
-                targetReps: 12,
-                targetWeight: null, // Explicitly no weight
-                targetRest: 60,
+                targetReps: repsNumberToExactRepsTarget(10),
+                targetRest: restToExact(60),
             }));
         } else {
             // Default for strength, hypertrophy, etc.
@@ -448,9 +445,9 @@ export class WorkoutGeneratorService {
                 id: uuidv4(),
                 type: 'standard',
                 fieldOrder: [METRIC.reps, METRIC.weight, METRIC.rest],
-                targetReps: 10,
-                targetWeight: 10, // A placeholder default weight
-                targetRest: 60,
+                targetReps: repsNumberToExactRepsTarget(10),
+                targetWeight: weightToExact(10), // A placeholder default weight
+                targetRest: restToExact(60),
             }));
         }
 

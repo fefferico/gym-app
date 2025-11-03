@@ -9,7 +9,7 @@ import { format, parseISO, isValid as isValidDate, set } from 'date-fns';
 
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
-import { Routine, ExerciseTargetSetParams, WorkoutExercise, METRIC } from '../../core/models/workout.model';
+import { Routine, ExerciseTargetSetParams, WorkoutExercise, METRIC, RepsTarget, RepsTargetType, WeightTarget, DurationTarget, DistanceTarget, RestTarget, AnyScheme, REPS_TARGET_SCHEMES, WEIGHT_TARGET_SCHEMES, DURATION_TARGET_SCHEMES, DISTANCE_TARGET_SCHEMES, REST_TARGET_SCHEMES } from '../../core/models/workout.model';
 import { Exercise } from '../../core/models/exercise.model';
 import { WorkoutLog, LoggedWorkoutExercise, LoggedSet, EnrichedWorkoutLog } from '../../core/models/workout-log.model'; // For manual log
 import { WorkoutService } from '../../core/services/workout.service';
@@ -49,6 +49,8 @@ import { AUDIO_TYPES, AudioService } from '../../core/services/audio.service';
 import { BumpClickDirective } from '../../shared/directives/bump-click.directive';
 import { RoutineGoal } from '../../core/models/routine-goal.model';
 import { CategoryService } from '../../core/services/workout-category.service';
+import { animate, style, transition, trigger } from '@angular/animations';
+import { repsTargetAsString, repsTypeToReps, genRepsTypeFromRepsNumber, getWeightValue, getDistanceValue, getDurationValue, restToExact, weightToExact, durationToExact, distanceToExact, repsToExact, getRestValue, getRepsValue } from '../../core/services/workout-helper.service';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
@@ -76,7 +78,7 @@ export enum SET_TYPE {
   selector: 'app-workout-builder',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink,
-    FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe,
+    FormsModule, DragDropModule, TitleCasePipe,
     LongPressDragDirective, AutoGrowDirective, ActionMenuComponent,
     ModalComponent, ClickOutsideDirective,
     ExerciseDetailComponent, IconComponent, ExerciseSelectionModalComponent, MillisecondsDatePipe, FabMenuComponent, TranslateModule, NgLetDirective,
@@ -84,7 +86,21 @@ export enum SET_TYPE {
     GenerateWorkoutModalComponent, BumpClickDirective],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
-  providers: [DecimalPipe]
+  providers: [DecimalPipe],
+  animations: [
+    trigger('valueAnimation', [
+      // Animation for when the value INCREMENTS
+      transition(':increment', [
+        style({ transform: 'translateY(-100%)', opacity: 0 }),
+        animate('200ms ease-out', style({ transform: 'translateY(0)', opacity: 1 })),
+      ]),
+      // Animation for when the value DECREMENTS
+      transition(':decrement', [
+        style({ transform: 'translateY(100%)', opacity: 0 }),
+        animate('200ms ease-out', style({ transform: 'translateY(0)', opacity: 1 })),
+      ]),
+    ]),
+  ],
 })
 export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit {
   private fb = inject(FormBuilder);
@@ -107,6 +123,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private subscriptionService = inject(SubscriptionService);
   protected audioService = inject(AudioService);
   protected categoryService = inject(CategoryService);
+
+  // Property to hold the available options for the builder
+  availableRepSchemes: { type: RepsTargetType; label: string }[] = [];
 
   @ViewChildren('setRepsInput') setRepsInputs!: QueryList<ElementRef<HTMLInputElement>>;
   @ViewChildren('expandedSetElement') expandedSetElements!: QueryList<ElementRef<HTMLDivElement>>;
@@ -169,7 +188,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     { value: SET_TYPE.restpause, label: this.translate.instant('workoutBuilder.setTypes.restpause') },
     { value: SET_TYPE.custom, label: this.translate.instant('workoutBuilder.setTypes.custom') }
   ];
-readonly routineGoals: RoutineGoal[] = [
+  readonly routineGoals: RoutineGoal[] = [
     { value: 'hypertrophy', label: 'workoutBuilder.goals.hypertrophy' },
     { value: 'strength', label: 'workoutBuilder.goals.strength' },
     { value: 'tabata', label: 'workoutBuilder.goals.tabata' },
@@ -295,10 +314,14 @@ readonly routineGoals: RoutineGoal[] = [
     });
   }
 
-    categories = toSignal(this.categoryService.getTranslatedCategories(), { initialValue: [] });
+  categories = toSignal(this.categoryService.getTranslatedCategories(), { initialValue: [] });
 
 
   ngOnInit(): void {
+    // Populate the list for the builder context
+    this.availableRepSchemes = this.workoutService.getAvailableRepsSchemes('builder');
+    this.spinnerService.hide();
+
     if (isPlatformBrowser(this.platformId)) { window.scrollTo(0, 0); }
     this.loadAvailableExercises(); // For exercise selection modal
 
@@ -543,7 +566,8 @@ readonly routineGoals: RoutineGoal[] = [
             }
             if (setsArray.length === 0) {
               const defaultSet: ExerciseTargetSetParams = {
-                id: uuidv4(), type: 'standard', targetRest: 10, targetDuration: 20
+                id: uuidv4(), type: 'standard', targetRest: restToExact(10), targetDuration: durationToExact(20),
+                fieldOrder: [METRIC.weight, METRIC.reps]
               };
               setsArray.push(this.createSetFormGroup(defaultSet, false));
             }
@@ -551,7 +575,7 @@ readonly routineGoals: RoutineGoal[] = [
             setsArray.at(0).patchValue({
               targetDuration: 20,
               targetRest: 10,
-              targetReps: null, targetRepsMin: null, targetRepsMax: null,
+              targetReps: null, 
               targetWeight: null, targetWeightMin: null, targetWeightMax: null,
               targetDistance: null, targetDistanceMin: null, targetDistanceMax: null,
               targetTempo: null
@@ -841,12 +865,10 @@ readonly routineGoals: RoutineGoal[] = [
         const controls = setsFormArray.controls;
         return from(controls).pipe(
           mergeMap((setControl, index) => {
-            const repsMinControl = setControl.get('targetRepsMin');
-            const repsMaxControl = setControl.get('targetRepsMax');
+            const repsControl = setControl.get('targetReps');
 
             const observables = [
-              repsMinControl?.valueChanges,
-              repsMaxControl?.valueChanges
+              repsControl?.valueChanges,
             ].filter((obs): obs is Observable<any> => !!obs);
 
             if (observables.length === 0) {
@@ -1106,13 +1128,14 @@ readonly routineGoals: RoutineGoal[] = [
       const newSetParams: ExerciseTargetSetParams = {
         id: this.workoutService.generateExerciseSetId(), // New ID for the routine set
         targetReps: loggedSet.repsLogged,
-        targetWeight: loggedSet.weightLogged ?? null,
+        targetWeight: loggedSet.weightLogged ?? undefined,
         targetDuration: loggedSet.durationLogged,
         targetDistance: loggedSet.distanceLogged,
         targetTempo: loggedSet.targetTempo,
-        targetRest: loggedSet.restLogged ?? 60, // Use original target rest, or default
+        targetRest: loggedSet.restLogged ?? restToExact(60), // Use original target rest, or default
         type: loggedSet.type,
         notes: loggedSet.notes,
+        fieldOrder: loggedSet.fieldOrder
       };
       // Return a FormGroup for the set
       return this.createSetFormGroup(newSetParams, false); // forLogging = false
@@ -1183,18 +1206,17 @@ readonly routineGoals: RoutineGoal[] = [
       const group = control as FormGroup;
       if (!group) return null;
 
-      const repsMinControl = group.get('targetRepsMin');
-      const repsMaxControl = group.get('targetRepsMax');
+      const repsControl = group.get('targetReps');
       const durationMinControl = group.get('targetDurationMin');
       const durationMaxControl = group.get('targetDurationMax');
 
       // Reps validation
-      if (repsMinControl && repsMaxControl && repsMinControl.value != null && repsMaxControl.value != null && +repsMaxControl.value < +repsMinControl.value) {
-        repsMaxControl.setErrors({ min: true });
-      } else if (repsMaxControl?.hasError('min')) {
+      if (repsControl && repsControl.value != null && +repsControl.value.max < +repsControl.value.min) {
+        repsControl.setErrors({ min: true });
+      } else if (repsControl?.hasError('min')) {
         // Clear the specific 'min' error if valid now
-        const { min, ...errors } = repsMaxControl.errors || {};
-        repsMaxControl.setErrors(Object.keys(errors).length > 0 ? errors : null);
+        const { min, ...errors } = repsControl.errors || {};
+        repsControl.setErrors(Object.keys(errors).length > 0 ? errors : null);
       }
 
       // Duration validation
@@ -1225,15 +1247,13 @@ readonly routineGoals: RoutineGoal[] = [
     let timestampValue = new Date().toISOString();
 
     // Performance & single-target metrics
-    let targetRepsValue: number | null | undefined;
-    let targetWeighValue: number | null | undefined;
-    let targetDurationValue: number | null | undefined;
-    let targetDistanceValue: number | null | undefined;
-    let targetRestValue: number | null | undefined;
+    let targetRepsValue: RepsTarget | undefined;
+    let targetWeighValue: WeightTarget | undefined;
+    let targetDurationValue: DurationTarget | undefined;
+    let targetDistanceValue: DistanceTarget | undefined;
+    let targetRestValue: RestTarget | undefined;
 
     // Range-target metrics (default to null)
-    let targetRepsMinValue: number | null | undefined = null;
-    let targetRepsMaxValue: number | null | undefined = null;
     let targetWeightMinValue: number | null | undefined = null;
     let targetWeightMaxValue: number | null | undefined = null;
     let targetDurationMinValue: number | null | undefined = null;
@@ -1262,7 +1282,7 @@ readonly routineGoals: RoutineGoal[] = [
         targetRestValue = setData.restLogged;
         plannedSetIdValue = setData.plannedSetId;
         timestampValue = setData.timestamp;
-      }  else {
+      } else {
         // It's ExerciseTargetSetParams OR a mixed object from a form state
         const potentialLog = setData as LoggedSet;
         const potentialPlan = setData as ExerciseTargetSetParams;
@@ -1279,14 +1299,12 @@ readonly routineGoals: RoutineGoal[] = [
         // --- END OF FIX ---
 
         // Map the rest of the planned fields (ranges), which are only for routine builder
-        targetRepsMinValue = potentialPlan.targetRepsMin;
-        targetRepsMaxValue = potentialPlan.targetRepsMax;
-        targetWeightMinValue = potentialPlan.targetWeightMin;
-        targetWeightMaxValue = potentialPlan.targetWeightMax;
-        targetDurationMinValue = potentialPlan.targetDurationMin;
-        targetDurationMaxValue = potentialPlan.targetDurationMax;
-        targetDistanceMinValue = potentialPlan.targetDistanceMin;
-        targetDistanceMaxValue = potentialPlan.targetDistanceMax;
+        targetWeightMinValue = getWeightValue(potentialPlan.targetWeight);
+        targetWeightMaxValue = getWeightValue(potentialPlan.targetWeight);
+        targetDurationMinValue = getDurationValue(potentialPlan.targetDuration);
+        targetDurationMaxValue = getDurationValue(potentialPlan.targetDuration);
+        targetDistanceMinValue = getDistanceValue(potentialPlan.targetDistance);
+        targetDistanceMaxValue = getDistanceValue(potentialPlan.targetDistance);
         targetRestMinValue = potentialPlan.targetRestMin;
         targetRestMaxValue = potentialPlan.targetRestMax;
         plannedSetIdValue = potentialPlan.id;
@@ -1335,7 +1353,7 @@ readonly routineGoals: RoutineGoal[] = [
           Validators.min(0)
         ]
       ];
-      formGroupConfig['weightLogged'] = [targetWeighValue != null ? this.unitService.convertWeight(targetWeighValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
+      formGroupConfig['weightLogged'] = [targetWeighValue != null ? this.unitService.convertWeight(getWeightValue(targetWeighValue), 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
       formGroupConfig['durationLogged'] = [targetDurationValue ?? null, [Validators.min(0)]];
       formGroupConfig['distanceLogged'] = [targetDistanceValue ?? null, [Validators.min(0)]];
       formGroupConfig['plannedSetId'] = [plannedSetIdValue];
@@ -1344,22 +1362,30 @@ readonly routineGoals: RoutineGoal[] = [
       formGroupConfig['restLogged'] = [targetRestValue];
     } else { // For routine builder (planning mode)
 
-      if (setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.reps)) {
-        formGroupConfig['targetReps'] = [targetRepsValue ?? null, [Validators.min(0)]];
-        formGroupConfig['targetRepsMin'] = [targetRepsMinValue ?? null, [Validators.min(0)]];
-        formGroupConfig['targetRepsMax'] = [targetRepsMaxValue ?? null, [Validators.min(0)]];
-      } else if (setDataBk.targetReps) {
-        formGroupConfig['targetReps'] = [targetRepsValue ?? null, [Validators.min(0)]];
-        formGroupConfig['targetRepsMin'] = [targetRepsMinValue ?? null, [Validators.min(0)]];
-        formGroupConfig['targetRepsMax'] = [targetRepsMaxValue ?? null, [Validators.min(0)]];
+      // ADD THIS NEW LOGIC:
+      let initialRepsTarget: RepsTarget | null = null;
+
+      // This logic handles migrating old data formats to the new structure
+      if (setDataBk.targetReps && typeof setDataBk.targetReps === 'object') {
+        // If data is already in the new format, use it directly
+        initialRepsTarget = setDataBk.targetReps;
+      } else if (setDataBk.min != null && setDataBk.max != null) {
+        // Handle old range format
+        initialRepsTarget = { type: RepsTargetType.range, min: setDataBk.min, max: setDataBk.max };
+      } else if (setDataBk.targetReps != null) {
+        // Handle old single number format
+        initialRepsTarget = { type: RepsTargetType.exact, value: setDataBk.targetReps };
       }
 
+      // Add the single, object-based form control for targetReps
+      formGroupConfig['targetReps'] = [initialRepsTarget];
+
       if (setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.weight)) {
-        formGroupConfig['targetWeight'] = [targetWeighValue != null ? this.unitService.convertWeight(targetWeighValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
+        formGroupConfig['targetWeight'] = [targetWeighValue != null ? this.unitService.convertWeight(getWeightValue(targetWeighValue), 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
         formGroupConfig['targetWeightMin'] = [targetWeightMinValue != null ? this.unitService.convertWeight(targetWeightMinValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
         formGroupConfig['targetWeightMax'] = [targetWeightMaxValue != null ? this.unitService.convertWeight(targetWeightMaxValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
       } else if (setDataBk.targetWeight) {
-        formGroupConfig['targetWeight'] = [targetWeighValue != null ? this.unitService.convertWeight(targetWeighValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
+        formGroupConfig['targetWeight'] = [targetWeighValue != null ? this.unitService.convertWeight(getWeightValue(targetWeighValue), 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
         formGroupConfig['targetWeightMin'] = [targetWeightMinValue != null ? this.unitService.convertWeight(targetWeightMinValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
         formGroupConfig['targetWeightMax'] = [targetWeightMaxValue != null ? this.unitService.convertWeight(targetWeightMaxValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
       }
@@ -1501,11 +1527,11 @@ readonly routineGoals: RoutineGoal[] = [
         id: this.workoutService.generateExerciseSetId(),
         type: 'standard',
         fieldOrder: fieldOrder,
-        targetReps: isCardio ? undefined : 8,
-        targetWeight: isCardio ? undefined : 10,
-        targetRest: 60,
-        targetDuration: isCardio ? 60 : undefined,
-        targetDistance: isCardio ? 1 : undefined,
+        targetReps: isCardio ? undefined : repsToExact(8),
+        targetWeight: isCardio ? undefined : weightToExact(10),
+        targetRest: restToExact(60),
+        targetDuration: isCardio ? durationToExact(60) : undefined,
+        targetDistance: isCardio ? distanceToExact(1) : undefined,
         targetTempo: undefined,
         notes: undefined
       } as ExerciseTargetSetParams;
@@ -1582,7 +1608,7 @@ readonly routineGoals: RoutineGoal[] = [
       // Expand the new set on the exercise the user actually clicked
       const setsOnClickedExercise = this.getSetsFormArray(exerciseControl);
       const newSetIndex = setsOnClickedExercise.length - 1;
-      this.toggleSetExpansion(exerciseIndex, newSetIndex);
+      // this.toggleSetExpansion(exerciseIndex, newSetIndex);
 
     } else {
       // Standard behavior for non-superset exercises
@@ -1591,9 +1617,33 @@ readonly routineGoals: RoutineGoal[] = [
       setsArray.push(newSet);
       this.cdr.detectChanges();
       const newSetIndex = setsArray.length - 1;
-      this.toggleSetExpansion(exerciseIndex, newSetIndex);
+      // this.toggleSetExpansion(exerciseIndex, newSetIndex);
     }
     this.audioService.playSound(AUDIO_TYPES.correct);
+    this.handleAnimationForNewSet(exerciseIndex);
+  }
+
+  isNewlyAdded(exIndex: number, setIndex: number): boolean {
+    return this.newlyAddedSets.get(exIndex) === setIndex;
+  }
+
+  handleAnimationForNewSet(exIndex: number) {
+    if (exIndex < 0) {
+      return;
+    }
+    const exerciseControl = this.exercisesFormArray.controls.at(exIndex);
+    if (!exerciseControl) {
+      return;
+    }
+    // After adding, store the index of the newly added set
+    const newSetIndex = this.getSetsFormArray(exerciseControl).controls.length - 1; // Or however you get the index
+    this.newlyAddedSets.set(exIndex, newSetIndex);
+
+    // You might want to remove this flag after a short delay
+    // to prevent re-animation if the card is collapsed and expanded
+    setTimeout(() => {
+      this.newlyAddedSets.delete(exIndex);
+    }, 500); // Adjust delay to match your animation duration
   }
 
   /**
@@ -1683,9 +1733,9 @@ readonly routineGoals: RoutineGoal[] = [
     else {
       if (setsArray.length === 1) {
         const confirm = await this.alertService.showConfirm(
-          this.translate.instant('compactPlayer.removeLastSet'), 
-          this.translate.instant('workoutBuilder.exercise.removeLastSet'), 
-          this.translate.instant('workoutBuilder.exercise.remove'), 
+          this.translate.instant('compactPlayer.removeLastSet'),
+          this.translate.instant('workoutBuilder.exercise.removeLastSet'),
+          this.translate.instant('workoutBuilder.exercise.remove'),
           this.translate.instant('common.cancel')
         );
         if (confirm && confirm.data) {
@@ -1724,6 +1774,7 @@ readonly routineGoals: RoutineGoal[] = [
   }
 
   showUndoWithToast(msg: string) {
+    this.toastService.clearAll();
     this.toastService.showWithAction(
       msg,
       this.translate.instant('common.undo'),
@@ -2085,23 +2136,23 @@ readonly routineGoals: RoutineGoal[] = [
       });
 
       const setsArray = exerciseControl.get('sets') as FormArray;
-      const targetReps = Number(exerciseValuesResult[`reps_${orderInSuperset}`] ?? 8);
+      const targetReps: RepsTarget = { type: RepsTargetType.exact, value: Number(exerciseValuesResult[`reps_${orderInSuperset}`] ?? 8) };
       const targetWeightRaw = exerciseValuesResult[`weight_${orderInSuperset}`] !== undefined
         ? Number(exerciseValuesResult[`weight_${orderInSuperset}`])
         : null;
 
       const targetWeightKg = targetWeightRaw !== null
-        ? this.unitService.convertWeight(targetWeightRaw, 'kg', this.unitService.currentWeightUnit())
-        : null;
+        ? weightToExact(this.unitService.convertWeight(targetWeightRaw, 'kg', this.unitService.currentWeightUnit()))
+        : undefined;
 
-      let restForThisExercise = 0; // Default rest is 0
+      let restForThisExercise = restToExact(0); // Default rest is 0
 
 
       // For standard supersets, only the LAST exercise in a round gets rest.
       if (supersetType === 'standard') {
         const isLastExerciseInGroup = (orderInSuperset === supersetSize - 1);
         if (isLastExerciseInGroup) {
-          restForThisExercise = 60; // This is the rest BETWEEN rounds.
+          restForThisExercise = restToExact(60); // This is the rest BETWEEN rounds.
         }
       }
       // For EMOMs, restForThisExercise remains 0, as rest is implicit.
@@ -2217,7 +2268,7 @@ readonly routineGoals: RoutineGoal[] = [
             setControl.patchValue({
               targetDuration: 20,
               targetRest: 10,
-              targetReps: null, targetRepsMin: null, targetRepsMax: null,
+              targetReps: null,
               targetWeight: null, targetWeightMin: null, targetWeightMax: null,
               targetDistance: null, targetDistanceMin: null, targetDistanceMax: null,
             }, { emitEvent: false });
@@ -2336,7 +2387,7 @@ readonly routineGoals: RoutineGoal[] = [
             exerciseId: exInput.exerciseId,
             type: setInput.type,
             repsLogged: setInput.repsLogged,
-            weightLogged: this.unitService.convertWeight(setInput.weightLogged, 'kg', this.unitService.currentWeightUnit()) ?? undefined,
+            weightLogged: weightToExact(this.unitService.convertWeight(getWeightValue(setInput.weightLogged), 'kg', this.unitService.currentWeightUnit())) ?? undefined,
             distanceLogged: setInput.distanceLogged,
             durationLogged: setInput.durationLogged,
             restLogged: setInput.restLogged,
@@ -2597,10 +2648,10 @@ readonly routineGoals: RoutineGoal[] = [
       const newExerciseSets: ExerciseTargetSetParams[] = Array.from({ length: numSets }, () => ({
         id: `custom-adhoc-set-${uuidv4()}`,
         fieldOrder: [METRIC.reps, METRIC.weight, METRIC.rest],
-        targetReps: 8,
-        targetWeight: 10,
+        targetReps: genRepsTypeFromRepsNumber(8),
+        targetWeight: weightToExact(10),
         targetDuration: undefined,
-        targetRest: 60, type:
+        targetRest: restToExact(60), type:
           'standard',
         notes: '',
       }));
@@ -2694,9 +2745,6 @@ readonly routineGoals: RoutineGoal[] = [
             targetWeight: this.unitService.convertWeight(setInput.targetWeight, 'kg', this.unitService.currentWeightUnit()) ?? null,
             targetWeightMin: setInput.targetWeightMin ?? null,
             targetWeightMax: setInput.targetWeightMax ?? null,
-            targetReps: setInput.targetReps ?? null,
-            targetRepsMin: setInput.targetRepsMin ?? null,
-            targetRepsMax: setInput.targetRepsMax ?? null,
             targetDuration: setInput.targetDuration ?? null,
             targetDurationMin: setInput.targetDurationMin ?? null,
             targetDurationMax: setInput.targetDurationMax ?? null,
@@ -2949,7 +2997,7 @@ readonly routineGoals: RoutineGoal[] = [
   checkIfWeightedExercise(loggedEx: any): boolean {
     const loggedExActual = loggedEx?.getRawValue() as LoggedWorkoutExercise;
     return loggedExActual?.sets.some(set =>
-      (set.weightLogged || set.targetWeight || set.targetWeightMin || set.targetWeightMax));
+      (set.weightLogged || set.targetWeight));
   }
 
   getSetReps(loggedEx: any): string { // 'loggedEx' is an AbstractControl (FormGroup)
@@ -2963,8 +3011,6 @@ readonly routineGoals: RoutineGoal[] = [
       // by checking for the relevant min/max/single value properties.
       return this.getSetDisplayValue(new FormGroup({
         targetReps: new FormControl(set.targetReps || set.repsLogged),
-        targetRepsMin: new FormControl(set.targetRepsMin),
-        targetRepsMax: new FormControl(set.targetRepsMax),
         repsLogged: new FormControl(set.weightLogged)
       }), METRIC.reps);
     });
@@ -2982,46 +3028,73 @@ readonly routineGoals: RoutineGoal[] = [
   }
 
   /**
-  * Toggles the input mode for a set's repetitions between a single value and a range.
-  * @param setControl The form group for the specific set.
-  */
-  toggleRepsMode(setControl: AbstractControl, event?: Event): void {
+   * GENERIC: Opens a modal to configure the target scheme for any metric.
+   * @param setControl The FormGroup for the set being edited.
+   * @param metric The metric to be configured (e.g., 'reps', 'weight').
+   * @param event The mouse event to stop propagation.
+   */
+  async openMetricSchemeModal(setControl: AbstractControl, metric: METRIC, event?: Event): Promise<void> {
     event?.stopPropagation();
     if (this.isViewMode || !(setControl instanceof FormGroup)) return;
 
-    const repsCtrl = setControl.get('targetReps');
-    const repsMinCtrl = setControl.get('targetRepsMin');
-    const repsMaxCtrl = setControl.get('targetRepsMax');
+    let availableSchemes: AnyScheme[];
+    const formControlName = this.getFormControlNameForBuilder(metric);
+    if (!formControlName) return; // Failsafe
 
-    // Check if we are currently in range mode by seeing if either min or max has a value.
-    const isCurrentlyRange = repsMinCtrl?.value != null || repsMaxCtrl?.value != null;
+    // 1. Get the correct metadata array based on the metric.
+    //    We filter for `availableInBuilder` because this is the builder component.
+    switch (metric) {
+      case METRIC.reps:
+        availableSchemes = REPS_TARGET_SCHEMES.filter(s => s.availableInBuilder);
+        break;
+      case METRIC.weight:
+        availableSchemes = WEIGHT_TARGET_SCHEMES.filter(s => s.availableInBuilder);
+        break;
+      case METRIC.duration:
+        availableSchemes = DURATION_TARGET_SCHEMES.filter(s => s.availableInBuilder);
+        break;
+      case METRIC.distance:
+        availableSchemes = DISTANCE_TARGET_SCHEMES.filter(s => s.availableInBuilder);
+        break;
+      case METRIC.rest:
+        availableSchemes = REST_TARGET_SCHEMES.filter(s => s.availableInBuilder);
+        break;
+      default:
+        this.toastService.error(`Scheme editing is not supported for metric: ${metric}`);
+        return;
+    }
+    
+    // 2. Get the current value from the correct form control.
+    const currentTarget = setControl.get(formControlName)?.value;
 
-    if (isCurrentlyRange) {
-      // --- BEHAVIOR 1: Switch FROM Range TO Single ---
-      // Get the current min and max, defaulting to 0 if they are null.
-      const minVal = repsMinCtrl?.value ?? 0;
-      const maxVal = repsMaxCtrl?.value ?? 0;
+    // 3. Call the generic service method, converting undefined to null.
+    const result = await this.workoutService.showSchemeModal(
+      metric,
+      currentTarget ?? null,
+      availableSchemes
+    );
 
-      // Calculate the average of the range and round it to the nearest whole number.
-      const averageValue = Math.round((minVal + maxVal) / 2);
+    // 4. If a new target is returned, patch the form control.
+    if (result && result.data) {
+      setControl.get(formControlName)?.patchValue(result.data);
+      setControl.markAsDirty();
+    }
+  }
 
-      repsCtrl?.setValue(averageValue); // Set the single value to the calculated average.
-      repsMinCtrl?.setValue(null);      // Clear the min range value.
-      repsMaxCtrl?.setValue(null);      // Clear the max range value.
-
-    } else {
-      // --- BEHAVIOR 2: Switch FROM Single TO Range ---
-      // Get the current single value, defaulting to 8 if it's null.
-      const singleValue = repsCtrl?.value ?? 8;
-
-      // Calculate the new range [value - 2, value + 2].
-      // Ensure the new minimum value is never less than 0.
-      const newMin = Math.max(0, singleValue - 2);
-      const newMax = singleValue + 2;
-
-      repsMinCtrl?.setValue(newMin); // Set the new min value.
-      repsMaxCtrl?.setValue(newMax); // Set the new max value.
-      repsCtrl?.setValue(null);     // Clear the single value field.
+  // +++ ADD this helper method to get the correct form control name +++
+  /**
+   * Gets the name of the form control for a given metric in the context of the workout builder.
+   * @param metric The metric to look up.
+   * @returns The corresponding form control name (e.g., 'targetReps', 'targetWeight').
+   */
+  private getFormControlNameForBuilder(metric: METRIC): string {
+    switch (metric) {
+      case METRIC.reps: return 'targetReps';
+      case METRIC.weight: return 'targetWeight';
+      case METRIC.duration: return 'targetDuration';
+      case METRIC.distance: return 'targetDistance';
+      case METRIC.rest: return 'targetRest';
+      default: return '';
     }
   }
 
@@ -3172,7 +3245,7 @@ readonly routineGoals: RoutineGoal[] = [
     // This correctly shows the actual duration performed for each set.
     if (this.mode === 'manualLogEntry') {
       const rawValue = exerciseControl.getRawValue() as LoggedWorkoutExercise;
-      const durations = rawValue.sets.map(set => set.durationLogged).filter(d => d != null && d > 0);
+      const durations = rawValue.sets.map(set => set.durationLogged).filter(d => d != null && getDurationValue(d) > 0);
       return durations.length > 0 ? durations.join('-') : '';
     }
 
@@ -3200,14 +3273,31 @@ readonly routineGoals: RoutineGoal[] = [
   * @param field The field to display ('reps' or 'duration').
   * @returns A formatted string for display in the collapsed view.
   */
+  /**
+  * Generates a display string for a set's value, handling both single values and ranges.
+  * THIS METHOD IS NOW UPDATED to correctly handle the RepsTarget object.
+  * @param setControl The AbstractControl for the set.
+  * @param field The field to display ('reps', 'duration', 'weight', etc.).
+  * @returns A formatted string for display in the collapsed view (e.g., "8-12", "5+", "60").
+  */
   getSetDisplayValue(setControl: AbstractControl, field: METRIC): string {
     if (!setControl) return '-';
 
+    // --- START: SPECIAL HANDLING FOR REPS ---
+    if (field === METRIC.reps) {
+      // Get the value of the 'targetReps' control, which is a RepsTarget object.
+      const repsTarget = setControl.get('targetReps')?.value as RepsTarget | null;
+      // Use the centralized helper function to format it into a user-friendly string.
+      return repsTargetAsString(repsTarget) || '-';
+    }
+    // --- END: SPECIAL HANDLING FOR REPS ---
+
+    // --- Fallback logic for all other metrics (weight, duration, etc.) that still use the Min/Max pattern ---
     const firstUpperCaseField = field ? String(field).charAt(0).toUpperCase() + String(field).slice(1) : '';
 
     const min = setControl.get(`target${firstUpperCaseField}Min`)?.value;
     const max = setControl.get(`target${firstUpperCaseField}Max`)?.value;
-    let single = setControl.get(`target${firstUpperCaseField}`)?.value;
+    const single = setControl.get(`target${firstUpperCaseField}`)?.value;
 
     const isRange = min != null || max != null;
 
@@ -3223,8 +3313,8 @@ readonly routineGoals: RoutineGoal[] = [
       }
     }
 
-
-    return single ?? '-';
+    // Return the single value, ensuring it's a string, or a fallback dash.
+    return single != null ? String(single) : '-';
   }
 
   getSetWeightsUsed(loggedEx: any): string {
@@ -3238,8 +3328,8 @@ readonly routineGoals: RoutineGoal[] = [
       // by checking for the relevant min/max/single value properties.
       return this.getSetDisplayValue(new FormGroup({
         targetWeight: new FormControl(set.targetWeight || set.weightLogged),
-        targetWeightMin: new FormControl(set.targetWeightMin),
-        targetWeightMax: new FormControl(set.targetWeightMax),
+        targetWeightMin: new FormControl(getWeightValue(set.targetWeight)),
+        targetWeightMax: new FormControl(getWeightValue(set.targetWeight)),
         weightLogged: new FormControl(set.weightLogged)
       }), this.metricEnum.weight);
     });
@@ -3297,29 +3387,42 @@ readonly routineGoals: RoutineGoal[] = [
       return 'text-gray-700 dark:text-gray-300';
     }
 
+    let performedRepsValue: RepsTarget = { type: RepsTargetType.exact, value: 0 };
     let performedValue = 0;
     let targetValue = 0;
 
     // Determine which properties to compare based on the 'type'
     if (type === METRIC.reps) {
-      performedValue = set.repsLogged ?? 0;
-      targetValue = set.targetReps ?? 0;
+      performedRepsValue = set.repsLogged ?? performedRepsValue;
+      targetValue = repsTypeToReps(set.targetReps) ?? repsTypeToReps(genRepsTypeFromRepsNumber(0));
     } else if (type === METRIC.duration) {
-      performedValue = set.durationLogged ?? 0;
-      targetValue = set.targetDuration ?? 0;
+      performedValue = getDurationValue(set.durationLogged) ?? 0;
+      targetValue = getDurationValue(set.targetDuration) ?? 0;
     } else if (type === METRIC.weight) {
-      performedValue = set.weightLogged ?? 0;
-      targetValue = set.targetWeight ?? 0;
+      performedValue = getWeightValue(set.weightLogged) ?? 0;
+      targetValue = getWeightValue(set.targetWeight) ?? 0;
     }
 
-    // The simple comparison logic
-    if (performedValue > targetValue) {
-      return 'text-green-500 dark:text-green-400';
-    } else if (performedValue < targetValue) {
-      return 'text-red-500 dark:text-red-400';
+    if (type === METRIC.reps) {
+      const minValue = performedRepsValue.type === RepsTargetType.exact ? performedRepsValue.value : performedRepsValue.type === RepsTargetType.range ? performedRepsValue.min : undefined;
+      if (minValue && minValue > targetValue) {
+        return 'text-green-500 dark:text-green-400';
+      } else if (minValue && minValue < targetValue) {
+        return 'text-red-500 dark:text-red-400';
+      } else {
+        return 'text-gray-800 dark:text-white';
+      }
     } else {
-      return 'text-gray-800 dark:text-white';
+      // The simple comparison logic
+      if (performedValue > targetValue) {
+        return 'text-green-500 dark:text-green-400';
+      } else if (performedValue < targetValue) {
+        return 'text-red-500 dark:text-red-400';
+      } else {
+        return 'text-gray-800 dark:text-white';
+      }
     }
+
   }
 
 
@@ -3826,6 +3929,8 @@ readonly routineGoals: RoutineGoal[] = [
     });
 
     this.toastService.success("Round added to superset.", 2000);
+    const exIndex = this.getExerciseIndexByControl(exerciseControl);
+    this.handleAnimationForNewSet(exIndex);
   }
 
   /**
@@ -3873,17 +3978,37 @@ readonly routineGoals: RoutineGoal[] = [
     }
     return (control.targetWeight ?? 0) > 0 || (control.targetWeightMin ?? 0) > 0;
   }
-  protected checkIfRepsIsVisible(control: any): boolean {
+   protected checkIfRepsIsVisible(control: any): boolean {
     if (!control) return false;
-    // Handle both AbstractControl and plain object
+
+    // Helper to check if a single set object has a defined rep target.
+    const setHasRepsTarget = (set: any): boolean => {
+      // The check is now simple: Does a `targetReps` object exist?
+      // We also keep the legacy check for backward compatibility with older data structures.
+      return !!set?.targetReps;
+    };
+
+    // Case 1: The control is an Angular FormGroup or FormArray.
     if (typeof control.get === 'function') {
-      if (typeof control.getRawValue === 'function' && control.getRawValue() && control.getRawValue()['sets']) {
-        return ((control.getRawValue()['sets'].some((innerControl: any) => innerControl['targetReps']) ?? 0) > 0) || ((control.getRawValue()['sets'].some((innerControl: any) => innerControl['targetRepsMin']) ?? 0) > 0);
-      } else {
-        return ((control.get('targetReps')?.value ?? 0) > 0) || ((control.get('targetRepsMin')?.value ?? 0) > 0);
+      const rawValue = control.getRawValue();
+
+      // If it's an exercise control, it will have a `sets` array.
+      if (rawValue && Array.isArray(rawValue.sets)) {
+        return rawValue.sets.some(setHasRepsTarget);
       }
+      
+      // Otherwise, assume it's a set control.
+      return setHasRepsTarget(rawValue);
     }
-    return (control.targetReps ?? 0) > 0 || (control.targetRepsMin ?? 0) > 0;
+    
+    // Case 2: The control is a plain JavaScript object.
+    if (control.sets && Array.isArray(control.sets)) {
+      // It's an exercise object.
+      return control.sets.some(setHasRepsTarget);
+    }
+
+    // Otherwise, assume it's a set object.
+    return setHasRepsTarget(control);
   }
   protected checkIfDistanceIsVisible(control: any): boolean {
     if (!control) return false;
@@ -4391,7 +4516,7 @@ readonly routineGoals: RoutineGoal[] = [
 
           // Convert the historical weight (stored in kg) to the user's current unit
           const weightInCurrentUnit = historicalSet.weightLogged != null
-            ? this.unitService.convertWeight(historicalSet.weightLogged, this.unitService.currentWeightUnit(), 'kg')
+            ? this.unitService.convertWeight(getWeightValue(historicalSet.weightLogged), this.unitService.currentWeightUnit(), 'kg')
             : null;
 
           // Apply data to the correct fields based on the builder's mode
@@ -4432,7 +4557,7 @@ readonly routineGoals: RoutineGoal[] = [
 
     if (this.mode === 'manualLogEntry') {
       const rawValue = exerciseControl.getRawValue() as LoggedWorkoutExercise;
-      const distances = rawValue.sets.map(set => set.distanceLogged).filter(d => d != null && d > 0);
+      const distances = rawValue.sets.map(set => set.distanceLogged).filter(d => d != null && getDistanceValue(d) > 0);
       return distances.length > 0 ? distances.join('-') : '';
     } else {
       const setsFormArray = this.getSetsFormArray(exerciseControl);
@@ -4806,6 +4931,7 @@ readonly routineGoals: RoutineGoal[] = [
     this.toastService.info("Undo successful.");
     this.updateHistorySignals();
     this.refreshFabMenuItems(); // Update FAB menu items
+    this.audioService.playSound(AUDIO_TYPES.magic);
   }
 
   // +++ NEW: Redo Method +++
@@ -5019,11 +5145,7 @@ readonly routineGoals: RoutineGoal[] = [
     // --- 1. Build the data patch object and identify all metrics being applied ---
     if (this.repsToSetForAll() !== null) {
       const field = this.mode === 'manualLogEntry' ? 'repsLogged' : 'targetReps';
-      patchData[field] = this.repsToSetForAll();
-      if (this.mode === 'routineBuilder') {
-        patchData['targetRepsMin'] = null;
-        patchData['targetRepsMax'] = null;
-      }
+      patchData[field] = {type: RepsTargetType.exact, value: this.repsToSetForAll()};
       metricsToApply.push(METRIC.reps);
     }
     if (this.weightToSetForAll() !== null) {
@@ -5144,6 +5266,7 @@ readonly routineGoals: RoutineGoal[] = [
   }
 
   protected metricEnum = METRIC;
+  protected repsTargetTypeEnum = RepsTargetType;
 
   protected isGhostFieldVisible(fieldOrder: METRIC[], exIndex: number): boolean {
     return !!(this.isEditableMode() && !this.isSuperSet(exIndex) && fieldOrder && fieldOrder.length !== undefined && ((fieldOrder.length <= 1) || (fieldOrder.length > 2 && fieldOrder.length % 2 == 1)));
@@ -5181,6 +5304,35 @@ readonly routineGoals: RoutineGoal[] = [
     const isTime = field === METRIC.duration || field === METRIC.rest;
     const step = isWeight ? (settings.weightStep || 0.5) : 1;
 
+    if (field === METRIC.reps && this.mode === 'routineBuilder') {
+      const repsControl = setControl.get('targetReps');
+      const currentTarget = repsControl?.value as RepsTarget | null;
+
+      // EXACT
+      if (repsControl && (currentTarget?.type === RepsTargetType.exact)) {
+        const newValue = Math.max(0, (currentTarget.value || 0) + 1); // Reps always step by 1
+
+        // Create a new object for immutability and patch the control's value.
+        repsControl.patchValue({ type: RepsTargetType.exact, value: newValue });
+        setControl.markAsDirty();
+
+        const setId = setControl.get('id')?.value;
+        if (setId) this.triggerAnimation(setId);
+      }
+      // MIN_PLUS
+      if (repsControl && (currentTarget?.type === RepsTargetType.min_plus)) {
+        const newValue = Math.max(0, (currentTarget.value || 0) + 1); // Reps always step by 1
+
+        // Create a new object for immutability and patch the control's value.
+        repsControl.patchValue({ type: RepsTargetType.min_plus, value: newValue });
+        setControl.markAsDirty();
+
+        const setId = setControl.get('id')?.value;
+        if (setId) this.triggerAnimation(setId);
+      }
+      return; // Exit the function after handling the special case for reps.
+    }
+
     const formControlName = this.getFormControlName(field);
     const control = setControl.get(formControlName);
     if (!control) return;
@@ -5191,6 +5343,12 @@ readonly routineGoals: RoutineGoal[] = [
     const newNumberValue = parseFloat((currentNumberValue + step).toFixed(2));
 
     control.patchValue(newNumberValue);
+
+
+    const setId = setControl.get('id')?.value;
+    if (setId) {
+      this.triggerAnimation(setId);
+    }
   }
 
   private decrementValue(setControl: AbstractControl, field: METRIC): void {
@@ -5198,6 +5356,36 @@ readonly routineGoals: RoutineGoal[] = [
     const isWeight = field === METRIC.weight;
     const isTime = field === METRIC.duration || field === METRIC.rest;
     const step = isWeight ? (settings.weightStep || 0.5) : 1;
+
+    if (field === METRIC.reps && this.mode === 'routineBuilder') {
+      const repsControl = setControl.get('targetReps');
+      const currentTarget = repsControl?.value as RepsTarget | null;
+
+      // EXACT
+      if (repsControl && currentTarget?.type === RepsTargetType.exact) {
+        const newValue = Math.max(0, (currentTarget.value || 0) - 1); // Reps always step by 1
+
+        // Create a new object for immutability and patch the control's value.
+        repsControl.patchValue({ type: RepsTargetType.exact, value: newValue });
+        setControl.markAsDirty();
+
+        const setId = setControl.get('id')?.value;
+        if (setId) this.triggerAnimation(setId);
+      }
+      // MIN_PLUS
+      if (repsControl && currentTarget?.type === RepsTargetType.min_plus) {
+        const newValue = Math.max(0, (currentTarget.value || 0) - 1); // Reps always step by 1
+
+        // Create a new object for immutability and patch the control's value.
+        repsControl.patchValue({ type: RepsTargetType.min_plus, value: newValue });
+        setControl.markAsDirty();
+
+        const setId = setControl.get('id')?.value;
+        if (setId) this.triggerAnimation(setId);
+      }
+
+      return; // Exit the function after handling the special case for reps.
+    }
 
     const formControlName = this.getFormControlName(field);
     const control = setControl.get(formControlName);
@@ -5209,6 +5397,11 @@ readonly routineGoals: RoutineGoal[] = [
     const newNumberValue = Math.max(0, parseFloat((currentNumberValue - step).toFixed(2)));
 
     control.patchValue(newNumberValue);
+
+    const setId = setControl.get('id')?.value;
+    if (setId) {
+      this.triggerAnimation(setId);
+    }
   }
 
   protected getFormControlName(field: METRIC): string {
@@ -5222,6 +5415,33 @@ readonly routineGoals: RoutineGoal[] = [
       case METRIC.tempo: return 'targetTempo';
       default: return '';
     }
+  }
+
+  /**
+   * Gets a display-ready string for any metric from a set's form control.
+   * This function is smart enough to handle the nested RepsTarget object for reps.
+   * @param setControl The FormGroup for the specific set.
+   * @param field The metric to display.
+   * @returns A formatted string for the UI (e.g., "8-12", "5+", "10").
+   */
+  public getSetMetricDisplayValue(setControl: AbstractControl, field: METRIC): string {
+    if (!(setControl instanceof FormGroup)) return '-';
+
+    const formControlName = this.getFormControlName(field);
+    const control = setControl.get(formControlName);
+
+    if (!control || control.value == null) {
+      return '-';
+    }
+
+    // --- Special handling for Reps in Builder Mode ---
+    if (field === METRIC.reps && this.mode === 'routineBuilder') {
+      // The value is a RepsTarget object, so we use our helper to format it.
+      return repsTargetAsString(control.value);
+    }
+    
+    // --- Fallback for all other metrics and for Reps in Log Mode ---
+    return control.value.toString();
   }
 
   // Helper to parse "mm:ss" strings from user input
@@ -5239,6 +5459,116 @@ readonly routineGoals: RoutineGoal[] = [
     return setsArray.length;
   }
 
+  /**
+   * Formats a RepsTarget object into a user-friendly string for display.
+   * @param repsTarget The RepsTarget object from the form or model.
+   * @returns A string like "10", "8-12", "Max", etc.
+   */
+  formatRepsTarget(repsTarget: RepsTarget | null | undefined): string {
+    if (!repsTarget) {
+      return '-';
+    }
 
+    switch (repsTarget.type) {
+      case RepsTargetType.exact:
+        return repsTarget.value.toString();
+      case RepsTargetType.min_plus:
+        return repsTarget.value.toString();
+      case RepsTargetType.range:
+        return `${repsTarget.min}-${repsTarget.max}`;
+      case RepsTargetType.max:
+        return 'Max';
+      case RepsTargetType.amrap:
+        return 'AMRAP';
+      case RepsTargetType.max_fraction:
+        return `Max / ${repsTarget.divisor}`;
+      default:
+        return '-';
+    }
+  }
+
+
+  /**
+ * Updates the RepsTarget object when a user types into the 'min' or 'max' input field.
+ * This is for the 'range' rep scheme.
+ * @param setControl The FormGroup for the set being modified.
+ * @param part Which part of the range to update ('min' or 'max').
+ * @param event The DOM input event.
+ */
+  updateRepsRange(setControl: AbstractControl, part: 'min' | 'max', event: Event): void {
+    const targetControl = setControl.get('targetReps');
+    const currentTarget = targetControl?.value as RepsTarget | null;
+
+    // Ensure we are actually editing a range object
+    if (!targetControl || currentTarget?.type !== 'range') {
+      return;
+    }
+
+    const inputValue = (event.target as HTMLInputElement).value;
+    const numericValue = inputValue === '' ? null : Number(inputValue);
+
+    // Create a new object to maintain immutability and trigger change detection
+    const newTarget: RepsTarget = {
+      ...currentTarget,
+      [part]: numericValue,
+    };
+
+    targetControl.patchValue(newTarget);
+    setControl.markAsDirty();
+  }
+
+  /**
+   * Updates the RepsTarget object when a user clicks the +/- buttons.
+   * This is for the 'exact' rep scheme.
+   * @param setControl The FormGroup for the set being modified.
+   * @param amount The amount to increment or decrement by (e.g., 1 or -1).
+   */
+  incrementExactReps(setControl: AbstractControl, amount: number): void {
+    const targetControl = setControl.get('targetReps');
+    const currentTarget = targetControl?.value as RepsTarget | null;
+
+    if (!targetControl || (currentTarget?.type !== RepsTargetType.exact && currentTarget?.type !== RepsTargetType.min_plus)) {
+      return;
+    }
+
+    if (currentTarget.type === RepsTargetType.exact) {
+      const newValue = Math.max(0, currentTarget.value + amount); // Access 'value'
+      const newTarget: RepsTarget = {
+        ...currentTarget,
+        value: newValue,
+      };
+      targetControl.patchValue(newTarget);
+      setControl.markAsDirty();
+    } else if (currentTarget.type === RepsTargetType.min_plus) {
+      const newValue = Math.max(0, currentTarget.value + amount); // Access 'min'
+      const newTarget: RepsTarget = {
+        ...currentTarget,
+        value: newValue,
+      };
+      targetControl.patchValue(newTarget);
+      setControl.markAsDirty();
+    }
+  }
+
+  isAnimatingSet = signal<string | null>(null);
+  private animationTimeout: any = null;
+  private triggerAnimation(setId: string): void {
+    // Clear any pending timeout to prevent race conditions if the user clicks rapidly
+    if (this.animationTimeout) {
+      clearTimeout(this.animationTimeout);
+    }
+
+    // Set the animating ID immediately
+    this.isAnimatingSet.set(setId);
+
+    // Set a timeout to clear the animation state after the animation completes (200ms)
+    this.animationTimeout = setTimeout(() => {
+      this.isAnimatingSet.set(null);
+      this.animationTimeout = null;
+    }, 200);
+  }
+
+  // This could be a Map to store recently added set indices per exercise ID
+  private newlyAddedSets = new Map<number, number>();
 
 }

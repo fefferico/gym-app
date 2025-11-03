@@ -1,7 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { LoggedWorkoutExercise, LoggedSet } from './workout-log.model';
-import { WorkoutExercise, ExerciseTargetSetParams, ExerciseTargetExecutionSetParams, METRIC } from './workout.model';
+import { WorkoutExercise, ExerciseTargetSetParams, ExerciseTargetExecutionSetParams, METRIC, RepsTargetType } from './workout.model';
 import { log } from 'console';
+import { distanceToExact, durationToExact, repsTypeToReps, restToExact, weightToExact } from '../services/workout-helper.service';
 
 /**
  * Maps an array of logged exercises back into a routine snapshot format.
@@ -33,11 +34,10 @@ export function mapLoggedExercisesToRoutineSnapshot(
                 targetDuration: loggedSet.durationLogged,
                 targetDistance: loggedSet.distanceLogged,
                 targetReps: loggedSet.repsLogged,
-                targetRest: loggedSet.restLogged ?? loggedSet.targetRest ?? 60,
+                targetRest: loggedSet.restLogged ?? loggedSet.targetRest ?? restToExact(60),
                 notes: loggedSet.notes,
                 type: loggedSet.type,
-
-
+                fieldOrder: loggedSet.fieldOrder
                 // Carry over target values if they exist, in case they are needed.
             };
         });
@@ -248,21 +248,11 @@ export function mapExerciseTargetSetParamsToExerciseExecutedSetParams(exerciseTa
     return {
         id: exerciseTargetSetParams.id,
         type: exerciseTargetSetParams.type,
-        targetReps: exerciseTargetSetParams.targetReps || 0,
-        targetRepsMin: exerciseTargetSetParams.targetRepsMin || 0,
-        targetRepsMax: exerciseTargetSetParams.targetRepsMax || 0,
-        targetWeight: exerciseTargetSetParams.targetWeight || 0,
-        targetWeightMin: exerciseTargetSetParams.targetWeightMin || 0,
-        targetWeightMax: exerciseTargetSetParams.targetWeightMax || 0,
-        targetDistance: exerciseTargetSetParams.targetDistance || 0,
-        targetDistanceMin: exerciseTargetSetParams.targetDistanceMin || 0,
-        targetDistanceMax: exerciseTargetSetParams.targetDistanceMax || 0,
-        targetDuration: exerciseTargetSetParams.targetDuration || 0,
-        targetDurationMin: exerciseTargetSetParams.targetDurationMin || 0,
-        targetDurationMax: exerciseTargetSetParams.targetDurationMax || 0,
-        targetRest: exerciseTargetSetParams.targetRest || 0,
-        targetRestMin: exerciseTargetSetParams.targetRestMin || 0,
-        targetRestMax: exerciseTargetSetParams.targetRestMax || 0,
+        targetReps: repsTypeToReps(exerciseTargetSetParams.targetReps) || {type: RepsTargetType.exact, value: 0},
+        targetWeight: exerciseTargetSetParams.targetWeight || weightToExact(0),
+        targetDistance: exerciseTargetSetParams.targetDistance || distanceToExact(0),
+        targetDuration: exerciseTargetSetParams.targetDuration || durationToExact(0),
+        targetRest: exerciseTargetSetParams.targetRest || restToExact(0),
         notes: exerciseTargetSetParams.notes || '',
         tempo: exerciseTargetSetParams.targetTempo
     } as ExerciseTargetExecutionSetParams;
@@ -364,16 +354,6 @@ export function mapLoggedSetToExerciseTargetSetParams(loggedSet: LoggedSet): Exe
 
         // Set other optional target values to null as they are not explicitly tracked
         // in the single performance log entry. These can be refined in the routine editor.
-        targetRepsMin: null,
-        targetRepsMax: null,
-        targetWeightMin: null,
-        targetWeightMax: null,
-        targetDurationMin: null,
-        targetDurationMax: null,
-        targetDistanceMin: null,
-        targetDistanceMax: null,
-        targetRestMin: null,
-        targetRestMax: null,
         dropToWeight: null,
         amrapTimeLimit: null,
 

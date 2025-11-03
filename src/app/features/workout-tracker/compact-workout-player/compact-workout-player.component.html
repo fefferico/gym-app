@@ -164,14 +164,16 @@
 
                     <!-- Reps Input -->
                     <div *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.reps]">
-                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{ 'metrics.reps' | translate }}</label>
+                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{ 'metrics.reps' |
+                        translate }}</label>
                       <input type="number" [(ngModel)]="repsToSetForAll" [ngModelOptions]="{standalone: true}"
                         class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
                     </div>
 
                     <!-- Weight Input -->
                     <div *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.weight]">
-                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{ 'metrics.weight' | translate }}
+                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{ 'metrics.weight' |
+                        translate }}
                         ({{ unitService.getWeightUnitSuffix() }})</label>
                       <input type="number" [(ngModel)]="weightToSetForAll" [ngModelOptions]="{standalone: true}"
                         class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
@@ -179,7 +181,8 @@
 
                     <!-- Duration Input -->
                     <div *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.duration]">
-                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{ 'metrics.duration' | translate }}
+                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{ 'metrics.duration' |
+                        translate }}
                         (s)</label>
                       <input type="number" [(ngModel)]="durationToSetForAll" [ngModelOptions]="{standalone: true}"
                         class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
@@ -187,7 +190,8 @@
 
                     <!-- Distance Input -->
                     <div *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.distance]">
-                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{ 'metrics.distance' | translate }}
+                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{ 'metrics.distance' |
+                        translate }}
                         ({{ unitService.getDistanceMeasureUnitSuffix()
                         }})</label>
                       <input type="number" [(ngModel)]="distanceToSetForAll" [ngModelOptions]="{standalone: true}"
@@ -196,7 +200,8 @@
 
                     <!-- Rest Input -->
                     <div *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.rest]">
-                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{ 'metrics.rest' | translate }}
+                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{ 'metrics.rest' |
+                        translate }}
                         (s)</label>
                       <input type="number" [(ngModel)]="restToSetForAll" [ngModelOptions]="{standalone: true}"
                         class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
@@ -271,8 +276,8 @@
 
                       <!-- Set actions - STANDARD SET -->
                       <div *ngIf="isSetExpanded(exIndex,setIndex)"
-                        class="flex-shrink-0 flex flex-col items-center justify-center gap-1">
-                        <div *ngIf="!isSetCompleted(exIndex, setIndex)" class="flex items-center">
+                        class="flex-shrink-0 flex">
+                        <div *ngIf="!isSetCompleted(exIndex, setIndex)" class="flex items-center justify-center gap-1">
                           <button appBumpClick (click)="toggleSetNotes(exIndex, setIndex, $event)"
                             class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center"><app-icon
                               name="clipboard-list"
@@ -287,7 +292,7 @@
                           <!-- END: ADD THIS NEW BUTTON -->
 
                           <button appBumpClick (click)="removeSet(exIndex, setIndex)"
-                            class="p-1.5 rounded-full bg-red-500 dark:bg-red-500/80 hover:bg-red-500 text-white flex items-center"><app-icon
+                            class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center"><app-icon
                               name="trash" class="h-6 w-6 text-red-500" [strokeWidth]="2"></app-icon></button>
                         </div>
                       </div>
@@ -295,7 +300,7 @@
                       <!-- RIGHT Quick Complete Button -->
                       <button *ngIf="!isTimedSet(exIndex, setIndex) && !isSetExpanded(exIndex, setIndex)"
                         (click)="toggleSetCompletion(exercise, set, exIndex, setIndex, 0); $event.stopPropagation()"
-                        [disabled]="!isSetDataValid(exIndex, setIndex)"
+                        [disabled]="!isSetDataValid(exIndex, setIndex) || hasInvalidInput(exIndex,setIndex)"
                         class="h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 ease-in-out transform active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none complete-set-button-animated"
                         [ngClass]="isSetCompleted(exIndex, setIndex, 0) ? 'bg-green-500 text-white shadow-lg' : 'bg-gray-200 dark:bg-gray-700 text-white'">
                         <app-icon name="done" class="h-6 w-6"></app-icon>
@@ -317,6 +322,7 @@
 
                       <!-- Completed Indicator BUTTON (Shows for timed sets that are complete) -->
                       <button appBumpClick *ngIf="isTimedSet(exIndex, setIndex) && isSetCompleted(exIndex, setIndex)"
+                        [disabled]="hasInvalidInput(exIndex,setIndex)"
                         (click)="toggleSetCompletion(exercise, set, exIndex, setIndex, 0); $event.stopPropagation()"
                         class="h-10 w-10 rounded-full flex items-center justify-center bg-green-500 text-white shadow-lg transition-transform active:scale-90">
                         <app-icon name="done" class="h-6 w-6"></app-icon>
@@ -328,7 +334,7 @@
                       class="relative flex items-center px-2 py-1 mt-2 transition-all">
                       <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
                         <div class="bg-teal-400 h-2 rounded-full my-1 mx-1"
-                          [style.width.%]="(((performanceInputValues()[exIndex + '-' + setIndex]?.actualDuration ?? set.targetDuration) || 1) - getSetTimerState(exIndex, setIndex).remainingTime) / ((performanceInputValues()[exIndex + '-' + setIndex]?.actualDuration ?? set.targetDuration) || 1) * 100">
+                          [style.width.%]="(((getDurationValue(performanceInputValues()[exIndex + '-' + setIndex]?.actualDuration) ?? getDurationValue(set.targetDuration)) || 1) - getSetTimerState(exIndex, setIndex).remainingTime) / ((getDurationValue(performanceInputValues()[exIndex + '-' + setIndex]?.actualDuration) ?? getDurationValue(set.targetDuration)) || 1) * 100">
                         </div>
                       </div>
 
@@ -444,11 +450,11 @@
                           <button *ngIf="!isTimedSet(exIndex, setIndex)"
                             (click)="toggleSetCompletion(exercise, set, exIndex, setIndex, 0); $event.stopPropagation()"
                             [disabled]="!isSetDataValid(exIndex, setIndex)"
-                            class="py-2 px-4 rounded-full flex items-center font-semibold justify-center transition-all duration-200 ease-in-out transform active:scale-90 disabled:cursor-not-allowed focus:outline-none complete-set-button-animated"
+                            class="py-2 px-4 rounded-full flex items-center font-semibold justify-center transition-all duration-200 ease-in-out transform active:scale-90 disabled:cursor-not-allowed focus:outline-none complete-set-button-animated text-white"
                             [ngClass]="
         {
-          'bg-green-500 text-white shadow-lg disabled:bg-opacity-50': isSetCompleted(exIndex, setIndex, 0),
-          'bg-gray-200 dark:bg-gray-700 text-white border-2 border-gray-200 dark:border-gray-100 disabled:bg-opacity-50': !isSetCompleted(exIndex, setIndex, 0)
+          'bg-green-500 shadow-lg disabled:bg-opacity-50': isSetCompleted(exIndex, setIndex, 0),
+          'bg-gray-200 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-100 disabled:bg-opacity-50': !isSetCompleted(exIndex, setIndex, 0)
         }">
                             <app-icon name="done" class="h-6 w-6 mr-1"></app-icon>
                             <span>
@@ -459,7 +465,7 @@
                         </div>
                         <p *ngIf="!isSetDataValid(exIndex, setIndex)"
                           class="text-red dark:text-primary-light font-semibold text-sm">
-                          {{ 'Add at least one metric to complete the set' }}
+                          {{ 'compactPlayer.allMetricMustBeValid' | translate}}
                         </p>
                       </div>
                     </div>
@@ -801,7 +807,7 @@
                     class="dark:text-gray-100">{{ setLog.repsLogged
                     }}</strong></span>
                 <span *ngIf="setLog.weightLogged != null">{{ 'compactPlayer.weightLabel' | translate:{unit: ''} }}:
-                  <strong class="dark:text-gray-100">{{ setLog.weightLogged
+                  <strong class="dark:text-gray-100">{{ getWeightValue(setLog.weightLogged)
                     |
                     weightUnit }}</strong></span>
                 <span *ngIf="setLog.distanceLogged">{{ 'compactPlayer.distanceLabel' | translate }}: <strong
@@ -809,7 +815,7 @@
                     setLog.distanceLogged }} km</strong></span>
                 <span *ngIf="setLog.durationLogged">{{ 'compactPlayer.timeLabel' | translate }}: <strong
                     class="dark:text-gray-100">{{
-                    formatSecondsToTime(setLog.durationLogged) }}</strong></span>
+                    formatSecondsToTime(getDurationValue(setLog.durationLogged)) }}</strong></span>
               </div>
             </div>
             <div *ngIf="data.completedSetsInSession.length === 0"
@@ -838,7 +844,7 @@
                     class="dark:text-gray-100">{{ setLog.repsLogged
                     }}</strong></span>
                 <span *ngIf="setLog.weightLogged != null">{{ 'compactPlayer.weightLabel' | translate:{unit: ''} }}:
-                  <strong class="dark:text-gray-100">{{ setLog.weightLogged
+                  <strong class="dark:text-gray-100">{{ getWeightValue(setLog.weightLogged)
                     |
                     weightUnit }}</strong></span>
                 <span *ngIf="setLog.distanceLogged">{{ 'compactPlayer.distanceLabel' | translate }}: <strong
@@ -846,7 +852,7 @@
                     setLog.distanceLogged }} km</strong></span>
                 <span *ngIf="setLog.durationLogged">{{ 'compactPlayer.timeLabel' | translate }}: <strong
                     class="dark:text-gray-100">{{
-                    formatSecondsToTime(setLog.durationLogged) }}</strong></span>
+                    formatSecondsToTime(getDurationValue(setLog.durationLogged)) }}</strong></span>
               </div>
             </div>
           </div>
@@ -897,7 +903,7 @@
     class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-xs p-4 flex flex-col transform transition-all duration-300 ease-in-out">
     <!-- Modal Header -->
     <div class="flex justify-between items-center mb-4">
-      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ 'compactPlayer.rest' | translate }}</h3>
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ 'compactPlayer.restTitle' | translate }}</h3>
       <button appBumpClick (click)="closeRestModal()"
         class="flex items-center p-2 rounded-full text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700">
         <app-icon name="cancel" class="h-6 w-6"></app-icon>
@@ -916,7 +922,7 @@
       <button appBumpClick (click)="closeRestModal()"
         class="w-fit inline-flex justify-center bg-primary hover:bg-primary-dark focus:ring-4 focus:ring-primary-focus text-white font-semibold py-2.5 px-6 rounded-md text-sm transition-colors shadow-md hover:shadow-lg">
         <app-icon name="done" class="h-5 w-5 mr-1"></app-icon>
-        {{ 'compactPlayer.insights.done' | translate }}
+        {{ 'compactPlayer.insights.ok' | translate }}
       </button>
     </div>
   </div>
@@ -970,6 +976,11 @@
     <div class="flex items-center justify-center text-gray-500 dark:text-gray-300">
       <app-icon [name]="field" class="h-4 w-4 mr-1"></app-icon>
       <label class="text-xs font-medium py-1">{{ label }}</label>
+      <button type="button" (click)="openMetricSchemeModal(exIndex, setIndex, field, $event)"
+                [title]="'workoutBuilder.set.editReps' | translate"
+                class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
+                {{ 'common.edit' | translate }}
+            </button>
     </div>
 
     <!-- Main input group container -->
@@ -978,7 +989,7 @@
       <!-- Column 1: Decrement Button -->
       <button appBumpClick type="button" appPress (shortPress)="onShortPressDecrement(exIndex, setIndex, field)"
         (longPress)="onLongPressDecrement(exIndex, setIndex, field)" (pressRelease)="onPressRelease()"
-        class="flex items-center px-3 py-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-l-xl border-y border-l border-gray-300 dark:border-gray-700 transition-colors">
+        class="flex items-center px-3 py-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-l-xl border-y border-l border-gray-300 dark:border-gray-700 transition-colors disabled:cursor-not-allowed">
         <app-icon name="minus" class="h-5 w-5 pointer-events-none"></app-icon>
       </button>
 
@@ -986,11 +997,13 @@
       <div class="relative flex flex-col flex-grow">
         <!-- Input Field -->
         <div class="flex items-center justify-center bg-gray-300 dark:bg-gray-700">
-          <input [type]="(field === metricEnum.duration || field === metricEnum.rest) ? 'text' : 'number'"
+          <input
+            [id]="'reps-input-' + exIndex + '-' + setIndex"
+            [type]="(field === metricEnum.duration || field === metricEnum.rest || field === metricEnum.reps) ? 'text' : 'number'"
             [ngModel]="getInitialInputValue(exIndex, setIndex, field)"
-            (change)="updateSetData(exIndex, setIndex, 0, field, $event)"
-            class="w-full p-1 mt-1 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-50 dark:border-gray-800 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none focus:z-10 relative rounded-md">
-
+            (input)="updateSetData(exIndex, setIndex, 0, field, $event)"
+            class="w-full p-1 mt-1 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-50 dark:border-gray-800 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none focus:z-10 relative rounded-md h-16"
+            [ngClass]="{'ring-2 ring-red-500 border-red-500 focus:ring-red-500': hasInvalidInput(exIndex,setIndex)}">
         </div>
 
         <!-- Target Display (now correctly aligned under the input) -->
@@ -1012,10 +1025,12 @@
       <!-- Column 3: Increment Button -->
       <button appBumpClick type="button" appPress (shortPress)="onShortPressIncrement(exIndex, setIndex, field)"
         (longPress)="onLongPressIncrement(exIndex, setIndex, field)" (pressRelease)="onPressRelease()"
-        class="flex items-center px-3 py-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-r-xl border-y border-r border-gray-300 dark:border-gray-700 transition-colors">
+        class="flex items-center px-3 py-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-r-xl border-y border-r border-gray-300 dark:border-gray-700 transition-colors disabled:cursor-not-allowed">
         <app-icon name="plus" class="h-5 w-5 pointer-events-none"></app-icon>
       </button>
     </div>
+
+    <span class="flex bg-red-400 text-white justify-center rounded-md text-xs font-medium py-0.5" *ngIf="hasInvalidInput(exIndex,setIndex, field)">{{ 'common.invalidData' | translate }}</span>
   </div>
 </ng-template>
 
@@ -1088,3 +1103,4 @@
 <div class="hidden border-3"></div>
 <div class="hidden border-4"></div>
 <div class="hidden border-8"></div>
+<div class="hidden dark:bg-red-200"></div>

@@ -16,9 +16,11 @@ import {
   isSameMonth, isPast, isFuture, parseISO,
   differenceInDays,
   differenceInCalendarWeeks,
-  Locale
+  Locale,
+  eachMonthOfInterval,
+  setMonth
 } from 'date-fns';
-import { it, es, fr, enUS } from 'date-fns/locale';
+import { it, es, fr, enUS, ru, ja, ar, pt, de, zhCN } from 'date-fns/locale';
 import { DayOfWeekPipe } from '../../../shared/pipes/day-of-week-pipe';
 import { animate, group, query, state, style, transition, trigger } from '@angular/animations';
 import { TrackingService } from '../../../core/services/tracking.service';
@@ -41,6 +43,7 @@ import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language.service';
 import { Muscle } from '../../../core/models/muscle.model';
+import { runMain } from 'module';
 
 interface ScheduledItemWithLogs {
   routine: Routine;
@@ -199,7 +202,13 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     en: enUS,
     it: it,
     es: es,
-    fr: fr
+    fr: fr,
+    ru: ru,
+    ja: ja,
+    ar: ar,
+    zh: zhCN,
+    pt: pt,
+    de: de
   };
 
   isLoading = signal(true);
@@ -334,6 +343,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
 
 
   weekStartsOn: 0 | 1 = 1;
+  monthStartsOn: 0 | 1 = 1;
   calendarDisplayMode = signal<CalendarDisplayMode>('week');
   selectedCalendarDayLoggedWorkouts = signal<CalendarDay | null>(null);
   calendarAnimationState = signal<'center' | 'outLeft' | 'outRight' | 'preloadFromLeft' | 'preloadFromRight'>('center');
@@ -345,6 +355,27 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     const locale = this.dateFnsLocales[currentLang] || enUS;
     const start = startOfWeek(new Date(), { weekStartsOn: this.weekStartsOn, locale });
     return eachDayOfInterval({ start, end: addDays(start, 6) }).map(d => format(d, 'EE', { locale }));
+  });
+
+  /**
+     * A computed property that returns an array of the full month names
+     * based on the current language.
+     */
+  monthNames = computed(() => {
+    const currentLang = this.languageService.currentLang();
+    const locale = this.dateFnsLocales[currentLang] || enUS;
+
+    // Create an array of numbers from 0 to 11, representing the months.
+    const months = Array.from({ length: 12 }, (_, i) => i);
+
+    // For each month number, create a date and format it to get the month name.
+    return months.map(monthIndex => {
+      // Create a date for the specific month. The year and day are arbitrary.
+      const date = setMonth(new Date(), monthIndex);
+      // Format the date to get the stand-alone month name (e.g., "January").
+      // Use 'MMM' for abbreviated names (e.g., "Jan").
+      return format(date, 'LLLL', { locale });
+    });
   });
 
   private getWeekDayHeaders(): string[] {
@@ -935,6 +966,8 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     }
     this.calendarLoading.set(true);
 
+    const currentLang = this.languageService.currentLang();
+    const locale = this.dateFnsLocales[currentLang] || enUS;
     const newMonths: CalendarMonth[] = [];
     const allLogsForProgram = this.allWorkoutLogs().filter(log => log.programId === activeProg.id);
 
@@ -953,7 +986,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
       const effectiveStartOfWeek = (this.weekStartsOn === 1) ? (dayOfWeekForFirst === 0 ? 6 : dayOfWeekForFirst - 1) : dayOfWeekForFirst;
 
       newMonths.push({
-        monthName: format(targetDate, 'LLLL'),
+        monthName: format(targetDate, 'LLLL', { locale }),
         monthDate: targetDate,
         year: targetDate.getFullYear(),
         spacers: Array(effectiveStartOfWeek).fill(0),

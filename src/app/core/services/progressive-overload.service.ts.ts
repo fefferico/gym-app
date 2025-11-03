@@ -20,6 +20,7 @@ import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { StorageService } from './storage.service';
 import { WorkoutExercise } from '../models/workout.model';
+import { repsNumberToExactRepsTarget, repsTypeToReps, repsTargetToExactRepsTarget, getDistanceValue, distanceToExact, getWeightValue, weightToExact, getDurationValue, durationToExact } from './workout-helper.service';
 
 @Injectable({
   providedIn: 'root'
@@ -123,54 +124,27 @@ export class ProgressiveOverloadService {
       settings.strategies.forEach(strategy => {
         switch (strategy) {
           case ProgressiveOverloadStrategy.WEIGHT:
-            if (settings.weightIncrement && (set.targetWeight || set.targetWeightMin)) {
-              const originalSetWeight = set.targetWeight;
-              set.targetWeight = (originalSetWeight ?? 0) + settings.weightIncrement;
-              if (set.targetWeightMin) {
-                set.targetWeightMin = (set.targetWeightMin ?? originalSetWeight ?? 0) + settings.weightIncrement;
-                if (set.targetWeightMax && set.targetWeightMin > set.targetWeightMax){
-                  set.targetWeightMax = set.targetWeightMin + settings.weightIncrement;
-                }
-              }
+            if (settings.weightIncrement && (set.targetWeight)) {
+              const originalSetWeight = getWeightValue(set.targetWeight);
+              set.targetWeight = weightToExact((originalSetWeight ?? 0) + settings.weightIncrement);
             }
             break;
           case ProgressiveOverloadStrategy.REPS:
-            if (settings.repsIncrement && (set.targetReps || set.targetRepsMin)) {
-              const originalSetReps = set.targetReps;
-              set.targetReps = (originalSetReps ?? 0) + settings.repsIncrement;
-              if (set.targetRepsMin) {
-                set.targetRepsMin = (set.targetRepsMin ?? originalSetReps ?? 0) + settings.repsIncrement;
-                if (set.targetRepsMax && set.targetRepsMin > set.targetRepsMax){
-                  set.targetRepsMax = set.targetRepsMin + settings.repsIncrement;
-                }
-              }
+            if (settings.repsIncrement && (set.targetReps)) {
+              const originalSetReps = repsTypeToReps(set.targetReps);
+              set.targetReps = repsNumberToExactRepsTarget((originalSetReps ?? 0) + settings.repsIncrement);
             }
             break;
-          // +++ NEW: Apply distance increment
           case ProgressiveOverloadStrategy.DISTANCE:
-            if (settings.distanceIncrement && (set.targetDistance || set.targetDistanceMin)) {
-              const originalSetDistance = set.targetDistance;
-              set.targetDistance = (originalSetDistance ?? 0) + settings.distanceIncrement;
-              if (set.targetDistanceMin) {
-                set.targetDistanceMin = (set.targetDistanceMin ?? originalSetDistance ?? 0) + settings.distanceIncrement;
-                if (set.targetDistanceMax && set.targetDistanceMin > set.targetDistanceMax){
-                  set.targetDistanceMax = set.targetDistanceMin + settings.distanceIncrement;
-                }
-              }
+            if (settings.distanceIncrement && (set.targetDistance)) {
+              const originalSetDistance = getDistanceValue(set.targetDistance);
+              set.targetDistance = distanceToExact((originalSetDistance ?? 0) + settings.distanceIncrement);
             }
             break;
-          // +++ NEW: Apply duration increment
           case ProgressiveOverloadStrategy.DURATION:
-            if (settings.durationIncrement && (set.targetDuration || set.targetDurationMin)) {
-              // Assuming duration is stored in `set.durationSeconds`
-              const originalSetDuration = set.targetDuration;
-              set.targetDuration = (originalSetDuration ?? 0) + settings.durationIncrement;
-              if (set.targetDurationMin) {
-                set.targetDurationMin = (set.targetDurationMin ?? originalSetDuration ?? 0) + settings.durationIncrement;
-                if (set.targetDurationMax && set.targetDurationMin > set.targetDurationMax){
-                  set.targetDurationMax = set.targetDurationMin + settings.durationIncrement;
-                }
-              }
+            if (settings.durationIncrement && (set.targetDuration)) {
+              const originalSetDuration = getDurationValue(set.targetDuration);
+              set.targetDuration = durationToExact((originalSetDuration ?? 0) + settings.durationIncrement);
             }
             break;
           default:

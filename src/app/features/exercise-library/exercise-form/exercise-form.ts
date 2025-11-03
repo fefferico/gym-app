@@ -1,16 +1,14 @@
 import { Component, inject, OnInit, signal, computed, effect } from '@angular/core';
-import { CommonModule, TitleCasePipe, NgClass } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, FormControl } from '@angular/forms';
-import { switchMap, take, startWith, debounceTime, map } from 'rxjs/operators';
+import { switchMap, take } from 'rxjs/operators';
 import { firstValueFrom, of } from 'rxjs';
 import { ExerciseService } from '../../../core/services/exercise.service';
 import { AlertService } from '../../../core/services/alert.service';
 import { Exercise, ExerciseCategory } from '../../../core/models/exercise.model';
 import { Muscle } from '../../../core/models/muscle.model';
-import { MUSCLES_DATA } from '../../../core/services/muscles-data';
 import { Equipment } from '../../../core/models/equipment.model';
-import { EQUIPMENT_DATA } from '../../../core/services/equipment-data';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { MuscleMapService } from '../../../core/services/muscle-map.service';
 import { EquipmentService } from '../../../core/services/equipment.service';
@@ -20,7 +18,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-exercise-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, TitleCasePipe, NgClass, IconComponent, TranslateModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, IconComponent, TranslateModule],
   templateUrl: './exercise-form.html',
   styleUrls: ['./exercise-form.scss']
 })

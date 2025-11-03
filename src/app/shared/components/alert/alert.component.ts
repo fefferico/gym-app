@@ -61,13 +61,13 @@ export class AlertComponent implements OnInit {
    */
   get alignmentClass(): string {
     if (isPlatformBrowser(this.platformId)) {
-        const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        const hasInputs = this.options?.inputs && this.options.inputs.length > 0;
+      const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const hasInputs = this.options?.inputs && this.options.inputs.length > 0;
 
-        if (isMobile && hasInputs) {
-            // On mobile with inputs, align to the top and add padding.
-            return 'items-start pt-12';
-        }
+      if (isMobile && hasInputs) {
+        // On mobile with inputs, align to the top and add padding.
+        return 'items-start pt-12';
+      }
     }
     // By default, or on desktop, center the modal vertically.
     return 'items-center';
@@ -95,6 +95,11 @@ export class AlertComponent implements OnInit {
   }
 
   private focusButton(): void {
+    const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (isMobile) {
+      return;
+    }
+
     if (!this.options?.buttons || this.allButtons.length === 0) {
       return;
     }
@@ -111,7 +116,7 @@ export class AlertComponent implements OnInit {
 
     // If no "confirm" button or it wasn't found in the DOM, focus the first available button
     if (this.allButtons.first) {
-      if (this.options && this.options.buttons && this.options.buttons[0] && this.options.buttons[0].autofocus === false){
+      if (this.options && this.options.buttons && this.options.buttons[0] && this.options.buttons[0].autofocus === false) {
         //
       } else {
         this.allButtons.first.nativeElement.focus();
@@ -120,6 +125,7 @@ export class AlertComponent implements OnInit {
   }
 
   ngAfterViewInit(): void {
+    const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     // If there are no inputs at all, fall back to focusing a button.
     if (!this.options?.inputs || this.inputElements.length === 0) {
       this.focusButton();
@@ -147,8 +153,6 @@ export class AlertComponent implements OnInit {
     // --- PRIORITY 2: Mobile-specific Number Input ---
     // If no explicit autofocus is set, check for the mobile-number-input case.
     if (isPlatformBrowser(this.platformId)) {
-      const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
       if (isMobile) {
         const firstNumberInputIndex = this.options.inputs.findIndex(input => input.type === 'number');
 
@@ -168,7 +172,7 @@ export class AlertComponent implements OnInit {
 
     // --- PRIORITY 3: Fallback ---
     // If none of the above conditions were met, just focus the first input without selecting it.
-    if (this.inputElements.first) {
+    if (this.inputElements.first && !isMobile) {
       setTimeout(() => {
         this.inputElements.first.nativeElement.focus();
       }, focusDelay);
@@ -263,7 +267,7 @@ export class AlertComponent implements OnInit {
         if (button.cssClass) {
           classes += button.cssClass + ' ';
         } else {
-          classes += 'bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-400' + (isDesktop? ' focus:ring-indigo-500 dark:focus:ring-indigo-600' : '');
+          classes += 'bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-400' + (isDesktop ? ' focus:ring-indigo-500 dark:focus:ring-indigo-600' : '');
         }
         break;
       case 'cancel': if (button.cssClass) {

@@ -7,6 +7,7 @@ import { Exercise } from '../models/exercise.model';
 import { take } from 'rxjs';
 import { ActivityLog } from '../models/activity-log.model';
 import { TranslateService } from '@ngx-translate/core';
+import { getWeightValue, repsTypeToReps } from './workout-helper.service';
 
 // Define interfaces for StatsService return types if not already global
 export interface WeeklySummary {
@@ -47,7 +48,7 @@ export class StatsService {
   constructor() { }
 
   calculateSetVolume(set: LoggedSet): number {
-    return (set.repsLogged || 0) * (set.weightLogged || 0);
+    return (repsTypeToReps(set.repsLogged) || 0) * (getWeightValue(set.weightLogged) || 0);
   }
 
   calculateWorkoutVolume(log: WorkoutLog): number {
@@ -102,7 +103,7 @@ export class StatsService {
   calculateTotalVolume(log: WorkoutLog): number {
     return log.exercises.reduce((total, exercise) => {
       const exerciseVolume = exercise.sets.reduce((setTotal, set) => {
-        return setTotal + ((set.weightLogged ?? 0) * (set.repsLogged ?? 0));
+        return setTotal + ((getWeightValue(set.weightLogged) ?? 0) * (repsTypeToReps(set.repsLogged) ?? 0));
       }, 0);
       return total + exerciseVolume;
     }, 0);

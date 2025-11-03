@@ -4,6 +4,7 @@ import { isPlatformBrowser, PlatformLocation } from '@angular/common'; // Import
 import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { AlertButton, AlertOptions, AlertInput } from '../models/alert.model';
 import { TranslateService } from '@ngx-translate/core'; // Import TranslateService
+import { RepsTarget, RepsTargetType } from '../models/workout.model';
 
 // Define a reusable type for the alert result to keep the code clean and consistent.
 type AlertResult = { role: string, data?: any, values?: { [key: string]: string | number | boolean } };

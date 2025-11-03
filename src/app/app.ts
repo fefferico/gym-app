@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, ChildrenOutletContexts, NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router, RouterOutlet } from '@angular/router';
 import { ThemeService } from './core/services/theme.service';
 import { NavigationComponent } from './shared/components/navigation/navigation';
 import { CommonModule } from '@angular/common';
@@ -10,6 +10,34 @@ import { ToastContainerComponent } from './shared/components/toast/toast.compone
 import { PausedWorkoutComponent } from './features/workout-tracker/paused-workout/paused-workout.component';
 import { filter, map } from 'rxjs';
 import { LanguageService } from './core/services/language.service';
+import { SpinnerService } from './core/services/spinner.service';
+import { animate, group, query, style, transition, trigger } from '@angular/animations';
+
+export const routeAnimation =
+  trigger('routeAnimations', [
+    transition('* <=> *', [ // Animate between any two routes
+      style({ position: 'relative' }),
+      query(':enter, :leave', [
+        style({
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%'
+        })
+      ], { optional: true }),
+      query(':enter', [
+        style({ opacity: 0, transform: 'translateY(20px)' }) // New page starts transparent and slightly down
+      ], { optional: true }),
+      group([
+        query(':leave', [
+          animate('300ms ease-out', style({ opacity: 0, transform: 'translateY(-20px)' })) // Old page fades out and moves up
+        ], { optional: true }),
+        query(':enter', [
+          animate('300ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })) // New page fades in and moves to position
+        ], { optional: true })
+      ])
+    ])
+  ]);
 
 @Component({
   selector: 'app-root',
@@ -31,14 +59,14 @@ import { LanguageService } from './core/services/language.service';
     ===============================================
   -->
   <!-- <main class="flex-grow container mx-auto pt-16 pb-20">  -->
-  <main class="flex-grow container mx-auto bg-gray-100 dark:bg-gray-900" 
+  <main class="flex-grow container mx-auto bg-gray-100 dark:bg-gray-900" [@routeAnimations]="getRouteAnimationData()"
       [ngClass]="{ 
         'pb-20': !isFullScreenPlayerActive,
         'mb-0': isFullScreenPlayerActive 
       }">  
     <app-toast-container></app-toast-container>
-    <router-outlet></router-outlet>
     <app-spinner></app-spinner>
+    <router-outlet></router-outlet>
   </main>
 
   <!-- The bottom navigation is now a sibling to <main> and can be fixed to the bottom -->
@@ -49,6 +77,7 @@ import { LanguageService } from './core/services/language.service';
 
 </div>
   `,
+  animations: [ routeAnimation ]
   // No styleUrls needed if all styling is via Tailwind utility classes in the template
   // or global styles in styles.scss
 })
@@ -61,10 +90,11 @@ export class AppComponent implements OnInit {
   shouldShowNavigationBanner = signal(true);
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
+  private spinnerService = inject(SpinnerService);
 
   isFullScreenPlayerActive = false;
 
-  constructor() {
+  constructor(private contexts: ChildrenOutletContexts) {
     this.languageService.init();
     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd)
@@ -73,6 +103,31 @@ export class AppComponent implements OnInit {
       const url = event.urlAfterRedirects;
       this.isFullScreenPlayerActive = url.includes('/play/tabata') || url.includes('/play/focus'); // Add other player routes here
     });
+
+    this.router.events.pipe(
+      filter(event => 
+        event instanceof NavigationStart ||
+        event instanceof NavigationEnd ||
+        event instanceof NavigationCancel ||
+        event instanceof NavigationError
+      )
+    ).subscribe(event => {
+      if (event instanceof NavigationEnd){
+        let url = event.urlAfterRedirects;
+        this.isFullScreenPlayerActive = url.includes('/play/tabata') || url.includes('/play/focus'); // Add other player routes here
+      }
+      
+      if (event instanceof NavigationStart) {
+        // Show the spinner as soon as navigation starts
+        this.spinnerService.show('Loading...');
+        return;
+      }
+
+      // Hide the spinner once navigation is completely finished, cancelled, or has an error.
+      // This handles the resolver completing, as well as any failures.
+      this.spinnerService.hide();
+    });
+
   }
 
 
@@ -94,5 +149,9 @@ export class AppComponent implements OnInit {
       this.shouldShowPausedBanner.set(data['showPausedWorkoutBanner'] === true);
       this.shouldShowNavigationBanner.set(data['shouldShowNavigationBanner'] === true);
     });
+  }
+
+  getRouteAnimationData() {
+    return this.contexts.getContext('primary')?.route?.snapshot?.data?.['animation'];
   }
 }

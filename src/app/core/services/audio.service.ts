@@ -8,7 +8,8 @@ export enum AUDIO_TYPES {
   "whoosh" = 'whoosh',
   "tada" = 'tada',
   "tatatada" = 'tatatada',
-  "untoggle" = 'untoggle'
+  "untoggle" = 'untoggle',
+  "magic" = "magic"
 };
 
 @Injectable({
@@ -201,7 +202,7 @@ export class AudioService {
 
         // Helper function to create and play a single note
         const playNote = (frequency: number, duration: number, startAt: number) => {
-          if (!this.audioCtx){
+          if (!this.audioCtx) {
             return;
           }
           const osc = this.audioCtx.createOscillator();
@@ -254,6 +255,10 @@ export class AudioService {
         finalOsc.start(startTime);
         finalOsc.stop(startTime + finalNoteDuration + 0.5); // Stop slightly after gain ramps down
         break;
+      case AUDIO_TYPES.magic: {
+        this.playMagicRestoreSound();
+        break;
+      }
     }
   }
 
@@ -266,4 +271,55 @@ export class AudioService {
       }
     }
   }
+
+  /**
+ * Plays a dynamically generated "magical restore" sound.
+ */
+  playMagicRestoreSound() {
+    this.initializeAudioContext();
+    if (!this.audioCtx) {
+      return;
+    }
+    const now = this.audioCtx.currentTime;
+
+    // This sound is composed of three ascending notes (an arpeggio)
+    // that quickly play and fade out, creating a "sparkle" effect.
+    const notes = [622.25, 783.99, 932.33]; // F#5, G5, A#5
+
+    // Master gain to control the overall volume and prevent clipping
+    const masterGain = this.audioCtx.createGain();
+    masterGain.gain.setValueAtTime(0.3, now); // Set overall volume to 30%
+    masterGain.connect(this.audioCtx.destination);
+
+    notes.forEach((frequency, index) => {
+      if (!this.audioCtx) {
+        return;
+      }
+      const oscillator = this.audioCtx.createOscillator();
+      const gainNode = this.audioCtx.createGain();
+
+      // Configure the oscillator
+      oscillator.type = 'sine'; // A sine wave is clean and pure, good for magic sounds
+      oscillator.frequency.setValueAtTime(frequency, now);
+
+      // Connect nodes: Oscillator -> GainNode -> MasterGain -> Speakers
+      oscillator.connect(gainNode);
+      gainNode.connect(masterGain);
+
+      // Schedule the sound envelope (ADSR - Attack, Decay, Sustain, Release)
+      const startTime = now + index * 0.08; // Stagger the start time of each note
+
+      // 1. Attack: Quickly fade in to avoid a "click"
+      gainNode.gain.setValueAtTime(0, startTime);
+      gainNode.gain.linearRampToValueAtTime(0.8, startTime + 0.05); // Quick rise to 80% volume
+
+      // 2. Decay & Release: Fade out over a longer period
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + 1.5);
+
+      // Start and stop the oscillator
+      oscillator.start(startTime);
+      oscillator.stop(startTime + 1.5);
+    });
+  }
+
 }

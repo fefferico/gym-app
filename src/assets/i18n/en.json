@@ -279,7 +279,12 @@
     "cancelled": "Cancelled",
     "discard": "Discard",
     "undo": "UNDO",
-    "actionCompleted": "Action completed"
+    "edit": "Edit",
+    "atLeast": "At least",
+    "min": "Min",
+    "max": "Max",
+    "actionCompleted": "Action completed",
+    "invalidData": "Invalid data"
   },
   "toasts": {
     "statusUpdated": "Status Updated",
@@ -749,6 +754,8 @@
     }
   },
   "compactPlayer": {
+    "allMetricMustBeValid": "Each metric must be valid to complete the set",
+    "restTitle": "Set rest",
     "warmupSet": "Warmup set",
     "completedSet": "COMPLETED SET",
     "completeSet": "COMPLETE SET",
@@ -806,7 +813,8 @@
       "personalBests": "Personal Bests",
       "noPBs": "No personal bests recorded for this exercise yet.",
       "onDate": "on {{date}}",
-      "done": "DONE"
+      "done": "DONE",
+      "ok": "OK"
     },
     "toasts": {
       "intensityAdjusted": "Routine intensity will be adjusted by {{percent}}%",
@@ -840,7 +848,8 @@
       "noFieldsToRemove": "No fields can be removed from this set.",
       "fieldAdded": "{{field}} field added to the set.",
       "invalidValue": "Invalid value provided.",
-      "fieldRemoved": "'{{field}}' field removed from set #{{number}}."
+      "fieldRemoved": "'{{field}}' field removed from set #{{number}}.",
+      "enterNumericRepsError": "You must change the actual reps value before setting the set as completed"
     },
     "alerts": {
       "toughWorkoutTitle": "Last Workout Was Tough",
@@ -2661,5 +2670,26 @@
     "guidedPrograms": "Guided Programs/Challenges",
     "equipmentSpecific": "Equipment-Specific",
     "custom": "Custom"
+  },
+  "repsSchemes": {
+    "exact": "Exact",
+    "range": "Range",
+    "max": "Max",
+    "maxFraction": "Max Fraction",
+    "amrap": "AMRAP",
+    "minPlus": "More than X",
+    "divisor": "Divisor",
+    "titles": {
+      "selectType": "Select type",
+      "setExact": "Type EXACT",
+      "setRange": "Type RANGE",
+      "setMax": "Type MAX",
+      "setMaxFraction": "Type MAX/N",
+      "setAmrap": "Type AMRAP",
+      "setMinPlus": "Type MORE THAN X"
+    }
+  },
+  "workoutLogDetail": {
+    "targetComparison": "Target comparison"
   }
 }

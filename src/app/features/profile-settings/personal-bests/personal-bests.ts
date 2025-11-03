@@ -2,7 +2,6 @@
 import { Component, inject, OnInit, signal, computed, PLATFORM_ID } from '@angular/core';
 import { CommonModule, DatePipe, TitleCasePipe, DecimalPipe, isPlatformBrowser } from '@angular/common'; // Ensure DecimalPipe is imported
 import { Router, RouterLink } from '@angular/router';
-import { Observable, combineLatest, of } from 'rxjs';
 import { map, take, tap } from 'rxjs/operators';
 
 import { TrackingService } from '../../../core/services/tracking.service';
@@ -12,15 +11,15 @@ import { ExerciseService } from '../../../core/services/exercise.service';
 import { PersonalBestSet, PBHistoryInstance } from '../../../core/models/workout-log.model';
 import { Exercise, EXERCISE_CATEGORIES } from '../../../core/models/exercise.model';
 import { UnitsService } from '../../../core/services/units.service';
-import { WeightUnitPipe } from '../../../shared/pipes/weight-unit-pipe'; // Not directly used in formatPbValue but good to have if template uses it elsewhere
 import { ToastService } from '../../../core/services/toast.service';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { WorkoutService } from '../../../core/services/workout.service';
+import { getDistanceValue, getDurationValue, getWeightValue, repsTypeToReps } from '../../../core/services/workout-helper.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
-import { Muscle } from '../../../core/models/muscle.model';
+import { RepsTarget } from '../../../core/models/workout.model';
 
 
 // Interface to combine PB data with Exercise details
@@ -363,5 +362,28 @@ export class PersonalBestsComponent implements OnInit {
       return 0;
     }
     return pb.history.filter(hist => hist.pbType === pb.pbType).length;
+  }
+
+ /**
+   * Prepares a PersonalBestSet for display by converting its RepsTarget object
+   * into a primitive number, which is what formatPbValue expects.
+   * @param pb The original PersonalBestSet object.
+   * @returns A new object with `repsLogged` as a number.
+   */
+  protected formatPbForDisplay(pb: PersonalBestSet): {
+    weightLogged?: number;
+    repsLogged?: number | undefined; // The return type now correctly omits null
+    durationLogged?: number;
+    distanceLogged?: number;
+    pbType?: string;
+  } {
+    return {
+      ...pb, // Copy all other properties
+      // If repsTargetRepsToReps returns null, convert it to undefined.
+      repsLogged: repsTypeToReps(pb.repsLogged) ?? undefined,
+      weightLogged: getWeightValue(pb.weightLogged) ?? undefined,
+      distanceLogged: getDistanceValue(pb.distanceLogged) ?? undefined,
+      durationLogged: getDurationValue(pb.durationLogged) ?? undefined
+    };
   }
 }

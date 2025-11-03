@@ -4,7 +4,7 @@ import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Subscription, of, timer, firstValueFrom, interval, Subject, combineLatest, lastValueFrom } from 'rxjs';
 import { switchMap, tap, map, take, filter, takeUntil } from 'rxjs/operators';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { ActiveSetInfo, ExerciseTargetSetParams, METRIC, PausedWorkoutState, PlayerSubState, Routine, SessionState, TimedSetState, WorkoutExercise } from '../../../core/models/workout.model';
+import { ActiveSetInfo, DistanceTarget, DurationTarget, ExerciseTargetSetParams, METRIC, PausedWorkoutState, PlayerSubState, Routine, SessionState, TimedSetState, WeightTarget, WorkoutExercise } from '../../../core/models/workout.model';
 import { Exercise } from '../../../core/models/exercise.model';
 import { LastPerformanceSummary, LoggedSet, LoggedWorkoutExercise, PersonalBestSet, WorkoutLog } from '../../../core/models/workout-log.model';
 import { FormatSecondsPipe } from '../../../shared/pipes/format-seconds-pipe';
@@ -34,6 +34,7 @@ import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { addExerciseBtn, addRoundToExerciseBtn, addSetToExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, calculatorBtn, createSuperSetBtn, finishEarlyBtn, jumpToExerciseBtn, markAsDoLaterBtn, openExercisePerformanceInsightsBtn, openSessionPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeFromSuperSetBtn, removeRoundFromExerciseBtn, removeSetFromExerciseBtn, skipCurrentExerciseBtn, skipCurrentSetBtn, switchExerciseBtn } from '../../../core/services/buttons-data';
 import { SessionOverviewModalComponent } from '../session-overview-modal/session-overview-modal.component';
 import { BarbellCalculatorModalComponent } from '../../../shared/components/barbell-calculator-modal/barbell-calculator-modal.component';
+import { repsTypeToReps, genRepsTypeFromRepsNumber, repsTargetAsString, weightToExact, restToExact, getWeightValue, getRestValue, getDurationValue, durationToExact, distanceToExact, getDistanceValue } from '../../../core/services/workout-helper.service';
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -253,10 +254,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const activeInfo = this.activeSetInfo();
     const targetDuration = activeInfo?.setData?.targetDuration;
     if (state === TimedSetState.Idle) {
-      return (targetDuration && targetDuration > 0 ? targetDuration : (this.csf?.['actualDuration']?.value ?? 0)).toString();
+      return (targetDuration && getDurationValue(targetDuration) > 0 ? targetDuration : (this.csf?.['actualDuration']?.value ?? 0)).toString();
     }
-    if (targetDuration && targetDuration > 0) {
-      const remaining = targetDuration - elapsed;
+    if (targetDuration && getDurationValue(targetDuration) > 0) {
+      const remaining = getDurationValue(targetDuration) - elapsed;
       return remaining.toString();
     } else {
       return elapsed.toString();
@@ -268,7 +269,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     if (state === TimedSetState.Idle) return false;
     const elapsed = this.timedSetElapsedSeconds();
     const targetDuration = this.activeSetInfo()?.setData?.targetDuration;
-    return targetDuration && targetDuration > 0 && elapsed > targetDuration;
+    return targetDuration && getDurationValue(targetDuration) > 0 && elapsed > getDurationValue(targetDuration);
   });
 
   @HostListener('window:beforeunload', ['$event'])
@@ -581,13 +582,14 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const exerciseSet = exercise?.sets[0];
     return {
       id: uuidv4(),
-      targetReps: exerciseSet && exerciseSet.targetReps ? exerciseSet.repsLogged : 1,
-      targetWeight: exerciseSet && exerciseSet.weightLogged ? exerciseSet.weightLogged : 1,
-      targetDuration: exerciseSet && exerciseSet.targetDuration ? exerciseSet.targetDuration : 0,
-      targetRest: superSetOrder !== null && superSetOrder !== undefined && exercise && exercise.sets.length && superSetOrder < exercise.sets.length - 1 ? 0 : this.getLastExerciseOfSuperset(supersetId, loggedExercises).targetRest,
+      targetReps: exerciseSet && exerciseSet.targetReps ? exerciseSet.repsLogged : genRepsTypeFromRepsNumber(1),
+      targetWeight: exerciseSet && exerciseSet.weightLogged ? exerciseSet.weightLogged : weightToExact(1),
+      targetDuration: exerciseSet && exerciseSet.targetDuration ? exerciseSet.targetDuration : durationToExact(0),
+      targetRest: superSetOrder !== null && superSetOrder !== undefined && exercise && exercise.sets.length && superSetOrder < exercise.sets.length - 1 ? restToExact(0) : this.getLastExerciseOfSuperset(supersetId, loggedExercises).targetRest,
       targetTempo: '1',
       notes: exerciseSet && exerciseSet.notes ? exerciseSet.notes : '',
       type: exerciseSet && exerciseSet.type ? 'superset' : 'standard',
+      fieldOrder: this.workoutService.getRepsAndWeightFields()
     };
   }
 
@@ -596,13 +598,14 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const exerciseSet = exercise?.sets[exercise.sets.length - 1];
     return {
       id: uuidv4(),
-      targetReps: exerciseSet && exerciseSet.targetReps ? exerciseSet.targetReps : 1,
-      targetWeight: exerciseSet && exerciseSet.targetWeight ? exerciseSet.targetWeight : 1,
-      targetDuration: exerciseSet && exerciseSet.targetDuration ? exerciseSet.targetDuration : 1,
+      targetReps: exerciseSet && exerciseSet.targetReps ? exerciseSet.targetReps : genRepsTypeFromRepsNumber(1),
+      targetWeight: exerciseSet && exerciseSet.targetWeight ? exerciseSet.targetWeight : weightToExact(1),
+      targetDuration: exerciseSet && exerciseSet.targetDuration ? exerciseSet.targetDuration : durationToExact(1),
       targetTempo: '1',
-      targetRest: exerciseSet && exerciseSet.targetRest ? exerciseSet.targetRest : 60,
+      targetRest: exerciseSet && exerciseSet.targetRest ? exerciseSet.targetRest : restToExact(60),
       notes: exerciseSet && exerciseSet.notes ? exerciseSet.notes : '',
       type: exerciseSet && exerciseSet.type ? 'superset' : 'standard',
+      fieldOrder: this.workoutService.getRepsAndWeightFields()
     };
   }
 
@@ -624,10 +627,11 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
             targetReps: loggedSet.targetReps ?? loggedSet.repsLogged,
             targetWeight: loggedSet.targetWeight ?? loggedSet.weightLogged,
             targetDuration: loggedSet.targetDuration ?? loggedSet.durationLogged,
-            targetRest: originalPlannedSet?.targetRest || 60,
+            targetRest: originalPlannedSet?.targetRest || restToExact(60),
             tempo: loggedSet.targetTempo || originalPlannedSet?.targetTempo,
             notes: loggedSet.notes,
             type: loggedSet.type as 'standard' | 'warmup' | 'amrap' | 'custom' | string,
+            fieldOrder: this.workoutService.getRepsAndWeightFields()
           };
         }) : [this.getFirstExerciseOfSuperset((loggedEx.supersetOrder || 0), loggedEx.supersetId, loggedExercises)],
         type: (sessionExercise?.supersetId ?? 0) ? 'superset' : 'standard'
@@ -658,7 +662,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     if (this.timedSetTimerState() === TimedSetState.Idle) {
       this.timedSetElapsedSeconds.set(0);
       const targetDuration = this.activeSetInfo()?.setData?.targetDuration;
-      if (targetDuration && targetDuration > 0) {
+      if (targetDuration && getDurationValue(targetDuration) > 0) {
         this.currentSetForm.get('actualDuration')?.setValue(targetDuration, { emitEvent: false });
       }
       this.soundPlayedForThisCountdownSegment = false;
@@ -680,8 +684,8 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         const enableSound = this.appSettingsService.enableTimerCountdownSound();
         const countdownFrom = this.appSettingsService.countdownSoundSeconds();
 
-        if (enableSound && targetDuration && targetDuration > 20 && currentElapsed > 0) {
-          const remainingSeconds = targetDuration - currentElapsed;
+        if (enableSound && targetDuration && getDurationValue(targetDuration) > 20 && currentElapsed > 0) {
+          const remainingSeconds = getDurationValue(targetDuration) - currentElapsed;
           if (remainingSeconds <= countdownFrom && remainingSeconds >= 0) {
             if (remainingSeconds === 0) {
               this.playClientGong();
@@ -1084,11 +1088,11 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     if (!activeInfo) return;
     this.editingTarget = field;
     switch (field) {
-      case METRIC.reps: this.editingTargetValue = activeInfo.setData.targetReps ?? ''; break;
-      case METRIC.weight: this.editingTargetValue = activeInfo.setData.targetWeight ?? ''; break;
-      case METRIC.duration: this.editingTargetValue = activeInfo.setData.targetDuration ?? ''; break;
-      case METRIC.distance: this.editingTargetValue = activeInfo.setData.targetDistance ?? ''; break;
-      case METRIC.rest: this.editingTargetValue = activeInfo.setData.targetRest ?? ''; break;
+      case METRIC.reps: this.editingTargetValue = repsTargetAsString(activeInfo.setData.targetReps) ?? ''; break;
+      case METRIC.weight: this.editingTargetValue = getWeightValue(activeInfo.setData.targetWeight) ?? ''; break;
+      case METRIC.duration: this.editingTargetValue = getDurationValue(activeInfo.setData.targetDuration) ?? ''; break;
+      case METRIC.distance: this.editingTargetValue = getDistanceValue(activeInfo.setData.targetDistance) ?? ''; break;
+      case METRIC.rest: this.editingTargetValue = getRestValue(activeInfo.setData.targetRest) ?? ''; break;
     }
   }
 
@@ -1101,12 +1105,12 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     let value = '';
     if (pb.weightLogged !== undefined && pb.weightLogged !== null) {
       value += `${pb.weightLogged}${this.unitService.getWeightUnitSuffix()}`;
-      if (pb.repsLogged && pb.repsLogged > 1 && !pb.pbType.includes('RM (Actual)')) {
+      if (pb.repsLogged && repsTypeToReps(pb.repsLogged) > 1 && !pb.pbType.includes('RM (Actual)')) {
         value += ` x ${pb.repsLogged}`;
       }
     } else if (pb.repsLogged && pb.pbType.includes('Max Reps')) {
       value = `${pb.repsLogged} reps`;
-    } else if (pb.durationLogged && pb.durationLogged > 0 && pb.pbType.includes('Max Duration')) {
+    } else if (pb.durationLogged && getDurationValue(pb.durationLogged) > 0 && pb.pbType.includes('Max Duration')) {
       value = `${pb.durationLogged}s`;
     }
     return value || 'N/A';
@@ -1184,18 +1188,18 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         if (historicalSetPerformance && currentExerciseData.exerciseName && currentExerciseData.exerciseName.toLowerCase().indexOf('kb') < 0) {
           finalSetParamsForSession = {
             ...plannedSetForSuggestions,
-            targetReps: historicalSetPerformance.repsLogged || plannedSetForSuggestions.targetReps || 0,
-            targetWeight: historicalSetPerformance.weightLogged || plannedSetForSuggestions.targetWeight || 0,
-            targetDuration: historicalSetPerformance.durationLogged || plannedSetForSuggestions.targetDuration || 0,
-            targetRest: plannedSetForSuggestions.targetRest || 0
+            targetReps: historicalSetPerformance.repsLogged || plannedSetForSuggestions.targetReps || genRepsTypeFromRepsNumber(0),
+            targetWeight: historicalSetPerformance.weightLogged || plannedSetForSuggestions.targetWeight || weightToExact(0),
+            targetDuration: historicalSetPerformance.durationLogged || plannedSetForSuggestions.targetDuration || durationToExact(0),
+            targetRest: plannedSetForSuggestions.targetRest || restToExact(0)
           };
         } else {
           finalSetParamsForSession = {
             ...plannedSetForSuggestions,
-            targetReps: plannedSetForSuggestions.targetReps || 0,
-            targetWeight: plannedSetForSuggestions.targetWeight || 0,
-            targetDuration: plannedSetForSuggestions.targetDuration || 0,
-            targetRest: plannedSetForSuggestions.targetRest || 0
+            targetReps: plannedSetForSuggestions.targetReps || genRepsTypeFromRepsNumber(0),
+            targetWeight: plannedSetForSuggestions.targetWeight || weightToExact(0),
+            targetDuration: plannedSetForSuggestions.targetDuration || durationToExact(0),
+            targetRest: plannedSetForSuggestions.targetRest || restToExact(0)
           };
         }
       }
@@ -1204,16 +1208,16 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       const { direction, percentage } = this.intensityAdjustment;
       const multiplier = direction === 'increase' ? 1 + (percentage / 100) : 1 - (percentage / 100);
       if (finalSetParamsForSession.targetWeight !== null && finalSetParamsForSession.targetWeight !== undefined) {
-        const adjustedWeight = Math.round((finalSetParamsForSession.targetWeight * multiplier) * 4) / 4;
-        finalSetParamsForSession.targetWeight = adjustedWeight >= 0 ? adjustedWeight : 0;
+        const adjustedWeight = Math.round((getWeightValue(finalSetParamsForSession.targetWeight) * multiplier) * 4) / 4;
+        finalSetParamsForSession.targetWeight = weightToExact(adjustedWeight >= 0 ? adjustedWeight : 0);
       }
       if (finalSetParamsForSession.targetReps) {
-        const adjustedReps = Math.round(finalSetParamsForSession.targetReps * multiplier);
-        finalSetParamsForSession.targetReps = adjustedReps >= 0 ? adjustedReps : 0;
+        const adjustedReps = Math.round(repsTypeToReps(finalSetParamsForSession.targetReps) * multiplier);
+        finalSetParamsForSession.targetReps = adjustedReps >= 0 ? genRepsTypeFromRepsNumber(adjustedReps) : genRepsTypeFromRepsNumber(0);
       }
       if (finalSetParamsForSession.targetDuration) {
-        const adjustedDuration = Math.round(finalSetParamsForSession.targetDuration * multiplier);
-        finalSetParamsForSession.targetDuration = adjustedDuration >= 0 ? adjustedDuration : 0;
+        const adjustedDuration = Math.round(getDurationValue(finalSetParamsForSession.targetDuration) * multiplier);
+        finalSetParamsForSession.targetDuration = durationToExact(adjustedDuration >= 0 ? adjustedDuration : 0);
       }
     }
     finalSetParamsForSession.id = currentPlannedSetData.id;
@@ -1293,8 +1297,8 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const completedSetLogThisSession = completedExerciseLog?.sets.find(logSet => logSet.plannedSetId === activeInfo.setData.id);
 
     // Default to the minimum of the range if available, otherwise the single value.
-    let initialActualReps = activeInfo.setData.targetRepsMin ?? activeInfo.setData.targetReps ?? null;
-    let initialActualDuration = activeInfo.setData.targetDurationMin ?? activeInfo.setData.targetDuration ?? null;
+    let initialActualReps = activeInfo.setData.targetReps ?? null;
+    let initialActualDuration = activeInfo.setData.targetDuration ?? null;
 
     if (completedSetLogThisSession) {
       if (completedSetLogThisSession.durationLogged !== undefined) {
@@ -1305,7 +1309,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       }
     }
 
-    let weightForForm: number | null | undefined = activeInfo.setData.targetWeight;
+    let weightForForm: number | null | undefined = getWeightValue(activeInfo.setData.targetWeight);
     if (weightForForm === null || weightForForm === undefined) {
       const allLoggedSetsForThisEx = this.currentWorkoutLogExercises()
         .find(exLog => exLog.exerciseId === activeInfo.exerciseData.exerciseId)?.sets || [];
@@ -1319,7 +1323,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       if (previousLoggedSetsInSessionForThisExercise.length > 0) {
         const lastActualPrevSet = previousLoggedSetsInSessionForThisExercise[previousLoggedSetsInSessionForThisExercise.length - 1];
         if (lastActualPrevSet.weightLogged !== null && lastActualPrevSet.weightLogged !== undefined) {
-          weightForForm = lastActualPrevSet.weightLogged;
+          weightForForm = getWeightValue(lastActualPrevSet.weightLogged);
         }
       } else if (activeInfo.type === 'warmup' && (activeInfo.setData.targetWeight === null || activeInfo.setData.targetWeight === undefined)) {
         weightForForm = activeInfo.setData.targetWeight ?? null;
@@ -1443,9 +1447,9 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const exerciseToUpdate = updatedRoutineForSession.exercises[activeInfoOriginal.exerciseIndex];
     const setToUpdate = exerciseToUpdate.sets[activeInfoOriginal.setIndex];
     switch (this.editingTarget) {
-      case 'reps': setToUpdate.targetReps = numericValue; break;
-      case 'weight': setToUpdate.targetWeight = numericValue; break;
-      case 'duration': setToUpdate.targetDuration = numericValue; break;
+      case 'reps': setToUpdate.targetReps = genRepsTypeFromRepsNumber(numericValue); break;
+      case 'weight': setToUpdate.targetWeight = weightToExact(numericValue); break;
+      case 'duration': setToUpdate.targetDuration = durationToExact(numericValue); break;
     }
     routineSignal.set(updatedRoutineForSession);
     this.toastService.success(`Target ${this.editingTarget} updated to ${numericValue}.`, 3000, "Target Updated");
@@ -1458,7 +1462,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const currentRoutineValue = this.routine();
     if (!activeInfo || !currentRoutineValue) { this.toastService.error("Cannot log set: data unavailable", 0); return; }
 
-    if (activeInfo.setData.targetDuration && activeInfo.setData.targetDuration > 0 &&
+    if (activeInfo.setData.targetDuration && getDurationValue(activeInfo.setData.targetDuration) > 0 &&
       (this.timedSetTimerState() === TimedSetState.Running || this.timedSetTimerState() === TimedSetState.Paused)) {
       this.stopAndLogTimedSet();
     }
@@ -1479,7 +1483,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const formValues = this.currentSetForm.value;
 
     let durationToLog = formValues.actualDuration;
-    if (activeInfo.setData.targetDuration && activeInfo.setData.targetDuration > 0 && this.timedSetElapsedSeconds() > 0) {
+    if (activeInfo.setData.targetDuration && getDurationValue(activeInfo.setData.targetDuration) > 0 && this.timedSetElapsedSeconds() > 0) {
       durationToLog = this.timedSetElapsedSeconds();
     } else if (formValues.actualDuration === null && activeInfo.setData.targetDuration) {
       durationToLog = activeInfo.setData.targetDuration;
@@ -1500,16 +1504,13 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       durationLogged: durationToLog,
       rpe: formValues.rpe ?? undefined,
       targetReps: activeInfo.setData.targetReps,
-      targetRepsMin: activeInfo.setData.targetRepsMin,
-      targetRepsMax: activeInfo.setData.targetRepsMax,
       targetWeight: activeInfo.setData.targetWeight,
       targetDuration: activeInfo.setData.targetDuration,
-      targetDurationMin: activeInfo.setData.targetDurationMin,
-      targetDurationMax: activeInfo.setData.targetDurationMax,
       targetTempo: activeInfo.setData.targetTempo,
       targetRest: activeInfo.setData.targetRest,
       notes: formValues.setNotes?.trim() || undefined,
       timestamp: new Date().toISOString(),
+      fieldOrder: this.workoutService.getRepsAndWeightFields()
     };
     this.addLoggedSetToCurrentLog(activeInfo.exerciseData, loggedSetData);
 
@@ -1832,8 +1833,9 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     if (isSuperset && isBeforeFirstWorkingSet) {
       // Insert a new warmup exercise before the superset block
       const newWarmupSet: ExerciseTargetSetParams = {
-        id: `warmup-${uuidv4()}`, type: 'warmup', targetReps: 8, targetWeight: 0,
-        targetDuration: undefined, targetRest: 30, notes: 'Warm-up set'
+        id: `warmup-${uuidv4()}`, type: 'warmup', targetReps: genRepsTypeFromRepsNumber(8), targetWeight: weightToExact(0),
+        targetDuration: undefined, targetRest: restToExact(30), notes: 'Warm-up set',
+        fieldOrder: this.workoutService.getRepsAndWeightFields()
       };
       const updatedRoutineForSession = JSON.parse(JSON.stringify(currentRoutineVal)) as Routine;
 
@@ -1866,8 +1868,9 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       if (!confirm || !confirm.data) return;
     }
     const newWarmupSet: ExerciseTargetSetParams = {
-      id: `warmup-${uuidv4()}`, type: 'warmup', targetReps: 8, targetWeight: 0, // Default weight 0 for warm-up
-      targetDuration: undefined, targetRest: 30, notes: 'Warm-up set'
+      id: `warmup-${uuidv4()}`, type: 'warmup', targetReps: genRepsTypeFromRepsNumber(8), targetWeight: weightToExact(0), // Default weight 0 for warm-up
+      targetDuration: undefined, targetRest: restToExact(30), notes: 'Warm-up set',
+      fieldOrder: this.workoutService.getRepsAndWeightFields()
     };
     const updatedRoutineForSession = JSON.parse(JSON.stringify(currentRoutineVal)) as Routine;
     const exerciseToUpdate = updatedRoutineForSession.exercises[activeInfo.exerciseIndex];
@@ -2911,7 +2914,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
                     return originalEx.sets.every((originalSet, setIndex) => {
                       if (originalSet.type === 'warmup') return true;
                       const loggedSet = loggedEx.sets[setIndex];
-                      return loggedSet && (loggedSet.repsLogged ?? 0) >= (originalSet.targetReps ?? 0);
+                      return loggedSet && (loggedSet.repsLogged ?? 0) >= (originalSet.targetReps ?? genRepsTypeFromRepsNumber(0));
                     });
                   });
                   if (allSessionsSuccessful) {
@@ -2937,10 +2940,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
               const { direction, percentage } = this.intensityAdjustment;
               const multiplier = direction === 'increase' ? 1 + (percentage / 100) : 1 - (percentage / 100);
               exercise.sets.forEach(set => {
-                if (set.targetWeight != null) set.targetWeight = Math.max(0, Math.round((set.targetWeight * multiplier) * 4) / 4);
-                if (set.targetReps != null) set.targetReps = Math.max(0, Math.round(set.targetReps * multiplier));
-                if (set.targetDuration != null) set.targetDuration = Math.max(0, Math.round(set.targetDuration * multiplier));
-                if (set.targetDistance != null) set.targetDistance = Math.max(0, Math.round(set.targetDistance * multiplier));
+                if (set.targetWeight != null) set.targetWeight = weightToExact(Math.max(0, Math.round((getWeightValue(set.targetWeight) * multiplier) * 4) / 4));
+                if (set.targetReps != null) set.targetReps = genRepsTypeFromRepsNumber(Math.max(0, Math.round(repsTypeToReps(set.targetReps) * multiplier)));
+                if (set.targetDuration != null) set.targetDuration = durationToExact(Math.max(0, Math.round(getDurationValue(set.targetDuration) * multiplier)));
+                if (set.targetDistance != null) set.targetDistance = distanceToExact(Math.max(0, Math.round(getDistanceValue(set.targetDistance) * multiplier)));
               });
             }
           } catch (error) { console.error(`Failed to prefill data for exercise ${exercise.exerciseName}:`, error); }
@@ -3375,7 +3378,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         // Find the rest period defined on the LAST exercise of the block.
         const blockExercises = this.activeSupersetBlock();
         const lastExerciseInBlock = blockExercises ? blockExercises[blockExercises.length - 1] : null;
-        const restDuration = lastExerciseInBlock?.sets[0]?.targetRest ?? 0;
+        const restDuration = getRestValue(lastExerciseInBlock?.sets[0]?.targetRest) ?? 0;
 
         if (restDuration > 0) {
           this.startRestPeriod(restDuration);
@@ -3436,7 +3439,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
     }
 
-    const restDurationAfterCompletedSet = completedActiveInfo.setData.targetRest ?? 0;
+    const restDurationAfterCompletedSet = getRestValue(completedActiveInfo.setData.targetRest) ?? 0;
     if (restDurationAfterCompletedSet > 0 && !forceAdvanceExerciseBlock) {
       this.startRestPeriod(restDurationAfterCompletedSet);
     } else {
@@ -3506,7 +3509,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     // --- THIS IS THE CORRECTED LOGIC WITH HISTORICAL DATA ---
     let detailsLine = '';
     if (historicalSetPerformance) {
-      const weight = this.weightUnitPipe.transform(historicalSetPerformance.weightLogged);
+      const weight = this.weightUnitPipe.transform(getWeightValue(historicalSetPerformance.weightLogged));
       detailsLine = `Last time: ${weight} x ${historicalSetPerformance.repsLogged} reps`;
     } else {
       const repsDisplay = this.getSetTargetDisplay(setData, this.metricEnum.reps);
@@ -3597,9 +3600,9 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         const routineExerciseSet = this.routine()?.exercises.find(ex => ex.id === justLoggedExercise.id)?.sets.find(set => set.id === justLoggedExerciseSet.plannedSetId);
         if (timeSkipped && this.restDuration()) {
           const actualRestingTime = Math.ceil(this.restDuration() - timeSkipped);
-          justLoggedExerciseSet.restLogged = actualRestingTime;
+          justLoggedExerciseSet.restLogged = restToExact(actualRestingTime);
         } else {
-          const actualRestingTime = routineExerciseSet?.targetRest ?? 60;
+          const actualRestingTime = routineExerciseSet?.targetRest ?? restToExact(60);
           justLoggedExerciseSet.restLogged = actualRestingTime;
         }
       }
@@ -4816,9 +4819,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         plannedSetId: `${templateSet.id}-round-${roundToLog - 1}`,
         exerciseId: exerciseInBlock.exerciseId,
         type: 'emom',
-        repsLogged: templateSet.targetReps ?? 0,
-        weightLogged: templateSet.targetWeight ?? 0,
+        repsLogged: templateSet.targetReps ?? genRepsTypeFromRepsNumber(0),
+        weightLogged: templateSet.targetWeight ?? weightToExact(0),
         timestamp: new Date().toISOString(),
+        fieldOrder: this.workoutService.getRepsAndWeightFields()
       };
       this.addLoggedSetToCurrentLog(exerciseInBlock, loggedSetData);
     });
@@ -4871,4 +4875,16 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   }
 
   protected metricEnum = METRIC;
+
+  getDurationValue(duration: DurationTarget | undefined): number {
+    return getDurationValue(duration);
+  }
+
+    getWeightValue(duration: WeightTarget | undefined): number {
+    return getWeightValue(duration);
+  }
+
+    getDistanceValue(distance: DistanceTarget | undefined): number {
+    return getDistanceValue(distance);
+  }
 }

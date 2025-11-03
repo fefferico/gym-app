@@ -39,7 +39,9 @@
 
         <!-- Date Display -->
         <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
-          {{ currentDate() | date:'fullDate' }}
+          <!-- {{ currentDate() | date:'fullDate' }} -->
+                          {{ formattedCurrentDate() }}
+
           <!-- <span *ngIf="isToday(currentDate())" class="font-bold text-primary dark:text-primary-light">(Today)</span> -->
         </h2>
 

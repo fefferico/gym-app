@@ -665,5 +665,39 @@ viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" >
     <line x1="8" y1="17" x2="16" y2="17"></line>
 </svg>
   `,
+  'max_performance': `
+  <svg 
+  viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M12 7C7.02944 7 3 11.0294 3 16H21C21 11.0294 16.9706 7 12 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <line x1="12" y1="15.5858" x2="14.5858" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></line> <line x1="18" y1="10.5858" x2="18.5858" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></line> <line x1="20" y1="15" x2="20.8284" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></line> <path d="M3.5 15L3.82843 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <line x1="1" y1="-1" x2="1.82843" y2="-1" transform="matrix(0.707107 0.707107 0.707107 -0.707107 6 8)" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></line> <line x1="12" y1="7.82837" x2="12" y2="6.99994" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></line> </g></svg>
+  `,
+  'pin': `
+ <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M19.1835 7.80516L16.2188 4.83755C14.1921 2.8089 13.1788 1.79457 12.0904 2.03468C11.0021 2.2748 10.5086 3.62155 9.5217 6.31506L8.85373 8.1381C8.59063 8.85617 8.45908 9.2152 8.22239 9.49292C8.11619 9.61754 7.99536 9.72887 7.86251 9.82451C7.56644 10.0377 7.19811 10.1392 6.46145 10.3423C4.80107 10.8 3.97088 11.0289 3.65804 11.5721C3.5228 11.8069 3.45242 12.0735 3.45413 12.3446C3.45809 12.9715 4.06698 13.581 5.28476 14.8L6.69935 16.2163L2.22345 20.6964C1.92552 20.9946 1.92552 21.4782 2.22345 21.7764C2.52138 22.0746 3.00443 22.0746 3.30236 21.7764L7.77841 17.2961L9.24441 18.7635C10.4699 19.9902 11.0827 20.6036 11.7134 20.6045C11.9792 20.6049 12.2404 20.5358 12.4713 20.4041C13.0192 20.0914 13.2493 19.2551 13.7095 17.5825C13.9119 16.8472 14.013 16.4795 14.2254 16.1835C14.3184 16.054 14.4262 15.9358 14.5468 15.8314C14.8221 15.593 15.1788 15.459 15.8922 15.191L17.7362 14.4981C20.4 13.4973 21.7319 12.9969 21.9667 11.9115C22.2014 10.826 21.1954 9.81905 19.1835 7.80516Z" fill="currentColor"></path> </g></svg>
+   `,
+   'range':  `
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dumbbell weights -->
+  <rect x="15" y="42" width="12" height="16" rx="2" fill="currentColor"/>
+  <rect x="73" y="42" width="12" height="16" rx="2" fill="currentColor"/>
+  
+  <!-- Ruler-style handle -->
+  <line x1="27" y1="50" x2="73" y2="50" stroke="currentColor" stroke-width="2.5"/>
+  
+  <!-- Ticks for the ruler -->
+  <line x1="35" y1="46" x2="35" y2="54" stroke="currentColor" stroke-width="2.5"/>
+  <line x1="45" y1="46" x2="45" y2="54" stroke="currentColor" stroke-width="2.5"/>
+  <line x1="55" y1="46" x2="55" y2="54" stroke="currentColor" stroke-width="2.5"/>
+  <line x1="65" y1="46" x2="65" y2="54" stroke="currentColor" stroke-width="2.5"/>
+
+  <!-- Arrows below the handle indicating range -->
+  <line x1="50" y1="65" x2="30" y2="65" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  <polyline points="35,60 30,65 35,70" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <line x1="50" y1="65" x2="70" y2="65" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  <polyline points="65,60 70,65 65,70" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+     `,
+  'fraction': 
+  `
+  <svg fill="currentColor" viewBox="-8 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>divide</title> <path d="M14.84 16.84h-14c-0.48 0-0.84-0.36-0.84-0.84s0.36-0.84 0.84-0.84h14c0.48 0 0.84 0.36 0.84 0.84s-0.36 0.84-0.84 0.84zM7.84 12.56c-1.36 0-2.48-1.12-2.48-2.48s1.12-2.48 2.48-2.48 2.48 1.12 2.48 2.48c0 1.36-1.12 2.48-2.48 2.48zM7.84 9.28c-0.44 0-0.8 0.36-0.8 0.8s0.36 0.8 0.8 0.8 0.8-0.36 0.8-0.8c0-0.44-0.36-0.8-0.8-0.8zM7.84 24.4c-1.36 0-2.48-1.12-2.48-2.48s1.12-2.48 2.48-2.48 2.48 1.12 2.48 2.48c0 1.4-1.12 2.48-2.48 2.48zM7.84 21.12c-0.44 0-0.8 0.36-0.8 0.8s0.36 0.8 0.8 0.8 0.8-0.36 0.8-0.8-0.36-0.8-0.8-0.8z"></path> </g></svg>
+  `,
 };
 

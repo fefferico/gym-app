@@ -32,7 +32,7 @@ export const APP_ROUTES: Routes = [
     path: 'profile', // Main path for the profile feature
     loadChildren: () => import('./features/profile-settings/profile-settings.routes')
       .then(m => m.PROFILE_SETTINGS_ROUTES),
-    data: { shouldShowNavigationBanner: true }
+    data: { shouldShowNavigationBanner: true, animation: 'ProfilePage' }
   },
   {
     path: 'profile/pb-trend/:exerciseId/:pbType',

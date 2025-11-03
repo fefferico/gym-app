@@ -10,6 +10,7 @@ import { ToastService } from './toast.service';
 import { ProgressiveOverloadService } from './progressive-overload.service.ts';
 import { UserMeasurements } from '../models/user-profile.model';
 import { TranslateService } from '@ngx-translate/core';
+import { distanceToExact, getDistanceValue, getWeightValue, weightToExact } from './workout-helper.service';
 
 @Injectable({
   providedIn: 'root'
@@ -41,10 +42,10 @@ export class DataConversionService {
       log.exercises.forEach(ex => {
         ex.sets.forEach(set => {
           if (set.weightLogged != null) {
-            set.weightLogged = this.unitsService.convertWeight(set.weightLogged, fromUnit, toUnit);
+            set.weightLogged = weightToExact(this.unitsService.convertWeight(getWeightValue(set.weightLogged), fromUnit, toUnit));
           }
           if (set.targetWeight != null) {
-            set.targetWeight = this.unitsService.convertWeight(set.targetWeight, fromUnit, toUnit);
+            set.targetWeight = weightToExact(this.unitsService.convertWeight(getWeightValue(set.targetWeight), fromUnit, toUnit));
           }
         });
       });
@@ -57,7 +58,7 @@ export class DataConversionService {
       routine.exercises.forEach(ex => {
         ex.sets.forEach(set => {
           if (set.targetWeight != null) {
-            set.targetWeight = this.unitsService.convertWeight(set.targetWeight, fromUnit, toUnit);
+            set.targetWeight = weightToExact(this.unitsService.convertWeight(getWeightValue(set.targetWeight), fromUnit, toUnit));
           }
         });
       });
@@ -225,11 +226,11 @@ export class DataConversionService {
         ex.sets.forEach(set => {
           // Convert the actual distance performed
           if (set.distanceLogged != null) {
-            set.distanceLogged = this.unitsService.convertDistance(set.distanceLogged, fromUnit, toUnit);
+            set.distanceLogged = distanceToExact(this.unitsService.convertDistance(getDistanceValue(set.distanceLogged), fromUnit, toUnit));
           }
           // Convert the target distance, if one was set
           if (set.targetDistance != null) {
-            set.targetDistance = this.unitsService.convertDistance(set.targetDistance, fromUnit, toUnit);
+            set.targetDistance = distanceToExact(this.unitsService.convertDistance(getDistanceValue(set.targetDistance), fromUnit, toUnit));
           }
         });
       });
@@ -244,7 +245,7 @@ export class DataConversionService {
         ex.sets.forEach(set => {
           // In routines, we only care about the target distance
           if (set.targetDistance != null) {
-            set.targetDistance = this.unitsService.convertDistance(set.targetDistance, fromUnit, toUnit);
+            set.targetDistance = distanceToExact(this.unitsService.convertDistance(getDistanceValue(set.targetDistance), fromUnit, toUnit));
           }
         });
       });

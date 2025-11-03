@@ -3,8 +3,177 @@
 import { Exercise, ExerciseCategory } from "./exercise.model";
 import { LastPerformanceSummary, LoggedSet, LoggedWorkoutExercise } from "./workout-log.model";
 
+export enum RepsTargetType {
+  "exact" = "exact",
+  "range" = "range",
+  "max" = "max",
+  "max_fraction" = "max_fraction",
+  "amrap" = "amrap",
+  "min_plus" = "min_plus", // New type for "at least X reps"
+}
+
+export interface RepsTargetScheme {
+  type: RepsTargetType;
+  labelKey: string; // Key for ngx-translate, e.g., 'repsSchemes.exact'
+  isTextual: boolean; // True for AMRAP, MAX, etc.
+  availableInBuilder: boolean; // Can this be set when planning a routine?
+  availableInPlayer: boolean;  // Can this be logged during a workout?
+}
+
+export const REPS_TARGET_SCHEMES: RepsTargetScheme[] = [
+  { type: RepsTargetType.exact, labelKey: 'repsSchemes.exact', isTextual: false, availableInBuilder: true, availableInPlayer: true },
+  { type: RepsTargetType.range, labelKey: 'repsSchemes.range', isTextual: false, availableInBuilder: true, availableInPlayer: false }, // A user logs an exact number, not a range.
+  { type: RepsTargetType.min_plus, labelKey: 'repsSchemes.minPlus', isTextual: false, availableInBuilder: true, availableInPlayer: false }, // A user logs an exact number, not "5+".
+  { type: RepsTargetType.amrap, labelKey: 'repsSchemes.amrap', isTextual: true, availableInBuilder: true, availableInPlayer: true },
+  { type: RepsTargetType.max, labelKey: 'repsSchemes.max', isTextual: true, availableInBuilder: true, availableInPlayer: true },
+  { type: RepsTargetType.max_fraction, labelKey: 'repsSchemes.maxFraction', isTextual: true, availableInBuilder: true, availableInPlayer: true }
+];
+
+/**
+ * Represents the target repetitions for a set. It can be a specific number,
+ * a range, a maximum effort, a fraction of a maximum, or AMRAP.
+ */
+export type RepsTarget =
+  | { type: RepsTargetType.exact; value: number }
+  | { type: RepsTargetType.range; min: number; max: number }
+  | { type: RepsTargetType.max; } // Added isTextual flag
+  | { type: RepsTargetType.max_fraction; divisor: number; } // Added isTextual flag
+  | { type: RepsTargetType.amrap; } // Added isTextual flag
+  | { type: RepsTargetType.min_plus; value: number }; // New shape for "5+" style
+
+
+
+
+// ===================================================================
+// 2. WEIGHT (New)
+// ===================================================================
+export enum WeightTargetType {
+  "exact" = "exact",
+  "range" = "range",
+  "bodyweight" = "bodyweight",
+  "percentage_1rm" = "percentage_1rm", // e.g., 80% of 1RM
+  // "rm1" = "rm1",
+  // "rm3" = "rm3",
+  // "rm5" = "rm5",
+}
+
+export interface WeightTargetScheme {
+  type: WeightTargetType;
+  labelKey: string;
+  isNumeric: boolean; // Indicates if it takes a user-entered number
+  availableInBuilder: boolean;
+  availableInPlayer: boolean; // e.g., you can't log "bodyweight", you log an exact weight (even 0)
+}
+
+export const WEIGHT_TARGET_SCHEMES: WeightTargetScheme[] = [
+  { type: WeightTargetType.exact, labelKey: 'weightSchemes.exact', isNumeric: true, availableInBuilder: true, availableInPlayer: true },
+  { type: WeightTargetType.range, labelKey: 'weightSchemes.range', isNumeric: true, availableInBuilder: true, availableInPlayer: false },
+  { type: WeightTargetType.bodyweight, labelKey: 'weightSchemes.bodyweight', isNumeric: false, availableInBuilder: true, availableInPlayer: false },
+  { type: WeightTargetType.percentage_1rm, labelKey: 'weightSchemes.percentage1rm', isNumeric: true, availableInBuilder: true, availableInPlayer: false },
+  // { type: WeightTargetType.rm1, labelKey: 'weightSchemes.rm1', isNumeric: true, availableInBuilder: true, availableInPlayer: false },
+  // { type: WeightTargetType.rm3, labelKey: 'weightSchemes.rm3', isNumeric: true, availableInBuilder: true, availableInPlayer: false },
+  // { type: WeightTargetType.rm5, labelKey: 'weightSchemes.rm5', isNumeric: true, availableInBuilder: true, availableInPlayer: false },
+];
+
+export type WeightTarget =
+  | { type: WeightTargetType.exact; value: number }
+  | { type: WeightTargetType.range; min: number; max: number }
+  | { type: WeightTargetType.bodyweight }
+  | { type: WeightTargetType.percentage_1rm; percentage: number }
+  // | { type: WeightTargetType.rm1; value: number }
+  // | { type: WeightTargetType.rm3; value: number }
+  // | { type: WeightTargetType.rm5; value: number };
+
+
+// ===================================================================
+// 3. DURATION (New)
+// ===================================================================
+export enum DurationTargetType {
+  "exact" = "exact",      // e.g., "Hold for 60s"
+  "range" = "range",      // e.g., "Hold for 45-60s"
+  "to_failure" = "to_failure" // e.g., "Hold plank until failure"
+}
+
+export interface DurationTargetScheme {
+  type: DurationTargetType;
+  labelKey: string;
+  isNumeric: boolean;
+  availableInBuilder: boolean;
+  availableInPlayer: boolean;
+}
+
+export const DURATION_TARGET_SCHEMES: DurationTargetScheme[] = [
+  { type: DurationTargetType.exact, labelKey: 'durationSchemes.exact', isNumeric: true, availableInBuilder: true, availableInPlayer: true },
+  { type: DurationTargetType.range, labelKey: 'durationSchemes.range', isNumeric: true, availableInBuilder: true, availableInPlayer: false },
+  { type: DurationTargetType.to_failure, labelKey: 'durationSchemes.toFailure', isNumeric: false, availableInBuilder: true, availableInPlayer: false },
+];
+
+export type DurationTarget =
+  | { type: DurationTargetType.exact; seconds: number }
+  | { type: DurationTargetType.range; minSeconds: number; maxSeconds: number }
+  | { type: DurationTargetType.to_failure };
+
+// (You can create metadata schemes for Duration, Distance, and Rest if needed for modals, but they are simpler so we can omit for now)
+
+
+// ===================================================================
+// 4. DISTANCE (New)
+// ===================================================================
+// ===================================================================
+// 4. DISTANCE (New)
+// ===================================================================
+export enum DistanceTargetType {
+  "exact" = "exact", // e.g., "Run 5km"
+  "range" = "range"  // e.g., "Run 3-5km"
+}
+
+// +++ NEW: Metadata for Distance +++
+export interface DistanceTargetScheme {
+  type: DistanceTargetType;
+  labelKey: string;
+  isNumeric: boolean;
+  availableInBuilder: boolean;
+  availableInPlayer: boolean;
+}
+
+export const DISTANCE_TARGET_SCHEMES: DistanceTargetScheme[] = [
+  { type: DistanceTargetType.exact, labelKey: 'distanceSchemes.exact', isNumeric: true, availableInBuilder: true, availableInPlayer: true },
+  { type: DistanceTargetType.range, labelKey: 'distanceSchemes.range', isNumeric: true, availableInBuilder: true, availableInPlayer: false },
+];
+
+export type DistanceTarget =
+  | { type: DistanceTargetType.exact; value: number }
+  | { type: DistanceTargetType.range; min: number; max: number };
+
+// ===================================================================
+// 5. REST (New)
+// ===================================================================
+export enum RestTargetType {
+    "exact" = "exact", // e.g., "Rest 90s"
+    "range" = "range"  // e.g., "Rest 60-90s"
+}
+
+// +++ NEW: Metadata for Rest +++
+export interface RestTargetScheme {
+  type: RestTargetType;
+  labelKey: string;
+  isNumeric: boolean;
+  availableInBuilder: boolean;
+  availableInPlayer: boolean;
+}
+
+export const REST_TARGET_SCHEMES: RestTargetScheme[] = [
+  { type: RestTargetType.exact, labelKey: 'restSchemes.exact', isNumeric: true, availableInBuilder: true, availableInPlayer: true },
+  { type: RestTargetType.range, labelKey: 'restSchemes.range', isNumeric: true, availableInBuilder: true, availableInPlayer: false },
+];
+
+export type RestTarget =
+  | { type: RestTargetType.exact; seconds: number }
+  | { type: RestTargetType.range; minSeconds: number; maxSeconds: number };
+
 export interface ExerciseTargetSetParams {
   id: string;
+  fieldOrder: METRIC[];
   targetTempo?: string;
   notes?: string;
   type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | 'tabata' | string; // More flexible
@@ -13,25 +182,18 @@ export interface ExerciseTargetSetParams {
   _uiActualWeight?: number;
   _uiActualDuration?: number;
   // Add other specific fields if a type implies them, e.g.:
-  targetRest?: number | null;
   targetRestMin?: number | null;
   targetRestMax?: number | null;
   targetRpe?: number | null; // Could be useful for 'failure' sets
-  targetWeight?: number | null;
-  targetWeightMin?: number | null;
-  targetWeightMax?: number | null;
-  targetDuration?: number | null;
-  targetDurationMin?: number | null;
-  targetDurationMax?: number | null;
-  targetDistance?: number | null;
-  targetDistanceMin?: number | null;
-  targetDistanceMax?: number | null;
-  targetReps?: number | null;
-  targetRepsMin?: number | null;
-  targetRepsMax?: number | null;
+
+  targetReps?: RepsTarget;
+  targetWeight?: WeightTarget;
+  targetDuration?: DurationTarget;
+  targetDistance?: DistanceTarget;
+  targetRest?: RestTarget;
+
   dropToWeight?: number | null; // For 'dropset'
   amrapTimeLimit?: number | null; // For AMRAP if it's time-bound rather than rep-bound
-  fieldOrder?: METRIC[];
 }
 
 export interface ExerciseCurrentExecutionSetParams {
@@ -39,11 +201,11 @@ export interface ExerciseCurrentExecutionSetParams {
   tempoLogged?: string;
   notes?: string;
   type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | 'tabata' | string; // More flexible
-  actualRest: number; // For the set *within* an exercise. For supersets, this might be 0 for intermediate exercises.
-  actualReps: number;
-  actualWeight: number;
-  actualDuration: number;
-  actualDistance: number;
+  actualRest: RestTarget | undefined; // For the set *within* an exercise. For supersets, this might be 0 for intermediate exercises.
+  actualReps: RepsTarget | undefined;
+  actualWeight: WeightTarget | undefined;
+  actualDuration: DurationTarget | undefined;
+  actualDistance: DistanceTarget | undefined;
 }
 
 export interface ExerciseTargetExecutionSetParams {
@@ -51,21 +213,11 @@ export interface ExerciseTargetExecutionSetParams {
   tempo?: string;
   notes?: string;
   type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | 'tabata' | string; // More flexible
-  targetReps?: number | null;
-  targetRepsMin?: number | null;
-  targetRepsMax?: number | null;
-  targetWeight?: number | null;
-  targetWeightMin?: number | null;
-  targetWeightMax?: number | null;
-  targetDuration?: number | null;
-  targetDurationMin?: number | null;
-  targetDurationMax?: number | null;
-  targetDistance?: number | null;
-  targetDistanceMin?: number | null;
-  targetDistanceMax?: number | null;
-  targetRest?: number | null;
-  targetRestMin?: number | null;
-  targetRestMax?: number | null;
+  targetReps?: RepsTarget;
+  targetWeight?: WeightTarget;
+  targetDuration?: DurationTarget;
+  targetDistance?: DistanceTarget;
+  targetRest?: RestTarget;
 }
 
 export interface WorkoutExercise {
@@ -153,9 +305,9 @@ export interface ActiveSetInfo {
   setData: ExerciseTargetSetParams;
   baseExerciseInfo?: Exercise;
   isCompleted: boolean;
-  actualReps?: number;
-  actualWeight?: number | null;
-  actualDuration?: number;
+  actualReps?: RepsTarget;
+  actualWeight?: WeightTarget;
+  actualDuration?: DurationTarget;
   notes?: string; // This is for the *individual set's notes*
   type: 'standard' | 'warmup' | 'amrap' | 'custom';
   historicalSetPerformance?: LoggedSet | null
@@ -210,3 +362,9 @@ export enum PlayerSubState {
   PresetCountdown = 'preset_countdown',
   Resting = 'resting'
 }
+
+
+  // A new union type to make the generic function type-safe
+export type AnyTarget = RepsTarget | WeightTarget | DurationTarget | DistanceTarget | RestTarget;
+export type AnyScheme = RepsTargetScheme | WeightTargetScheme | DurationTargetScheme | DistanceTargetScheme | RestTargetScheme;
+export type AnyTargetType = RepsTargetType | WeightTargetType | DurationTargetType | DistanceTargetType | RestTargetType;

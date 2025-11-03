@@ -28,22 +28,18 @@ import { MenuMode } from '../../core/models/app-settings.model';
 import { PremiumFeature, SubscriptionService } from '../../core/services/subscription.service';
 import { cloneBtn, colorBtn, deleteBtn, editBtn, favouriteBtn, hideBtn, historyBtn, startBtn, unhideBtn, unmarkFavouriteBtn, viewBtn } from '../../core/services/buttons-data';
 import { GenerateWorkoutModalComponent } from './generate-workout-modal/generate-workout-modal.component';
-import { GeneratedWorkoutSummaryComponent } from './generated-workout-summary/generated-workout-summary.component';
 import { WorkoutGenerationOptions, WorkoutGeneratorService } from '../../core/services/workout-generator.service';
 import { FabAction, FabMenuComponent } from '../../shared/components/fab-menu/fab-menu.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ColorsService } from '../../core/services/colors.service';
 import { BumpClickDirective } from '../../shared/directives/bump-click.directive';
-import { Muscle } from '../../core/models/muscle.model';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CategoryService } from '../../core/services/workout-category.service';
 
 @Component({
   selector: 'app-routine-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, TitleCasePipe, ActionMenuComponent, PressDirective, IconComponent, GenerateWorkoutModalComponent,
-    GenerateWorkoutModalComponent,
-    GeneratedWorkoutSummaryComponent,
+  imports: [CommonModule, DatePipe, TitleCasePipe, ActionMenuComponent, PressDirective, IconComponent,
     FabMenuComponent,
     TranslateModule,
     BumpClickDirective
@@ -155,7 +151,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     return Array.from(equipments).sort();
   });
 
- uniquePrimaryCategories = computed<string[]>(() => {
+  uniquePrimaryCategories = computed<string[]>(() => {
     const routines = this.allRoutinesForList();
     const categories = this.categories();
 
@@ -185,7 +181,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
     // 7. Sort the final array of names alphabetically.
     return names.sort((a, b) => a.localeCompare(b));
-});
+  });
 
   uniqueRoutineColors = computed<string[]>(() => {
     const routines = this.allRoutinesForList();
@@ -579,6 +575,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       }
     }
     this.workoutService.vibrate();
+
     this.router.navigate(['/workout/routine/view', routineId, { isView: 'routineBuilder' }]); // Pass isView flag
     this.visibleActionsRutineId.set(null);
   }
@@ -1236,7 +1233,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     this.workoutService.vibrate();
   }
 
-  private categoryNameMap = computed(() => 
+  private categoryNameMap = computed(() =>
     new Map<string, string>(this.categories().map(cat => [cat.id, cat.name]))
   );
 
@@ -1244,6 +1241,6 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     // Look up the name in the map. Fallback to the ID itself if not found.
     return this.categoryNameMap().get(id) || id;
   }
-  
+
 
 }

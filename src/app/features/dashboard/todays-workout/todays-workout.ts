@@ -1,11 +1,11 @@
 // src/app/features/dashboard/todays-workout/todays-workout.component.ts
-import { Component, inject, OnInit, signal, ElementRef, AfterViewInit, OnDestroy, NgZone } from '@angular/core';
+import { Component, inject, OnInit, signal, ElementRef, AfterViewInit, OnDestroy, NgZone, computed } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { Routine } from '../../../core/models/workout.model';
-import {  ScheduledRoutineDay, TrainingProgram } from '../../../core/models/training-program.model';
+import { ScheduledRoutineDay, TrainingProgram } from '../../../core/models/training-program.model';
 import { EnrichedWorkoutLog, WorkoutLog } from '../../../core/models/workout-log.model';
 import { WorkoutService } from '../../../core/services/workout.service';
 import { map, Observable, of, Subject, switchMap, takeUntil, tap, combineLatest, take, forkJoin } from 'rxjs';
@@ -20,8 +20,10 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { PremiumFeature, SubscriptionService } from '../../../core/services/subscription.service';
 import { MillisecondsDatePipe } from '../../../shared/pipes/milliseconds-date.pipe';
 import { TranslateModule } from '@ngx-translate/core';
-import { parseISO } from 'date-fns';
+import { addDays, eachDayOfInterval, format, Locale, parseISO, setMonth, startOfWeek } from 'date-fns';
 import { BumpClickDirective } from '../../../shared/directives/bump-click.directive';
+import { LanguageService } from '../../../core/services/language.service';
+import { ar, de, enUS, es, fr, it, ja, pt, ru, zhCN } from 'date-fns/locale';
 
 export type SlideAnimationState = 'center' | 'exitToLeft' | 'exitToRight' | 'enterFromLeft' | 'enterFromRight';
 
@@ -58,12 +60,66 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
   private ngZone = inject(NgZone);
   protected subscriptionsService = inject(SubscriptionService);
 
+  private languageService = inject(LanguageService);
+  private dateFnsLocales: { [key: string]: Locale } = {
+    en: enUS,
+    it: it,
+    es: es,
+    fr: fr,
+    ru: ru,
+    ja: ja,
+    ar: ar,
+    zh: zhCN,
+    pt: pt,
+    de: de
+  };
+
   public PremiumFeature = PremiumFeature;
 
   private sanitizer = inject(DomSanitizer);
 
   combinedStatusMap = signal<Map<string, boolean>>(new Map());
 
+  weekStartsOn: 0 | 1 = 1;
+  weekDayNames = computed(() => {
+    const currentLang = this.languageService.currentLang();
+    const locale = this.dateFnsLocales[currentLang] || enUS;
+    const start = startOfWeek(new Date(), { weekStartsOn: this.weekStartsOn, locale });
+    return eachDayOfInterval({ start, end: addDays(start, 6) }).map(d => format(d, 'EE', { locale }));
+  });
+
+  /**
+   * A computed signal that dynamically formats the current date string
+   * based on the selected language.
+   */
+  formattedCurrentDate = computed(() => {
+    const date = this.currentDate();
+    const lang = this.languageService.currentLang();
+    const locale = this.dateFnsLocales[lang] || enUS;
+    // 'PPPP' is the long, localized date format from date-fns (e.g., "Sunday, October 29, 2025")
+    return format(date, 'PPPP', { locale });
+  });
+
+  /**
+     * A computed property that returns an array of the full month names
+     * based on the current language.
+     */
+    monthNames = computed(() => {
+      const currentLang = this.languageService.currentLang();
+      const locale = this.dateFnsLocales[currentLang] || enUS;
+  
+      // Create an array of numbers from 0 to 11, representing the months.
+      const months = Array.from({ length: 12 }, (_, i) => i);
+  
+      // For each month number, create a date and format it to get the month name.
+      return months.map(monthIndex => {
+        // Create a date for the specific month. The year and day are arbitrary.
+        const date = setMonth(new Date(), monthIndex);
+        // Format the date to get the stand-alone month name (e.g., "January").
+        // Use 'MMM' for abbreviated names (e.g., "Jan").
+        return format(date, 'LLLL', { locale });
+      });
+    });
 
 
   // --- Signals for State Management ---
@@ -158,44 +214,44 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
             // ==========================================================
             const enrichedLogs$ = (logs && logs.length > 0)
               ? forkJoin(logs.map(log => {
-                  if (!log.programId) {
-                    return of({ ...log, weekName: null, dayName: null, programName: null });
-                  }
-                  
-                  return this.trainingProgramService.getProgramById(log.programId).pipe(
-                    take(1),
-                    switchMap(program => {
-                      if (!program) {
-                        return of({ ...log, weekName: null, dayName: null, programName: log.programName || null });
-                      }
+                if (!log.programId) {
+                  return of({ ...log, weekName: null, dayName: null, programName: null });
+                }
 
-                      let specificDayName: string | null = null;
-                      if (log.scheduledDayId) {
-                        let scheduledDay: ScheduledRoutineDay | undefined;
-                        if (program.programType === 'linear' && program.weeks) {
-                          scheduledDay = program.weeks.flatMap(w => w.schedule).find(d => d.id === log.scheduledDayId);
-                        } else if (program.programType === 'cycled' && program.schedule) {
-                          scheduledDay = program.schedule.find(d => d.id === log.scheduledDayId);
-                        }
-                        if (scheduledDay?.dayName) {
-                          specificDayName = scheduledDay.dayName;
-                        }
+                return this.trainingProgramService.getProgramById(log.programId).pipe(
+                  take(1),
+                  switchMap(program => {
+                    if (!program) {
+                      return of({ ...log, weekName: null, dayName: null, programName: log.programName || null });
+                    }
+
+                    let specificDayName: string | null = null;
+                    if (log.scheduledDayId) {
+                      let scheduledDay: ScheduledRoutineDay | undefined;
+                      if (program.programType === 'linear' && program.weeks) {
+                        scheduledDay = program.weeks.flatMap(w => w.schedule).find(d => d.id === log.scheduledDayId);
+                      } else if (program.programType === 'cycled' && program.schedule) {
+                        scheduledDay = program.schedule.find(d => d.id === log.scheduledDayId);
                       }
-                      
-                      return combineLatest([
-                        this.trainingProgramService.getWeekNameForLog(log),
-                        this.trainingProgramService.getDayOfWeekForLog(log)
-                      ]).pipe(
-                        map(([weekName, genericDayInfo]) => ({
-                          ...log,
-                          weekName: weekName,
-                          dayName: specificDayName || genericDayInfo?.dayName || null,
-                          programName: program.name
-                        }))
-                      );
-                    })
-                  );
-                }))
+                      if (scheduledDay?.dayName) {
+                        specificDayName = scheduledDay.dayName;
+                      }
+                    }
+
+                    return combineLatest([
+                      this.trainingProgramService.getWeekNameForLog(log),
+                      this.trainingProgramService.getDayOfWeekForLog(log)
+                    ]).pipe(
+                      map(([weekName, genericDayInfo]) => ({
+                        ...log,
+                        weekName: weekName,
+                        dayName: specificDayName || genericDayInfo?.dayName || null,
+                        programName: program.name
+                      }))
+                    );
+                  })
+                );
+              }))
               : of([]);
             // ==========================================================
             // END: MODIFIED LOGIC
@@ -413,7 +469,7 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
   secondToMs(seconds: number): number {
     return seconds * 1000;
   }
-  
+
   msToSeconds(ms: number): number {
     return ms / 1000;
   }
@@ -443,7 +499,7 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
 
   getCurrentWeekInfo(programId: string): { weekNumber: number; name: string } | null {
     const program = this.allActivePrograms().find(program => program.id === programId);
-    if ( program ){
+    if (program) {
       return this.trainingProgramService.getCurrentWeekInfo(program);
     }
     return null;

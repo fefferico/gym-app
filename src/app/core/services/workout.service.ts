@@ -4,7 +4,7 @@ import { BehaviorSubject, firstValueFrom, Observable, of, Subject, throwError } 
 import { map, shareReplay } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 
-import { ExerciseTargetSetParams, METRIC, PausedWorkoutState, Routine, WorkoutExercise } from '../models/workout.model'; // Ensure this path is correct
+import { AnyScheme, AnyTarget, AnyTargetType, DISTANCE_TARGET_SCHEMES, DistanceTarget, DistanceTargetScheme, DistanceTargetType, DURATION_TARGET_SCHEMES, DurationTarget, DurationTargetScheme, DurationTargetType, ExerciseTargetSetParams, METRIC, PausedWorkoutState, REPS_TARGET_SCHEMES, RepsTarget, RepsTargetScheme, RepsTargetType, REST_TARGET_SCHEMES, RestTarget, RestTargetScheme, RestTargetType, Routine, WEIGHT_TARGET_SCHEMES, WeightTarget, WeightTargetScheme, WeightTargetType, WorkoutExercise } from '../models/workout.model'; // Ensure this path is correct
 import { StorageService } from './storage.service';
 import { LoggedSet, LoggedWorkoutExercise, WorkoutLog } from '../models/workout-log.model';
 import { AlertService } from './alert.service';
@@ -20,6 +20,7 @@ import { SubscriptionService } from './subscription.service';
 import { TranslateService } from '@ngx-translate/core';
 import { mapLoggedSetToExerciseTargetSetParams, mapLoggedWorkoutExerciseToWorkoutExercise, mapWorkoutExerciseToLoggedWorkoutExercise } from '../models/workout-mapper';
 import { ExerciseService } from './exercise.service';
+import { compareRepsTargets, migrateSetRepsToRepsTarget, repsTypeToReps, repsTargetToExactRepsTarget, genRepsTypeFromRepsNumber, repsToExact, compareDurationTargets, compareDistanceTargets, compareWeightTargets, getDurationValue, genDurationTypeFromDurationNumber, getRestValue, weightToExact, restToExact, distanceToExact, durationToExact, getWeightValue, getDistanceValue } from './workout-helper.service';
 
 @Injectable({
   providedIn: 'root',
@@ -306,16 +307,16 @@ export class WorkoutService {
     // Note: This assumes cardio duration is logged in 'repsLogged' and distance in 'weightLogged'.
     const wasSuccessful = (
       // Reps check
-      (plannedSet.targetReps && lastPerformedSet.repsLogged && lastPerformedSet.repsLogged >= plannedSet.targetReps) ||
-      (plannedSet.targetRepsMin && lastPerformedSet.repsLogged && lastPerformedSet.repsLogged >= plannedSet.targetRepsMin) ||
+      (plannedSet.targetReps && lastPerformedSet.repsLogged && compareRepsTargets(lastPerformedSet.repsLogged, plannedSet.targetReps) >= 0) ||
 
-      // Duration check (uses repsLogged from log)
-      (plannedSet.targetDuration && lastPerformedSet.repsLogged && lastPerformedSet.repsLogged >= plannedSet.targetDuration) ||
-      (plannedSet.targetDurationMin && lastPerformedSet.repsLogged && lastPerformedSet.repsLogged >= plannedSet.targetDurationMin) ||
+      // Duration check (uses durationLogged from log)
+      (plannedSet.targetDuration && lastPerformedSet.durationLogged && compareDurationTargets(lastPerformedSet.durationLogged, plannedSet.targetDuration) >= 0) ||
+
+      // Distance check (uses distanceLogged from log)
+      (plannedSet.targetDistance && lastPerformedSet.distanceLogged && compareDistanceTargets(lastPerformedSet.distanceLogged, plannedSet.targetDistance) >= 0) ||
 
       // Distance check (uses weightLogged from log)
-      (plannedSet.targetDistance && lastPerformedSet.weightLogged && lastPerformedSet.weightLogged >= plannedSet.targetDistance) ||
-      (plannedSet.targetDistanceMin && lastPerformedSet.weightLogged && lastPerformedSet.weightLogged >= plannedSet.targetDistanceMin)
+      (plannedSet.targetWeight && lastPerformedSet.weightLogged && compareWeightTargets(lastPerformedSet.weightLogged, plannedSet.targetWeight) >= 0)
     );
 
     if (wasSuccessful) {
@@ -326,22 +327,29 @@ export class WorkoutService {
         switch (strategy) {
           case ProgressiveOverloadStrategy.WEIGHT:
             if (poSettings.weightIncrement && lastPerformedSet.weightLogged != null) {
-              suggestedParams.targetWeight = parseFloat((lastPerformedSet.weightLogged + poSettings.weightIncrement).toFixed(2));
+              suggestedParams.targetWeight = weightToExact(parseFloat((getWeightValue(lastPerformedSet.weightLogged) + poSettings.weightIncrement).toFixed(2)));
             }
             break;
           case ProgressiveOverloadStrategy.REPS:
             if (poSettings.repsIncrement && lastPerformedSet.repsLogged != null) {
-              suggestedParams.targetReps = (suggestedParams.targetReps || lastPerformedSet.repsLogged) + poSettings.repsIncrement;
+              const targetReps = (suggestedParams.targetReps || lastPerformedSet.repsLogged) as RepsTarget;
+              let val: number = 0;
+              if (targetReps.type === RepsTargetType.exact) {
+                targetReps.value = targetReps.value + poSettings.repsIncrement;
+              } else if (targetReps.type === RepsTargetType.range) {
+                targetReps.min = targetReps.min + poSettings.repsIncrement;
+              }
+              suggestedParams.targetReps = targetReps;
             }
             break;
           case ProgressiveOverloadStrategy.DURATION:
-            if (poSettings.durationIncrement && lastPerformedSet.repsLogged != null) {
-              suggestedParams.targetDuration = (suggestedParams.targetDuration || lastPerformedSet.repsLogged) + poSettings.durationIncrement;
+            if (poSettings.durationIncrement && lastPerformedSet.durationLogged != null) {
+              suggestedParams.targetDuration = durationToExact(getDurationValue((suggestedParams.targetDuration || lastPerformedSet.durationLogged)) + poSettings.durationIncrement);
             }
             break;
           case ProgressiveOverloadStrategy.DISTANCE:
             if (poSettings.distanceIncrement && lastPerformedSet.weightLogged != null) {
-              suggestedParams.targetDistance = parseFloat(((suggestedParams.targetDistance || lastPerformedSet.weightLogged) + poSettings.distanceIncrement).toFixed(2));
+              suggestedParams.targetDistance = distanceToExact(parseFloat((getDistanceValue(suggestedParams.targetDistance || lastPerformedSet.distanceLogged) + poSettings.distanceIncrement).toFixed(2)));
             }
             break;
         }
@@ -349,10 +357,10 @@ export class WorkoutService {
     } else {
       // FAILURE: Stick to the same parameters they used last time, but aim for the planned targets again.
       console.log(`PO Suggestion: Failure last time. Sticking to previous attempt's parameters.`);
-      suggestedParams.targetWeight = plannedSet.targetWeight ?? plannedSet.targetWeightMin;
-      suggestedParams.targetReps = plannedSet.targetReps ?? plannedSet.targetRepsMin;
-      suggestedParams.targetDuration = plannedSet.targetDuration ?? plannedSet.targetDurationMin;
-      suggestedParams.targetDistance = plannedSet.targetDistance ?? plannedSet.targetDistanceMin;
+      suggestedParams.targetWeight = plannedSet.targetWeight;
+      suggestedParams.targetReps = plannedSet.targetReps;
+      suggestedParams.targetDuration = plannedSet.targetDuration;
+      suggestedParams.targetDistance = plannedSet.targetDistance;
     }
 
     // Ensure the original planned set ID is preserved
@@ -481,28 +489,28 @@ export class WorkoutService {
     let timeFromReps = 0;
 
     // 1. Calculate the estimated time from reps, if reps are specified.
-    if ((!set.targetReps || set.targetReps <= 0) && (set.targetRepsMin && set.targetRepsMax)) {
+    if ((!set.targetReps || repsTypeToReps(set.targetReps) <= 0) && (set.targetReps?.type === RepsTargetType.range)) {
       // Use the average of min and max if both are defined and > 0
-      set.targetReps = Math.round((set.targetRepsMin + set.targetRepsMax) / 2);
-    } else if ((!set.targetReps || set.targetReps <= 0) && set.targetRepsMin) {
+      set.targetReps = repsToExact(Math.round((set.targetReps.min + set.targetReps.max) / 2));
+    } else if ((!set.targetReps || repsTypeToReps(set.targetReps) <= 0) && (set.targetReps?.type === RepsTargetType.range && set.targetReps.min)) {
       // Use min if only min is defined
-      set.targetReps = set.targetRepsMin;
-    } else if ((!set.targetReps || set.targetReps <= 0) && set.targetRepsMax) {
+      set.targetReps = repsToExact(set.targetReps.min);
+    } else if ((!set.targetReps || repsTypeToReps(set.targetReps) <= 0) && (set.targetReps?.type === RepsTargetType.range && set.targetReps.max)) {
       // Use max if only max is defined
-      set.targetReps = set.targetRepsMax;
+      set.targetReps = repsToExact(set.targetReps.max);
     }
 
-    if (set.targetReps && set.targetReps > 0) {
+    if (set.targetReps && repsTypeToReps(set.targetReps) > 0) {
       // Estimate ~4 seconds per rep. Adjust as needed.
       const timePerRep = 4;
-      timeFromReps = set.targetReps * timePerRep;
+      timeFromReps = repsTypeToReps(set.targetReps) * timePerRep;
     }
 
     // 2. Get the duration specified in the set, defaulting to 0 if not present.
-    const timeFromDuration = set.targetDuration || 0;
+    const timeFromDuration = set.targetDuration || genDurationTypeFromDurationNumber(0);
 
     // 3. Compare the two calculated times and return the greater value.
-    const estimatedTime = Math.max(timeFromReps, timeFromDuration);
+    const estimatedTime = Math.max(timeFromReps, getDurationValue(timeFromDuration));
 
     // 4. Handle edge cases where neither reps nor duration are set.
     if (estimatedTime > 0) {
@@ -527,7 +535,7 @@ export class WorkoutService {
    * @returns The planned resting time in seconds after the set is completed.
    */
   public getRestTimeForSet(set: ExerciseTargetSetParams): number {
-    return set.targetRest || 0;
+    return getRestValue(set.targetRest) || 0;
   }
 
 
@@ -706,7 +714,6 @@ export class WorkoutService {
     return undefined;
   }
 
-  // +++ NEW: Shared method to add an exercise during a workout +++
   public async promptAndCreateWorkoutExercise(
     selectedExercise: Exercise,
     lastLoggedSet: LoggedSet | null
@@ -715,12 +722,14 @@ export class WorkoutService {
     const kbRelated = selectedExercise.category === 'kettlebells';
 
     // Determine default values based on the last logged set or general defaults
-    const defaultWeight = kbRelated && lastLoggedSet ? (lastLoggedSet.targetWeight ?? lastLoggedSet.weightLogged) : (this.unitsService.currentWeightUnit() === 'kg' ? 10 : 22.2);
+    const defaultWeight: number = kbRelated && lastLoggedSet ? getWeightValue(lastLoggedSet.targetWeight ?? lastLoggedSet.weightLogged) : (this.unitsService.currentWeightUnit() === 'kg' ? 10 : 22.2);
     const defaultDuration = isCardioOnly ? 60 : undefined;
     const defaultDistance = isCardioOnly ? 1 : undefined;
     const defaultRest = kbRelated ? 45 : 60;
-    const defaultReps = kbRelated && lastLoggedSet ? (lastLoggedSet.targetReps ?? lastLoggedSet.repsLogged) : 10;
+    const defaultReps: number = kbRelated && lastLoggedSet ? repsTypeToReps(lastLoggedSet.targetReps ?? lastLoggedSet.repsLogged ?? repsToExact(0)) : 10;
     const defaultSets = 3;
+
+    const defaultRepsValue = 5;
 
     const baseParams: AlertInput[] = [
       { label: this.translate.instant('workoutService.prompts.labels.exerciseName'), name: 'name', type: 'text', value: selectedExercise.name, attributes: { disabled: true } },
@@ -737,7 +746,7 @@ export class WorkoutService {
       ]
       : [
         ...baseParams,
-        { label: this.translate.instant('workoutService.prompts.labels.numReps'), name: 'numReps', type: 'number', value: defaultReps, attributes: { min: 0, required: true } },
+        { label: this.translate.instant('workoutService.prompts.labels.numReps'), name: 'numReps', type: 'number', value: defaultRepsValue, attributes: { min: 0, required: true } },
         { label: this.translate.instant('workoutService.prompts.labels.targetWeight', { unit: this.unitsService.getWeightUnitSuffix() }), name: METRIC.weight, type: 'number', value: defaultWeight, attributes: { min: 0, required: true } },
       ];
 
@@ -754,17 +763,18 @@ export class WorkoutService {
 
     const exerciseName = String(exerciseData['name']).trim() || selectedExercise.name;
     const numSets = parseInt(String(exerciseData['numSets'])) || defaultSets;
-    const numReps = parseInt(String(exerciseData['numReps'])) || defaultReps;
-    const weight = parseFloat(String(exerciseData[METRIC.weight])) ?? defaultWeight;
-    const distance = parseInt(String(exerciseData[METRIC.distance])) || defaultDistance;
-    const duration = parseInt(String(exerciseData[METRIC.duration])) || defaultDuration;
-    const rest = parseInt(String(exerciseData[METRIC.rest])) || defaultRest;
+    const numReps = parseInt(String(exerciseData['numReps'])) || defaultRepsValue;
+    const weight = weightToExact(parseFloat(String(exerciseData[METRIC.weight]))) ?? defaultWeight;
+    const distance = distanceToExact(parseInt(String(exerciseData[METRIC.distance]))) || distanceToExact(defaultDistance);
+    const duration = durationToExact(parseInt(String(exerciseData[METRIC.duration]))) || durationToExact(defaultDuration);
+    const rest = restToExact(parseInt(String(exerciseData[METRIC.rest]))) || restToExact(defaultRest);
 
     const newExerciseSets: ExerciseTargetSetParams[] = [];
     for (let i = 0; i < numSets; i++) {
       newExerciseSets.push({
         id: `custom-set-${uuidv4()}`,
-        targetReps: isCardioOnly ? undefined : numReps,
+        targetReps: isCardioOnly ? undefined : genRepsTypeFromRepsNumber(numReps),
+        fieldOrder: isCardioOnly ? [METRIC.duration] : [METRIC.reps, METRIC.weight],
         targetWeight: isCardioOnly ? undefined : weight,
         targetDistance: isCardioOnly ? distance : undefined,
         targetDuration: isCardioOnly ? duration : undefined,
@@ -894,7 +904,7 @@ export class WorkoutService {
 
         const templateSet = targetExercise.sets.length > 0
           ? { ...targetExercise.sets[0] }
-          : { id: uuidv4(), targetReps: 8, targetWeight: 10, targetRest: 60, type: 'standard' };
+          : { id: uuidv4(), targetReps: repsToExact(8), targetWeight: weightToExact(10), targetRest: restToExact(60), type: 'standard' };
 
         // 1. Define the fieldOrder for this exercise's sets
         const isLastExerciseInGroup = originalIndex === selectedOriginalIndices[selectedOriginalIndices.length - 1];
@@ -1118,29 +1128,29 @@ export class WorkoutService {
 
     switch (field) {
       case METRIC.reps:
-        min = set.targetRepsMin || 0;
-        max = set.targetRepsMax || 0;
-        single = set.targetReps || 0;
+        min = set.targetReps && set.targetReps.type === RepsTargetType.range && set.targetReps.min || 0;
+        min = set.targetReps && set.targetReps.type === RepsTargetType.range && set.targetReps.max || 0;
+        single = repsTypeToReps(set.targetReps) || 0;
         break;
       case METRIC.duration:
-        min = set.targetDurationMin || 0;
-        max = set.targetDurationMax || 0;
-        single = set.targetDuration || 0;
+        min = set.targetDuration && set.targetDuration.type === DurationTargetType.range && set.targetDuration.minSeconds || 0;
+        min = set.targetDuration && set.targetDuration.type === DurationTargetType.range && set.targetDuration.maxSeconds || 0;
+        single = getDurationValue(set.targetDuration) || 0;
         break;
       case METRIC.rest:
-        min = set.targetRestMin || 0;
-        max = set.targetRestMax || 0;
-        single = set.targetRest || 0;
+        min = set.targetRest && set.targetRest.type === RestTargetType.range && set.targetRest.minSeconds || 0;
+        min = set.targetRest && set.targetRest.type === RestTargetType.range && set.targetRest.maxSeconds || 0;
+        single = getRestValue(set.targetRest) || 0;
         break;
       case METRIC.weight:
-        min = set.targetWeightMin || 0;
-        max = set.targetWeightMax || 0;
-        single = set.targetWeight || 0;
+        min = set.targetWeight && set.targetWeight.type === WeightTargetType.range && set.targetWeight.min || 0;
+        min = set.targetWeight && set.targetWeight.type === WeightTargetType.range && set.targetWeight.max || 0;
+        single = getWeightValue(set.targetWeight) || 0;
         break;
       case METRIC.distance:
-        min = set.targetDistanceMin || 0;
-        max = set.targetDistanceMax || 0;
-        single = set.targetDistance || 0;
+        min = set.targetDistance && set.targetDistance.type === DistanceTargetType.range && set.targetDistance.min || 0;
+        min = set.targetDistance && set.targetDistance.type === DistanceTargetType.range && set.targetDistance.max || 0;
+        single = getDistanceValue(set.targetDistance) || 0;
         break;
 
       default:
@@ -1250,6 +1260,10 @@ export class WorkoutService {
       newSet.targetDistance = set.distance;
       delete newSet[METRIC.distance];
     }
+
+    // +++ USE THE NEW HELPER TO MIGRATE REPS TO THE NEW STRUCTURE +++
+    migrateSetRepsToRepsTarget(newSet);
+    // +++ END OF CHANGE +++
 
     // --- MIGRATION LOGIC FOR REST ---
     // Handles mapping 'restAfterSet' or 'targetRestAfterSet' to the new 'targetRest' property.
@@ -1391,11 +1405,11 @@ export class WorkoutService {
     const wkExFromLog = { ...mapLoggedWorkoutExerciseToWorkoutExercise(exercise as any) } as WorkoutExercise;
 
     const visibleExerciseFieldsObj = {
-      [METRIC.weight]: wkEx.sets.some(set => (set.targetWeight ?? 0) > 0 || (set.targetWeightMin ?? 0) > 0) || wkExFromLog.sets.some(set => (set.targetWeight ?? 0) > 0) || !!(wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.weight)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.weight))),
-      [METRIC.reps]: wkEx.sets.some(set => (set.targetReps ?? 0) > 0 || (set.targetRepsMin ?? 0) > 0) || wkExFromLog.sets.some(set => (set.targetReps ?? 0) > 0) || !!(wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.reps)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.reps))),
-      [METRIC.distance]: wkEx.sets.some(set => (set.targetDistance ?? 0) > 0 || (set.targetDistanceMin ?? 0) > 0) || wkExFromLog.sets.some(set => (set.targetDistance ?? 0) > 0) || !!(wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.distance)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.distance))),
-      [METRIC.duration]: wkEx.sets.some(set => (set.targetDuration ?? 0) > 0 || (set.targetDurationMin ?? 0) > 0) || wkExFromLog.sets.some(set => (set.targetDuration ?? 0) > 0) || !!(wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.duration)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.duration))),
-      [METRIC.rest]: wkEx.sets.some(set => (set.targetRest ?? 0) > 0) || !!(wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.rest)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.rest))),
+      [METRIC.weight]: wkEx.sets.some(set => (set.targetWeight || wkExFromLog.sets.some(set => (set.targetWeight) || !!(wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.weight)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.weight)))))),
+      [METRIC.reps]: wkEx.sets.some(set => (set.targetReps || wkExFromLog.sets.some(set => (set.targetReps) || !!(wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.reps)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.reps)))))),
+      [METRIC.distance]: wkEx.sets.some(set => (set.targetDistance || wkExFromLog.sets.some(set => (set.targetDistance) || !!(wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.distance)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.distance)))))),
+      [METRIC.duration]: wkEx.sets.some(set => (set.targetDuration || wkExFromLog.sets.some(set => (set.targetDuration) || !!(wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.duration)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.duration)))))),
+      [METRIC.rest]: wkEx.sets.some(set => (set.targetRest || wkExFromLog.sets.some(set => (set.targetRest) || !!(wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.rest)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.rest)))))),
       [METRIC.tempo]: wkEx.sets.some(set => !!set.targetTempo && set.targetTempo.trim().length > 0) || wkExFromLog.sets.some(set => !!set.targetTempo && set.targetTempo.trim().length > 0) || !!(wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.tempo)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.tempo))),
     };
 
@@ -1416,23 +1430,23 @@ export class WorkoutService {
     if (this.isLoggedSet(set)) {
       // It's a LoggedSet, so we check the performance fields.
       visibleSetFieldsObj = {
-        [METRIC.weight]: !!((set.weightLogged ?? 0) > 0 || set.fieldOrder?.includes(METRIC.weight)),
-        [METRIC.reps]: !!((set.repsLogged ?? 0) > 0 || set.fieldOrder?.includes(METRIC.reps)),
-        [METRIC.distance]: !!((set.distanceLogged ?? 0) > 0 || set.fieldOrder?.includes(METRIC.distance)),
-        [METRIC.duration]: !!((set.durationLogged ?? 0) > 0 || set.fieldOrder?.includes(METRIC.duration)),
+        [METRIC.weight]: !!((getWeightValue(set.weightLogged) ?? 0) > 0 || set.fieldOrder?.includes(METRIC.weight)),
+        [METRIC.reps]: !!((repsTypeToReps(set.repsLogged) ?? 0) > 0 || set.fieldOrder?.includes(METRIC.reps)),
+        [METRIC.distance]: !!((getDistanceValue(set.distanceLogged) ?? 0) > 0 || set.fieldOrder?.includes(METRIC.distance)),
+        [METRIC.duration]: !!((getDurationValue(set.durationLogged) ?? 0) > 0 || set.fieldOrder?.includes(METRIC.duration)),
         [METRIC.tempo]: !!(set.targetTempo?.trim() || set.fieldOrder?.includes(METRIC.tempo)),
-        [METRIC.rest]: !!((set.restLogged ?? 0) > 0 || set.fieldOrder?.includes(METRIC.rest)),
+        [METRIC.rest]: !!((getRestValue(set.restLogged) ?? 0) > 0 || set.fieldOrder?.includes(METRIC.rest)),
       };
     } else {
       // It's an ExerciseTargetSetParams, so we check the target fields.
       const plannedSet = set as ExerciseTargetSetParams; // We can now safely cast it.
       visibleSetFieldsObj = {
-        [METRIC.weight]: !!((plannedSet.targetWeight ?? 0) > 0 || (plannedSet.targetWeightMin ?? 0) > 0 || plannedSet.fieldOrder?.includes(METRIC.weight)),
-        [METRIC.reps]: !!((plannedSet.targetReps ?? 0) > 0 || (plannedSet.targetRepsMin ?? 0) > 0 || plannedSet.fieldOrder?.includes(METRIC.reps)),
-        [METRIC.distance]: !!((plannedSet.targetDistance ?? 0) > 0 || (plannedSet.targetDistanceMin ?? 0) > 0 || plannedSet.fieldOrder?.includes(METRIC.distance)),
-        [METRIC.duration]: !!((plannedSet.targetDuration ?? 0) > 0 || (plannedSet.targetDurationMin ?? 0) > 0 || plannedSet.fieldOrder?.includes(METRIC.duration)),
+        [METRIC.weight]: !!((plannedSet.targetWeight) || plannedSet.fieldOrder?.includes(METRIC.weight)),
+        [METRIC.reps]: !!((plannedSet.targetReps) || plannedSet.fieldOrder?.includes(METRIC.reps)),
+        [METRIC.distance]: !!((plannedSet.targetDistance) || plannedSet.fieldOrder?.includes(METRIC.distance)),
+        [METRIC.duration]: !!((plannedSet.targetDuration) || plannedSet.fieldOrder?.includes(METRIC.duration)),
         [METRIC.tempo]: !!(plannedSet.targetTempo?.trim() || plannedSet.fieldOrder?.includes(METRIC.tempo)),
-        [METRIC.rest]: !!((plannedSet.targetRest ?? 0) > 0 || plannedSet.fieldOrder?.includes(METRIC.rest)),
+        [METRIC.rest]: !!((plannedSet.targetRest) || plannedSet.fieldOrder?.includes(METRIC.rest)),
       };
     }
     return visibleSetFieldsObj;
@@ -1571,6 +1585,10 @@ export class WorkoutService {
 
   public defaultHiddenFields(): any {
     return { visible: [], hidden: this.getDefaultFields() };
+  }
+
+  public getRepsAndWeightFields(): METRIC[] {
+    return [METRIC.reps, METRIC.weight];
   }
 
   public getDefaultFields(): METRIC[] {
@@ -1768,8 +1786,8 @@ export class WorkoutService {
         case METRIC.reps: return (exSet.repsLogged ?? '-').toString();
         case METRIC.weight: return exSet.weightLogged != null ? exSet.weightLogged.toString() : '-';
         case METRIC.distance: return (exSet.distanceLogged ?? '-').toString();
-        case METRIC.duration: return this.formatSecondsToTime(exSet.durationLogged);
-        case METRIC.rest: return this.formatSecondsToTime(exSet.restLogged);
+        case METRIC.duration: return exSet.durationLogged != null ? this.formatSecondsToTime(exSet.durationLogged.toString()) : '-';
+        case METRIC.duration: return exSet.restLogged != null ? this.formatSecondsToTime(exSet.restLogged.toString()) : '-';
         case METRIC.tempo: return exSet.tempoLogged || '-';
         default: return '-';
       }
@@ -1779,35 +1797,38 @@ export class WorkoutService {
       const plannedSet = exSet as ExerciseTargetSetParams; // Safe to cast here
       switch (field) {
         case METRIC.reps:
-          if (plannedSet.targetRepsMin != null && plannedSet.targetRepsMax != null) {
-            const midValue = Math.floor((plannedSet.targetRepsMin + plannedSet.targetRepsMax) / 2);
+          if (plannedSet.targetReps && plannedSet.targetReps.type === RepsTargetType.range) {
+            const midValue = Math.floor((plannedSet.targetReps.min + plannedSet.targetReps.max) / 2);
             return midValue.toString();
           }
           return (plannedSet.targetReps ?? '-').toString();
 
         case METRIC.weight:
-          if (plannedSet.targetWeightMin != null && plannedSet.targetWeightMax != null) {
-            const midValue = Math.floor((plannedSet.targetWeightMin + plannedSet.targetWeightMax) / 2);
+          if (plannedSet.targetWeight && plannedSet.targetWeight.type === WeightTargetType.range) {
+            const midValue = Math.floor((plannedSet.targetWeight.min + plannedSet.targetWeight.max) / 2);
             return midValue.toString();
           }
           return (plannedSet.targetWeight ?? '-').toString();
 
         case METRIC.distance:
-          if (plannedSet.targetDistanceMin != null && plannedSet.targetDistanceMax != null) {
-            const midValue = Math.floor((plannedSet.targetDistanceMin + plannedSet.targetDistanceMax) / 2);
+          if (plannedSet.targetDistance && plannedSet.targetDistance.type === DistanceTargetType.range) {
+            const midValue = Math.floor((plannedSet.targetDistance.min + plannedSet.targetDistance.max) / 2);
             return midValue.toString();
           }
           return (plannedSet.targetDistance ?? '-').toString();
 
         case METRIC.duration:
-          if (plannedSet.targetDurationMin != null && plannedSet.targetDurationMax != null) {
-            const midValue = Math.floor((plannedSet.targetDurationMin + plannedSet.targetDurationMax) / 2);
-            return this.formatSecondsToTime(midValue);
+          if (plannedSet.targetDuration && plannedSet.targetDuration.type === DurationTargetType.range) {
+            const midValue = Math.floor((plannedSet.targetDuration.minSeconds + plannedSet.targetDuration.maxSeconds) / 2);
+            return midValue.toString();
           }
-          return this.formatSecondsToTime(plannedSet.targetDuration ?? undefined);
+          return (plannedSet.targetDuration ?? '-').toString();
         case METRIC.rest:
-          return this.formatSecondsToTime(plannedSet.targetRest ?? undefined);
-
+          if (plannedSet.targetRest && plannedSet.targetRest.type === RestTargetType.range) {
+            const midValue = Math.floor((plannedSet.targetRest.minSeconds + plannedSet.targetRest.maxSeconds) / 2);
+            return midValue.toString();
+          }
+          return (plannedSet.targetRest ?? '-').toString();
         case METRIC.tempo:
           return plannedSet.targetTempo || '-';
 
@@ -1864,4 +1885,233 @@ export class WorkoutService {
     return this._formatSingleSecondValue(totalSeconds);
   }
 
+  /**
+     * Gets a translated and filtered list of available rep schemes based on the context.
+     * @param context Whether the list is for the 'builder' or the 'player'.
+     * @returns An array of objects with the type and its translated label.
+     */
+  public getAvailableRepsSchemes(context: 'builder' | 'player'): { type: RepsTargetType; label: string }[] {
+
+    // 1. Filter the master list based on the context
+    const filteredSchemes = REPS_TARGET_SCHEMES.filter(scheme => {
+      return context === 'builder' ? scheme.availableInBuilder : scheme.availableInPlayer;
+    });
+
+    // 2. Map the filtered list to include translated labels
+    return filteredSchemes.map(scheme => ({
+      type: scheme.type,
+      label: this.translate.instant(scheme.labelKey)
+    }));
+  }
+
+
+  // Gets a list of available weight schemes for a modal
+  public getAvailableWeightSchemes(context: 'builder' | 'player'): { type: WeightTargetType; label: string }[] {
+    return WEIGHT_TARGET_SCHEMES
+      .filter(scheme => context === 'builder' ? scheme.availableInBuilder : scheme.availableInPlayer)
+      .map(scheme => ({ type: scheme.type, label: this.translate.instant(scheme.labelKey) }));
+  }
+  // Creates a display string like "100kg", "80-90kg", or "Bodyweight"
+  public weightTargetAsString(target: WeightTarget | undefined | null): string {
+    if (!target) return '';
+    switch (target.type) {
+      case WeightTargetType.exact:
+        return `${target.value}`; // The pipe will add the unit
+      case WeightTargetType.range:
+        return `${target.min}-${target.max}`; // The pipe will add the unit
+      case WeightTargetType.bodyweight:
+        return this.translate.instant('weightSchemes.bodyweight'); // "Bodyweight"
+      case WeightTargetType.percentage_1rm:
+        return `${target.percentage}% 1RM`;
+      default:
+        return '';
+    }
+  }
+
+  // --- DURATION (New) ---
+  public getAvailableDurationSchemes(context: 'builder' | 'player'): { type: DurationTargetType; label: string }[] {
+    return DURATION_TARGET_SCHEMES
+      .filter(scheme => context === 'builder' ? scheme.availableInBuilder : scheme.availableInPlayer)
+      .map(scheme => ({ type: scheme.type, label: this.translate.instant(scheme.labelKey) }));
+  }
+  public durationTargetAsString(target: DurationTarget | undefined | null): string {
+    if (!target) return '';
+    switch (target.type) {
+      case DurationTargetType.exact: return `${target.seconds}s`;
+      case DurationTargetType.range: return `${target.minSeconds}-${target.maxSeconds}s`;
+      case DurationTargetType.to_failure: return this.translate.instant('durationSchemes.toFailure');
+      default: return '';
+    }
+  }
+
+  // --- DISTANCE (New) ---
+  public getAvailableDistanceSchemes(context: 'builder' | 'player'): { type: DistanceTargetType; label: string }[] {
+    return DISTANCE_TARGET_SCHEMES
+      .filter(scheme => context === 'builder' ? scheme.availableInBuilder : scheme.availableInPlayer)
+      .map(scheme => ({ type: scheme.type, label: this.translate.instant(scheme.labelKey) }));
+  }
+  public distanceTargetAsString(target: DistanceTarget | undefined | null): string {
+    if (!target) return '';
+    switch (target.type) {
+      case DistanceTargetType.exact: return `${target.value}`;
+      case DistanceTargetType.range: return `${target.min}-${target.max}`;
+      default: return '';
+    }
+  }
+
+  // --- REST (New) ---
+  public getAvailableRestSchemes(context: 'builder' | 'player'): { type: RestTargetType; label: string }[] {
+    return REST_TARGET_SCHEMES
+      .filter(scheme => context === 'builder' ? scheme.availableInBuilder : scheme.availableInPlayer)
+      .map(scheme => ({ type: scheme.type, label: this.translate.instant(scheme.labelKey) }));
+  }
+  public restTargetAsString(target: RestTarget | undefined | null): string {
+    if (!target) return '';
+    switch (target.type) {
+      case RestTargetType.exact: return `${target.seconds}s`;
+      case RestTargetType.range: return `${target.minSeconds}-${target.maxSeconds}s`;
+      default: return '';
+    }
+  }
+
+
+  /**
+   * A generic modal to configure a target scheme for any metric (Reps, Weight, Duration, etc.).
+   * @param metric The metric being configured (e.g., 'reps', 'weight').
+   * @param currentTarget The current target object for pre-filling the modal.
+   * @param availableSchemes The metadata array for the metric (e.g., REPS_TARGET_SCHEMES).
+   * @returns A promise that resolves with the new target object or null if cancelled.
+   */
+  public async showSchemeModal(
+    metric: METRIC,
+    currentTarget: AnyTarget | null,
+    availableSchemes: AnyScheme[]
+  ): Promise<{ role: string, data: AnyTarget } | null> {
+
+    // --- Step 1: Dynamically generate the selection buttons ---
+    const typeButtons: AlertButton[] = availableSchemes.map(scheme => {
+      // You can expand this with more icons as needed
+      let iconName = 'pin';
+      if (scheme.type.includes('range')) iconName = 'range';
+      if (scheme.type.includes('max')) iconName = 'max_performance';
+      if (scheme.type.includes('amrap')) iconName = 'repeat';
+      if (scheme.type.includes('min_plus')) iconName = 'plus-circle';
+      if (scheme.type.includes('bodyweight')) iconName = 'bodyweight';
+
+      return {
+        text: this.translate.instant(scheme.labelKey),
+        role: 'select',
+        data: scheme.type,
+        icon: iconName,
+      };
+    });
+
+    const typeChoice = await this.alertService.showConfirmationDialog(
+      this.translate.instant(`schemes.titles.selectType`, { metric: this.translate.instant(`metrics.${metric}`) }),
+      '',
+      typeButtons,
+      { customButtonDivCssClass: 'grid grid-cols-2 gap-3', showCloseButton: true }
+    );
+
+    if (!typeChoice || !typeChoice.data) {
+      return null;
+    }
+
+    const selectedType = typeChoice.data as AnyTargetType;
+    let newTarget: AnyTarget | null = null;
+
+    // --- Step 2: Dynamically generate the value prompt based on the selected type ---
+    const inputs: AlertInput[] = [];
+    const titleKey = `schemes.titles.set${selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}`;
+
+    switch (selectedType) {
+      case RepsTargetType.exact:
+      case WeightTargetType.exact:
+      case DistanceTargetType.exact:
+        inputs.push({
+          name: 'value', type: 'number', label: this.translate.instant(`metrics.${metric}`),
+          value: (currentTarget as any)?.value ?? 8, // Default to 8 or appropriate value
+          attributes: { min: 0, required: true }
+        });
+        break;
+      case DurationTargetType.exact:
+      case RestTargetType.exact:
+        inputs.push({
+          name: 'seconds', type: 'number', label: this.translate.instant(`metrics.${metric}`),
+          value: (currentTarget as any)?.value ?? 30,
+          attributes: { min: 0, required: true }
+        });
+        break;
+
+      case RepsTargetType.min_plus:
+        inputs.push({
+          name: 'min', type: 'number', label: this.translate.instant('common.atLeast'),
+          value: (currentTarget as any)?.min ?? 5,
+          attributes: { min: 0, required: true }
+        });
+        break;
+
+      case RepsTargetType.range:
+      case WeightTargetType.range:
+      case DurationTargetType.range:
+      case DistanceTargetType.range:
+      case RestTargetType.range:
+        inputs.push(
+          { name: 'min', type: 'number', label: this.translate.instant('common.min'), value: (currentTarget as any)?.min ?? 8, attributes: { min: 0, required: true } },
+          { name: 'max', type: 'number', label: this.translate.instant('common.max'), value: (currentTarget as any)?.max ?? 12, attributes: { min: 0, required: true } }
+        );
+        break;
+
+      case WeightTargetType.percentage_1rm:
+        inputs.push({ name: 'percentage', type: 'number', label: '% 1RM', value: (currentTarget as any)?.percentage ?? 80, attributes: { min: 1, max: 150, required: true } });
+        break;
+    }
+
+    // --- Step 3: Show the value prompt if needed ---
+    if (inputs.length > 0) {
+      const result = await this.alertService.showPromptDialog(this.translate.instant(titleKey), '', inputs);
+      if (!result) return null;
+
+      // Construct the new target object INSIDE the final switch, where types are known.
+      switch (selectedType) {
+        case RepsTargetType.exact:
+        case DistanceTargetType.exact:
+          newTarget = { type: selectedType, value: Number(result['value']) };
+          break;
+        case WeightTargetType.exact:
+           newTarget = { type: selectedType, value: Number(result['value']) };
+           break;
+        case DurationTargetType.exact:
+        case RestTargetType.exact:
+          newTarget = { type: selectedType, seconds: Number(result['seconds']) };
+          break;
+        case RepsTargetType.range:
+        case DistanceTargetType.range:
+          newTarget = { type: selectedType, min: Number(result['min']), max: Number(result['max']) };
+          break;
+        case WeightTargetType.range:
+           newTarget = { type: selectedType, min: Number(result['min']), max: Number(result['max']) };
+           break;
+        case DurationTargetType.range:
+        case RestTargetType.range:
+          newTarget = { type: selectedType, minSeconds: Number(result['min']), maxSeconds: Number(result['max']) };
+          break;
+        case RepsTargetType.min_plus:
+           newTarget = { type: selectedType, value: Number(result['min']) };
+           break;
+        case WeightTargetType.percentage_1rm:
+          newTarget = { type: selectedType, percentage: Number(result['percentage']) };
+          break;
+      }
+    } else {
+      // For types without inputs, this is still correct.
+      newTarget = { type: selectedType } as AnyTarget;
+    }
+
+    if (newTarget) {
+      return { role: 'confirm', data: newTarget };
+    }
+
+    return null;
+  }
 }

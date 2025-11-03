@@ -12,7 +12,7 @@ export class PressDirective implements OnDestroy, OnInit {
 
   private timeoutId: any;
   private isLongPress = false;
-  
+
   // Store bound function references for proper cleanup
   private boundOnPressStart: (event: Event) => void;
   private boundOnPressEnd: (event: Event) => void;
@@ -48,15 +48,20 @@ export class PressDirective implements OnDestroy, OnInit {
     this.el.nativeElement.removeEventListener('touchstart', this.boundOnPressStart);
   }
 
+
   onPressStart(event: Event): void {
+    if (this.el.nativeElement.disabled) {
+      event.preventDefault(); // Also prevent default behavior
+      return;
+    }
     if (this.pressDisabled) return;
-    
+
     event.stopPropagation();
     event.preventDefault();
 
     this.isLongPress = false;
     this.renderer.addClass(this.el.nativeElement, 'is-pressed');
-    
+
     if (navigator.vibrate) {
       navigator.vibrate(50);
     }
@@ -68,10 +73,11 @@ export class PressDirective implements OnDestroy, OnInit {
   }
 
   onPressEnd(event: Event): void {
+    if (this.pressDisabled) return;
     event.stopPropagation();
     clearTimeout(this.timeoutId);
     this.renderer.removeClass(this.el.nativeElement, 'is-pressed');
-    
+
     if (!this.isLongPress && event.type !== 'mouseleave' && event.type !== 'touchcancel') {
       this.shortPress.emit(event);
     }

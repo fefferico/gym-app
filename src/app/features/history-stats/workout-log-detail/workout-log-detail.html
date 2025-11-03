@@ -38,7 +38,9 @@
         <div class="flex items-center align-center text-md text-gray-600 dark:text-gray-400 gap-x-2">
           <app-icon name="calendar" class="w-7 h-7 mr-1"></app-icon>
           <div>
-            <p class="font-bold">{{ log.startTime | date:'fullDate' }}</p>
+            <p class="font-bold">
+              {{ log.startTime | date:'fullDate'}}
+            </p>
             <p class="text-sm text-gray-600 dark:text-gray-400">
               {{ 'logDetail.from' | translate:{start: (log.startTime | date:'shortTime'), end: (log.endTime |
               date:'shortTime')} }}
@@ -116,7 +118,7 @@
                               [class.cursor-pointer]="isTargetDifferent(set, metricEnum.weight)"
                               [class.hover:underline]="isTargetDifferent(set, metricEnum.weight)"
                               (click)="showComparisonModal(set, metricEnum.weight)">
-                              @ {{ set.weightLogged | weightUnit:'1.0-2' }}
+                              @ {{ getWeightValue(set.weightLogged) | weightUnit:'1.0-2' }}
                             </span>
                           </ng-container>
                           <ng-template #noSetData><span class="text-gray-400">{{ 'logDetail.card.noSetData' | translate
@@ -183,7 +185,7 @@
                           {{ loggedEx.sets[0].repsLogged || '-' }} reps
                           <span *ngIf="loggedEx.sets[0].weightLogged != null"
                             class="font-normal text-gray-600 dark:text-gray-400">
-                            @ {{ loggedEx.sets[0].weightLogged | weightUnit:'1.0-2' }}
+                            @ {{ getWeightValue(loggedEx.sets[0].weightLogged) | weightUnit:'1.0-2' }}
                           </span>
                         </div>
                         <ng-template #noSetData><span class="text-gray-400 text-sm ml-auto">{{ 'logDetail.card.noSetData'
@@ -279,7 +281,7 @@
                     <!-- Reps -->
                     <div *ngIf="checkIfRepsAvailable(item)"><strong [ngClass]="checkTextClass(set, metricEnum.reps)"
                         [class.cursor-pointer]="true"
-                        (click)="showComparisonModal(set, metricEnum.reps)">{{ set.repsLogged || '-' }}</strong></div>
+                        (click)="showComparisonModal(set, metricEnum.reps)">{{ repsTargetRepsToReps(set.repsLogged) || '-' }}</strong></div>
 
                     <!-- Weight -->
                     <div *ngIf="checkIfWeightAvailable(item)"><strong [ngClass]="checkTextClass(set, metricEnum.weight)"
@@ -373,7 +375,7 @@
 
 <!-- COMPARISON MODAL -->
 <app-modal *ngIf="comparisonModalData() as data" [isOpen]="!!data" (isOpenChange)="comparisonModalData.set(null)"
-  [modalTitle]="data.metric + ' Target Comparison'">
+  [modalTitle]="('workoutLogDetail.targetComparison' | translate) + ': ' + ('metrics.'+data.metric | translate)">
 
   <!-- Main content area with vertical spacing -->
   <div class="p-6 space-y-4">

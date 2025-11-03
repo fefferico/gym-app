@@ -115,12 +115,99 @@ $breakpoint-md: 768px; // Matching Tailwind's default 'md' breakpoint
 }
 
 .input_number_class {
-  @apply w-full p-1.5 text-center font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl disabled:opacity-70 disabled:cursor-not-allowed;
+  @apply w-full p-1.5 text-center font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl disabled:opacity-70 disabled:cursor-not-allowed h-16;
 }
 
 .wrapper_ranged_input_number_class {
-  @apply flex items-center w-full p-0.5 justify-center bg-gray-200 dark:bg-gray-700 rounded-xl;
+  @apply flex items-center w-full p-0.5 justify-center bg-gray-200 dark:bg-gray-700 rounded-xl no-arrows;
 }
 .input_number_class_separator {
   @apply text-gray-500 dark:text-gray-400 font-bold mx-1;
+}
+
+/*
+  This styles the main wrapper div. It creates the dark, rounded container
+  and clips the animation.
+*/
+.numeric-stepper-container {
+  display: flex;
+  align-items: center;
+  background-color: #2c3240;
+  border-radius: 12px;
+  // height: 52px;
+  position: relative; /* Establishes a stacking context */
+  overflow: hidden;   /* Contains the animation */
+}
+
+/*
+  --- CLICKABILITY AND INTERACTION FIX ---
+  This targets the <input> ONLY when it's inside our new container.
+*/
+.numeric-stepper-container input {
+  /* Make the input transparent so the animated number behind it is visible */
+  background: transparent !important;
+  color: transparent; /* Hide the input's actual text/caret */
+  caret-color: white; /* Make the typing caret visible for user feedback */
+
+  /* Remove default styling */
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  
+  /* Layering Fix: */
+  position: relative; /* Ensure z-index is applied correctly */
+  z-index: 2;         /* Bring the input to the very top layer */
+
+  /* Make the input fill the central area to be clickable */
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  font-size: 1.5em; /* Match the font size of your animated number */
+  font-weight: bold;
+}
+
+/*
+  This assumes your animated number is a <span> or <div> inside the template.
+  We force it to be on a lower layer than the input.
+  You may need to adjust the selector (e.g., '.animated-value') to match your code.
+*/
+.numeric-stepper-container .input-number-container > span {
+  position: absolute;
+  z-index: 1; /* Places it BEHIND the input */
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: white;
+  /* Prevent the span itself from capturing clicks */
+  pointer-events: none;
+}
+
+/*
+  Styles the buttons inside the container.
+*/
+.numeric-stepper-container button {
+  // background-color: #3a4151;
+  // border-radius: 8px;
+  // color: white;
+  // flex-shrink: 0;
+  // margin: 0 6px;
+  // width: 42px;
+  // height: 42px;
+  // font-size: 2em;
+  // /* Layering: Keep buttons on top, but below the input overlay if they overlap */
+  // position: relative;
+  // z-index: 3;
+
+  @apply flex items-center px-3 py-5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 border-y border-gray-200 dark:border-gray-700 transition-colors
+}
+
+
+.no-arrows::-webkit-outer-spin-button,
+.no-arrows::-webkit-inner-spin-button {
+ -webkit-appearance: none;
+ margin: 0;
+}
+
+.no-arrows {
+ -moz-appearance: textfield;
 }

@@ -8,6 +8,11 @@ import { UnitsService } from '../../../../core/services/units.service';
 import { WeightUnitPipe } from '../../../../shared/pipes/weight-unit-pipe';
 import { DisplayLoggedExercise } from '../workout-log-detail';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { getDistanceValue, getDurationValue, getWeightValue, repsTypeToReps } from '../../../../core/services/workout-helper.service';
+import { DistanceTarget, DurationTarget, RepsTarget, WeightTarget } from '../../../../core/models/workout.model';
+import { LanguageService } from '../../../../core/services/language.service';
+import { Locale } from 'date-fns';
+import { ar, de, enUS, es, fr, it, ja, pt, ru, zhCN } from 'date-fns/locale';
 
 // Interfaces for data structure
 interface PerformanceSummary {
@@ -80,6 +85,20 @@ export class PerformanceComparisonModalComponent {
     set exercise(value: DisplayLoggedExercise | undefined) {
         this.exerciseSignal.set(value);
     }
+
+    private languageService = inject(LanguageService);
+      private dateFnsLocales: { [key: string]: Locale } = {
+        en: enUS,
+        it: it,
+        es: es,
+        fr: fr,
+        ru: ru,
+        ja: ja,
+        ar: ar,
+        zh: zhCN,
+        pt: pt,
+        de: de
+      };
 
     private readonly currentLogSignal = signal<WorkoutLog | undefined>(undefined);
     @Input({ required: true })
@@ -262,11 +281,11 @@ export class PerformanceComparisonModalComponent {
         if (!sets || sets.length === 0) {
             return { setsCount: 0, totalReps: 0, totalVolume: 0, maxWeight: 0, totalDuration: 0, totalDistance: 0 };
         }
-        const totalReps = sets.reduce((sum, set) => sum + (set.repsLogged || 0), 0);
-        const totalVolume = sets.reduce((sum, set) => sum + ((set.repsLogged || 0) * (set.weightLogged || 0)), 0);
-        const maxWeight = Math.max(0, ...sets.map(set => set.weightLogged || 0));
-        const totalDuration = sets.reduce((sum, set) => sum + (set.durationLogged || 0), 0);
-        const totalDistance = sets.reduce((sum, set) => sum + (set.distanceLogged || 0), 0);
+        const totalReps = sets.reduce((sum, set) => sum + (repsTypeToReps(set.repsLogged) || 0), 0);
+        const totalVolume = sets.reduce((sum, set) => sum + ((repsTypeToReps(set.repsLogged) || 0) * (getWeightValue(set.weightLogged) || 0)), 0);
+        const maxWeight = Math.max(0, ...sets.map(set => getWeightValue(set.weightLogged) || 0));
+        const totalDuration = sets.reduce((sum, set) => sum + (getDurationValue(set.durationLogged) || 0), 0);
+        const totalDistance = sets.reduce((sum, set) => sum + (getDistanceValue(set.distanceLogged) || 0), 0);
         return { setsCount: sets.length, totalReps, totalVolume, maxWeight, totalDuration, totalDistance };
     }
 
@@ -433,4 +452,21 @@ export class PerformanceComparisonModalComponent {
 
     return rows;
   }
+
+  repsTargetRepsToReps(targetReps: RepsTarget | undefined): number {
+    return repsTypeToReps(targetReps);
+  }
+
+  
+        getDurationValue(duration: DurationTarget | undefined): number {
+        return getDurationValue(duration);
+      }
+    
+        getWeightValue(duration: WeightTarget | undefined): number {
+        return getWeightValue(duration);
+      }
+    
+        getDistanceValue(distance: DistanceTarget | undefined): number {
+        return getDistanceValue(distance);
+      }
 }

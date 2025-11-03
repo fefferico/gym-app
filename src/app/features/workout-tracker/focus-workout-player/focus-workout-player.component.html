@@ -287,7 +287,7 @@
                   [ngClass]="{
                         'text-red-500': isTimedSetOvertime(),
                         'animate-pulse': isTimedSetOvertime() && timedSetTimerState() === 'running',
-                        'text-green-500 dark:text-green-400': !isTimedSetOvertime() && timedSetTimerState() === 'running' && (activeSetInfo()?.setData?.targetDuration ?? 0) > 0 && timedSetElapsedSeconds() > 0,
+                        'text-green-500 dark:text-green-400': !isTimedSetOvertime() && timedSetTimerState() === 'running' && getDurationValue(activeSetInfo()?.setData?.targetDuration) > 0 && timedSetElapsedSeconds() > 0,
                         'text-gray-800 dark:text-gray-100': timedSetTimerState() === 'idle' || timedSetTimerState() === 'paused'
                      }">
                   {{ timedSetDisplay() | formatSeconds }}
@@ -508,13 +508,13 @@
             <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
               <span *ngIf="setLog.repsLogged">Reps: <strong class="dark:text-gray-100">{{ setLog.repsLogged
                   }}</strong></span>
-              <span *ngIf="setLog.weightLogged != null">Weight: <strong class="dark:text-gray-100">{{ setLog.weightLogged
+              <span *ngIf="setLog.weightLogged != null">Weight: <strong class="dark:text-gray-100">{{ getWeightValue(setLog.weightLogged)
                   |
                   weightUnit }}</strong></span>
               <span *ngIf="setLog.distanceLogged">Distance: <strong class="dark:text-gray-100">{{
                   setLog.distanceLogged }} km</strong></span>
               <span *ngIf="setLog.durationLogged">Time: <strong class="dark:text-gray-100">{{
-                  formatSecondsToTime(setLog.durationLogged) }}</strong></span>
+                  formatSecondsToTime(getDurationValue(setLog.durationLogged)) }}</strong></span>
             </div>
           </div>
           <div *ngIf="data.completedSetsInSession.length === 0"
@@ -538,13 +538,13 @@
             <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
               <span *ngIf="setLog.repsLogged">Reps: <strong class="dark:text-gray-100">{{ setLog.repsLogged
                   }}</strong></span>
-              <span *ngIf="setLog.weightLogged != null">Weight: <strong class="dark:text-gray-100">{{ setLog.weightLogged
+              <span *ngIf="setLog.weightLogged != null">Weight: <strong class="dark:text-gray-100">{{ getWeightValue(setLog.weightLogged)
                   |
                   weightUnit }}</strong></span>
               <span *ngIf="setLog.distanceLogged">Distance: <strong class="dark:text-gray-100">{{
                   setLog.distanceLogged }} km</strong></span>
               <span *ngIf="setLog.durationLogged">Time: <strong class="dark:text-gray-100">{{
-                  formatSecondsToTime(setLog.durationLogged) }}</strong></span>
+                  formatSecondsToTime(getDurationValue(setLog.durationLogged)) }}</strong></span>
             </div>
           </div>
         </div>

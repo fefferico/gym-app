@@ -14,6 +14,7 @@ import { PressDirective } from '../../../shared/directives/press.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { PerceivedEffortModalComponent, PerceivedWorkoutInfo } from '../perceived-effort-modal.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { getDurationValue, getRepsValue, getWeightValue, repsTypeToReps } from '../../../core/services/workout-helper.service';
 
 
 interface DisplayLoggedExerciseSummary extends LoggedWorkoutExercise {
@@ -120,7 +121,7 @@ export class WorkoutSummaryComponent implements OnInit {
         map(baseEx => {
           let exerciseVolume = 0;
           loggedEx.sets.forEach(set => {
-            exerciseVolume += (set.repsLogged || 0) * (set.weightLogged || 0);
+            exerciseVolume += (getRepsValue(set.repsLogged) || 0) * (getWeightValue(set.weightLogged) || 0);
           });
           return {
             ...loggedEx,
@@ -179,14 +180,16 @@ export class WorkoutSummaryComponent implements OnInit {
 
   formatPbValueForSummary(pb: PersonalBestSet): string {
     let value = '';
-    if (pb.weightLogged !== undefined && pb.weightLogged !== null && pb.weightLogged !== 0) {
+    let repsLogged: number | undefined;
+
+    if (pb.weightLogged !== undefined && pb.weightLogged !== null && getWeightValue(pb.weightLogged) !== 0) {
       value += `${pb.weightLogged}${this.unitsService.getWeightUnitSuffix()}`;
-      if (pb.repsLogged && (pb.pbType.includes('Heaviest') || pb.repsLogged > 1 && !pb.pbType.includes('RM'))) {
-        value += ` x ${pb.repsLogged}`;
+      if (pb.repsLogged && (pb.pbType.includes('Heaviest') || getRepsValue(pb.repsLogged) > 1 && !pb.pbType.includes('RM'))) {
+        value += ` x ${repsTypeToReps(pb.repsLogged)}`;
       }
     } else if (pb.repsLogged && pb.pbType.includes('Max Reps')) {
-      value = `${pb.repsLogged} ${this.translate.instant('workoutSummary.units.reps')}`;
-    } else if (pb.durationLogged && pb.durationLogged > 0 && pb.pbType.includes('Max Duration')) {
+      value = `${repsTypeToReps(pb.repsLogged)} ${this.translate.instant('workoutSummary.units.reps')}`;
+    } else if (pb.durationLogged && getDurationValue(pb.durationLogged) > 0 && pb.pbType.includes('Max Duration')) {
       value = `${pb.durationLogged}${this.translate.instant('workoutSummary.units.seconds')}`;
     }
     return value || 'N/A';

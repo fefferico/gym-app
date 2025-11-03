@@ -45,7 +45,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private subscriptions = new Subscription(); // To manage subscriptions
 
-  bumpTimeOut: number = 200;
+  bumpTimeOut: number = 150;
 
   constructor() {
     // Effect to update pausedRoutineName when pausedWorkoutInfo changes

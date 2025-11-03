@@ -1,7 +1,7 @@
 // src/app/core/models/workout-log.model.ts
 
 import { PerceivedWorkoutInfo } from "../../features/workout-tracker/perceived-effort-modal.component";
-import { METRIC } from "./workout.model";
+import { DistanceTarget, DurationTarget, METRIC, RepsTarget, RestTarget, WeightTarget } from "./workout.model";
 
 // Describes a single set that was actually performed and logged.
 export interface LoggedSet {
@@ -11,31 +11,21 @@ export interface LoggedSet {
   exerciseId: string;    // ID of the base Exercise performed
 
   // Actual performance data
-  repsLogged?: number | undefined;
-  weightLogged?: number | undefined;
-  durationLogged?: number | undefined; // in seconds
-  distanceLogged?: number | undefined; // in kilometers
+  repsLogged?: RepsTarget;
+  weightLogged?: WeightTarget;
+  durationLogged?: DurationTarget; // in seconds
+  distanceLogged?: DistanceTarget; // in kilometers
   tempoLogged?: string | undefined;     // Actual tempo used, if tracked by user.
-  restLogged?: number | undefined;
+  restLogged?: RestTarget;
   // restTaken?: number;  // Actual rest taken before the next set (more complex to track accurately)
 
   // Target values (copied from the planned set in the routine at the time of performance)
   // These are useful for seeing if targets were met/exceeded.
-  targetRest?: number | null;
-  targetRestMin?: number | null;
-  targetRestMax?: number | null;
-  targetReps?: number | null;
-  targetRepsMin?: number | null;
-  targetRepsMax?: number | null;
-  targetWeight?: number | null;
-  targetWeightMin?: number | null;
-  targetWeightMax?: number | null;
-  targetDuration?: number | null;
-  targetDurationMin?: number | null;
-  targetDurationMax?: number | null;
-  targetDistance?: number | null; // in kilometers
-  targetDistanceMin?: number | null; // in kilometers
-  targetDistanceMax?: number | null; // in kilometers
+  targetRest?: RestTarget;
+  targetReps?: RepsTarget;
+  targetWeight?: WeightTarget;
+  targetDuration?: DurationTarget;
+  targetDistance?: DistanceTarget; // in kilometers
   targetTempo?: string; // Target tempo from the plan
   notes?: string;         // User notes specific to this performed set (e.g., "Felt easy", "Form breakdown on last rep")
   // formRating?: 1 | 2 | 3 | 4 | 5; // Optional: User's perceived form rating for the set
@@ -43,7 +33,7 @@ export interface LoggedSet {
   type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | string; // More flexible
   rpe?: number; // Optional: User's perceived exertion for this set (RPE 1-10)
   workoutLogId?: string; // ID of the WorkoutLog this set belongs to
-  fieldOrder?: METRIC[]; // Order of fields as per user preference
+  fieldOrder: METRIC[]; // Order of fields as per user preference
 }
 
 // Describes a group of sets performed together as a "round" (e.g., in a circuit or superset)
@@ -102,10 +92,10 @@ export interface WorkoutLog {
 export interface PersonalBestSet extends LoggedSet {
   pbType: string; // e.g., "1RM", "5RM (estimated)", "Max Reps @ X kg"
   exerciseId: string;
-  repsLogged?: number | undefined;
-  weightLogged?: number | undefined;
+  repsLogged?: RepsTarget | undefined;
+  weightLogged?: WeightTarget | undefined;
   volume?: number | undefined;
-  durationLogged?: number; // In seconds
+  durationLogged?: DurationTarget | undefined; // In seconds
   estimatedOneRepMax?: number | null;
   timestamp: string; // ISO date string of when this PB was achieved
   workoutLogId?: string; // <<<< ADD THIS if not present

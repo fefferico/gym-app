@@ -1,6 +1,9 @@
-import { METRIC, Routine } from "../models/workout.model";
+import { METRIC, RepsTargetType, RestTargetType, Routine, WeightTargetType } from "../models/workout.model";
 
 const metricENUM = METRIC;
+const targetRepsTypeENUM = RepsTargetType;
+const weightTypeENUM = WeightTargetType;
+const restTypeENUM = RestTargetType;
 export const ROUTINES_DATA: Routine[] = [
     {
         "id": "beginner-workout-v1-a",
@@ -20,9 +23,9 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": 10,
-                        "targetWeight": 10,
-                        "targetRest": 120,
+                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetWeight": {type: weightTypeENUM.exact, value: 10},
+                        "targetRest": {type: restTypeENUM.exact, seconds: 10},
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
@@ -33,9 +36,9 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": 10,
-                        "targetWeight": 10,
-                        "targetRest": 120,
+                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetWeight": {type: weightTypeENUM.exact, value: 10},
+                        "targetRest": {type: restTypeENUM.exact, seconds: 10},
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
@@ -46,9 +49,9 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": 10,
-                        "targetWeight": 10,
-                        "targetRest": 120,
+                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetWeight": {type: weightTypeENUM.exact, value: 10},
+                        "targetRest": {type: restTypeENUM.exact, seconds: 10},
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     }
@@ -69,9 +72,9 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": 10,
-                        "targetWeight": 10,
-                        "targetRest": 120,
+                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetWeight": {type: weightTypeENUM.exact, value: 10},
+                        "targetRest": {type: restTypeENUM.exact, seconds: 10},
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
@@ -82,9 +85,9 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": 10,
-                        "targetWeight": 10,
-                        "targetRest": 120,
+                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetWeight": {type: weightTypeENUM.exact, value: 10},
+                        "targetRest": {type: restTypeENUM.exact, seconds: 10},
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
@@ -95,9 +98,9 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": 10,
-                        "targetWeight": 10,
-                        "targetRest": 120,
+                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetWeight": {type: weightTypeENUM.exact, value: 10},
+                        "targetRest": {type: restTypeENUM.exact, seconds: 10},
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     }
@@ -118,9 +121,9 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": 10,
-                        "targetWeight": 10,
-                        "targetRest": 120,
+                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetWeight": {type: weightTypeENUM.exact, value: 10},
+                        "targetRest": {type: restTypeENUM.exact, seconds: 10},
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
@@ -131,9 +134,9 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": 10,
-                        "targetWeight": 10,
-                        "targetRest": 120,
+                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetWeight": {type: weightTypeENUM.exact, value: 10},
+                        "targetRest": {type: restTypeENUM.exact, seconds: 10},
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
@@ -144,9 +147,9 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": 10,
-                        "targetWeight": 10,
-                        "targetRest": 120,
+                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetWeight": {type: weightTypeENUM.exact, value: 10},
+                        "targetRest": {type: restTypeENUM.exact, seconds: 10},
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     }
@@ -175,9 +178,9 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": 8,
-                        "targetWeight": 10,
-                        "targetRest": 120,
+                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 8},
+                        "targetWeight": {type: weightTypeENUM.exact, value: 10},
+                        "targetRest": {type: restTypeENUM.exact, seconds: 10},
                         "type": "standard",
                         "notes": "Aim for 6-8 reps."
                     },
@@ -188,9 +191,9 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": 8,
-                        "targetWeight": 10,
-                        "targetRest": 120,
+                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 8},
+                        "targetWeight": {type: weightTypeENUM.exact, value: 10},
+                        "targetRest": {type: restTypeENUM.exact, seconds: 10},
                         "type": "standard",
                         "notes": "Aim for 6-8 reps."
                     },
@@ -201,9 +204,9 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": 8,
-                        "targetWeight": 10,
-                        "targetRest": 120,
+                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 8},
+                        "targetWeight": {type: weightTypeENUM.exact, value: 10},
+                        "targetRest": {type: restTypeENUM.exact, seconds: 10},
                         "type": "standard",
                         "notes": "Aim for 6-8 reps."
                     }
@@ -223,9 +226,8 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": 10,
-                        "targetWeight": null,
-                        "targetRest": 120,
+                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetRest": {type: restTypeENUM.exact, seconds: 10},
                         "type": "standard",
                         "notes": "If you cannot do pull-ups, substitute with Lat Pulldowns. Aim for 8-10 reps."
                     },
@@ -235,9 +237,8 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": 10,
-                        "targetWeight": null,
-                        "targetRest": 120,
+                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetRest": {type: restTypeENUM.exact, seconds: 10},
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
@@ -247,9 +248,8 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": 10,
-                        "targetWeight": null,
-                        "targetRest": 120,
+                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetRest": {type: restTypeENUM.exact, seconds: 10},
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     }
@@ -270,9 +270,9 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.weight,
                             metricENUM.rest
                         ],
-                        "targetReps": 10,
-                        "targetWeight": 10,
-                        "targetRest": 120,
+                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetWeight": {type: weightTypeENUM.exact, value: 10},
+                        "targetRest": {type: restTypeENUM.exact, seconds: 10},
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
@@ -283,9 +283,9 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.weight,
                             metricENUM.rest
                         ],
-                        "targetReps": 10,
-                        "targetWeight": 10,
-                        "targetRest": 120,
+                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetWeight": {type: weightTypeENUM.exact, value: 10},
+                        "targetRest": {type: restTypeENUM.exact, seconds: 10},
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
@@ -296,9 +296,9 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.weight,
                             metricENUM.rest
                         ],
-                        "targetReps": 10,
-                        "targetWeight": 10,
-                        "targetRest": 120,
+                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetWeight": {type: weightTypeENUM.exact, value: 10},
+                        "targetRest": {type: restTypeENUM.exact, seconds: 10},
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     }

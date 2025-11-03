@@ -9,13 +9,14 @@ export const HISTORY_STATS_ROUTES: Routes = [
   {
     path: 'list', // Changed from 'history' to 'list' to avoid conflict with parent 'history' path
     component: HistoryListComponent,
-    title: 'Workout History'
+    title: 'Workout History',
+    data : { animation: 'HistoryList'}
   },
   {
     path: 'log/:logId', // For viewing a specific log
     component: WorkoutLogDetailComponent,
     title: 'Workout Details',
-    data: { showPausedWorkoutBanner: false}
+    data: { showPausedWorkoutBanner: false, animation: 'HistoryLogDetail'}
   },
   {
     path: 'dashboard', // Changed from 'stats' to 'dashboard'
