@@ -1,7 +1,6 @@
 <!-- src/app/shared/alert/alert.component.html -->
 <div *ngIf="options" @modalOverlay
-  class="fixed inset-0 bg-black bg-opacity-50 flex justify-center z-50 p-4 backdrop-blur-sm"
-  [ngClass]="alignmentClass"
+  class="fixed inset-0 bg-black bg-opacity-50 flex justify-center z-50 p-4 backdrop-blur-sm" [ngClass]="alignmentClass"
   (click)="onBackdropClick()">
 
   <!-- Main alert container -->
@@ -9,11 +8,8 @@
     class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md dark:text-gray-200 flex flex-col relative"
     [ngClass]="options.customCssClass" (click)="$event.stopPropagation()" (keydown.enter)="handleEnterPress()">
 
-    <button *ngIf="options.showCloseButton" 
-            (click)="onCloseButtonClick($event)"
-            type="button"
-            aria-label="Close dialog"
-            class="absolute top-2 right-2 p-2 rounded-full text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors flex items-center">
+    <button *ngIf="options.showCloseButton" (click)="onCloseButtonClick($event)" type="button" aria-label="Close dialog"
+      class="absolute top-2 right-2 p-2 rounded-full text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors flex items-center">
       <app-icon name="cancel" class="h-6 w-6"></app-icon>
     </button>
 
@@ -82,7 +78,8 @@
                   [disabled]="input.attributes && input.attributes.disabled" [name]="input.name"
                   [placeholder]="input.placeholder || ''" [(ngModel)]="inputValues[input.name]"
                   [required]="input.required ? true : false" [min]="input.min" [max]="input.max"
-                  class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-m dark:bg-gray-800 dark:text-gray-200">
+                  class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-m dark:bg-gray-800 dark:text-gray-200"
+                  (input)="input.type === 'number' && onNumberInput($event, input.name)">
               </div>
 
             </ng-container>

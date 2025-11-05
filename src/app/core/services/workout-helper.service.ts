@@ -296,8 +296,8 @@ export function compareWeightTargets(weightA: WeightTarget | null | undefined, w
   return 0;
 }
 
-export function weightToExact(reps: number | undefined): WeightTarget {
-  const defaultObj = { type: WeightTargetType.exact, value: reps || 1 } as WeightTarget;
+export function weightToExact(weight: number | undefined): WeightTarget {
+  const defaultObj = { type: WeightTargetType.exact, value: weight || 1 } as WeightTarget;
   return defaultObj;
 }
 

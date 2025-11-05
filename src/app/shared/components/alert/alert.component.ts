@@ -304,4 +304,11 @@ export class AlertComponent implements OnInit {
     event.stopPropagation(); // Prevent the backdrop click from also firing.
     this.dismissWith({ role: 'cancel' });
   }
+
+  onNumberInput(event: Event, inputName: string) {
+    const input = event.target as HTMLInputElement;
+    // Only allow numbers and dot
+    input.value = input.value.replace(/[^0-9.]/g, '');
+    this.inputValues[inputName] = input.value;
+  }
 }

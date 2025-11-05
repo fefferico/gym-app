@@ -171,7 +171,7 @@
         <div
             class="bg-gray-50 dark:bg-gray-800 px-4 py-2 sm:flex sm:flex-row-reverse sm:px-6 flex-shrink-0 justify-center gap-2">
             <!-- NEW: Primary Action for Multi-Select -->
-            <button *ngIf="isMultiSelect() && processedExercises()?.length" type="button" (click)="confirmSelection()"
+            <button *ngIf="isMultiSelect() && selectionCount() > 0" type="button" (click)="confirmSelection()"
                 [disabled]="selectionCount() === 0" class="inline-flex w-full justify-center items-center rounded-md px-4 py-2 text-xl font-semibold text-white shadow-sm sm:w-auto
                    bg-primary hover:bg-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-focus
                    disabled:opacity-50 disabled:cursor-not-allowed">

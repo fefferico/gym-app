@@ -1341,51 +1341,129 @@ export class WorkoutService {
  * A private, synchronous helper that applies a new field and its value to a specific set
  * within a routine object and returns the modified routine.
  */
-  private addFieldToSet(routine: Routine, exIndex: number, setIndex: number, fieldToAdd: string, targetValue: any): Routine {
+  private addFieldToSet(
+    routine: Routine,
+    exIndex: number,
+    setIndex: number,
+    fieldToAdd: METRIC,
+    targetValue: AnyTarget | string | number | boolean
+  ): Routine {
     const updatedRoutine = JSON.parse(JSON.stringify(routine)) as Routine;
-    const setToUpdate = updatedRoutine.exercises[exIndex].sets[setIndex] as any;
+    const setToUpdate = updatedRoutine.exercises[exIndex].sets[setIndex];
 
+    // Ensure fieldOrder exists and includes the new field
     if (!setToUpdate.fieldOrder) {
       const { visible } = this.getFieldsForSet(routine, exIndex, setIndex);
       setToUpdate.fieldOrder = visible;
     }
-
     if (!setToUpdate.fieldOrder.includes(fieldToAdd)) {
       setToUpdate.fieldOrder.push(fieldToAdd);
     }
 
-    const stringValue = (fieldToAdd === METRIC.tempo || fieldToAdd === 'notes') ? String(targetValue) : '';
-    const numberValue = (fieldToAdd !== METRIC.tempo && fieldToAdd !== 'notes') ? Number(targetValue) : null;
-
+    // Type-aware assignment for each metric
     switch (fieldToAdd) {
       case METRIC.weight: {
-        setToUpdate.targetWeight = numberValue;
-        setToUpdate.weightLogged = numberValue;
+        let weightTarget: WeightTarget;
+        if (typeof targetValue === 'number') {
+          weightTarget = weightToExact(targetValue);
+        } else if (typeof targetValue === 'string' && !isNaN(Number(targetValue))) {
+          weightTarget = weightToExact(Number(targetValue));
+        } else if (typeof targetValue === 'object' && targetValue && 'type' in targetValue) {
+          weightTarget = targetValue as WeightTarget;
+        } else {
+          weightTarget = weightToExact(0);
+        }
+        setToUpdate.targetWeight = weightTarget;
+
+        if (this.isLoggedSet(setToUpdate)) {
+          setToUpdate.weightLogged = weightTarget;
+        }
         break;
       }
       case METRIC.reps: {
-        setToUpdate.targetReps = numberValue;
-        setToUpdate.repsLogged = numberValue;
+        let repsTarget: RepsTarget;
+        if (typeof targetValue === 'number') {
+          repsTarget = repsToExact(targetValue);
+        } else if (typeof targetValue === 'string' && !isNaN(Number(targetValue))) {
+          repsTarget = repsToExact(Number(targetValue));
+        } else if (typeof targetValue === 'object' && targetValue && 'type' in targetValue) {
+          repsTarget = targetValue as RepsTarget;
+        } else {
+          repsTarget = repsToExact(0);
+        }
+        setToUpdate.targetReps = repsTarget;
+
+        if (this.isLoggedSet(setToUpdate)) {
+          setToUpdate.repsLogged = repsTarget;
+        }
         break;
       }
       case METRIC.distance: {
-        setToUpdate.targetDistance = numberValue;
-        setToUpdate.distanceLogged = numberValue;
+        let distanceTarget: DistanceTarget;
+        if (typeof targetValue === 'number') {
+          distanceTarget = distanceToExact(targetValue);
+        } else if (typeof targetValue === 'string' && !isNaN(Number(targetValue))) {
+          distanceTarget = distanceToExact(Number(targetValue));
+        } else if (typeof targetValue === 'object' && targetValue && 'type' in targetValue) {
+          distanceTarget = targetValue as DistanceTarget;
+        } else {
+          distanceTarget = distanceToExact(0);
+        }
+        setToUpdate.targetDistance = distanceTarget;
+
+        if (this.isLoggedSet(setToUpdate)) {
+          setToUpdate.distanceLogged = distanceTarget;
+        }
         break;
       }
       case METRIC.duration: {
-        setToUpdate.targetDuration = numberValue;
-        setToUpdate.durationLogged = numberValue;
+        let durationTarget: DurationTarget;
+        if (typeof targetValue === 'number') {
+          durationTarget = durationToExact(targetValue);
+        } else if (typeof targetValue === 'string' && !isNaN(Number(targetValue))) {
+          durationTarget = durationToExact(Number(targetValue));
+        } else if (typeof targetValue === 'object' && targetValue && 'type' in targetValue) {
+          durationTarget = targetValue as DurationTarget;
+        } else {
+          durationTarget = durationToExact(0);
+        }
+        setToUpdate.targetDuration = durationTarget;
+
+        if (this.isLoggedSet(setToUpdate)) {
+          setToUpdate.durationLogged = durationTarget;
+        }
         break;
       }
       case METRIC.rest: {
-        setToUpdate.targetRest = numberValue;
-        setToUpdate.restLogged = numberValue;
+        let restTarget: RestTarget;
+        if (typeof targetValue === 'number') {
+          restTarget = restToExact(targetValue);
+        } else if (typeof targetValue === 'string' && !isNaN(Number(targetValue))) {
+          restTarget = restToExact(Number(targetValue));
+        } else if (typeof targetValue === 'object' && targetValue && 'type' in targetValue) {
+          restTarget = targetValue as RestTarget;
+        } else {
+          restTarget = restToExact(0);
+        }
+        setToUpdate.targetRest = restTarget;
+
+        if (this.isLoggedSet(setToUpdate)) {
+          setToUpdate.restLogged = restTarget;
+        }
         break;
       }
       case METRIC.tempo: {
-        setToUpdate.targetTempo = stringValue;
-        setToUpdate.tempoLogged = stringValue;
+        const tempoValue = typeof targetValue === 'string' ? targetValue : '';
+        setToUpdate.targetTempo = tempoValue;
+        if (this.isLoggedSet(setToUpdate)) {
+          setToUpdate.tempoLogged = tempoValue;
+        }
+        break;
+      }
+      default: {
+        if (fieldToAdd in setToUpdate) {
+          (setToUpdate as any)[fieldToAdd] = targetValue;
+        }
         break;
       }
     }
@@ -1524,7 +1602,7 @@ export class WorkoutService {
       return null; // User cancelled the first prompt
     }
 
-    const fieldToAdd = choice.data as string;
+    const fieldToAdd = choice.data as METRIC;
     const translatedFieldToAdd = this.translate.instant('metrics.' + fieldToAdd);
 
     // --- Step 2: Ask for the VALUE of the chosen field ---
@@ -1968,9 +2046,12 @@ export class WorkoutService {
   public restTargetAsString(target: RestTarget | undefined | null): string {
     if (!target) return '';
     switch (target.type) {
-      case RestTargetType.exact: return `${target.seconds}s`;
-      case RestTargetType.range: return `${target.minSeconds}-${target.maxSeconds}s`;
-      default: return '';
+      case RestTargetType.exact:
+        return `${target.seconds}s`;
+      case RestTargetType.range:
+        return `${target.minSeconds}-${target.maxSeconds}s`; // <-- Use minSeconds/maxSeconds
+      default:
+        return '';
     }
   }
 
@@ -2050,6 +2131,13 @@ export class WorkoutService {
           attributes: { min: 0, required: true }
         });
         break;
+              case RepsTargetType.max_fraction:
+        inputs.push({
+          name: 'divisor', type: 'number', label: this.translate.instant('common.fractionOfMax'),
+          value: (currentTarget as any)?.divisor ?? 2,
+          attributes: { min: 1, required: true }
+        });
+        break;
 
       case RepsTargetType.range:
       case WeightTargetType.range:
@@ -2072,35 +2160,69 @@ export class WorkoutService {
       const result = await this.alertService.showPromptDialog(this.translate.instant(titleKey), '', inputs);
       if (!result) return null;
 
-      // Construct the new target object INSIDE the final switch, where types are known.
-      switch (selectedType) {
-        case RepsTargetType.exact:
-        case DistanceTargetType.exact:
-          newTarget = { type: selectedType, value: Number(result['value']) };
+      // --- FIX: Use both metric and selectedType ---
+      switch (metric) {
+        case METRIC.reps:
+          switch (selectedType) {
+            case RepsTargetType.exact:
+              newTarget = { type: selectedType, value: Number(result['value']) };
+              break;
+            case RepsTargetType.range:
+              newTarget = { type: selectedType, min: Number(result['min']), max: Number(result['max']) };
+              break;
+            case RepsTargetType.min_plus:
+              newTarget = { type: selectedType, value: Number(result['min']) };
+              break;
+            case RepsTargetType.max_fraction:
+              newTarget = { type: selectedType, divisor: Number(result['divisor']) };
+              break;
+          }
           break;
-        case WeightTargetType.exact:
-           newTarget = { type: selectedType, value: Number(result['value']) };
-           break;
-        case DurationTargetType.exact:
-        case RestTargetType.exact:
-          newTarget = { type: selectedType, seconds: Number(result['seconds']) };
+        case METRIC.weight:
+          switch (selectedType) {
+            case WeightTargetType.exact:
+              newTarget = { type: selectedType, value: Number(result['value']) };
+              break;
+            case WeightTargetType.range:
+              newTarget = { type: selectedType, min: Number(result['min']), max: Number(result['max']) };
+              break;
+            case WeightTargetType.percentage_1rm:
+              newTarget = { type: selectedType, percentage: Number(result['percentage']) };
+              break;
+          }
           break;
-        case RepsTargetType.range:
-        case DistanceTargetType.range:
-          newTarget = { type: selectedType, min: Number(result['min']), max: Number(result['max']) };
+        case METRIC.duration:
+          switch (selectedType) {
+            case DurationTargetType.exact:
+              newTarget = { type: selectedType, seconds: Number(result['value']) };
+              break;
+            case DurationTargetType.range:
+              newTarget = { type: selectedType, minSeconds: Number(result['min']), maxSeconds: Number(result['max']) };
+              break;
+            case DurationTargetType.to_failure:
+              newTarget = { type: selectedType };
+              break;
+          }
           break;
-        case WeightTargetType.range:
-           newTarget = { type: selectedType, min: Number(result['min']), max: Number(result['max']) };
-           break;
-        case DurationTargetType.range:
-        case RestTargetType.range:
-          newTarget = { type: selectedType, minSeconds: Number(result['min']), maxSeconds: Number(result['max']) };
+        case METRIC.rest:
+          switch (selectedType) {
+            case RestTargetType.exact:
+              newTarget = { type: selectedType, seconds: Number(result['value']) };
+              break;
+            case RestTargetType.range:
+              newTarget = { type: selectedType, minSeconds: Number(result['min']), maxSeconds: Number(result['max']) };
+              break;
+          }
           break;
-        case RepsTargetType.min_plus:
-           newTarget = { type: selectedType, value: Number(result['min']) };
-           break;
-        case WeightTargetType.percentage_1rm:
-          newTarget = { type: selectedType, percentage: Number(result['percentage']) };
+        case METRIC.distance:
+          switch (selectedType) {
+            case DistanceTargetType.exact:
+              newTarget = { type: selectedType, value: Number(result['value']) };
+              break;
+            case DistanceTargetType.range:
+              newTarget = { type: selectedType, min: Number(result['min']), max: Number(result['max']) };
+              break;
+          }
           break;
       }
     } else {

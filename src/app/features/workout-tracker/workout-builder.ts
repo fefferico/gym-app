@@ -9,7 +9,7 @@ import { format, parseISO, isValid as isValidDate, set } from 'date-fns';
 
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
-import { Routine, ExerciseTargetSetParams, WorkoutExercise, METRIC, RepsTarget, RepsTargetType, WeightTarget, DurationTarget, DistanceTarget, RestTarget, AnyScheme, REPS_TARGET_SCHEMES, WEIGHT_TARGET_SCHEMES, DURATION_TARGET_SCHEMES, DISTANCE_TARGET_SCHEMES, REST_TARGET_SCHEMES } from '../../core/models/workout.model';
+import { Routine, ExerciseTargetSetParams, WorkoutExercise, METRIC, RepsTarget, RepsTargetType, WeightTarget, DurationTarget, DistanceTarget, RestTarget, AnyScheme, REPS_TARGET_SCHEMES, WEIGHT_TARGET_SCHEMES, DURATION_TARGET_SCHEMES, DISTANCE_TARGET_SCHEMES, REST_TARGET_SCHEMES, RestTargetType, WeightTargetType, DurationTargetType, DistanceTargetType } from '../../core/models/workout.model';
 import { Exercise } from '../../core/models/exercise.model';
 import { WorkoutLog, LoggedWorkoutExercise, LoggedSet, EnrichedWorkoutLog } from '../../core/models/workout-log.model'; // For manual log
 import { WorkoutService } from '../../core/services/workout.service';
@@ -50,9 +50,12 @@ import { BumpClickDirective } from '../../shared/directives/bump-click.directive
 import { RoutineGoal } from '../../core/models/routine-goal.model';
 import { CategoryService } from '../../core/services/workout-category.service';
 import { animate, style, transition, trigger } from '@angular/animations';
-import { repsTargetAsString, repsTypeToReps, genRepsTypeFromRepsNumber, getWeightValue, getDistanceValue, getDurationValue, restToExact, weightToExact, durationToExact, distanceToExact, repsToExact, getRestValue, getRepsValue } from '../../core/services/workout-helper.service';
+import { repsTargetAsString, repsTypeToReps, genRepsTypeFromRepsNumber, getWeightValue, getDistanceValue, getDurationValue, restToExact, weightToExact, durationToExact, distanceToExact, repsToExact, getRestValue, getRepsValue, durationTargetAsString, restTargetAsString, weightTargetAsString, distanceTargetAsString } from '../../core/services/workout-helper.service';
 
-type BuilderMode = 'routineBuilder' | 'manualLogEntry';
+export enum BuilderMode {
+  routineBuilder = 'routineBuilder',
+  manualLogEntry = 'manualLogEntry',
+}
 
 export interface UniformSetValues {
   reps?: string;
@@ -143,7 +146,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   lastLoggedRoutineInfo = signal<{ [id: string]: { duration: number, name: string, startTime: number | null } }>({});
   builderForm!: FormGroup;
-  mode: BuilderMode = 'routineBuilder';
+  mode: BuilderMode = BuilderMode.routineBuilder;
   isEditableMode = signal<boolean>(false);
   isEditMode = false;
   isNewMode = true;
@@ -340,13 +343,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.routeSub = this.route.data.pipe(
       switchMap(data => {
         this.isGeneratedRoutine.set(false);
-        this.mode = data['mode'] as BuilderMode || 'routineBuilder';
+        this.mode = data['mode'] as BuilderMode || BuilderMode.routineBuilder;
         this.isNewMode = data['isNew'] === true; // True if creating new (Routine or Log)
         console.log(`Builder ngOnInit: Mode=${this.mode}, isNewMode=${this.isNewMode}`);
 
         // Check for the query parameter to auto-open the generator modal.
         const openGenerator = this.route.snapshot.queryParamMap.get('openGenerator');
-        if (openGenerator === 'true' && this.isNewMode && this.mode === 'routineBuilder') {
+        if (openGenerator === 'true' && this.isNewMode && this.mode === BuilderMode.routineBuilder) {
           // Use a small timeout to ensure the main view has initialized before the modal opens.
           setTimeout(() => {
             this.openWorkoutGenerator();
@@ -366,7 +369,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         this.dateParam = paramDate ? new Date(paramDate) : null;
 
         // isViewMode is specific to viewing a Routine template
-        this.isViewMode = (this.mode === 'routineBuilder' && !!this.currentRoutineId && !this.isNewMode && this.route.snapshot.routeConfig?.path?.includes('view')) || false;
+        this.isViewMode = (this.mode === BuilderMode.routineBuilder && !!this.currentRoutineId && !this.isNewMode && this.route.snapshot.routeConfig?.path?.includes('view')) || false;
         // isEditMode is true if not new and not view (i.e. editing a routine or a log)
         this.isEditMode = !this.isNewMode && !this.isViewMode;
         this.isEditableMode.set(this.isEditMode || this.isNewMode);
@@ -376,14 +379,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         this.exercisesFormArray.clear({ emitEvent: false }); // Clear before reset
         this.builderForm.reset(this.getDefaultFormValuesForMode(), { emitEvent: false });
 
-        if (this.mode === 'routineBuilder') {
+        if (this.mode === BuilderMode.routineBuilder) {
           if (this.currentLogId && this.isNewMode) { // Creating a new Routine from a Log
             return this.trackingService.getWorkoutLogById(this.currentLogId);
           }
           if (this.currentRoutineId && (this.isEditMode || this.isViewMode)) { // Editing or Viewing a Routine
             return this.workoutService.getRoutineById(this.currentRoutineId);
           }
-        } else if (this.mode === 'manualLogEntry') {
+        } else if (this.mode === BuilderMode.manualLogEntry) {
           if (this.currentLogId && this.isEditMode) { // Editing an existing Log
             return this.trackingService.getWorkoutLogById(this.currentLogId);
           } else if (this.currentRoutineId && this.isNewMode) { // New Log, prefilling from a Routine
@@ -400,22 +403,22 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             this.canRestore.set(true);
           }
 
-          if (this.mode === 'routineBuilder' && this.currentLogId && this.isNewMode) {
+          if (this.mode === BuilderMode.routineBuilder && this.currentLogId && this.isNewMode) {
             this.prefillRoutineFormFromLog(loadedData as WorkoutLog);
-          } else if (this.mode === 'routineBuilder') {
+          } else if (this.mode === BuilderMode.routineBuilder) {
             // Set our new signal with the initial data
             this.loadedRoutine.set(loadedData as Routine);
             this.patchFormWithRoutineData(loadedData as Routine);
-          } else if (this.mode === 'manualLogEntry' && this.isEditMode && this.currentLogId) {
+          } else if (this.mode === BuilderMode.manualLogEntry && this.isEditMode && this.currentLogId) {
             this.patchFormWithLogData(loadedData as WorkoutLog);
             // For a log, we can derive the initial routine state from the form immediately
             this.loadedRoutine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
-          } else if (this.mode === 'manualLogEntry' && this.isNewMode && this.currentRoutineId) {
+          } else if (this.mode === BuilderMode.manualLogEntry && this.isNewMode && this.currentRoutineId) {
             this.prefillLogFormFromRoutine(loadedData as Routine);
           }
         } else if (!this.isNewMode && (this.currentRoutineId || this.currentLogId)) {
           this.toastService.error(`Data not found.`, 0, this.translate.instant('common.error'));
-          this.router.navigate([this.mode === 'routineBuilder' ? '/workout' : '/history/list']);
+          this.router.navigate([this.mode === BuilderMode.routineBuilder ? '/workout' : '/history/list']);
         }
 
         if (this.isViewMode) {
@@ -429,7 +432,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     this.subscriptions.add(this.routeSub);
 
-    if (this.mode === 'manualLogEntry') {
+    if (this.mode === BuilderMode.manualLogEntry) {
       this.builderForm.get('routineIdForLog')?.valueChanges.subscribe(routineId => {
         if (this.isEditMode && routineId === this.initialRoutineIdForLogEdit && !this.builderForm.get('routineIdForLog')?.dirty) {
           return;
@@ -528,14 +531,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         if (this.previousGoalValue !== goalValue && goalValue !== 'tabata') {
           this.previousGoalValue = goalValue;
         }
-        if (this.mode === 'routineBuilder' && goalValue === METRIC.rest) {
+        if (this.mode === BuilderMode.routineBuilder && goalValue === METRIC.rest) {
           while (this.exercisesFormArray.length) this.exercisesFormArray.removeAt(0);
           this.exercisesFormArray.clearValidators();
         }
         // --- NEW/MODIFIED: Tabata and Post-Tabata Logic ---
         const exercises = this.exercisesFormArray.controls as FormGroup[];
         // --- START OF CORRECTION ---
-        if (this.mode === 'routineBuilder' && goalValue === 'tabata') {
+        if (this.mode === BuilderMode.routineBuilder && goalValue === 'tabata') {
           const exercises = this.exercisesFormArray.controls as FormGroup[];
           if (exercises.length < 2) {
             this.toastService.warning('Tabata routines require at least 2 exercises. Please add more exercises first.', 5000);
@@ -575,9 +578,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             setsArray.at(0).patchValue({
               targetDuration: 20,
               targetRest: 10,
-              targetReps: null, 
-              targetWeight: null, targetWeightMin: null, targetWeightMax: null,
-              targetDistance: null, targetDistanceMin: null, targetDistanceMax: null,
+              targetReps: null,
+              targetWeight: null,
+              targetDistance: null,
               targetTempo: null
             }, { emitEvent: false });
 
@@ -590,7 +593,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           });
           this.toastService.info("Routine converted to Tabata format.");
 
-        } else if (this.mode === 'routineBuilder' && this.builderForm.get('goal')?.value !== 'tabata') {
+        } else if (this.mode === BuilderMode.routineBuilder && this.builderForm.get('goal')?.value !== 'tabata') {
           const firstExercise = this.exercisesFormArray.at(0) as FormGroup;
           if (firstExercise && firstExercise.get('supersetId')?.value && firstExercise.get('sets')?.value?.length === this.exercisesFormArray.length) {
             this.exercisesFormArray.controls.forEach(exerciseControl => {
@@ -731,7 +734,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   private getDefaultFormValuesForMode(): any { /* ... (as previously defined) ... */
-    if (this.mode === 'manualLogEntry') {
+    if (this.mode === BuilderMode.manualLogEntry) {
       const today = new Date();
       return {
         name: '', description: '', goal: 'custom',
@@ -773,7 +776,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // durationCtrl?.clearValidators();
 
 
-    if (this.mode === 'routineBuilder') {
+    if (this.mode === BuilderMode.routineBuilder) {
       nameCtrl?.setValidators(Validators.required);
       goalCtrl?.setValidators(Validators.required);
       this.builderForm.get('exercises')?.setValidators(Validators.nullValidator); // Exercises not strictly required if goal is 'rest'
@@ -793,7 +796,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     } else {
       this.builderForm.enable({ emitEvent: false });
       // Specific field disabling based on mode after enabling all
-      if (this.mode === 'routineBuilder') {
+      if (this.mode === BuilderMode.routineBuilder) {
         this.builderForm.get('workoutDate')?.disable({ emitEvent: false });
         this.builderForm.get('startTime')?.disable({ emitEvent: false });
         this.builderForm.get('endTime')?.disable({ emitEvent: false });
@@ -829,7 +832,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   checkIfLogForProgram(): boolean {
-    return !!(this.currentProgramId && this.mode === 'manualLogEntry' && this.dateParam && this.currentRoutineId);
+    return !!(this.currentProgramId && this.mode === BuilderMode.manualLogEntry && this.dateParam && this.currentRoutineId);
   }
 
   getLogTitleForProgramEntry(): string {
@@ -941,6 +944,45 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   private addDurationListener(exerciseControl: FormGroup): void {
     this.setupDurationListener(exerciseControl);
+  }
+
+  private addDistanceListener(exerciseControl: FormGroup): void {
+    const setsFormArray = this.getSetsFormArray(exerciseControl);
+    const distanceSub = setsFormArray.valueChanges.pipe(
+      debounceTime(300),
+      startWith(null),
+      mergeMap((_) => {
+        const controls = setsFormArray.controls;
+        return from(controls).pipe(
+          mergeMap((setControl, index) => {
+            const distanceControl = setControl.get('targetDistance');
+
+            const observables = [
+              distanceControl?.valueChanges
+            ].filter((obs): obs is Observable<any> => !!obs);
+
+            if (observables.length === 0) {
+              return of(null);
+            }
+
+            return from(observables).pipe(
+              mergeAll(),
+              map(() => ({
+                setIndex: index,
+                exerciseId: exerciseControl.get('id')?.value
+              })),
+              distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr))
+            );
+          })
+        );
+      }),
+      filter((change): change is { setIndex: number; exerciseId: string } => change !== null)
+    ).subscribe(change => {
+      console.log(`Distance Range changed on Ex: ${change.exerciseId}, Set: ${change.setIndex}`);
+      this.getRoutineDuration();
+    });
+
+    this.subscriptions.add(distanceSub);
   }
 
   private loadAvailableExercises(): void {
@@ -1203,30 +1245,33 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   private createRangeValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
-      const group = control as FormGroup;
-      if (!group) return null;
+      if (!(control instanceof FormGroup)) return null;
 
-      const repsControl = group.get('targetReps');
-      const durationMinControl = group.get('targetDurationMin');
-      const durationMaxControl = group.get('targetDurationMax');
+      // List all possible target fields that can have a range
+      const targetFields = [
+        'targetReps',
+        'targetDuration',
+        'targetRest',
+        'targetWeight',
+        'targetDistance'
+      ];
 
-      // Reps validation
-      if (repsControl && repsControl.value != null && +repsControl.value.max < +repsControl.value.min) {
-        repsControl.setErrors({ min: true });
-      } else if (repsControl?.hasError('min')) {
-        // Clear the specific 'min' error if valid now
-        const { min, ...errors } = repsControl.errors || {};
-        repsControl.setErrors(Object.keys(errors).length > 0 ? errors : null);
-      }
+      targetFields.forEach(field => {
+        const targetControl = control.get(field);
+        const value = targetControl?.value;
+        if (value && typeof value === 'object' && value.type === 'range') {
+          // Handle different property names for range types
+          let min = value.min ?? value.minSeconds;
+          let max = value.max ?? value.maxSeconds;
 
-      // Duration validation
-      if (durationMinControl && durationMaxControl && durationMinControl.value != null && durationMaxControl.value != null && +durationMaxControl.value < +durationMinControl.value) {
-        durationMaxControl.setErrors({ min: true });
-      } else if (durationMaxControl?.hasError('min')) {
-        // Clear the specific 'min' error if valid now
-        const { min, ...errors } = durationMaxControl.errors || {};
-        durationMaxControl.setErrors(Object.keys(errors).length > 0 ? errors : null);
-      }
+          if (min != null && max != null && max < min) {
+            targetControl.setErrors({ min: true });
+          } else if (targetControl?.hasError('min')) {
+            const { min, ...errors } = targetControl.errors || {};
+            targetControl.setErrors(Object.keys(errors).length > 0 ? errors : null);
+          }
+        }
+      });
 
       // This validator sets errors on controls, so it doesn't need to return an error for the group itself.
       return null;
@@ -1253,16 +1298,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     let targetDistanceValue: DistanceTarget | undefined;
     let targetRestValue: RestTarget | undefined;
 
-    // Range-target metrics (default to null)
-    let targetWeightMinValue: number | null | undefined = null;
-    let targetWeightMaxValue: number | null | undefined = null;
-    let targetDurationMinValue: number | null | undefined = null;
-    let targetDurationMaxValue: number | null | undefined = null;
-    let targetDistanceMinValue: number | null | undefined = null;
-    let targetDistanceMaxValue: number | null | undefined = null;
-    let targetRestMinValue: number | null | undefined = null;
-    let targetRestMaxValue: number | null | undefined = null;
-
     // 2. If an existing set is provided, overwrite the defaults.
     if (setData) {
       // Overwrite common properties that exist on both types
@@ -1287,7 +1322,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         const potentialLog = setData as LoggedSet;
         const potentialPlan = setData as ExerciseTargetSetParams;
 
-        // --- START OF FIX ---
         // When creating a form for logging, prioritize existing logged values.
         // Otherwise, use the planned target values. This handles both creating a new log
         // from a routine and rebuilding an existing log's set after adding a metric.
@@ -1296,17 +1330,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         targetDurationValue = forLogging ? potentialLog.durationLogged ?? potentialPlan.targetDuration : potentialPlan.targetDuration;
         targetDistanceValue = forLogging ? potentialLog.distanceLogged ?? potentialPlan.targetDistance : potentialPlan.targetDistance;
         targetRestValue = forLogging ? potentialLog.restLogged ?? potentialPlan.targetRest : potentialPlan.targetRest;
-        // --- END OF FIX ---
-
-        // Map the rest of the planned fields (ranges), which are only for routine builder
-        targetWeightMinValue = getWeightValue(potentialPlan.targetWeight);
-        targetWeightMaxValue = getWeightValue(potentialPlan.targetWeight);
-        targetDurationMinValue = getDurationValue(potentialPlan.targetDuration);
-        targetDurationMaxValue = getDurationValue(potentialPlan.targetDuration);
-        targetDistanceMinValue = getDistanceValue(potentialPlan.targetDistance);
-        targetDistanceMaxValue = getDistanceValue(potentialPlan.targetDistance);
-        targetRestMinValue = potentialPlan.targetRestMin;
-        targetRestMaxValue = potentialPlan.targetRestMax;
         plannedSetIdValue = potentialPlan.id;
       }
     }
@@ -1360,9 +1383,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       formGroupConfig['timestamp'] = [timestampValue];
       formGroupConfig['tempo'] = [tempoValue];
       formGroupConfig['restLogged'] = [targetRestValue];
-    } else { // For routine builder (planning mode)
-
-      // ADD THIS NEW LOGIC:
+    } else {
+      // For routine builder (planning mode)
       let initialRepsTarget: RepsTarget | null = null;
 
       // This logic handles migrating old data formats to the new structure
@@ -1378,54 +1400,30 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       }
 
       // Add the single, object-based form control for targetReps
-      formGroupConfig['targetReps'] = [initialRepsTarget];
+      formGroupConfig['targetReps'] = [
+        initialRepsTarget,
+        [this.targetMinValidator(1)]
+      ];
 
-      if (setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.weight)) {
-        formGroupConfig['targetWeight'] = [targetWeighValue != null ? this.unitService.convertWeight(getWeightValue(targetWeighValue), 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
-        formGroupConfig['targetWeightMin'] = [targetWeightMinValue != null ? this.unitService.convertWeight(targetWeightMinValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
-        formGroupConfig['targetWeightMax'] = [targetWeightMaxValue != null ? this.unitService.convertWeight(targetWeightMaxValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
-      } else if (setDataBk.targetWeight) {
-        formGroupConfig['targetWeight'] = [targetWeighValue != null ? this.unitService.convertWeight(getWeightValue(targetWeighValue), 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
-        formGroupConfig['targetWeightMin'] = [targetWeightMinValue != null ? this.unitService.convertWeight(targetWeightMinValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
-        formGroupConfig['targetWeightMax'] = [targetWeightMaxValue != null ? this.unitService.convertWeight(targetWeightMaxValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
+      if ((setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.weight)) || (setDataBk.targetWeight)) {
+        formGroupConfig['targetWeight'] = [
+          targetWeighValue != null
+            ? weightToExact(this.unitService.convertWeight(getWeightValue(targetWeighValue), 'kg', this.unitService.currentWeightUnit()))
+            : null,
+          [this.targetMinValidator(0)]
+        ];
       }
 
-      if (setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.duration)) {
-        formGroupConfig['targetDuration'] = [targetDurationValue ?? null, [Validators.min(0)]];
-        formGroupConfig['targetDurationMin'] = [targetDurationMinValue ?? null, [Validators.min(0)]];
-        formGroupConfig['targetDurationMax'] = [targetDurationMaxValue ?? null, [Validators.min(0)]];
-      } else if (setDataBk.targetDuration) {
-        formGroupConfig['targetDuration'] = [targetDurationValue ?? null, [Validators.min(0)]];
-        formGroupConfig['targetDurationMin'] = [targetDurationMinValue ?? null, [Validators.min(0)]];
-        formGroupConfig['targetDurationMax'] = [targetDurationMaxValue ?? null, [Validators.min(0)]];
+      if ((setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.duration)) || (setDataBk.targetWeight)) {
+        formGroupConfig['targetDuration'] = [targetDurationValue ?? null, [this.targetMinValidator(1)]];
       }
 
-
-      if (setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.distance)) {
-        formGroupConfig['targetDistance'] = [targetDistanceValue ?? null, [Validators.min(0)]];
-        formGroupConfig['targetDistanceMin'] = [targetDistanceMinValue ?? null, [Validators.min(0)]];
-        formGroupConfig['targetDistanceMax'] = [targetDistanceMaxValue ?? null, [Validators.min(0)]];
-      } else if (setDataBk.targetDistance) {
-        formGroupConfig['targetDistance'] = [targetDistanceValue ?? null, [Validators.min(0)]];
-        formGroupConfig['targetDistanceMin'] = [targetDistanceMinValue ?? null, [Validators.min(0)]];
-        formGroupConfig['targetDistanceMax'] = [targetDistanceMaxValue ?? null, [Validators.min(0)]];
+      if ((setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.distance)) || (setDataBk.targetDistance)) {
+        formGroupConfig['targetDistance'] = [targetDistanceValue ?? null, [this.targetMinValidator(0.1)]];
       }
 
-
-      if (setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.reps)) {
-        formGroupConfig['targetTempo'] = [tempoValue || ''];
-      } else if (setDataBk.targetTempo) {
-        formGroupConfig['targetTempo'] = [tempoValue || ''];
-      }
-
-      if (setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.rest)) {
-        formGroupConfig['targetRest'] = [targetRestValue ?? null, [Validators.min(0)]];
-        formGroupConfig['targetRestMin'] = [targetRestMinValue ?? null, [Validators.min(0)]];
-        formGroupConfig['targetRestMax'] = [targetRestMaxValue ?? null, [Validators.min(0)]];
-      } else if (setDataBk.targetRest) {
-        formGroupConfig['targetRest'] = [targetRestValue ?? null, [Validators.min(0)]];
-        formGroupConfig['targetRestMin'] = [targetRestMinValue ?? null, [Validators.min(0)]];
-        formGroupConfig['targetRestMax'] = [targetRestMaxValue ?? null, [Validators.min(0)]];
+      if ((setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.rest)) || (setDataBk.targetRest)) {
+        formGroupConfig['targetRest'] = [targetRestValue ?? null, [this.targetMinValidator(1)]];
       }
 
     }
@@ -1547,10 +1545,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       };
 
       let newExerciseFormGroup: FormGroup;
-      if (this.mode === 'routineBuilder') {
+      if (this.mode === BuilderMode.routineBuilder) {
         newExerciseFormGroup = this.createExerciseFormGroup(workoutExercise, true, false);
+        // ADD listeners for routine duration calculation
         this.addRepsListener(newExerciseFormGroup);
         this.addDurationListener(newExerciseFormGroup);
+        this.addDistanceListener(newExerciseFormGroup);
+
         this.exercisesFormArray.push(newExerciseFormGroup);
         this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
       } else {
@@ -1655,10 +1656,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       const prevSet = setsArray.at(setsArray.length - 1).value;
       const setData = { ...prevSet };
       delete setData.id; // Ensure new set gets a new ID
-      return this.createSetFormGroup(setData, this.mode === 'manualLogEntry');
+      return this.createSetFormGroup(setData, this.mode === BuilderMode.manualLogEntry);
     } else {
       // If no sets exist, create a blank default one.
-      return this.createSetFormGroup(undefined, this.mode === 'manualLogEntry');
+      return this.createSetFormGroup(undefined, this.mode === BuilderMode.manualLogEntry);
     }
   }
 
@@ -2240,7 +2241,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     // --- NEW: TABATA VALIDATION BLOCK ---
     const formValueForValidation = this.builderForm.getRawValue();
-    if (this.mode === 'routineBuilder' && formValueForValidation.goal === 'tabata') {
+    if (this.mode === BuilderMode.routineBuilder && formValueForValidation.goal === 'tabata') {
       const exercises = this.exercisesFormArray.controls as FormGroup[];
 
       if (exercises.length >= 2) {
@@ -2269,8 +2270,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
               targetDuration: 20,
               targetRest: 10,
               targetReps: null,
-              targetWeight: null, targetWeightMin: null, targetWeightMax: null,
-              targetDistance: null, targetDistanceMin: null, targetDistanceMax: null,
+              targetWeight: null,
+              targetDistance: null,
             }, { emitEvent: false });
           });
         });
@@ -2283,10 +2284,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
     // --- END: TABATA VALIDATION BLOCK ---
 
-    const isRestGoalRoutine = this.mode === 'routineBuilder' && this.builderForm.get('goal')?.value === METRIC.rest;
+    const isRestGoalRoutine = this.mode === BuilderMode.routineBuilder && this.builderForm.get('goal')?.value === METRIC.rest;
 
-    if ((this.mode === 'routineBuilder' && (this.builderForm.get('name')?.invalid || this.builderForm.get('goal')?.invalid)) ||
-      (this.mode === 'manualLogEntry' && (this.builderForm.get('workoutDate')?.invalid || this.builderForm.get('startTime')?.invalid || this.builderForm.get('endTime')?.invalid
+    if ((this.mode === BuilderMode.routineBuilder && (this.builderForm.get('name')?.invalid || this.builderForm.get('goal')?.invalid)) ||
+      (this.mode === BuilderMode.manualLogEntry && (this.builderForm.get('workoutDate')?.invalid || this.builderForm.get('startTime')?.invalid || this.builderForm.get('endTime')?.invalid
         //  || this.builderForm.get('durationMinutes')?.invalid
       )
       )) {
@@ -2313,7 +2314,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       return;
     }
     if (!isRestGoalRoutine && this.exercisesFormArray.length === 0) {
-      this.toastService.error(this.mode === 'manualLogEntry' ? this.translate.instant('workoutBuilder.toasts.noExercisesLogError') : this.translate.instant('workoutBuilder.toasts.noExercisesRoutineError'), 0, this.translate.instant('workoutBuilder.toasts.validationErrorTitle'));
+      this.toastService.error(this.mode === BuilderMode.manualLogEntry ? this.translate.instant('workoutBuilder.toasts.noExercisesLogError') : this.translate.instant('workoutBuilder.toasts.noExercisesRoutineError'), 0, this.translate.instant('workoutBuilder.toasts.validationErrorTitle'));
       return;
     }
     if (!isRestGoalRoutine && !this.validateSupersetIntegrity()) {
@@ -2329,7 +2330,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.spinnerService.show(this.isNewMode ? "Saving..." : "Updating...");
 
     try {
-      if (this.mode === 'routineBuilder') {
+      if (this.mode === BuilderMode.routineBuilder) {
         // First, map the form value to a valid Routine object
         const routinePayload = this.mapFormToRoutine(formValue);
         let savedRoutine: Routine; // Variable to hold the result from the service
@@ -2743,14 +2744,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           sets: exInput.sets.map((setInput: any) => ({
             ...setInput, // Spread to include all set properties like reps, repsMin, repsMax, etc.
             targetWeight: this.unitService.convertWeight(setInput.targetWeight, 'kg', this.unitService.currentWeightUnit()) ?? null,
-            targetWeightMin: setInput.targetWeightMin ?? null,
-            targetWeightMax: setInput.targetWeightMax ?? null,
             targetDuration: setInput.targetDuration ?? null,
-            targetDurationMin: setInput.targetDurationMin ?? null,
-            targetDurationMax: setInput.targetDurationMax ?? null,
             targetDistance: setInput.targetDistance ?? null,
-            targetDistanceMin: setInput.targetDistanceMin ?? null,
-            targetDistanceMax: setInput.targetDistanceMax ?? null,
             targetTempo: setInput.targetTempo ?? null,
           } as ExerciseTargetSetParams)),
           supersetId: exInput.supersetId || null,
@@ -3063,7 +3058,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         this.toastService.error(`Scheme editing is not supported for metric: ${metric}`);
         return;
     }
-    
+
     // 2. Get the current value from the correct form control.
     const currentTarget = setControl.get(formControlName)?.value;
 
@@ -3099,125 +3094,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   /**
-   * Toggles the input mode for a set's weight between a single value and a range.
-   * Applies a +/- 5kg offset when creating a range.
-   * @param setControl The form group for the specific set.
-   */
-  toggleWeightMode(setControl: AbstractControl, event?: Event): void {
-    event?.stopPropagation();
-    if (this.isViewMode || !(setControl instanceof FormGroup)) return;
-
-    const weightCtrl = setControl.get('targetWeight');
-    const weightMinCtrl = setControl.get('targetWeightMin');
-    const weightMaxCtrl = setControl.get('targetWeightMax');
-
-    const isCurrentlyRange = weightMinCtrl?.value != null || weightMaxCtrl?.value != null;
-
-    if (isCurrentlyRange) {
-      // Switch FROM Range TO Single
-      const minVal = weightMinCtrl?.value ?? 0;
-      const maxVal = weightMaxCtrl?.value ?? 0;
-      const averageValue = Math.round((minVal + maxVal) / 2);
-
-      weightCtrl?.setValue(averageValue);
-      weightMinCtrl?.setValue(null);
-      weightMaxCtrl?.setValue(null);
-    } else {
-      // Switch FROM Single TO Range
-      const singleValue = weightCtrl?.value ?? 0;
-
-      // Convert 5kg offset to the user's current weight unit
-      const offsetInCurrentUnit = this.unitService.convertWeight(5, this.unitService.currentWeightUnit(), 'kg');
-
-      const newMin = Math.max(0, singleValue - offsetInCurrentUnit);
-      const newMax = singleValue + offsetInCurrentUnit;
-
-      weightMinCtrl?.setValue(Math.round(newMin));
-      weightMaxCtrl?.setValue(Math.round(newMax));
-      weightCtrl?.setValue(null);
-    }
-  }
-
-  /**
-  * Toggles the input mode for a set's duration between a single value and a range.
-  * Applies a +/- 30 second offset when creating a range.
-  * @param setControl The form group for the specific set.
-  */
-  toggleDurationMode(setControl: AbstractControl, event?: Event): void {
-    event?.stopPropagation();
-    if (this.isViewMode || !(setControl instanceof FormGroup)) return;
-
-    const durationCtrl = setControl.get('targetDuration');
-    const durationMinCtrl = setControl.get('targetDurationMin');
-    const durationMaxCtrl = setControl.get('targetDurationMax');
-
-    const isCurrentlyRange = durationMinCtrl?.value != null || durationMaxCtrl?.value != null;
-
-    if (isCurrentlyRange) {
-      // Switch FROM Range TO Single
-      const minVal = durationMinCtrl?.value ?? 0;
-      const maxVal = durationMaxCtrl?.value ?? 0;
-      const averageValue = Math.round((minVal + maxVal) / 2);
-
-      durationCtrl?.setValue(averageValue);
-      durationMinCtrl?.setValue(null);
-      durationMaxCtrl?.setValue(null);
-    } else {
-      // Switch FROM Single TO Range
-      let singleValue = durationCtrl?.value ?? 30; // Default to 30s
-      if (typeof singleValue === 'string') {
-        singleValue = Number(singleValue);
-      }
-      const offset = 30;
-
-      const newMin = Math.max(0, singleValue - offset);
-      const newMax = singleValue + offset;
-
-      durationMinCtrl?.setValue(newMin);
-      durationMaxCtrl?.setValue(newMax);
-      durationCtrl?.setValue(null);
-    }
-  }
-
-  /**
-  * Toggles the input mode for a set's rest between a single value and a range.
-  * Applies a +/- 30 second offset when creating a range.
-  * @param setControl The form group for the specific set.
-  */
-  toggleRestMode(setControl: AbstractControl, event?: Event): void {
-    event?.stopPropagation();
-    if (this.isViewMode || !(setControl instanceof FormGroup)) return;
-
-    const restCtrl = setControl.get('targetRest');
-    const restMinCtrl = setControl.get('targetRestMin');
-    const restMaxCtrl = setControl.get('targetRestMax');
-
-    const isCurrentlyRange = restMinCtrl?.value != null || restMaxCtrl?.value != null;
-
-    if (isCurrentlyRange) {
-      // Switch FROM Range TO Single
-      const minVal = restMinCtrl?.value ?? 0;
-      const maxVal = restMaxCtrl?.value ?? 0;
-      const averageValue = Math.round((minVal + maxVal) / 2);
-
-      restCtrl?.setValue(averageValue);
-      restMinCtrl?.setValue(null);
-      restMaxCtrl?.setValue(null);
-    } else {
-      // Switch FROM Single TO Range
-      const singleValue = restCtrl?.value ?? 30; // Default to 30s
-      const offset = 30;
-
-      const newMin = Math.max(0, singleValue - offset);
-      const newMax = singleValue + offset;
-
-      restMinCtrl?.setValue(newMin);
-      restMaxCtrl?.setValue(newMax);
-      restCtrl?.setValue(null);
-    }
-  }
-
-  /**
    * Helper function for the template to determine if a set is in range mode.
    * @param setControl The AbstractControl for the set.
    * @param field The field to check ('reps' or 'duration').
@@ -3243,7 +3119,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     // --- MANUAL LOG ENTRY MODE (No Change) ---
     // This correctly shows the actual duration performed for each set.
-    if (this.mode === 'manualLogEntry') {
+    if (this.mode === BuilderMode.manualLogEntry) {
       const rawValue = exerciseControl.getRawValue() as LoggedWorkoutExercise;
       const durations = rawValue.sets.map(set => set.durationLogged).filter(d => d != null && getDurationValue(d) > 0);
       return durations.length > 0 ? durations.join('-') : '';
@@ -3283,37 +3159,36 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   getSetDisplayValue(setControl: AbstractControl, field: METRIC): string {
     if (!setControl) return '-';
 
-    // --- START: SPECIAL HANDLING FOR REPS ---
-    if (field === METRIC.reps) {
-      // Get the value of the 'targetReps' control, which is a RepsTarget object.
-      const repsTarget = setControl.get('targetReps')?.value as RepsTarget | null;
-      // Use the centralized helper function to format it into a user-friendly string.
-      return repsTargetAsString(repsTarget) || '-';
-    }
-    // --- END: SPECIAL HANDLING FOR REPS ---
+    // Centralized mapping of metric to helper function
+    const helpers: Record<METRIC, (v: any) => string> = {
+      [METRIC.reps]: repsTargetAsString,
+      [METRIC.rest]: restTargetAsString,
+      [METRIC.weight]: weightTargetAsString,
+      [METRIC.duration]: durationTargetAsString,
+      [METRIC.distance]: distanceTargetAsString,
+      [METRIC.tempo]: (v: any) => v ? String(v) : '-', // <-- Add this line
+      // Add more if needed
+    };
 
-    // --- Fallback logic for all other metrics (weight, duration, etc.) that still use the Min/Max pattern ---
-    const firstUpperCaseField = field ? String(field).charAt(0).toUpperCase() + String(field).slice(1) : '';
-
-    const min = setControl.get(`target${firstUpperCaseField}Min`)?.value;
-    const max = setControl.get(`target${firstUpperCaseField}Max`)?.value;
-    const single = setControl.get(`target${firstUpperCaseField}`)?.value;
-
-    const isRange = min != null || max != null;
-
-    if (isRange) {
-      if (min != null && max != null) {
-        return min === max ? `${min}` : `${min}-${max}`;
-      }
-      if (min != null) {
-        return `${min}+`;
-      }
-      if (max != null) {
-        return `Up to ${max}`;
-      }
+    // Try to use the helper if available
+    if (helpers[field]) {
+      const value = setControl.get(this.getFormControlName(field))?.value;
+      const result = helpers[field](value);
+      return result || '-';
     }
 
-    // Return the single value, ensuring it's a string, or a fallback dash.
+    // Fallback for metrics without a helper (range/single value)
+    const fieldName = field ? String(field).charAt(0).toUpperCase() + String(field).slice(1) : '';
+    const min = setControl.get(`target${fieldName}Min`)?.value;
+    const max = setControl.get(`target${fieldName}Max`)?.value;
+    const single = setControl.get(`target${fieldName}`)?.value;
+
+    if (min != null || max != null) {
+      if (min != null && max != null) return min === max ? `${min}` : `${min}-${max}`;
+      if (min != null) return `${min}+`;
+      if (max != null) return `Up to ${max}`;
+    }
+
     return single != null ? String(single) : '-';
   }
 
@@ -3559,7 +3434,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   isFormInvalid(): boolean {
-    return this.builderForm.invalid || (this.exercisesFormArray.length === 0 && !(this.mode === 'routineBuilder' && this.builderForm.get('goal')?.value === METRIC.rest))
+    return this.builderForm.invalid || (this.exercisesFormArray.length === 0 && !(this.mode === BuilderMode.routineBuilder && this.builderForm.get('goal')?.value === METRIC.rest))
   }
 
   /**
@@ -3978,7 +3853,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
     return (control.targetWeight ?? 0) > 0 || (control.targetWeightMin ?? 0) > 0;
   }
-   protected checkIfRepsIsVisible(control: any): boolean {
+  protected checkIfRepsIsVisible(control: any): boolean {
     if (!control) return false;
 
     // Helper to check if a single set object has a defined rep target.
@@ -3996,11 +3871,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       if (rawValue && Array.isArray(rawValue.sets)) {
         return rawValue.sets.some(setHasRepsTarget);
       }
-      
+
       // Otherwise, assume it's a set control.
       return setHasRepsTarget(rawValue);
     }
-    
+
     // Case 2: The control is a plain JavaScript object.
     if (control.sets && Array.isArray(control.sets)) {
       // It's an exercise object.
@@ -4117,7 +3992,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   fabMenuItems: FabAction[] = [];
 
   private refreshFabMenuItems(): void {
-    const isSave = this.mode === 'routineBuilder' ? (!this.currentRoutineId ? false : true) : (this.isNewMode ? true : false);
+    const isSave = this.mode === BuilderMode.routineBuilder ? (!this.currentRoutineId ? false : true) : (this.isNewMode ? true : false);
     if (this.isEditableMode()) {
       this.fabMenuItems = [{
         label: 'fab.add_exercise',
@@ -4127,7 +4002,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         isPremium: false
       },
       {
-        label: this.mode === 'routineBuilder' ? 'fab.save_routine' : (this.isNewMode ? 'fab.save_log' : 'fab.save_log_changes'),
+        label: this.mode === BuilderMode.routineBuilder ? 'fab.save_routine' : (this.isNewMode ? 'fab.save_log' : 'fab.save_log_changes'),
         actionKey: 'save_routine',
         iconName: 'save',
         cssClass: 'bg-primary focus:ring-primary-light',
@@ -4520,13 +4395,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             : null;
 
           // Apply data to the correct fields based on the builder's mode
-          if (this.mode === 'manualLogEntry') {
+          if (this.mode === BuilderMode.manualLogEntry) {
             patchData['repsLogged'] = historicalSet.repsLogged;
             patchData['weightLogged'] = weightInCurrentUnit;
             patchData['durationLogged'] = historicalSet.durationLogged;
             patchData['distanceLogged'] = historicalSet.distanceLogged;
             patchData['tempoLogged'] = historicalSet.tempoLogged;
-          } else { // 'routineBuilder' mode
+          } else { // BuilderMode.routineBuilder mode
             patchData['targetReps'] = historicalSet.repsLogged;
             patchData['targetWeight'] = weightInCurrentUnit;
             patchData['targetDuration'] = historicalSet.durationLogged;
@@ -4555,7 +4430,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       return '';
     }
 
-    if (this.mode === 'manualLogEntry') {
+    if (this.mode === BuilderMode.manualLogEntry) {
       const rawValue = exerciseControl.getRawValue() as LoggedWorkoutExercise;
       const distances = rawValue.sets.map(set => set.distanceLogged).filter(d => d != null && getDistanceValue(d) > 0);
       return distances.length > 0 ? distances.join('-') : '';
@@ -4568,46 +4443,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
 
-  /**
-  * Toggles the input mode for a set's distance between a single value and a range.
-  * Applies a +/- 1km offset when creating a range.
-  * @param setControl The form group for the specific set.
-  */
-  toggleDistanceMode(setControl: AbstractControl, event?: Event): void {
-    event?.stopPropagation();
-    if (this.isViewMode || !(setControl instanceof FormGroup)) return;
 
-    const distanceCtrl = setControl.get('targetDistance');
-    const distanceMinCtrl = setControl.get('targetDistanceMin');
-    const distanceMaxCtrl = setControl.get('targetDistanceMax');
-
-    const isCurrentlyRange = distanceMinCtrl?.value != null || distanceMaxCtrl?.value != null;
-
-    if (isCurrentlyRange) {
-      // Switch FROM Range TO Single
-      const minVal = distanceMinCtrl?.value ?? 0;
-      const maxVal = distanceMaxCtrl?.value ?? 0;
-      // For distance, we might want decimals, so let's round to 2 decimal places.
-      const averageValue = Math.round(((minVal + maxVal) / 2) * 100) / 100;
-
-      distanceCtrl?.setValue(averageValue);
-      distanceMinCtrl?.setValue(null);
-      distanceMaxCtrl?.setValue(null);
-    } else {
-      // Switch FROM Single TO Range
-      const singleValue = distanceCtrl?.value ?? 1; // Default to 1
-
-      // Convert 1km offset to the user's current distance unit
-      const offsetInCurrentUnit = this.unitService.convertDistance(1, this.unitService.currentDistanceMeasureUnit(), 'km');
-
-      const newMin = Math.max(0, singleValue - offsetInCurrentUnit);
-      const newMax = singleValue + offsetInCurrentUnit;
-
-      distanceMinCtrl?.setValue(Math.round(newMin * 100) / 100);
-      distanceMaxCtrl?.setValue(Math.round(newMax * 100) / 100);
-      distanceCtrl?.setValue(null);
-    }
-  }
 
 
   private cardColors = [
@@ -4775,7 +4611,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       const setsFormArray = this.getSetsFormArray(this.exercisesFormArray.at(exIndex));
 
       // Create a brand new FormGroup based on this updated data structure
-      const newSetFormGroup = this.createSetFormGroup(updatedSetData, this.mode === 'manualLogEntry');
+      const newSetFormGroup = this.createSetFormGroup(updatedSetData, this.mode === BuilderMode.manualLogEntry);
 
       // Replace the old FormGroup at the specified index with the new one
       setsFormArray.setControl(setIndex, newSetFormGroup);
@@ -4802,7 +4638,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       const setsFormArray = this.getSetsFormArray(this.exercisesFormArray.at(exIndex));
 
       // Create a brand new FormGroup for the set
-      const newSetFormGroup = this.createSetFormGroup(updatedSetData, this.mode === 'manualLogEntry');
+      const newSetFormGroup = this.createSetFormGroup(updatedSetData, this.mode === BuilderMode.manualLogEntry);
 
       // Replace the old FormGroup with the new one
       setsFormArray.setControl(setIndex, newSetFormGroup);
@@ -4979,7 +4815,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.exercisesFormArray.clear({ emitEvent: false });
     const exercises = state.exercises || [];
     exercises.forEach((exerciseData: any) => {
-      const exerciseGroup = this.createExerciseFormGroup(exerciseData, true, this.mode === 'manualLogEntry');
+      const exerciseGroup = this.createExerciseFormGroup(exerciseData, true, this.mode === BuilderMode.manualLogEntry);
       this.exercisesFormArray.push(exerciseGroup, { emitEvent: false });
     });
 
@@ -5144,27 +4980,27 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     // --- 1. Build the data patch object and identify all metrics being applied ---
     if (this.repsToSetForAll() !== null) {
-      const field = this.mode === 'manualLogEntry' ? 'repsLogged' : 'targetReps';
-      patchData[field] = {type: RepsTargetType.exact, value: this.repsToSetForAll()};
+      const field = this.mode === BuilderMode.manualLogEntry ? 'repsLogged' : 'targetReps';
+      patchData[field] = { type: RepsTargetType.exact, value: this.repsToSetForAll() };
       metricsToApply.push(METRIC.reps);
     }
     if (this.weightToSetForAll() !== null) {
-      const field = this.mode === 'manualLogEntry' ? 'weightLogged' : 'targetWeight';
+      const field = this.mode === BuilderMode.manualLogEntry ? 'weightLogged' : 'targetWeight';
       patchData[field] = this.weightToSetForAll();
       metricsToApply.push(METRIC.weight);
     }
     if (this.durationToSetForAll() !== null) {
-      const field = this.mode === 'manualLogEntry' ? 'durationLogged' : 'targetDuration';
+      const field = this.mode === BuilderMode.manualLogEntry ? 'durationLogged' : 'targetDuration';
       patchData[field] = this.durationToSetForAll();
       metricsToApply.push(METRIC.duration);
     }
     if (this.distanceToSetForAll() !== null) {
-      const field = this.mode === 'manualLogEntry' ? 'distanceLogged' : 'targetDistance';
+      const field = this.mode === BuilderMode.manualLogEntry ? 'distanceLogged' : 'targetDistance';
       patchData[field] = this.distanceToSetForAll();
       metricsToApply.push(METRIC.distance);
     }
     if (this.restToSetForAll() !== null) {
-      const field = this.mode === 'manualLogEntry' ? 'restLogged' : 'targetRest';
+      const field = this.mode === BuilderMode.manualLogEntry ? 'restLogged' : 'targetRest';
       patchData[field] = this.restToSetForAll();
       metricsToApply.push(METRIC.rest);
     }
@@ -5192,7 +5028,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           setGroup.addControl(formControlName, this.fb.control(null));
 
           // For routine builder, we also need to add the corresponding min/max controls if they exist
-          if (this.mode === 'routineBuilder' && [METRIC.reps, METRIC.weight, METRIC.duration, METRIC.distance, METRIC.rest].includes(metric)) {
+          if (this.mode === BuilderMode.routineBuilder && [METRIC.reps, METRIC.weight, METRIC.duration, METRIC.distance, METRIC.rest].includes(metric)) {
             const capitalizedMetric = metric.charAt(0).toUpperCase() + metric.slice(1);
             setGroup.addControl(`target${capitalizedMetric}Min`, this.fb.control(null));
             setGroup.addControl(`target${capitalizedMetric}Max`, this.fb.control(null));
@@ -5267,6 +5103,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   protected metricEnum = METRIC;
   protected repsTargetTypeEnum = RepsTargetType;
+  protected restTargetTypeEnum = RestTargetType;
+  protected weightTargetTypeEnum = WeightTargetType;
+  protected durationTargetTypeEnum = DurationTargetType;
+  protected distanceTargetTypeEnum = DistanceTargetType;
+
 
   protected isGhostFieldVisible(fieldOrder: METRIC[], exIndex: number): boolean {
     return !!(this.isEditableMode() && !this.isSuperSet(exIndex) && fieldOrder && fieldOrder.length !== undefined && ((fieldOrder.length <= 1) || (fieldOrder.length > 2 && fieldOrder.length % 2 == 1)));
@@ -5304,51 +5145,46 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const isTime = field === METRIC.duration || field === METRIC.rest;
     const step = isWeight ? (settings.weightStep || 0.5) : 1;
 
-    if (field === METRIC.reps && this.mode === 'routineBuilder') {
-      const repsControl = setControl.get('targetReps');
-      const currentTarget = repsControl?.value as RepsTarget | null;
-
-      // EXACT
-      if (repsControl && (currentTarget?.type === RepsTargetType.exact)) {
-        const newValue = Math.max(0, (currentTarget.value || 0) + 1); // Reps always step by 1
-
-        // Create a new object for immutability and patch the control's value.
-        repsControl.patchValue({ type: RepsTargetType.exact, value: newValue });
-        setControl.markAsDirty();
-
-        const setId = setControl.get('id')?.value;
-        if (setId) this.triggerAnimation(setId);
-      }
-      // MIN_PLUS
-      if (repsControl && (currentTarget?.type === RepsTargetType.min_plus)) {
-        const newValue = Math.max(0, (currentTarget.value || 0) + 1); // Reps always step by 1
-
-        // Create a new object for immutability and patch the control's value.
-        repsControl.patchValue({ type: RepsTargetType.min_plus, value: newValue });
-        setControl.markAsDirty();
-
-        const setId = setControl.get('id')?.value;
-        if (setId) this.triggerAnimation(setId);
-      }
-      return; // Exit the function after handling the special case for reps.
-    }
-
     const formControlName = this.getFormControlName(field);
     const control = setControl.get(formControlName);
     if (!control) return;
 
-    const initialValueStr = control.value?.toString() || '0';
-    let currentNumberValue = isTime ? (this.parseTimeToSeconds(initialValueStr) || 0) : (parseFloat(initialValueStr) || 0);
-
-    const newNumberValue = parseFloat((currentNumberValue + step).toFixed(2));
-
-    control.patchValue(newNumberValue);
-
-
-    const setId = setControl.get('id')?.value;
-    if (setId) {
-      this.triggerAnimation(setId);
+    let value = control.value;
+    // Handle TargetType objects
+    if (value && typeof value === 'object' && value.type) {
+      switch (value.type) {
+        case 'exact':
+        case 'min_plus':
+          control.patchValue({ ...value, value: Math.max(0, (value.value || 0) + step) });
+          break;
+        case 'range':
+          // Increment both min and max if present
+          control.patchValue({
+            ...value,
+            min: value.min != null ? Math.max(0, value.min + step) : value.min,
+            max: value.max != null ? Math.max(0, value.max + step) : value.max,
+            minSeconds: value.minSeconds != null ? Math.max(0, value.minSeconds + step) : value.minSeconds,
+            maxSeconds: value.maxSeconds != null ? Math.max(0, value.maxSeconds + step) : value.maxSeconds,
+          });
+          break;
+        case 'percentage_1rm':
+          control.patchValue({ ...value, percentage: Math.min(100, (value.percentage || 0) + step) });
+          break;
+        default:
+          // fallback for unknown types
+          break;
+      }
+    } else {
+      // Primitive value fallback
+      const initialValueStr = value?.toString() || '0';
+      let currentNumberValue = isTime ? (this.parseTimeToSeconds(initialValueStr) || 0) : (parseFloat(initialValueStr) || 0);
+      const newNumberValue = parseFloat((currentNumberValue + step).toFixed(2));
+      control.patchValue(newNumberValue);
     }
+
+    setControl.markAsDirty();
+    const setId = setControl.get('id')?.value;
+    if (setId) this.triggerAnimation(setId);
   }
 
   private decrementValue(setControl: AbstractControl, field: METRIC): void {
@@ -5357,55 +5193,50 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const isTime = field === METRIC.duration || field === METRIC.rest;
     const step = isWeight ? (settings.weightStep || 0.5) : 1;
 
-    if (field === METRIC.reps && this.mode === 'routineBuilder') {
-      const repsControl = setControl.get('targetReps');
-      const currentTarget = repsControl?.value as RepsTarget | null;
-
-      // EXACT
-      if (repsControl && currentTarget?.type === RepsTargetType.exact) {
-        const newValue = Math.max(0, (currentTarget.value || 0) - 1); // Reps always step by 1
-
-        // Create a new object for immutability and patch the control's value.
-        repsControl.patchValue({ type: RepsTargetType.exact, value: newValue });
-        setControl.markAsDirty();
-
-        const setId = setControl.get('id')?.value;
-        if (setId) this.triggerAnimation(setId);
-      }
-      // MIN_PLUS
-      if (repsControl && currentTarget?.type === RepsTargetType.min_plus) {
-        const newValue = Math.max(0, (currentTarget.value || 0) - 1); // Reps always step by 1
-
-        // Create a new object for immutability and patch the control's value.
-        repsControl.patchValue({ type: RepsTargetType.min_plus, value: newValue });
-        setControl.markAsDirty();
-
-        const setId = setControl.get('id')?.value;
-        if (setId) this.triggerAnimation(setId);
-      }
-
-      return; // Exit the function after handling the special case for reps.
-    }
-
     const formControlName = this.getFormControlName(field);
     const control = setControl.get(formControlName);
     if (!control) return;
 
-    const initialValueStr = control.value?.toString() || '0';
-    let currentNumberValue = isTime ? (this.parseTimeToSeconds(initialValueStr) || 0) : (parseFloat(initialValueStr) || 0);
-
-    const newNumberValue = Math.max(0, parseFloat((currentNumberValue - step).toFixed(2)));
-
-    control.patchValue(newNumberValue);
-
-    const setId = setControl.get('id')?.value;
-    if (setId) {
-      this.triggerAnimation(setId);
+    let value = control.value;
+    // Handle TargetType objects
+    if (value && typeof value === 'object' && value.type) {
+      switch (value.type) {
+        case 'exact':
+        case 'min_plus':
+          control.patchValue({ ...value, value: Math.max(0, (value.value || 0) - step) });
+          break;
+        case 'range':
+          // Decrement both min and max if present
+          control.patchValue({
+            ...value,
+            min: value.min != null ? Math.max(0, value.min - step) : value.min,
+            max: value.max != null ? Math.max(0, value.max - step) : value.max,
+            minSeconds: value.minSeconds != null ? Math.max(0, value.minSeconds - step) : value.minSeconds,
+            maxSeconds: value.maxSeconds != null ? Math.max(0, value.maxSeconds - step) : value.maxSeconds,
+          });
+          break;
+        case 'percentage_1rm':
+          control.patchValue({ ...value, percentage: Math.max(0, (value.percentage || 0) - step) });
+          break;
+        default:
+          // fallback for unknown types
+          break;
+      }
+    } else {
+      // Primitive value fallback
+      const initialValueStr = value?.toString() || '0';
+      let currentNumberValue = isTime ? (this.parseTimeToSeconds(initialValueStr) || 0) : (parseFloat(initialValueStr) || 0);
+      const newNumberValue = Math.max(0, parseFloat((currentNumberValue - step).toFixed(2)));
+      control.patchValue(newNumberValue);
     }
+
+    setControl.markAsDirty();
+    const setId = setControl.get('id')?.value;
+    if (setId) this.triggerAnimation(setId);
   }
 
   protected getFormControlName(field: METRIC): string {
-    const isLogMode = this.mode === 'manualLogEntry';
+    const isLogMode = this.mode === BuilderMode.manualLogEntry;
     switch (field) {
       case METRIC.reps: return isLogMode ? 'repsLogged' : 'targetReps';
       case METRIC.weight: return isLogMode ? 'weightLogged' : 'targetWeight';
@@ -5435,12 +5266,23 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
 
     // --- Special handling for Reps in Builder Mode ---
-    if (field === METRIC.reps && this.mode === 'routineBuilder') {
+    if (field === METRIC.reps && this.mode === BuilderMode.routineBuilder) {
       // The value is a RepsTarget object, so we use our helper to format it.
       return repsTargetAsString(control.value);
     }
-    
-    // --- Fallback for all other metrics and for Reps in Log Mode ---
+
+    if (field === METRIC.duration) {
+      return durationTargetAsString(control.value);
+    }
+    if (field === METRIC.rest) {
+      return restTargetAsString(control.value);
+    }
+    if (field === METRIC.weight) {
+      return weightTargetAsString(control.value);
+    }
+    if (field === METRIC.distance) {
+      return distanceTargetAsString(control.value);
+    }
     return control.value.toString();
   }
 
@@ -5460,60 +5302,62 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   /**
-   * Formats a RepsTarget object into a user-friendly string for display.
-   * @param repsTarget The RepsTarget object from the form or model.
-   * @returns A string like "10", "8-12", "Max", etc.
+   * Formats any metric target object into a user-friendly string for display.
+   * @param target The metric target object from the form or model.
+   * @param metric The METRIC enum value (e.g., METRIC.reps, METRIC.rest).
+   * @returns A string like "10", "8-12", "60s", etc.
    */
-  formatRepsTarget(repsTarget: RepsTarget | null | undefined): string {
-    if (!repsTarget) {
-      return '-';
-    }
-
-    switch (repsTarget.type) {
-      case RepsTargetType.exact:
-        return repsTarget.value.toString();
-      case RepsTargetType.min_plus:
-        return repsTarget.value.toString();
-      case RepsTargetType.range:
-        return `${repsTarget.min}-${repsTarget.max}`;
-      case RepsTargetType.max:
-        return 'Max';
-      case RepsTargetType.amrap:
-        return 'AMRAP';
-      case RepsTargetType.max_fraction:
-        return `Max / ${repsTarget.divisor}`;
+  formatMetricTarget(target: any, metric: METRIC): string {
+    switch (metric) {
+      case METRIC.reps:
+        return repsTargetAsString(target);
+      case METRIC.rest:
+        return restTargetAsString(target);
+      case METRIC.weight:
+        return weightTargetAsString(target);
+      case METRIC.duration:
+        return durationTargetAsString(target);
+      case METRIC.distance:
+        return distanceTargetAsString(target);
+      case METRIC.tempo:
+        return target ? String(target) : '-';
       default:
-        return '-';
+        return target != null ? String(target) : '-';
     }
   }
 
 
   /**
- * Updates the RepsTarget object when a user types into the 'min' or 'max' input field.
- * This is for the 'range' rep scheme.
+ * Generic method to update a target object (range/exact/min_plus) for any metric.
  * @param setControl The FormGroup for the set being modified.
- * @param part Which part of the range to update ('min' or 'max').
+ * @param field The metric field name (e.g., 'targetReps', 'targetRest', etc.).
+ * @param part Which part of the target to update ('min', 'max', 'value', etc.).
  * @param event The DOM input event.
  */
-  updateRepsRange(setControl: AbstractControl, part: 'min' | 'max', event: Event): void {
-    const targetControl = setControl.get('targetReps');
-    const currentTarget = targetControl?.value as RepsTarget | null;
+  updateTargetField(
+    setControl: AbstractControl,
+    field: string,
+    part: 'min' | 'max' | 'minSeconds' | 'maxSeconds' | 'value',
+    event: Event
+  ): void {
+    const targetControl = setControl.get(field);
+    const currentTarget = targetControl?.value as any;
 
-    // Ensure we are actually editing a range object
-    if (!targetControl || currentTarget?.type !== 'range') {
-      return;
-    }
+    if (!targetControl || !currentTarget) return;
 
     const inputValue = (event.target as HTMLInputElement).value;
     const numericValue = inputValue === '' ? null : Number(inputValue);
 
-    // Create a new object to maintain immutability and trigger change detection
-    const newTarget: RepsTarget = {
-      ...currentTarget,
-      [part]: numericValue,
-    };
-
-    targetControl.patchValue(newTarget);
+    // For range types, update min/max or minSeconds/maxSeconds
+    if (currentTarget.type === 'range') {
+      const newTarget = { ...currentTarget, [part]: numericValue };
+      targetControl.patchValue(newTarget);
+    }
+    // For exact/min_plus types, update value
+    else if (part === 'value' && (currentTarget.type === 'exact' || currentTarget.type === 'min_plus')) {
+      const newTarget = { ...currentTarget, value: numericValue };
+      targetControl.patchValue(newTarget);
+    }
     setControl.markAsDirty();
   }
 
@@ -5570,5 +5414,28 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   // This could be a Map to store recently added set indices per exercise ID
   private newlyAddedSets = new Map<number, number>();
+
+
+  private targetMinValidator(minValue: number = 0): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = control.value;
+      if (!value || typeof value !== 'object') return null;
+
+      // For 'exact' and 'min_plus' types, check 'value'
+      if ((value.type === 'exact' || value.type === 'min_plus') && typeof value.value === 'number' && value.value < minValue) {
+        return { min: true };
+      }
+
+      // For 'range' types, check 'min' or 'minSeconds'
+      if (value.type === 'range') {
+        const min = value.min ?? value.minSeconds;
+        if (typeof min === 'number' && min < minValue) {
+          return { min: true };
+        }
+      }
+
+      return null;
+    };
+  }
 
 }
