@@ -398,7 +398,7 @@
                         <ng-container *ngIf="getFieldsForSet(exIndex, setIndex).visible as visibleFields">
                           <!-- Loop through the visible fields in their defined order -->
                           <ng-container
-                            *ngFor="let field of (workoutService.getSetFieldOrder(routine()!, exIndex, setIndex) || visibleFields)">
+                            *ngFor="let field of (workoutUtilsService.getSetFieldOrder(routine()!, exIndex, setIndex) || visibleFields)">
                             <ng-container [ngSwitch]="field">
                               <div *ngSwitchCase="'reps'">
                                 <ng-container [ngTemplateOutlet]="repsInputTemplate"
@@ -623,7 +623,7 @@
                                   *ngIf="getFieldsForSet(ssOriginalIndex, roundIndex).visible as visibleFields">
                                   <!-- Loop through the visible fields in their defined order -->
                                   <ng-container
-                                    *ngFor="let field of (workoutService.getSetFieldOrder(routine()!, ssOriginalIndex, roundIndex) || visibleFields)">
+                                    *ngFor="let field of (workoutUtilsService.getSetFieldOrder(routine()!, ssOriginalIndex, roundIndex) || visibleFields)">
                                     <ng-container [ngSwitch]="field">
                                       <div *ngSwitchCase="'reps'">
                                         <ng-container [ngTemplateOutlet]="repsInputTemplate"
@@ -973,7 +973,7 @@
   let-target="target">
   <div>
     <!-- Label part (unchanged) -->
-    <div class="flex items-center justify-center text-gray-500 dark:text-gray-300">
+    <div *ngIf="!isSetCompleted(exIndex, setIndex)" class="flex items-center justify-center text-gray-500 dark:text-gray-300">
       <app-icon [name]="field" class="h-4 w-4 mr-1"></app-icon>
       <label class="text-xs font-medium py-1">{{ label }}</label>
       <button type="button" (click)="openMetricSchemeModal(exIndex, setIndex, field, $event)"

@@ -21,6 +21,7 @@ import { AlertButton } from '../../../core/models/alert.model';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { durationToExact, genRepsTypeFromRepsNumber, getDurationValue, getRestValue, restToExact, weightToExact } from '../../../core/services/workout-helper.service';
+import { WorkoutUtilsService } from '../../../core/services/workout-utils.service';
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -51,6 +52,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
     private route = inject(ActivatedRoute);
     private router = inject(Router);
     private workoutService = inject(WorkoutService);
+    private workoutUtilsService = inject(WorkoutUtilsService);
     protected trackingService = inject(TrackingService);
     protected toastService = inject(ToastService);
     private storageService = inject(StorageService);
@@ -193,7 +195,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             weightLogged: weightToExact(0),   // Not tracked in this mode
             durationLogged: setData.targetDuration || durationToExact(0), // Log the planned work duration
             timestamp: new Date().toISOString(),
-            fieldOrder: this.workoutService.getRepsAndWeightFields()
+            fieldOrder: this.workoutUtilsService.getRepsAndWeightFields()
         };
 
         this.addLoggedSetToCurrentLog(exerciseData, loggedSetData);
@@ -597,7 +599,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             targetRest: activeInfo.setData.targetRest,
             notes: formValues.setNotes?.trim() || undefined,
             timestamp: new Date().toISOString(),
-            fieldOrder: this.workoutService.getRepsAndWeightFields()
+            fieldOrder: this.workoutUtilsService.getRepsAndWeightFields()
             // Add a specific field for Tabata round
         };
         this.addLoggedSetToCurrentLog(activeInfo.exerciseData, loggedSetData);
@@ -1712,7 +1714,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
                         targetRest: originalPlannedSet?.targetRest || restToExact(60), // Prefer planned rest
                         notes: loggedSet.notes, // Persist individual logged set notes if saving structure
                         type: loggedSet.type as 'standard' | 'warmup' | 'amrap' | 'custom' | string,
-                        fieldOrder: this.workoutService.getRepsAndWeightFields()
+                        fieldOrder: this.workoutUtilsService.getRepsAndWeightFields()
                     };
                 }) : [this.getFirstExerciseOfSuperset((loggedEx.supersetOrder || 0), loggedEx.supersetId, loggedExercises)],
                 // TODO correct number of sets when converting a SUPERSET routine to a new one
@@ -1735,7 +1737,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             targetRest: superSetOrder !== null && superSetOrder !== undefined && exercise && exercise.sets.length && superSetOrder < exercise.sets.length - 1 ? restToExact(0) : this.getLastExerciseOfSuperset(supersetId, loggedExercises).targetRest,
             notes: exerciseSet && exerciseSet.notes ? exerciseSet.notes : '',
             type: exerciseSet && exerciseSet.type ? 'superset' : 'standard',
-            fieldOrder: this.workoutService.getRepsAndWeightFields()
+            fieldOrder: this.workoutUtilsService.getRepsAndWeightFields()
         };
     }
 
@@ -1751,7 +1753,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             targetRest: exerciseSet && exerciseSet.targetRest ? exerciseSet.targetRest : restToExact(60),
             notes: exerciseSet && exerciseSet.notes ? exerciseSet.notes : '',
             type: exerciseSet && exerciseSet.type ? 'superset' : 'standard',
-            fieldOrder: this.workoutService.getRepsAndWeightFields()
+            fieldOrder: this.workoutUtilsService.getRepsAndWeightFields()
         };
     }
 

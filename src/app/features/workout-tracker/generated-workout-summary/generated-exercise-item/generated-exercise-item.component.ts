@@ -14,6 +14,7 @@ import { AlertService } from '../../../../core/services/alert.service';
 import { v4 as uuidv4 } from 'uuid';
 import { TranslateModule } from '@ngx-translate/core';
 import { weightToExact } from '../../../../core/services/workout-helper.service';
+import { WorkoutUtilsService } from '../../../../core/services/workout-utils.service';
 
 @Component({
     selector: 'app-generated-exercise-item',
@@ -29,6 +30,7 @@ export class GeneratedExerciseItemComponent implements OnInit {
 
     // Injected Services
     protected workoutService = inject(WorkoutService);
+    protected workoutUtilsService = inject(WorkoutUtilsService);
     protected unitsService = inject(UnitsService);
     protected exerciseService = inject(ExerciseService);
     private alertService = inject(AlertService);
@@ -141,10 +143,10 @@ export class GeneratedExerciseItemComponent implements OnInit {
 
     formatSet(set: ExerciseTargetSetParams): string {
         // ... (this method remains the same as the last version, it's already correct)
-        const repsText = this.workoutService.getSetTargetDisplay(set, METRIC.reps);
-        const weightText = this.workoutService.getSetTargetDisplay(set, METRIC.weight);
-        const durationText = this.workoutService.getSetTargetDisplay(set, METRIC.duration);
-        const distanceText = this.workoutService.getSetTargetDisplay(set, METRIC.distance);
+        const repsText = this.workoutUtilsService.getSetTargetDisplay(set, METRIC.reps);
+        const weightText = this.workoutUtilsService.getSetTargetDisplay(set, METRIC.weight);
+        const durationText = this.workoutUtilsService.getSetTargetDisplay(set, METRIC.duration);
+        const distanceText = this.workoutUtilsService.getSetTargetDisplay(set, METRIC.distance);
 
         if (durationText && set.targetDuration) {
             return `${durationText}s`;

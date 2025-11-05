@@ -10,6 +10,7 @@ import { TranslateService } from '@ngx-translate/core'; // Assuming ngx-translat
 import { TranslateModule } from '@ngx-translate/core'; // Import TranslateModule
 import { WorkoutService } from "../../../../core/services/workout.service";
 import { UnitsService } from "../../../../core/services/units.service";
+import { WorkoutUtilsService } from "../../../../core/services/workout-utils.service";
 
 @Component({
     selector: 'app-exercise-overview-item',
@@ -28,7 +29,7 @@ export class ExerciseOverviewItemComponent {
     constructor(
         private weightUnitPipe: WeightUnitPipe,
         private translate: TranslateService,
-        private workoutService: WorkoutService,
+        private workoutUtilsService: WorkoutUtilsService,
         private unitsService: UnitsService,
     ) {}
 
@@ -117,12 +118,12 @@ export class ExerciseOverviewItemComponent {
         let weight: string | null | undefined;
         let reps: string | undefined;
 
-        const weightReal = this.workoutService.getSetFieldValue(set, METRIC.weight);
-        const repsReal = this.workoutService.getSetFieldValue(set, METRIC.reps);
-        const distanceReal = this.workoutService.getSetFieldValue(set, METRIC.distance);
-        const durationReal = this.workoutService.getSetFieldValue(set, METRIC.duration);
-        const tempoReal = this.workoutService.getSetFieldValue(set, METRIC.tempo);
-    
+        const weightReal = this.workoutUtilsService.getSetFieldValue(set, METRIC.weight);
+        const repsReal = this.workoutUtilsService.getSetFieldValue(set, METRIC.reps);
+        const distanceReal = this.workoutUtilsService.getSetFieldValue(set, METRIC.distance);
+        const durationReal = this.workoutUtilsService.getSetFieldValue(set, METRIC.duration);
+        const tempoReal = this.workoutUtilsService.getSetFieldValue(set, METRIC.tempo);
+
         weight = weightReal;
         reps = repsReal;
         

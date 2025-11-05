@@ -144,6 +144,19 @@ function mapLegacyLoggedSet(set: any): LoggedSet {
             value = newSet[newLogged];
         }
 
+        // convert old numeric fields to target objects (check for strings as well) - TARGET
+        if (typeof newSet[newTarget] === 'number' || typeof newSet[newTarget] === 'string') {
+            newSet[newTarget] = { type: 'exact', value: Number(newSet[newTarget]) };
+            fieldToAdd = true;
+            value = newSet[newTarget];
+        }
+                // convert old numeric fields to target objects (check for strings as well) - LOGGED
+        if (typeof newSet[newLogged] === 'number' || typeof newSet[newLogged] === 'string') {
+            newSet[newLogged] = { type: 'exact', value: Number(newSet[newLogged]) };
+            fieldToAdd = true;
+            value = newSet[newLogged];
+        }
+
         // handle old cases
         if (fieldToAdd && !newSet.fieldOrder.includes(metricKey)) {
             newSet.fieldOrder.push(METRIC[metricKey]);

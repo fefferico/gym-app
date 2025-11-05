@@ -73,6 +73,7 @@ import { SET_TYPE } from '../workout-builder';
 import { BumpClickDirective } from '../../../shared/directives/bump-click.directive';
 import { repsTargetAsString, repsTypeToReps, genRepsTypeFromRepsNumber, getDurationValue, durationToExact, getWeightValue, weightToExact, getDistanceValue, distanceToExact, restToExact, getRestValue, getRepsValue } from '../../../core/services/workout-helper.service';
 import { NumericDataType } from '@tensorflow/tfjs-core';
+import { WorkoutUtilsService } from '../../../core/services/workout-utils.service';
 
 // Interface for saving the paused state
 
@@ -116,6 +117,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   protected router = inject(Router);
   protected workoutService = inject(WorkoutService);
+  protected workoutUtilsService = inject(WorkoutUtilsService);
   private exerciseService = inject(ExerciseService);
   protected trackingService = inject(TrackingService);
   protected trainingProgramService = inject(TrainingProgramService);
@@ -329,7 +331,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     if (isPlatformBrowser(this.platformId)) { window.scrollTo(0, 0); }
     this.loadAvailableExercises();
-    this.availablePlayerRepSchemes = this.workoutService.getAvailableRepsSchemes('player');
+    this.availablePlayerRepSchemes = this.workoutUtilsService.getAvailableRepsSchemes('player');
 
 
     this.menuModeDropdown = this.appSettingsService.isMenuModeDropdown();
@@ -1264,7 +1266,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       id: uuidv4(),
       type: 'warmup',
       ...warmpUpExerciseMetrics,
-      fieldOrder: warmpUpExerciseMetrics.fieldOrder ?? this.workoutService.getRepsAndWeightFields()
+      fieldOrder: warmpUpExerciseMetrics.fieldOrder ?? this.workoutUtilsService.getRepsAndWeightFields()
     };
 
     // --- START: IMMUTABLE UPDATE LOGIC ---
@@ -1330,7 +1332,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           id: uuidv4(),
           type: 'standard',
           targetRest: lastSet?.targetRest ?? restToExact(60),
-          fieldOrder: lastSet?.fieldOrder ?? this.workoutService.getRepsAndWeightFields()
+          fieldOrder: lastSet?.fieldOrder ?? this.workoutUtilsService.getRepsAndWeightFields()
         };
 
         if (lastSet) {
@@ -1378,7 +1380,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         id: uuidv4(),
         type: type,
         targetRest: lastSet?.targetRest ?? restToExact(60),
-        fieldOrder: lastSet?.fieldOrder ?? this.workoutService.getRepsAndWeightFields()
+        fieldOrder: lastSet?.fieldOrder ?? this.workoutUtilsService.getRepsAndWeightFields()
       };
 
       if (type === 'warmup') {
@@ -2181,8 +2183,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       } else {
         // --- Displaying planned target ---
         const parts: string[] = [];
-        const repsDisplay = this.workoutService.getSetTargetDisplay(plannedSet, METRIC.reps);
-        const weightDisplay = this.workoutService.getWeightDisplay(plannedSet, exercise);
+        const repsDisplay = this.workoutUtilsService.getSetTargetDisplay(plannedSet, METRIC.reps);
+        const weightDisplay = this.workoutUtilsService.getWeightDisplay(plannedSet, exercise);
 
         // Handle weight and reps together for traditional display
         if (repsDisplay && repsDisplay !== '0' && weightDisplay !== this.translate.instant('workoutService.display.weightNotApplicable')) {
@@ -2190,14 +2192,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         }
 
         // Handle duration
-        const durationDisplay = this.workoutService.getSetTargetDisplay(plannedSet, METRIC.duration);
+        const durationDisplay = this.workoutUtilsService.getSetTargetDisplay(plannedSet, METRIC.duration);
         if (durationDisplay && durationDisplay !== '0' && this.formatSecondsToTime(durationDisplay) !== '00:00') {
           // Add the icon and text inside a flex container for alignment
           parts.push(`<span class="inline-flex items-center">${this.formatSecondsToTime(durationDisplay)} mm:ss</span>`);
         }
 
         // Handle distance
-        const distanceDisplay = this.workoutService.getSetTargetDisplay(plannedSet, METRIC.distance);
+        const distanceDisplay = this.workoutUtilsService.getSetTargetDisplay(plannedSet, METRIC.distance);
         if (distanceDisplay && distanceDisplay !== '0') {
           parts.push(`${distanceDisplay} ${this.unitsService.getDistanceMeasureUnitSuffix()}`);
         }
@@ -3066,7 +3068,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     // 2. Simply format the value from the pre-calculated set object. No heavy logic here.
-    return this.workoutService.getSetTargetDisplay(setForDisplay, field);
+    return this.workoutUtilsService.getSetTargetDisplay(setForDisplay, field);
   }
 
 
@@ -3323,8 +3325,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       return parts.length > 0 ? `Target: ${parts.join(' for ')}` : 'No target set';
     } else {
       // Use the pre-calculated set to get the display values for reps and weight
-      const repsDisplay = this.workoutService.getSetTargetDisplay(setForDisplay, METRIC.reps);
-      const weightDisplay = this.workoutService.getWeightDisplay(setForDisplay, exercise);
+      const repsDisplay = this.workoutUtilsService.getSetTargetDisplay(setForDisplay, METRIC.reps);
+      const weightDisplay = this.workoutUtilsService.getWeightDisplay(setForDisplay, exercise);
 
       return repsDisplay ? `Target: ${weightDisplay} x ${repsDisplay} reps` : 'No target set';
     }
@@ -3746,20 +3748,20 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       return { [METRIC.weight]: false, [METRIC.reps]: false, [METRIC.distance]: false, [METRIC.duration]: false, [METRIC.rest]: false };
     }
 
-    return this.workoutService.getVisibleSetColumns(routine, exIndex, setIndex);
+    return this.workoutUtilsService.getVisibleSetColumns(routine, exIndex, setIndex);
   }
 
   public getFieldsForSet(exIndex: number, setIndex: number): { visible: string[], hidden: string[] } {
     const routine = this.routine();
-    if (!routine) return this.workoutService.defaultHiddenFields();
+    if (!routine) return this.workoutUtilsService.defaultHiddenFields();
     // Delegate to the existing service method
-    return this.workoutService.getFieldsForSet(routine, exIndex, setIndex);
+    return this.workoutUtilsService.getFieldsForSet(routine, exIndex, setIndex);
   }
 
   public canAddField(exIndex: number, setIndex: number): boolean {
     const fields = this.getFieldsForSet(exIndex, setIndex);
     // Show the button if there are fields that can be added and we are not at the max of 4.
-    return fields.hidden.length > 0 && fields.visible.length < this.workoutService.getDefaultFields().length;
+    return fields.hidden.length > 0 && fields.visible.length < this.workoutUtilsService.getDefaultFields().length;
   }
 
   isFalsyOrZero(value: number | null | undefined): boolean {
@@ -3788,7 +3790,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (!currentRoutine) return;
 
     // The service handles the UI and returns the updated routine state
-    const updatedRoutine = await this.workoutService.promptRemoveField(currentRoutine, exIndex, setIndex, true);
+    const updatedRoutine = await this.workoutUtilsService.promptRemoveField(currentRoutine, exIndex, setIndex, true);
 
     if (updatedRoutine) {
       // =================== START OF SNIPPET (Part 1) ===================
@@ -3808,7 +3810,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (!currentRoutine) return;
 
     // The service handles the UI and returns the updated routine state
-    const updatedRoutine = await this.workoutService.promptAddField(currentRoutine, exIndex, setIndex, true);
+    const updatedRoutine = await this.workoutUtilsService.promptAddField(currentRoutine, exIndex, setIndex, true);
 
     if (updatedRoutine) {
       // =================== START OF SNIPPET (Part 2) ===================
@@ -4586,7 +4588,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   public getVisibleColumnsForExercise(exIndex: number): { [key: string]: boolean } {
     const routine = this.routine();
     if (!routine) return {};
-    return this.workoutService.getVisibleExerciseColumns(routine, exIndex);
+    return this.workoutUtilsService.getVisibleExerciseColumns(routine, exIndex);
   }
 
   /**
@@ -4813,7 +4815,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     // 2. Call the generic service method.
-    const result = await this.workoutService.showSchemeModal(
+    const result = await this.workoutUtilsService.showSchemeModal(
       metric,
       currentTarget ?? null, // This ensures we only pass AnyTarget or null
       availableSchemes

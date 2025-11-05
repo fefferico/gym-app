@@ -30,6 +30,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DistanceTarget, DistanceTargetType, DurationTarget, DurationTargetType, METRIC, RepsTarget, RepsTargetType, RestTarget, RestTargetType, WeightTarget, WeightTargetType, WorkoutExercise } from '../../../core/models/workout.model';
 import { BumpClickDirective } from '../../../shared/directives/bump-click.directive';
 import { repsTargetAsString, repsTypeToReps, genRepsTypeFromRepsNumber, getRepsValue, getDurationValue, getDistanceValue, getWeightValue, getRestValue, restTargetAsString, distanceTargetAsString, durationTargetAsString, weightTargetAsString } from '../../../core/services/workout-helper.service';
+import { WorkoutUtilsService } from '../../../core/services/workout-utils.service';
 
 export interface DisplayLoggedExercise extends LoggedWorkoutExercise {
   baseExercise?: Exercise | null;
@@ -96,6 +97,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   protected trackingService = inject(TrackingService);
   private exerciseService = inject(ExerciseService);
   protected workoutService = inject(WorkoutService);
+  protected workoutUtilsService = inject(WorkoutUtilsService);
   protected unitService = inject(UnitsService);
   private alertService = inject(AlertService);
   private spinnerService = inject(SpinnerService);
@@ -193,26 +195,46 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   }
 
   async enrichLoggedExercisesWithTargets() {
-    const log = this.workoutLog();
-    if (!log?.routineId) return;
+  const log = this.workoutLog();
+  if (!log?.routineId) return;
 
-    const routine = await firstValueFrom(this.workoutService.getRoutineById(log.routineId));
-    if (!routine?.exercises) return;
+  const routine = await firstValueFrom(this.workoutService.getRoutineById(log.routineId));
+  if (!routine?.exercises) return;
 
-    const routineExerciseMap = new Map(routine.exercises.map(ex => [ex.id, ex]));
+  const routineExerciseMap = new Map(routine.exercises.map(ex => [ex.id, ex]));
 
-    log.exercises.forEach(loggedEx => {
-      const routineEx = routineExerciseMap.get(loggedEx.id);
-      loggedEx.sets.forEach((set, i) => {
-        const routineExerciseSet = routineEx?.sets?.find(s => s.id === set.plannedSetId) ?? routineEx?.sets?.[i];
+  log.exercises.forEach(loggedEx => {
+    const routineEx = routineExerciseMap.get(loggedEx.id);
+    loggedEx.sets.forEach((set, i) => {
+      const routineExerciseSet = routineEx?.sets?.find(s => s.id === set.plannedSetId) ?? routineEx?.sets?.[i];
+
+      // Only enrich logged values if the metric is in fieldOrder (prevents setting reps for cardio, etc.)
+      if (set.fieldOrder?.includes(METRIC.reps)) {
         set.repsLogged = set.repsLogged ?? routineExerciseSet?.targetReps;
-        set.targetDuration = set.targetDuration ?? routineExerciseSet?.targetDuration;
-        set.targetWeight = set.targetWeight ?? routineExerciseSet?.targetWeight;
-        set.targetRest = set.targetRest ?? routineExerciseSet?.targetRest;
-      });
+      }
+      if (set.fieldOrder?.includes(METRIC.weight)) {
+        set.weightLogged = set.weightLogged ?? routineExerciseSet?.targetWeight;
+      }
+      if (set.fieldOrder?.includes(METRIC.duration)) {
+        set.durationLogged = set.durationLogged ?? routineExerciseSet?.targetDuration;
+      }
+      if (set.fieldOrder?.includes(METRIC.distance)) {
+        set.distanceLogged = set.distanceLogged ?? routineExerciseSet?.targetDistance;
+      }
+      if (set.fieldOrder?.includes(METRIC.rest)) {
+        set.restLogged = set.restLogged ?? routineExerciseSet?.targetRest;
+      }
+
+      // Always enrich targets (they are part of the planned routine)
+      set.targetReps = set.targetReps ?? routineExerciseSet?.targetReps;
+      set.targetWeight = set.targetWeight ?? routineExerciseSet?.targetWeight;
+      set.targetDuration = set.targetDuration ?? routineExerciseSet?.targetDuration;
+      set.targetDistance = set.targetDistance ?? routineExerciseSet?.targetDistance;
+      set.targetRest = set.targetRest ?? routineExerciseSet?.targetRest;
     });
-    this.workoutLog.set({ ...log });
-  }
+  });
+  this.workoutLog.set({ ...log });
+}
 
   private prepareDisplayExercises(loggedExercises: LoggedWorkoutExercise[], translatedExercisesMap: Map<string, Exercise>): void {
     const processedSupersetIds = new Set<string>();
@@ -411,19 +433,19 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   }
 
   checkIfDurationAvailable(loggedEx: LoggedWorkoutExercise): boolean {
-    return loggedEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.duration) && (set.durationLogged !== undefined && set.durationLogged !== null) && getDurationValue(set.durationLogged) > 0);
+    return this.workoutUtilsService.checkIfMetricIsVisible(loggedEx, METRIC.duration);
   }
 
   checkIfRepsAvailable(loggedEx: DisplayLoggedExercise): boolean {
-    return loggedEx?.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.reps) && (set.repsLogged !== undefined && set.repsLogged !== null) && repsTypeToReps(set.repsLogged) >= 0);
+    return this.workoutUtilsService.checkIfMetricIsVisible(loggedEx, METRIC.reps);
   }
 
   checkIfDistanceAvailable(loggedEx: DisplayLoggedExercise): boolean {
-    return loggedEx?.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.distance) && (set.distanceLogged !== undefined && set.distanceLogged !== null) && getDistanceValue(set.distanceLogged) >= 0);
+    return this.workoutUtilsService.checkIfMetricIsVisible(loggedEx, METRIC.distance);
   }
 
   checkIfWeightAvailable(loggedEx: LoggedWorkoutExercise): boolean {
-    return loggedEx?.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.weight) && (set.weightLogged !== undefined && set.weightLogged !== null) && getWeightValue(set.weightLogged) >= 0);
+    return this.workoutUtilsService.checkIfMetricIsVisible(loggedEx, METRIC.weight);
   }
 
   protected checkRange(performed: number | string, min?: number | string | null, max?: number | string | null): string {
@@ -445,40 +467,132 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     return 'text-gray-800 dark:text-white';
   }
 
-  checkTextClass(set: LoggedSet, type: METRIC): string {
+    checkTextClass(set: LoggedSet, type: METRIC): string {
     if (!set) return 'text-gray-700 dark:text-gray-300';
-
-
-
-    const setReps: any = { ...set };
-    if (type === METRIC.reps) {
-      return this.checkRange(repsTypeToReps(set.repsLogged) ?? 0, setReps.targetReps.min, setReps.targetReps.max);
+  
+    let min: number | null = null;
+    let max: number | null = null;
+    let performed: number | null = null;
+  
+    switch (type) {
+      case METRIC.reps:
+        if (set.targetReps) {
+          switch (set.targetReps.type) {
+            case RepsTargetType.exact:
+              min = max = set.targetReps.value;
+              break;
+            case RepsTargetType.range:
+              min = set.targetReps.min;
+              max = set.targetReps.max;
+              break;
+            case RepsTargetType.min_plus:
+              min = set.targetReps.value;
+              max = null; // No upper limit
+              break;
+            case RepsTargetType.amrap:
+            case RepsTargetType.max:
+              // No specific target to compare against
+              return 'text-gray-800 dark:text-white';
+            default:
+              return 'text-gray-800 dark:text-white';
+          }
+        }
+        performed = repsTypeToReps(set.repsLogged) ?? null;
+        break;
+  
+      case METRIC.weight:
+        if (set.targetWeight) {
+          switch (set.targetWeight.type) {
+            case WeightTargetType.exact:
+              min = max = set.targetWeight.value;
+              break;
+            case WeightTargetType.range:
+              min = set.targetWeight.min;
+              max = set.targetWeight.max;
+              break;
+            case WeightTargetType.bodyweight:
+              min = max = 0; // Bodyweight implies 0 weight
+              break;
+            case WeightTargetType.percentage_1rm:
+              // Can't compare without 1RM data, so no coloring
+              return 'text-gray-800 dark:text-white';
+            default:
+              return 'text-gray-800 dark:text-white';
+          }
+        }
+        performed = getWeightValue(set.weightLogged) ?? null;
+        break;
+  
+      case METRIC.duration:
+        if (set.targetDuration) {
+          switch (set.targetDuration.type) {
+            case DurationTargetType.exact:
+              min = max = set.targetDuration.seconds;
+              break;
+            case DurationTargetType.range:
+              min = set.targetDuration.minSeconds;
+              max = set.targetDuration.maxSeconds;
+              break;
+            case DurationTargetType.to_failure:
+              // No specific target
+              return 'text-gray-800 dark:text-white';
+            default:
+              return 'text-gray-800 dark:text-white';
+          }
+        }
+        performed = getDurationValue(set.durationLogged) ?? null;
+        break;
+  
+      case METRIC.distance:
+        if (set.targetDistance) {
+          switch (set.targetDistance.type) {
+            case DistanceTargetType.exact:
+              min = max = set.targetDistance.value;
+              break;
+            case DistanceTargetType.range:
+              min = set.targetDistance.min;
+              max = set.targetDistance.max;
+              break;
+            default:
+              return 'text-gray-800 dark:text-white';
+          }
+        }
+        performed = getDistanceValue(set.distanceLogged) ?? null;
+        break;
+  
+      case METRIC.rest:
+        if (set.targetRest) {
+          switch (set.targetRest.type) {
+            case RestTargetType.exact:
+              min = max = set.targetRest.seconds;
+              break;
+            case RestTargetType.range:
+              min = set.targetRest.minSeconds;
+              max = set.targetRest.maxSeconds;
+              break;
+            default:
+              return 'text-gray-800 dark:text-white';
+          }
+        }
+        performed = getRestValue(set.restLogged) ?? null;
+        break;
+  
+      default:
+        return 'text-gray-800 dark:text-white';
     }
-    if (type === METRIC.duration) {
-      return this.checkRange(getDurationValue(set.durationLogged) ?? 0, setReps.targetDuration.min, setReps.targetDuration.max);
-    }
-    if (type === METRIC.distance) {
-      return this.checkRange(getDistanceValue(set.distanceLogged) ?? 0, setReps.targetDistance.min, setReps.targetDistance.max);
-    }
-    if (type === METRIC.weight) {
-      return this.checkRange(getWeightValue(set.weightLogged) ?? 0, setReps.targetWeight.min, setReps.targetWeight.max);
-    }
-    if (type === METRIC.rest) {
-      return this.checkRange(getRestValue(set.restLogged) ?? 0, setReps.targetRest.min, setReps.targetRest.max);
-    }
-
-    return 'text-gray-800 dark:text-white';
+  
+    if (performed === null) return 'text-gray-800 dark:text-white';
+  
+    return this.checkRange(performed, min, max);
   }
 
-  showComparisonModal(set: LoggedSet, type: METRIC): void {
+    showComparisonModal(set: LoggedSet, type: METRIC): void {
     if (!set) return;
-
+  
     let modalData: TargetComparisonData | null = null;
     const unitLabel = this.unitService.getWeightUnitSuffix();
     const distUnitLabel = this.unitService.getDistanceMeasureUnitSuffix();
-
-    // The old `createTargetDisplay` helper is no longer needed and can be removed.
-
+  
     switch (type) {
       case METRIC.reps:
         modalData = {
@@ -487,43 +601,48 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
           performedValue: repsTargetAsString(set.repsLogged) || '-'
         };
         break;
-
+  
       case METRIC.weight:
         const targetWeightStr = weightTargetAsString(set.targetWeight);
+        const performedWeightStr = weightTargetAsString(set.weightLogged);
         modalData = {
           metric: type,
-          // Add the unit only if the value is not a textual one like "Bodyweight"
           targetValue: targetWeightStr ? `${targetWeightStr}${unitLabel}` : '-',
-          performedValue: set.weightLogged != null ? `${set.weightLogged}${unitLabel}` : '-'
+          performedValue: performedWeightStr ? `${performedWeightStr}${unitLabel}` : '-'
         };
         break;
-
+  
       case METRIC.duration:
+        const targetDurationStr = durationTargetAsString(set.targetDuration);
+        const performedDurationStr = durationTargetAsString(set.durationLogged);
         modalData = {
           metric: type,
-          targetValue: durationTargetAsString(set.targetDuration) || '-',
-          performedValue: set.durationLogged != null ? `${set.durationLogged}s` : '-'
+          targetValue: targetDurationStr || '-',
+          performedValue: performedDurationStr || '-'
         };
         break;
-
+  
       case METRIC.distance:
         const targetDistanceStr = distanceTargetAsString(set.targetDistance);
+        const performedDistanceStr = distanceTargetAsString(set.distanceLogged);
         modalData = {
           metric: type,
           targetValue: targetDistanceStr ? `${targetDistanceStr}${distUnitLabel}` : '-',
-          performedValue: set.distanceLogged != null ? `${set.distanceLogged}${distUnitLabel}` : '-'
+          performedValue: performedDistanceStr ? `${performedDistanceStr}${distUnitLabel}` : '-'
         };
         break;
-
+  
       case METRIC.rest:
+        const targetRestStr = restTargetAsString(set.targetRest);
+        const performedRestStr = restTargetAsString(set.restLogged);
         modalData = {
           metric: type,
-          targetValue: restTargetAsString(set.targetRest) || '-',
-          performedValue: set.restLogged != null ? `${set.restLogged}s` : '-'
+          targetValue: targetRestStr || '-',
+          performedValue: performedRestStr || '-'
         };
         break;
     }
-
+  
     if (modalData) this.comparisonModalData.set(modalData);
   }
 
@@ -866,10 +985,10 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
 
   getWeightDisplay(item: DisplayItem, set: LoggedSet): string {
     if (this.isStandardExercise(item) && item.baseExercise) {
-      return this.workoutService.getWeightDisplay(set, item.baseExercise);
+      return this.workoutUtilsService.getWeightDisplay(set, item.baseExercise);
     } else {
       if (set) {
-        return this.workoutService.getWeightDisplay(set, { ...item } as unknown as WorkoutExercise);
+        return this.workoutUtilsService.getWeightDisplay(set, { ...item } as unknown as WorkoutExercise);
       }
     }
     return '';

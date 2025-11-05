@@ -9,7 +9,7 @@ import { format, parseISO, isValid as isValidDate, set } from 'date-fns';
 
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
-import { Routine, ExerciseTargetSetParams, WorkoutExercise, METRIC, RepsTarget, RepsTargetType, WeightTarget, DurationTarget, DistanceTarget, RestTarget, AnyScheme, REPS_TARGET_SCHEMES, WEIGHT_TARGET_SCHEMES, DURATION_TARGET_SCHEMES, DISTANCE_TARGET_SCHEMES, REST_TARGET_SCHEMES, RestTargetType, WeightTargetType, DurationTargetType, DistanceTargetType } from '../../core/models/workout.model';
+import { Routine, ExerciseTargetSetParams, WorkoutExercise, METRIC, RepsTarget, RepsTargetType, WeightTarget, DurationTarget, DistanceTarget, RestTarget, AnyScheme, REPS_TARGET_SCHEMES, WEIGHT_TARGET_SCHEMES, DURATION_TARGET_SCHEMES, DISTANCE_TARGET_SCHEMES, REST_TARGET_SCHEMES, RestTargetType, WeightTargetType, DurationTargetType, DistanceTargetType, LoggedRoutine } from '../../core/models/workout.model';
 import { Exercise } from '../../core/models/exercise.model';
 import { WorkoutLog, LoggedWorkoutExercise, LoggedSet, EnrichedWorkoutLog } from '../../core/models/workout-log.model'; // For manual log
 import { WorkoutService } from '../../core/services/workout.service';
@@ -51,6 +51,9 @@ import { RoutineGoal } from '../../core/models/routine-goal.model';
 import { CategoryService } from '../../core/services/workout-category.service';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { repsTargetAsString, repsTypeToReps, genRepsTypeFromRepsNumber, getWeightValue, getDistanceValue, getDurationValue, restToExact, weightToExact, durationToExact, distanceToExact, repsToExact, getRestValue, getRepsValue, durationTargetAsString, restTargetAsString, weightTargetAsString, distanceTargetAsString } from '../../core/services/workout-helper.service';
+import { WorkoutUtilsService } from '../../core/services/workout-utils.service';
+import { WorkoutFormService } from '../../core/services/workout-form.service';
+import { is } from 'date-fns/locale';
 
 export enum BuilderMode {
   routineBuilder = 'routineBuilder',
@@ -126,6 +129,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private subscriptionService = inject(SubscriptionService);
   protected audioService = inject(AudioService);
   protected categoryService = inject(CategoryService);
+  protected workoutUtilsService = inject(WorkoutUtilsService);
+  protected workoutFormService = inject(WorkoutFormService);
+
 
   // Property to hold the available options for the builder
   availableRepSchemes: { type: RepsTargetType; label: string }[] = [];
@@ -281,7 +287,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     const formValue$ = this.builderForm.valueChanges.pipe(
       startWith(this.builderForm.getRawValue()),
-      map(formValue => this.mapFormToRoutine(formValue))
+      map(formValue => {
+        const baseRoutine = this.mapFormToRoutine(formValue);
+        if (this.mode === BuilderMode.manualLogEntry && this.currentLogId) {
+          return { ...baseRoutine, workoutLogId: this.currentLogId } as LoggedRoutine;
+        }
+        return baseRoutine;
+      })
     );
     this.liveFormAsRoutine = toSignal(formValue$, { initialValue: undefined });
 
@@ -322,7 +334,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   ngOnInit(): void {
     // Populate the list for the builder context
-    this.availableRepSchemes = this.workoutService.getAvailableRepsSchemes('builder');
+    this.availableRepSchemes = this.workoutUtilsService.getAvailableRepsSchemes('builder');
     this.spinnerService.hide();
 
     if (isPlatformBrowser(this.platformId)) { window.scrollTo(0, 0); }
@@ -498,7 +510,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
               // Prefill only the exercises without touching other form controls
               this.exercisesFormArray.clear({ emitEvent: false });
               routineToLog.exercises.forEach(routineEx => {
-                this.exercisesFormArray.push(this.createExerciseFormGroup(routineEx, false, true), { emitEvent: false });
+                this.exercisesFormArray.push(this.workoutFormService.createExerciseFormGroup(routineEx, false, true), { emitEvent: false });
               });
 
               // If the scheduled day has an iterationId, set it in the form
@@ -572,7 +584,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
                 id: uuidv4(), type: 'standard', targetRest: restToExact(10), targetDuration: durationToExact(20),
                 fieldOrder: [METRIC.weight, METRIC.reps]
               };
-              setsArray.push(this.createSetFormGroup(defaultSet, false));
+              setsArray.push(this.workoutFormService.createSetFormGroup(defaultSet, false));
             }
             // Enforce Tabata timings
             setsArray.at(0).patchValue({
@@ -849,9 +861,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   get exercisesFormArray(): FormArray {
     return this.builderForm.get('exercises') as FormArray;
   }
-  getSetsFormArray(exerciseControl: AbstractControl): FormArray {
-    return exerciseControl.get('sets') as FormArray;
-  }
 
   private addRepsListener(exerciseControl: FormGroup): void {
     const repsSubscription = this.setupRepsListener(exerciseControl);
@@ -859,7 +868,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   private setupRepsListener(exerciseControl: FormGroup): void {
-    const setsFormArray = this.getSetsFormArray(exerciseControl);
+    const setsFormArray = this.workoutFormService.getSetsFormArray(exerciseControl);
 
     const repsSub = setsFormArray.valueChanges.pipe(
       debounceTime(300),
@@ -899,7 +908,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   private setupDurationListener(exerciseControl: FormGroup): void {
-    const setsFormArray = this.getSetsFormArray(exerciseControl);
+    const setsFormArray = this.workoutFormService.getSetsFormArray(exerciseControl);
 
     const durationSub = setsFormArray.valueChanges.pipe(
       debounceTime(300),
@@ -947,7 +956,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   private addDistanceListener(exerciseControl: FormGroup): void {
-    const setsFormArray = this.getSetsFormArray(exerciseControl);
+    const setsFormArray = this.workoutFormService.getSetsFormArray(exerciseControl);
     const distanceSub = setsFormArray.valueChanges.pipe(
       debounceTime(300),
       startWith(null),
@@ -1035,16 +1044,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       name: routine.name,
       description: routine.description,
       goal: routine.goal,
-      // --- START: ADD NEW PATCH VALUES ---
       primaryCategory: routine.primaryCategory,
       secondaryCategory: routine.secondaryCategory,
       tags: routine.tags?.join(', ') || '', // Convert array to comma-separated string
-      // --- END: ADD NEW PATCH VALUES ---
     });
     this.updateSanitizedDescription(routine.description || '');
     this.exercisesFormArray.clear();
     routine.exercises.forEach(exerciseData => {
-      const newExerciseFormGroup = this.createExerciseFormGroup(exerciseData, true, false);
+      const newExerciseFormGroup = this.workoutFormService.createExerciseFormGroup(exerciseData, true, false);
       this.exercisesFormArray.push(newExerciseFormGroup);
       this.addRepsListener(newExerciseFormGroup);
       this.addDurationListener(newExerciseFormGroup);
@@ -1086,29 +1093,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.exercisesFormArray.clear();
     log.exercises.forEach(loggedEx => {
       // Use this helper to create exercise groups with superset info
-      const exerciseFormGroup = this.createExerciseFormGroupFromLoggedExercise(loggedEx);
+      const exerciseFormGroup = this.workoutFormService.createExerciseFormGroupFromLoggedExercise(loggedEx);
       this.exercisesFormArray.push(exerciseFormGroup);
     });
 
     this.toggleFormState(false);
     this.expandedSetPath.set(null);
     this.builderForm.markAsPristine();
-  }
-
-  private createExerciseFormGroupFromLoggedExercise(loggedEx: LoggedWorkoutExercise): FormGroup {
-    const baseExercise = this.availableExercises.find(e => e.id === loggedEx.exerciseId);
-    const fg = this.fb.group({
-      id: [loggedEx.id || uuidv4()],
-      exerciseId: [loggedEx.exerciseId, Validators.required],
-      exerciseName: [baseExercise?.name || loggedEx.exerciseName, Validators.required],
-      notes: [loggedEx.notes || ''],
-      sets: this.fb.array(loggedEx.sets.map(set => this.createSetFormGroup(set, true))),
-      supersetId: [loggedEx.supersetId || null],
-      supersetOrder: [loggedEx.supersetOrder ?? null],
-      supersetType: [loggedEx.supersetType ?? 'standard'], // Ensure type is also mapped
-      emomTimeSeconds: [loggedEx.emomTimeSeconds ?? null] //EMOM seconds
-    });
-    return fg;
   }
 
   prefillLogFormFromRoutine(routine: Routine, resetDateTime: boolean = true): void {
@@ -1133,7 +1124,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.exercisesFormArray.clear({ emitEvent: false });
     routine.exercises.forEach(routineEx => {
       //IMPORTANT: isFromRoutineTemplate MUST be true, so the exercise can hold supersetId if there is one
-      const newExercise = this.createExerciseFormGroup(routineEx, true, true);
+      const newExercise = this.workoutFormService.createExerciseFormGroup(routineEx, true, true);
 
       this.exercisesFormArray.push(newExercise, { emitEvent: false });
     });
@@ -1180,7 +1171,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         fieldOrder: loggedSet.fieldOrder
       };
       // Return a FormGroup for the set
-      return this.createSetFormGroup(newSetParams, false); // forLogging = false
+      return this.workoutFormService.createSetFormGroup(newSetParams, false); // forLogging = false
     });
 
     const exerciseFg = this.fb.group({
@@ -1194,53 +1185,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       supersetOrder: [loggedEx.supersetOrder ?? null],
     });
 
-    // Add listeners and update controls as needed, similar to createExerciseFormGroup
+    // Add listeners and update controls as needed, similar to workoutFormService.createExerciseFormGroup
     this.addRepsListener(exerciseFg);
     this.addDurationListener(exerciseFg);
 
     return exerciseFg;
-  }
-
-  private createExerciseFormGroup(exerciseData?: WorkoutExercise, isFromRoutineTemplate: boolean = false, forLogging: boolean = false): FormGroup {
-    const baseExercise = exerciseData?.exerciseId ? this.availableExercises.find(e => e.id === exerciseData.exerciseId) : null;
-    const sets = exerciseData?.sets || [];
-
-    const fg = this.fb.group({
-      id: [exerciseData?.id || this.workoutService.generateWorkoutExerciseId()],
-      exerciseId: [exerciseData?.exerciseId || '', Validators.required],
-      exerciseName: [baseExercise?.name || exerciseData?.exerciseName || 'Select Exercise'],
-      notes: [exerciseData?.notes || ''],
-      sets: this.fb.array(
-        sets.map(set => this.createSetFormGroup(set, forLogging))
-      ),
-      supersetId: [exerciseData?.supersetId || null], // PRESERVE superset
-      supersetOrder: [exerciseData?.supersetOrder ?? null], // PRESERVE superset
-      // +++ NEW FORM CONTROLS +++
-      supersetType: [exerciseData?.supersetType ?? 'standard'],
-      emomTimeSeconds: [exerciseData?.emomTimeSeconds ?? null] //PRESERVE EMOM
-    }) as FormGroup;
-
-    if (isFromRoutineTemplate) {
-    } else {
-      fg.get('supersetRounds')?.enable({ emitEvent: false });
-    }
-
-    fg.get('exerciseId')?.valueChanges.subscribe(newExerciseId => {
-      const selectedBaseExercise = this.availableExercises.find(e => e.id === newExerciseId);
-      fg.get('exerciseName')?.setValue(selectedBaseExercise?.name || 'Unknown Exercise', { emitEvent: false });
-    });
-    return fg;
-  }
-
-  private createExerciseFormGroupFromLog(loggedEx: LoggedWorkoutExercise): FormGroup {
-    return this.fb.group({
-      id: [loggedEx.id || uuidv4()],
-      exerciseId: [loggedEx.exerciseId, Validators.required],
-      exerciseName: [loggedEx.exerciseName, Validators.required],
-      notes: [loggedEx.notes || ''],
-      sets: this.fb.array(loggedEx.sets.map(set => this.createSetFormGroup(set, true))),
-      supersetId: [null], supersetOrder: [null], supersetRounds: [0],
-    });
   }
 
   private createRangeValidator(): ValidatorFn {
@@ -1276,162 +1225,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // This validator sets errors on controls, so it doesn't need to return an error for the group itself.
       return null;
     };
-  }
-
-
-  // isRepsRangeMode, isWeightRangeMode, isDurationRangeMode
-  private createSetFormGroup(setData?: ExerciseTargetSetParams | LoggedSet, forLogging: boolean = false): FormGroup {
-    // 1. Initialize all local variables with defaults for a "new blank set".
-    // This handles the case where `setData` is null from the beginning.
-    let id = uuidv4();
-    let fieldOrderValue: METRIC[] | undefined = [this.metricEnum.reps, this.metricEnum.weight];
-    let notesValue = '';
-    let typeValue = 'standard';
-    let tempoValue = '';
-    let plannedSetIdValue: string | undefined;
-    let timestampValue = new Date().toISOString();
-
-    // Performance & single-target metrics
-    let targetRepsValue: RepsTarget | undefined;
-    let targetWeighValue: WeightTarget | undefined;
-    let targetDurationValue: DurationTarget | undefined;
-    let targetDistanceValue: DistanceTarget | undefined;
-    let targetRestValue: RestTarget | undefined;
-
-    // 2. If an existing set is provided, overwrite the defaults.
-    if (setData) {
-      // Overwrite common properties that exist on both types
-      id = setData.id || id;
-      fieldOrderValue = setData.fieldOrder;
-      notesValue = setData.notes || '';
-      typeValue = setData.type || 'standard';
-      tempoValue = 'targetTempo' in setData ? (setData.targetTempo || '') : '';
-
-      // Overwrite specific properties based on the object type
-      if (this.workoutService.isLoggedSet(setData) && !forLogging) {
-        // It's a LoggedSet: map performance fields
-        targetRepsValue = setData.repsLogged;
-        targetWeighValue = setData.weightLogged;
-        targetDurationValue = setData.durationLogged;
-        targetDistanceValue = setData.distanceLogged;
-        targetRestValue = setData.restLogged;
-        plannedSetIdValue = setData.plannedSetId;
-        timestampValue = setData.timestamp;
-      } else {
-        // It's ExerciseTargetSetParams OR a mixed object from a form state
-        const potentialLog = setData as LoggedSet;
-        const potentialPlan = setData as ExerciseTargetSetParams;
-
-        // When creating a form for logging, prioritize existing logged values.
-        // Otherwise, use the planned target values. This handles both creating a new log
-        // from a routine and rebuilding an existing log's set after adding a metric.
-        targetRepsValue = forLogging ? potentialLog.repsLogged ?? potentialPlan.targetReps : potentialPlan.targetReps;
-        targetWeighValue = forLogging ? potentialLog.weightLogged ?? potentialPlan.targetWeight : potentialPlan.targetWeight;
-        targetDurationValue = forLogging ? potentialLog.durationLogged ?? potentialPlan.targetDuration : potentialPlan.targetDuration;
-        targetDistanceValue = forLogging ? potentialLog.distanceLogged ?? potentialPlan.targetDistance : potentialPlan.targetDistance;
-        targetRestValue = forLogging ? potentialLog.restLogged ?? potentialPlan.targetRest : potentialPlan.targetRest;
-        plannedSetIdValue = potentialPlan.id;
-      }
-    }
-
-    if (!fieldOrderValue && setData) {
-      const mockRoutineForHelper = { exercises: [{ sets: [setData] }] } as Routine;
-      const visibleCols = this.workoutService.getVisibleExerciseColumns(mockRoutineForHelper, 0);
-      fieldOrderValue = this.defaultMetricFieldOrder.filter(field => visibleCols[field]);
-    }
-
-    const setDataBk = { ...setData } as any;
-    if (!forLogging && fieldOrderValue && !fieldOrderValue.includes(METRIC.rest) && setDataBk && (setDataBk.targetRest || setDataBk.restAfterSet)) {
-      fieldOrderValue = [...fieldOrderValue, METRIC.rest];
-      if (setDataBk.restAfterSet) {
-        targetRestValue = setDataBk.restAfterSet;
-      } else {
-        targetRestValue = setDataBk.targetRest;
-      }
-    }
-
-    const formGroupConfig: { [key: string]: any } = {
-      id: [id],
-      type: [typeValue, Validators.required],
-      notes: [notesValue || ''],
-      fieldOrder: [fieldOrderValue || []]
-    };
-
-
-    if (forLogging) {
-      // repsLogged is required only if both weightLogged and durationLogged are null
-      formGroupConfig['repsLogged'] = [
-        targetRepsValue ?? null,
-        [
-          (control: AbstractControl) => {
-            const parent = control.parent;
-            if (!parent) return null;
-            const weightLogged = parent.get('weightLogged')?.value;
-            const durationLogged = parent.get('durationLogged')?.value;
-            if ((weightLogged == null || weightLogged === '') && (durationLogged == null || durationLogged === '')) {
-              return Validators.required(control);
-            }
-            return null;
-          },
-          Validators.min(0)
-        ]
-      ];
-      formGroupConfig['weightLogged'] = [targetWeighValue != null ? this.unitService.convertWeight(getWeightValue(targetWeighValue), 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
-      formGroupConfig['durationLogged'] = [targetDurationValue ?? null, [Validators.min(0)]];
-      formGroupConfig['distanceLogged'] = [targetDistanceValue ?? null, [Validators.min(0)]];
-      formGroupConfig['plannedSetId'] = [plannedSetIdValue];
-      formGroupConfig['timestamp'] = [timestampValue];
-      formGroupConfig['tempo'] = [tempoValue];
-      formGroupConfig['restLogged'] = [targetRestValue];
-    } else {
-      // For routine builder (planning mode)
-      let initialRepsTarget: RepsTarget | null = null;
-
-      // This logic handles migrating old data formats to the new structure
-      if (setDataBk.targetReps && typeof setDataBk.targetReps === 'object') {
-        // If data is already in the new format, use it directly
-        initialRepsTarget = setDataBk.targetReps;
-      } else if (setDataBk.min != null && setDataBk.max != null) {
-        // Handle old range format
-        initialRepsTarget = { type: RepsTargetType.range, min: setDataBk.min, max: setDataBk.max };
-      } else if (setDataBk.targetReps != null) {
-        // Handle old single number format
-        initialRepsTarget = { type: RepsTargetType.exact, value: setDataBk.targetReps };
-      }
-
-      // Add the single, object-based form control for targetReps
-      formGroupConfig['targetReps'] = [
-        initialRepsTarget,
-        [this.targetMinValidator(1)]
-      ];
-
-      if ((setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.weight)) || (setDataBk.targetWeight)) {
-        formGroupConfig['targetWeight'] = [
-          targetWeighValue != null
-            ? weightToExact(this.unitService.convertWeight(getWeightValue(targetWeighValue), 'kg', this.unitService.currentWeightUnit()))
-            : null,
-          [this.targetMinValidator(0)]
-        ];
-      }
-
-      if ((setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.duration)) || (setDataBk.targetWeight)) {
-        formGroupConfig['targetDuration'] = [targetDurationValue ?? null, [this.targetMinValidator(1)]];
-      }
-
-      if ((setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.distance)) || (setDataBk.targetDistance)) {
-        formGroupConfig['targetDistance'] = [targetDistanceValue ?? null, [this.targetMinValidator(0.1)]];
-      }
-
-      if ((setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.rest)) || (setDataBk.targetRest)) {
-        formGroupConfig['targetRest'] = [targetRestValue ?? null, [this.targetMinValidator(1)]];
-      }
-
-    }
-    const groupOptions = forLogging ? {} : { validators: this.createRangeValidator() };
-
-    const setFG = this.fb.group(formGroupConfig, groupOptions);
-
-    return setFG;
   }
 
   private scrollExpandedExerciseIntoView(): void {
@@ -1546,7 +1339,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
       let newExerciseFormGroup: FormGroup;
       if (this.mode === BuilderMode.routineBuilder) {
-        newExerciseFormGroup = this.createExerciseFormGroup(workoutExercise, true, false);
+        newExerciseFormGroup = this.workoutFormService.createExerciseFormGroup(workoutExercise, true, false);
         // ADD listeners for routine duration calculation
         this.addRepsListener(newExerciseFormGroup);
         this.addDurationListener(newExerciseFormGroup);
@@ -1555,7 +1348,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         this.exercisesFormArray.push(newExerciseFormGroup);
         this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
       } else {
-        newExerciseFormGroup = this.createExerciseFormGroup(workoutExercise, false, true);
+        newExerciseFormGroup = this.workoutFormService.createExerciseFormGroup(workoutExercise, false, true);
         this.exercisesFormArray.push(newExerciseFormGroup);
       }
 
@@ -1600,20 +1393,20 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.exercisesFormArray.controls.forEach((ctrl, idx) => {
         const fg = ctrl as FormGroup;
         if (fg.get('supersetId')?.value === supersetId) {
-          const setsArray = this.getSetsFormArray(fg);
+          const setsArray = this.workoutFormService.getSetsFormArray(fg);
           const newSet = this.createSyncedSet(setsArray, ctrl); // Use a helper to create the new set
           setsArray.push(newSet);
         }
       });
 
       // Expand the new set on the exercise the user actually clicked
-      const setsOnClickedExercise = this.getSetsFormArray(exerciseControl);
+      const setsOnClickedExercise = this.workoutFormService.getSetsFormArray(exerciseControl);
       const newSetIndex = setsOnClickedExercise.length - 1;
       // this.toggleSetExpansion(exerciseIndex, newSetIndex);
 
     } else {
       // Standard behavior for non-superset exercises
-      const setsArray = this.getSetsFormArray(exerciseControl);
+      const setsArray = this.workoutFormService.getSetsFormArray(exerciseControl);
       const newSet = this.createSyncedSet(setsArray, exerciseControl);
       setsArray.push(newSet);
       this.cdr.detectChanges();
@@ -1637,7 +1430,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       return;
     }
     // After adding, store the index of the newly added set
-    const newSetIndex = this.getSetsFormArray(exerciseControl).controls.length - 1; // Or however you get the index
+    const newSetIndex = this.workoutFormService.getSetsFormArray(exerciseControl).controls.length - 1; // Or however you get the index
     this.newlyAddedSets.set(exIndex, newSetIndex);
 
     // You might want to remove this flag after a short delay
@@ -1656,10 +1449,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       const prevSet = setsArray.at(setsArray.length - 1).value;
       const setData = { ...prevSet };
       delete setData.id; // Ensure new set gets a new ID
-      return this.createSetFormGroup(setData, this.mode === BuilderMode.manualLogEntry);
+      return this.workoutFormService.createSetFormGroup(setData, this.mode === BuilderMode.manualLogEntry);
     } else {
       // If no sets exist, create a blank default one.
-      return this.createSetFormGroup(undefined, this.mode === BuilderMode.manualLogEntry);
+      return this.workoutFormService.createSetFormGroup(undefined, this.mode === BuilderMode.manualLogEntry);
     }
   }
 
@@ -1674,7 +1467,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (this.isViewMode) return;
 
     const supersetId = exerciseControl.get('supersetId')?.value;
-    const setsArray = this.getSetsFormArray(exerciseControl);
+    const setsArray = this.workoutFormService.getSetsFormArray(exerciseControl);
     let actionTaken = false;
 
     // --- CASE 1: It's part of a superset ---
@@ -1719,7 +1512,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         // It's a superset, but not the last round. Remove this round from all sibling exercises.
         this.exercisesFormArray.controls.forEach((ctrl) => {
           if ((ctrl as FormGroup).get('supersetId')?.value === supersetId) {
-            const currentSets = this.getSetsFormArray(ctrl);
+            const currentSets = this.workoutFormService.getSetsFormArray(ctrl);
             if (setIndex < currentSets.length) {
               currentSets.removeAt(setIndex);
             }
@@ -2182,7 +1975,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
       for (let i = 0; i < numberOfSets; i++) {
         // Each new set for this exercise will now inherit the correct rest value.
-        const newSet = this.createSetFormGroup(templateSetData, false);
+        const newSet = this.workoutFormService.createSetFormGroup(templateSetData, false);
         setsArray.push(newSet);
       }
     });
@@ -2388,7 +2181,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             exerciseId: exInput.exerciseId,
             type: setInput.type,
             repsLogged: setInput.repsLogged,
-            weightLogged: weightToExact(this.unitService.convertWeight(getWeightValue(setInput.weightLogged), 'kg', this.unitService.currentWeightUnit())) ?? undefined,
+            weightLogged: setInput.weightLogged ? weightToExact(this.unitService.convertWeight(this.workoutUtilsService.getWeightValue(setInput.weightLogged), 'kg', this.unitService.currentWeightUnit())) : undefined,
             distanceLogged: setInput.distanceLogged,
             durationLogged: setInput.durationLogged,
             restLogged: setInput.restLogged,
@@ -2679,7 +2472,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         supersetId: null,
         supersetOrder: null,
       };
-      const newExerciseFormGroup = this.createExerciseFormGroup(workoutExercise, true, false);
+      const newExerciseFormGroup = this.workoutFormService.createExerciseFormGroup(workoutExercise, true, false);
       this.exercisesFormArray.push(newExerciseFormGroup);
       this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
       this.addRepsListener(newExerciseFormGroup);
@@ -3036,23 +2829,25 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const formControlName = this.getFormControlNameForBuilder(metric);
     if (!formControlName) return; // Failsafe
 
+    const isLogMode = this.mode === BuilderMode.manualLogEntry;
+
     // 1. Get the correct metadata array based on the metric.
     //    We filter for `availableInBuilder` because this is the builder component.
     switch (metric) {
       case METRIC.reps:
-        availableSchemes = REPS_TARGET_SCHEMES.filter(s => s.availableInBuilder);
+        availableSchemes = REPS_TARGET_SCHEMES.filter(s => (s.availableInBuilder && !isLogMode) || s.availableInLogs);
         break;
       case METRIC.weight:
-        availableSchemes = WEIGHT_TARGET_SCHEMES.filter(s => s.availableInBuilder);
+        availableSchemes = WEIGHT_TARGET_SCHEMES.filter(s => (s.availableInBuilder && !isLogMode) || s.availableInLogs);
         break;
       case METRIC.duration:
-        availableSchemes = DURATION_TARGET_SCHEMES.filter(s => s.availableInBuilder);
+        availableSchemes = DURATION_TARGET_SCHEMES.filter(s => (s.availableInBuilder && !isLogMode) || s.availableInLogs);
         break;
       case METRIC.distance:
-        availableSchemes = DISTANCE_TARGET_SCHEMES.filter(s => s.availableInBuilder);
+        availableSchemes = DISTANCE_TARGET_SCHEMES.filter(s => (s.availableInBuilder && !isLogMode) || s.availableInLogs);
         break;
       case METRIC.rest:
-        availableSchemes = REST_TARGET_SCHEMES.filter(s => s.availableInBuilder);
+        availableSchemes = REST_TARGET_SCHEMES.filter(s => (s.availableInBuilder && !isLogMode) || s.availableInLogs);
         break;
       default:
         this.toastService.error(`Scheme editing is not supported for metric: ${metric}`);
@@ -3062,8 +2857,16 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // 2. Get the current value from the correct form control.
     const currentTarget = setControl.get(formControlName)?.value;
 
+    // remove from the availableSchemes the current one
+    availableSchemes = availableSchemes.filter(s => s.type !== currentTarget?.type);
+
+    if (availableSchemes.length === 0) {
+      this.toastService.error(`No further available schemes found for metric: ${metric}. Consider that while logging metric types different from 'exact' are not allowed`, 6000, this.translate.instant('common.error'));
+      return;
+    }
+
     // 3. Call the generic service method, converting undefined to null.
-    const result = await this.workoutService.showSchemeModal(
+    const result = await this.workoutUtilsService.showSchemeModal(
       metric,
       currentTarget ?? null,
       availableSchemes
@@ -3083,12 +2886,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    * @returns The corresponding form control name (e.g., 'targetReps', 'targetWeight').
    */
   private getFormControlNameForBuilder(metric: METRIC): string {
+    const isLoggedMode = this.mode === BuilderMode.manualLogEntry;
     switch (metric) {
-      case METRIC.reps: return 'targetReps';
-      case METRIC.weight: return 'targetWeight';
-      case METRIC.duration: return 'targetDuration';
-      case METRIC.distance: return 'targetDistance';
-      case METRIC.rest: return 'targetRest';
+      case METRIC.reps: return !isLoggedMode ? this.getTargetControlName(METRIC.reps) : this.getLoggedControlName(METRIC.reps);
+      case METRIC.weight: return !isLoggedMode ? this.getTargetControlName(METRIC.weight) : this.getLoggedControlName(METRIC.weight);
+      case METRIC.duration: return !isLoggedMode ? this.getTargetControlName(METRIC.duration) : this.getLoggedControlName(METRIC.duration);
+      case METRIC.distance: return !isLoggedMode ? this.getTargetControlName(METRIC.distance) : this.getLoggedControlName(METRIC.distance);
+      case METRIC.rest: return !isLoggedMode ? this.getTargetControlName(METRIC.rest) : this.getLoggedControlName(METRIC.rest);
       default: return '';
     }
   }
@@ -3128,7 +2932,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // --- ROUTINE BUILDER MODE (Updated Logic) ---
     else {
       // Get the FormArray of sets to work directly with the controls.
-      const setsFormArray = this.getSetsFormArray(exerciseControl);
+      const setsFormArray = this.workoutFormService.getSetsFormArray(exerciseControl);
 
       // Map over each set's form control to get its individual display string (e.g., "30-60").
       const displayValues = setsFormArray.controls.map(setControl =>
@@ -3199,12 +3003,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
 
     const displayValues = sets.map(set => {
-      // Use the generic getSetDisplayValue which can handle both LoggedSet and ExerciseTargetSetParams
-      // by checking for the relevant min/max/single value properties.
+      // Use WorkoutUtilsService for value extraction
       return this.getSetDisplayValue(new FormGroup({
         targetWeight: new FormControl(set.targetWeight || set.weightLogged),
-        targetWeightMin: new FormControl(getWeightValue(set.targetWeight)),
-        targetWeightMax: new FormControl(getWeightValue(set.targetWeight)),
         weightLogged: new FormControl(set.weightLogged)
       }), this.metricEnum.weight);
     });
@@ -3219,10 +3020,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   getSetdurationLogged(loggedEx: any): string {
     if (this.currentLogId) {
       const loggedExActual = loggedEx?.getRawValue() as LoggedWorkoutExercise;
-      return loggedExActual?.sets.map(set => set.durationLogged).join(' - ');
+      return loggedExActual?.sets.map(set => set.durationLogged ? this.workoutUtilsService.getDurationValue(set.durationLogged) : '').join(' - ');
     } else {
       const loggedExActual = loggedEx?.getRawValue() as WorkoutExercise;
-      return loggedExActual?.sets.map(set => set.targetDuration).join(' - ');
+      return loggedExActual?.sets.map(set => set.targetDuration ? this.workoutUtilsService.getDurationValue(set.targetDuration) : '').join(' - ');
     }
   }
 
@@ -3444,7 +3245,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    * @returns A formatted string like "8-12" or "60+", or an empty string if no range is set.
    */
   public getSetTargetDisplay(set: ExerciseTargetSetParams, field: METRIC): string {
-    let stringResult = this.workoutService.getSetTargetDisplay(set, field);
+    let stringResult = this.workoutUtilsService.getSetTargetDisplay(set, field);
 
     if (stringResult.length > 15) {
       stringResult = stringResult.substring(0, 15) + '...';
@@ -3575,7 +3376,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       }
 
       // 3. Apply the correct rest value to EVERY set within this exercise
-      const setsArray = this.getSetsFormArray(exerciseFg);
+      const setsArray = this.workoutFormService.getSetsFormArray(exerciseFg);
       setsArray.controls.forEach(setControl => {
         setControl.patchValue({
           targetRest: correctRestValue,
@@ -3741,7 +3542,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     setsArray.clear();
     for (let i = 0; i < numberOfSets; i++) { // CORRECTED
-      setsArray.push(this.createSetFormGroup(templateSetData, false));
+      setsArray.push(this.workoutFormService.createSetFormGroup(templateSetData, false));
     }
 
     exerciseControl.patchValue({
@@ -3792,7 +3593,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.exercisesFormArray.controls.forEach(ctrl => {
       const fg = ctrl as FormGroup;
       if (fg.get('supersetId')?.value === supersetId) {
-        const setsArray = this.getSetsFormArray(fg);
+        const setsArray = this.workoutFormService.getSetsFormArray(fg);
         // Use our existing helper to create a new set, intelligently copying the last one
         const newSet = this.createSyncedSet(setsArray, ctrl);
 
@@ -3825,7 +3626,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.exercisesFormArray.controls.forEach(ctrl => {
       const fg = ctrl as FormGroup;
       if (fg.get('supersetId')?.value === supersetId) {
-        const setsArray = this.getSetsFormArray(fg);
+        const setsArray = this.workoutFormService.getSetsFormArray(fg);
         // Only remove if there is more than one set
         if (setsArray.length > 1) {
           setsArray.removeAt(setsArray.length - 1);
@@ -3843,83 +3644,111 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   protected checkIfWeightIsVisible(control: any): boolean {
     if (!control) return false;
-    // Handle both AbstractControl and plain object
+
+    const setHasWeightTarget = (set: any): boolean => {
+      return this.workoutUtilsService.isTargetVisible(set?.targetWeight, METRIC.weight);
+    };
+
     if (typeof control.get === 'function') {
-      if (typeof control.getRawValue === 'function' && control.getRawValue() && control.getRawValue()['sets']) {
-        return ((control.getRawValue()['sets'].some((innerControl: any) => innerControl['targetWeight']) ?? 0) > 0) || ((control.getRawValue()['sets'].some((innerControl: any) => innerControl['targetWeightMin']) ?? 0) > 0);
-      } else {
-        return ((control.get('targetWeight')?.value ?? 0) > 0) || ((control.get('targetWeightMin')?.value ?? 0) > 0);
+      const rawValue = typeof control.getRawValue === 'function' ? control.getRawValue() : control.value;
+      if (rawValue && Array.isArray(rawValue.sets)) {
+        return rawValue.sets.some(setHasWeightTarget);
       }
+      return setHasWeightTarget(rawValue);
     }
-    return (control.targetWeight ?? 0) > 0 || (control.targetWeightMin ?? 0) > 0;
+
+    if (control.sets && Array.isArray(control.sets)) {
+      return control.sets.some(setHasWeightTarget);
+    }
+
+    return setHasWeightTarget(control);
   }
   protected checkIfRepsIsVisible(control: any): boolean {
     if (!control) return false;
 
-    // Helper to check if a single set object has a defined rep target.
     const setHasRepsTarget = (set: any): boolean => {
-      // The check is now simple: Does a `targetReps` object exist?
-      // We also keep the legacy check for backward compatibility with older data structures.
-      return !!set?.targetReps;
+      return this.workoutUtilsService.isTargetVisible(set?.targetReps, METRIC.reps);
     };
 
-    // Case 1: The control is an Angular FormGroup or FormArray.
     if (typeof control.get === 'function') {
-      const rawValue = control.getRawValue();
-
-      // If it's an exercise control, it will have a `sets` array.
+      const rawValue = typeof control.getRawValue === 'function' ? control.getRawValue() : control.value;
       if (rawValue && Array.isArray(rawValue.sets)) {
         return rawValue.sets.some(setHasRepsTarget);
       }
-
-      // Otherwise, assume it's a set control.
       return setHasRepsTarget(rawValue);
     }
 
-    // Case 2: The control is a plain JavaScript object.
     if (control.sets && Array.isArray(control.sets)) {
-      // It's an exercise object.
       return control.sets.some(setHasRepsTarget);
     }
 
-    // Otherwise, assume it's a set object.
     return setHasRepsTarget(control);
   }
   protected checkIfDistanceIsVisible(control: any): boolean {
     if (!control) return false;
-    // Handle both AbstractControl and plain object
+
+    const setHasDistanceTarget = (set: any): boolean => {
+      return this.workoutUtilsService.isTargetVisible(set?.targetDistance, METRIC.distance);
+    };
+
     if (typeof control.get === 'function') {
-      if (typeof control.getRawValue === 'function' && control.getRawValue() && control.getRawValue()['sets']) {
-        return ((control.getRawValue()['sets'].some((innerControl: any) => innerControl['targetDistance']) ?? 0) > 0) || ((control.getRawValue()['sets'].some((innerControl: any) => innerControl['targetDistanceMin']) ?? 0) > 0);
-      } else {
-        return ((control.get('targetDistance')?.value ?? 0) > 0) || ((control.get('targetDistanceMin')?.value ?? 0) > 0);
+      const rawValue = typeof control.getRawValue === 'function' ? control.getRawValue() : control.value;
+      if (rawValue && Array.isArray(rawValue.sets)) {
+        return rawValue.sets.some(setHasDistanceTarget);
       }
+      return setHasDistanceTarget(rawValue);
     }
-    return (control.targetDistance ?? 0) > 0 || (control.targetDistanceMin ?? 0) > 0;
+
+    if (control.sets && Array.isArray(control.sets)) {
+      return control.sets.some(setHasDistanceTarget);
+    }
+
+    return setHasDistanceTarget(control);
   }
   protected checkIfDurationIsVisible(control: any): boolean {
     if (!control) return false;
-    // Handle both AbstractControl and plain object
+
+    const setHasDurationTarget = (set: any): boolean => {
+      return this.workoutUtilsService.isTargetVisible(set?.targetDuration, METRIC.duration);
+    };
+
     if (typeof control.get === 'function') {
-      if (typeof control.getRawValue === 'function' && control.getRawValue() && control.getRawValue()['sets']) {
-        return ((control.getRawValue()['sets'].some((innerControl: any) => innerControl['targetDuration']) ?? 0) > 0) || ((control.getRawValue()['sets'].some((innerControl: any) => innerControl['targetDurationMin']) ?? 0) > 0);
-      } else {
-        return ((control.get('targetDuration')?.value ?? 0) > 0) || ((control.get('targetDurationMin')?.value ?? 0) > 0);
+      const rawValue = typeof control.getRawValue === 'function' ? control.getRawValue() : control.value;
+      if (rawValue && Array.isArray(rawValue.sets)) {
+        return rawValue.sets.some(setHasDurationTarget);
       }
+      return setHasDurationTarget(rawValue);
     }
-    return (control.targetDuration ?? 0) > 0 || (control.targetDurationMin ?? 0) > 0;
+
+    if (control.sets && Array.isArray(control.sets)) {
+      return control.sets.some(setHasDurationTarget);
+    }
+
+    return setHasDurationTarget(control);
   }
   protected checkIfRestIsVisible(control: any): boolean {
     if (!control) return false;
-    // Handle both AbstractControl and plain object
+
+    // Helper to check if a set has a visible rest target using WorkoutUtilsService
+    const setHasRestTarget = (set: any): boolean => {
+      return this.workoutUtilsService.isTargetVisible(set?.targetRest, METRIC.rest);
+    };
+
+    // Angular FormGroup or FormArray
     if (typeof control.get === 'function') {
-      if (typeof control.getRawValue === 'function' && control.getRawValue() && control.getRawValue()['sets']) {
-        return ((control.getRawValue()['sets'].some((innerControl: any) => innerControl['targetRest']) ?? 0) > 0);
-      } else {
-        return ((control.get('targetRest')?.value ?? 0) > 0);
+      const rawValue = typeof control.getRawValue === 'function' ? control.getRawValue() : control.value;
+      if (rawValue && Array.isArray(rawValue.sets)) {
+        return rawValue.sets.some(setHasRestTarget);
       }
+      return setHasRestTarget(rawValue);
     }
-    return (control.targetRest ?? 0) > 0;
+
+    // Plain JS object
+    if (control.sets && Array.isArray(control.sets)) {
+      return control.sets.some(setHasRestTarget);
+    }
+
+    return setHasRestTarget(control);
   }
   protected checkIfNotesIsVisible(control: any): boolean {
     if (!control) return false;
@@ -4327,7 +4156,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     event.stopPropagation();
     if (this.isViewMode) return;
 
-    const setsArray = this.getSetsFormArray(exerciseControl);
+    const setsArray = this.workoutFormService.getSetsFormArray(exerciseControl);
     if (setsArray.length === 0) {
       // If there are no sets, there's nothing to remove.
       return;
@@ -4380,7 +4209,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         return;
       }
 
-      const setsFormArray = this.getSetsFormArray(exerciseControl);
+      const setsFormArray = this.workoutFormService.getSetsFormArray(exerciseControl);
 
       // Iterate over the sets currently in the form
       setsFormArray.controls.forEach((setControl, setIndex) => {
@@ -4426,16 +4255,35 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   getSetDistanceDisplay(exerciseControl: AbstractControl): string {
+    // Type guard for DistanceTarget
+    function isDistanceTarget(val: any): val is DistanceTarget {
+      return val !== undefined && val !== null;
+    }
     if (!exerciseControl || !exerciseControl.value || !exerciseControl.value.sets || exerciseControl.value.sets.length === 0) {
       return '';
     }
 
     if (this.mode === BuilderMode.manualLogEntry) {
       const rawValue = exerciseControl.getRawValue() as LoggedWorkoutExercise;
-      const distances = rawValue.sets.map(set => set.distanceLogged).filter(d => d != null && getDistanceValue(d) > 0);
+      if (!rawValue.sets || rawValue.sets.length === 0) {
+        return '';
+      }
+      const distances: string[] = [];
+      for (const set of rawValue.sets) {
+        const d = set?.distanceLogged;
+        if (d == null) continue;
+        const distanceValue = this.workoutUtilsService.getDistanceValue(d);
+        if (typeof distanceValue === 'number' && distanceValue > 0) {
+          if (d.type === 'exact') {
+            distances.push(String(d.value));
+          } else if (d.type === 'range') {
+            distances.push(`${d.min}-${d.max}`);
+          }
+        }
+      }
       return distances.length > 0 ? distances.join('-') : '';
     } else {
-      const setsFormArray = this.getSetsFormArray(exerciseControl);
+      const setsFormArray = this.workoutFormService.getSetsFormArray(exerciseControl);
       const displayValues = setsFormArray.controls.map(setControl => this.getSetDisplayValue(setControl, METRIC.distance));
       const validDisplayValues = displayValues.filter(value => value && value !== '-');
       return validDisplayValues.join(', ');
@@ -4536,7 +4384,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    *          or null if no metrics are uniform or the exercise has no sets.
    */
   public getUniformSetValues(exerciseControl: AbstractControl): UniformSetValues | null {
-    const setsFormArray = this.getSetsFormArray(exerciseControl);
+    const setsFormArray = this.workoutFormService.getSetsFormArray(exerciseControl);
     if (!setsFormArray || setsFormArray.length === 0) {
       return null;
     }
@@ -4550,11 +4398,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       return null; // No metrics are visible, so nothing to compare.
     }
 
-    // 2. Get the reference display values from the very first set.
+    // 2. Get the reference display values from the very first set using formatMetricTarget.
     const firstSet = setsFormArray.at(0) as FormGroup;
     const referenceValues: Partial<Record<METRIC, string>> = {};
     visibleMetrics.forEach(metric => {
-      referenceValues[metric] = this.getSetDisplayValue(firstSet, metric);
+      const formControlName = this.getFormControlName(metric);
+      const control = firstSet.get(formControlName);
+      referenceValues[metric] = control ? this.workoutUtilsService.formatMetricTarget(control.value, metric) : '-';
     });
 
     // 3. Assume all visible metrics are uniform, then disqualify them if a mismatch is found.
@@ -4565,8 +4415,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       const currentSet = setsFormArray.at(i) as FormGroup;
 
       // Only check metrics that are still considered uniform.
-      for (const metric of uniformMetrics) {
-        const currentValue = this.getSetDisplayValue(currentSet, metric);
+      for (const metric of Array.from(uniformMetrics)) {
+        const formControlName = this.getFormControlName(metric);
+        const control = currentSet.get(formControlName);
+        const currentValue = control ? this.workoutUtilsService.formatMetricTarget(control.value, metric) : '-';
         if (currentValue !== referenceValues[metric]) {
           // A mismatch was found. This metric is not uniform.
           uniformMetrics.delete(metric);
@@ -4597,50 +4449,37 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
 
+  getFieldsForSet(exIndex: number, setIndex: number): { visible: string[], hidden: string[] } {
+    const routine = this.liveFormAsRoutine();
+    if (!routine) return this.workoutUtilsService.defaultHiddenFields();
+    return this.workoutUtilsService.getFieldsForSet(routine, exIndex, setIndex);
+  }
   public async promptRemoveField(exIndex: number, setIndex: number): Promise<void> {
     const currentRoutine = this.liveFormAsRoutine();
     if (!currentRoutine) return;
 
-    const updatedRoutine = await this.workoutService.promptRemoveField(currentRoutine, exIndex, setIndex);
+    const isLogMode = this.mode === BuilderMode.manualLogEntry;
+    const updatedRoutine = await this.workoutUtilsService.promptRemoveField(currentRoutine, exIndex, setIndex, isLogMode);
 
     if (updatedRoutine) {
-      // Get the updated set data (with the field removed) from the routine returned by the service
       const updatedSetData = updatedRoutine.exercises[exIndex].sets[setIndex];
-
-      // Get the FormArray for the sets of the specific exercise
-      const setsFormArray = this.getSetsFormArray(this.exercisesFormArray.at(exIndex));
-
-      // Create a brand new FormGroup based on this updated data structure
-      const newSetFormGroup = this.createSetFormGroup(updatedSetData, this.mode === BuilderMode.manualLogEntry);
-
-      // Replace the old FormGroup at the specified index with the new one
+      const setsFormArray = this.workoutFormService.getSetsFormArray(this.exercisesFormArray.at(exIndex));
+      const newSetFormGroup = this.workoutFormService.createSetFormGroup(updatedSetData, this.mode === BuilderMode.manualLogEntry);
       setsFormArray.setControl(setIndex, newSetFormGroup);
     }
-  }
-
-  getFieldsForSet(exIndex: number, setIndex: number): { visible: string[], hidden: string[] } {
-    const routine = this.liveFormAsRoutine();
-    if (!routine) return this.workoutService.defaultHiddenFields();
-    return this.workoutService.getFieldsForSet(routine, exIndex, setIndex);
   }
 
   public async promptAddField(exIndex: number, setIndex: number): Promise<void> {
     const currentRoutine = this.liveFormAsRoutine();
     if (!currentRoutine) return;
 
-    const updatedRoutine = await this.workoutService.promptAddField(currentRoutine, exIndex, setIndex);
+    const isLogMode = this.mode === BuilderMode.manualLogEntry;
+    const updatedRoutine = await this.workoutUtilsService.promptAddField(currentRoutine, exIndex, setIndex, isLogMode);
 
     if (updatedRoutine) {
-      // Get the updated set data from the routine returned by the service
       const updatedSetData = updatedRoutine.exercises[exIndex].sets[setIndex];
-
-      // Get the FormArray for the sets of the specific exercise
-      const setsFormArray = this.getSetsFormArray(this.exercisesFormArray.at(exIndex));
-
-      // Create a brand new FormGroup for the set
-      const newSetFormGroup = this.createSetFormGroup(updatedSetData, this.mode === BuilderMode.manualLogEntry);
-
-      // Replace the old FormGroup with the new one
+      const setsFormArray = this.workoutFormService.getSetsFormArray(this.exercisesFormArray.at(exIndex));
+      const newSetFormGroup = this.workoutFormService.createSetFormGroup(updatedSetData, this.mode === BuilderMode.manualLogEntry);
       setsFormArray.setControl(setIndex, newSetFormGroup);
     }
   }
@@ -4655,7 +4494,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   public getVisibleColumnsForExercise(exIndex: number): { [key: string]: boolean } {
     const routine = this.liveFormAsRoutine();
     if (!routine) return {};
-    return this.workoutService.getVisibleExerciseColumns(routine, exIndex);
+    const isLogMode = this.mode === BuilderMode.manualLogEntry;
+    return this.workoutUtilsService.getVisibleExerciseColumns(routine, exIndex, isLogMode);
   }
 
   /**
@@ -4732,7 +4572,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     // --- 2. Determine Background Color Class ---
     const exerciseControl = this.exercisesFormArray.at(exIndex);
-    const setsFormArray = this.getSetsFormArray(exerciseControl);
+    const setsFormArray = this.workoutFormService.getSetsFormArray(exerciseControl);
     const setControl = setsFormArray.at(setIndex);
     if (!(setControl instanceof FormGroup)) {
       return `grid ${gridClass} bg-white dark:bg-gray-800`; // Fallback if not a FormGroup
@@ -4815,7 +4655,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.exercisesFormArray.clear({ emitEvent: false });
     const exercises = state.exercises || [];
     exercises.forEach((exerciseData: any) => {
-      const exerciseGroup = this.createExerciseFormGroup(exerciseData, true, this.mode === BuilderMode.manualLogEntry);
+      const exerciseGroup = this.workoutFormService.createExerciseFormGroup(exerciseData, true, this.mode === BuilderMode.manualLogEntry);
       this.exercisesFormArray.push(exerciseGroup, { emitEvent: false });
     });
 
@@ -4974,7 +4814,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    */
   applyToAllSets(exIndex: number): void {
     const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
-    const setsArray = this.getSetsFormArray(exerciseControl);
+    const setsArray = this.workoutFormService.getSetsFormArray(exerciseControl);
     const patchData: { [key: string]: any } = {};
     const metricsToApply: METRIC[] = [];
 
@@ -5121,6 +4961,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   onLongPressIncrement(setControl: AbstractControl, field: METRIC): void {
+    this.isLongPressing = true;
     this.intervalId = setInterval(() => this.incrementValue(setControl, field), 200);
   }
 
@@ -5129,10 +4970,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   onLongPressDecrement(setControl: AbstractControl, field: METRIC): void {
+    this.isLongPressing = true;
     this.intervalId = setInterval(() => this.decrementValue(setControl, field), 200);
   }
 
   onPressRelease(): void {
+    this.isLongPressing = false;
     if (this.intervalId) {
       clearInterval(this.intervalId);
       this.intervalId = null;
@@ -5155,17 +4998,26 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       switch (value.type) {
         case 'exact':
         case 'min_plus':
-          control.patchValue({ ...value, value: Math.max(0, (value.value || 0) + step) });
+          // Use 'seconds' for duration/rest, 'value' for others
+          const fieldKey = value.seconds !== undefined ? 'seconds' : 'value';
+          control.patchValue({ ...value, [fieldKey]: Math.max(0, (value[fieldKey] || 0) + step) });
           break;
         case 'range':
-          // Increment both min and max if present
-          control.patchValue({
-            ...value,
-            min: value.min != null ? Math.max(0, value.min + step) : value.min,
-            max: value.max != null ? Math.max(0, value.max + step) : value.max,
-            minSeconds: value.minSeconds != null ? Math.max(0, value.minSeconds + step) : value.minSeconds,
-            maxSeconds: value.maxSeconds != null ? Math.max(0, value.maxSeconds + step) : value.maxSeconds,
-          });
+          if (isTime) {
+            // For time ranges, update minSeconds and maxSeconds
+            control.patchValue({
+              ...value,
+              minSeconds: value.minSeconds != null ? Math.max(0, value.minSeconds + step) : value.minSeconds,
+              maxSeconds: value.maxSeconds != null ? Math.max(0, value.maxSeconds + step) : value.maxSeconds,
+            });
+          } else {
+            // For other ranges, update min and max
+            control.patchValue({
+              ...value,
+              min: value.min != null ? Math.max(0, value.min + step) : value.min,
+              max: value.max != null ? Math.max(0, value.max + step) : value.max,
+            });
+          }
           break;
         case 'percentage_1rm':
           control.patchValue({ ...value, percentage: Math.min(100, (value.percentage || 0) + step) });
@@ -5184,7 +5036,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     setControl.markAsDirty();
     const setId = setControl.get('id')?.value;
-    if (setId) this.triggerAnimation(setId);
+    if (setId && !this.isLongPressing) this.triggerAnimation(setId);
   }
 
   private decrementValue(setControl: AbstractControl, field: METRIC): void {
@@ -5203,17 +5055,26 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       switch (value.type) {
         case 'exact':
         case 'min_plus':
-          control.patchValue({ ...value, value: Math.max(0, (value.value || 0) - step) });
+          // Use 'seconds' for duration/rest, 'value' for others
+          const fieldKey = value.seconds !== undefined ? 'seconds' : 'value';
+          control.patchValue({ ...value, [fieldKey]: Math.max(0, (value[fieldKey] || 0) - step) });
           break;
         case 'range':
-          // Decrement both min and max if present
-          control.patchValue({
-            ...value,
-            min: value.min != null ? Math.max(0, value.min - step) : value.min,
-            max: value.max != null ? Math.max(0, value.max - step) : value.max,
-            minSeconds: value.minSeconds != null ? Math.max(0, value.minSeconds - step) : value.minSeconds,
-            maxSeconds: value.maxSeconds != null ? Math.max(0, value.maxSeconds - step) : value.maxSeconds,
-          });
+          if (isTime) {
+            // For time ranges, update minSeconds and maxSeconds
+            control.patchValue({
+              ...value,
+              minSeconds: value.minSeconds != null ? Math.max(0, value.minSeconds - step) : value.minSeconds,
+              maxSeconds: value.maxSeconds != null ? Math.max(0, value.maxSeconds - step) : value.maxSeconds,
+            });
+          } else {
+            // For other ranges, update min and max
+            control.patchValue({
+              ...value,
+              min: value.min != null ? Math.max(0, value.min - step) : value.min,
+              max: value.max != null ? Math.max(0, value.max - step) : value.max,
+            });
+          }
           break;
         case 'percentage_1rm':
           control.patchValue({ ...value, percentage: Math.max(0, (value.percentage || 0) - step) });
@@ -5232,7 +5093,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     setControl.markAsDirty();
     const setId = setControl.get('id')?.value;
-    if (setId) this.triggerAnimation(setId);
+    if (setId && !this.isLongPressing) this.triggerAnimation(setId);
   }
 
   protected getFormControlName(field: METRIC): string {
@@ -5257,33 +5118,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    */
   public getSetMetricDisplayValue(setControl: AbstractControl, field: METRIC): string {
     if (!(setControl instanceof FormGroup)) return '-';
-
     const formControlName = this.getFormControlName(field);
     const control = setControl.get(formControlName);
-
     if (!control || control.value == null) {
       return '-';
     }
+    const isLogMode = this.mode === BuilderMode.manualLogEntry;
 
-    // --- Special handling for Reps in Builder Mode ---
-    if (field === METRIC.reps && this.mode === BuilderMode.routineBuilder) {
-      // The value is a RepsTarget object, so we use our helper to format it.
-      return repsTargetAsString(control.value);
-    }
-
-    if (field === METRIC.duration) {
-      return durationTargetAsString(control.value);
-    }
-    if (field === METRIC.rest) {
-      return restTargetAsString(control.value);
-    }
-    if (field === METRIC.weight) {
-      return weightTargetAsString(control.value);
-    }
-    if (field === METRIC.distance) {
-      return distanceTargetAsString(control.value);
-    }
-    return control.value.toString();
+    return this.workoutUtilsService.formatMetricTarget(control.value, field, isLogMode);
   }
 
   // Helper to parse "mm:ss" strings from user input
@@ -5296,36 +5138,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   protected getExerciseSetsLength(exIndex: number): number {
     const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
     if (!exerciseControl) return 0;
-    const setsArray = this.getSetsFormArray(exerciseControl);
+    const setsArray = this.workoutFormService.getSetsFormArray(exerciseControl);
     if (!setsArray) return 0;
     return setsArray.length;
   }
-
-  /**
-   * Formats any metric target object into a user-friendly string for display.
-   * @param target The metric target object from the form or model.
-   * @param metric The METRIC enum value (e.g., METRIC.reps, METRIC.rest).
-   * @returns A string like "10", "8-12", "60s", etc.
-   */
-  formatMetricTarget(target: any, metric: METRIC): string {
-    switch (metric) {
-      case METRIC.reps:
-        return repsTargetAsString(target);
-      case METRIC.rest:
-        return restTargetAsString(target);
-      case METRIC.weight:
-        return weightTargetAsString(target);
-      case METRIC.duration:
-        return durationTargetAsString(target);
-      case METRIC.distance:
-        return distanceTargetAsString(target);
-      case METRIC.tempo:
-        return target ? String(target) : '-';
-      default:
-        return target != null ? String(target) : '-';
-    }
-  }
-
 
   /**
  * Generic method to update a target object (range/exact/min_plus) for any metric.
@@ -5416,26 +5232,44 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private newlyAddedSets = new Map<number, number>();
 
 
-  private targetMinValidator(minValue: number = 0): ValidatorFn {
-    return (control: AbstractControl): ValidationErrors | null => {
-      const value = control.value;
-      if (!value || typeof value !== 'object') return null;
-
-      // For 'exact' and 'min_plus' types, check 'value'
-      if ((value.type === 'exact' || value.type === 'min_plus') && typeof value.value === 'number' && value.value < minValue) {
-        return { min: true };
-      }
-
-      // For 'range' types, check 'min' or 'minSeconds'
-      if (value.type === 'range') {
-        const min = value.min ?? value.minSeconds;
-        if (typeof min === 'number' && min < minValue) {
-          return { min: true };
-        }
-      }
-
-      return null;
-    };
+  // In workout-builder.ts
+  getMetricDisplayValue(setControl: AbstractControl, metric: METRIC): string {
+    const targetValue = setControl.get(this.getTargetControlName(metric))?.value;
+    const loggedValue = setControl.get(this.getLoggedControlName(metric))?.value;
+    const value = this.mode === BuilderMode.routineBuilder ? targetValue : loggedValue;
+    return this.workoutUtilsService.formatMetricTarget(value, metric) || '-';
   }
+
+  private getTargetControlName(metric: METRIC): string {
+    switch (metric) {
+      case METRIC.reps: return 'targetReps';
+      case METRIC.weight: return 'targetWeight';
+      case METRIC.duration: return 'targetDuration';
+      case METRIC.distance: return 'targetDistance';
+      case METRIC.rest: return 'targetRest';
+      default: return '';
+    }
+  }
+
+  private getLoggedControlName(metric: METRIC): string {
+    switch (metric) {
+      case METRIC.reps: return 'repsLogged';
+      case METRIC.weight: return 'weightLogged';
+      case METRIC.duration: return 'durationLogged';
+      case METRIC.distance: return 'distanceLogged';
+      case METRIC.rest: return 'restLogged';
+      default: return '';
+    }
+  }
+
+  getMetricLabel(field: METRIC): string {
+    // Assuming METRIC is an enum like { reps: 0, weight: 1, duration: 2, ... }
+    const metricKeys: any = Object.keys(METRIC) as (keyof typeof METRIC)[];
+    const metricName = metricKeys[field];
+    return 'metrics.' + metricName;
+  }
+
+  protected readonly BuilderMode = BuilderMode;
+  private isLongPressing = false;
 
 }

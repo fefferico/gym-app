@@ -20,6 +20,7 @@ import { getDistanceValue, getDurationValue, getWeightValue, repsTypeToReps } fr
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
 import { RepsTarget } from '../../../core/models/workout.model';
+import { WorkoutUtilsService } from '../../../core/services/workout-utils.service';
 
 
 // Interface to combine PB data with Exercise details
@@ -67,6 +68,7 @@ export class PersonalBestsComponent implements OnInit {
   private toastService = inject(ToastService);
   private platformId = inject(PLATFORM_ID);
   private workoutService = inject(WorkoutService);
+  private workoutUtilsService = inject(WorkoutUtilsService);
   private translate = inject(TranslateService);
 
   // Signals for raw data
@@ -260,7 +262,7 @@ export class PersonalBestsComponent implements OnInit {
       if (effectivePbType.includes('Max Duration')) {
         if (item.durationLogged != null) {
           // Use the consistent time formatter from the workout service
-          return this.workoutService.formatSecondsToTime(item.durationLogged);
+          return this.workoutUtilsService.formatSecondsToTime(item.durationLogged);
         }
       }
       if (effectivePbType.includes('Max Distance')) {
@@ -283,7 +285,7 @@ export class PersonalBestsComponent implements OnInit {
       return `${item.repsLogged} ${this.translate.instant('personalBests.units.reps')}`;
     }
     if (item.durationLogged != null && item.durationLogged > 0) {
-      return this.workoutService.formatSecondsToTime(item.durationLogged);
+      return this.workoutUtilsService.formatSecondsToTime(item.durationLogged);
     }
     if (item.distanceLogged != null && item.distanceLogged > 0) {
       return `${item.distanceLogged} ${this.unitsService.getDistanceMeasureUnitSuffix()}`;

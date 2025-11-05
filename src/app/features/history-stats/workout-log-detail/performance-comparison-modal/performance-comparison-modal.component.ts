@@ -13,6 +13,7 @@ import { DistanceTarget, DurationTarget, RepsTarget, WeightTarget } from '../../
 import { LanguageService } from '../../../../core/services/language.service';
 import { Locale } from 'date-fns';
 import { ar, de, enUS, es, fr, it, ja, pt, ru, zhCN } from 'date-fns/locale';
+import { WorkoutUtilsService } from '../../../../core/services/workout-utils.service';
 
 // Interfaces for data structure
 interface PerformanceSummary {
@@ -78,6 +79,7 @@ export class PerformanceComparisonModalComponent {
     protected weightUnitPipe = inject(WeightUnitPipe);
     protected decimalPipe = inject(DecimalPipe);
     private translate = inject(TranslateService);
+    private workoutUtilsService = inject(WorkoutUtilsService);
 
     // --- INPUTS ---
     public readonly exerciseSignal = signal<DisplayLoggedExercise | undefined>(undefined);
@@ -453,20 +455,19 @@ export class PerformanceComparisonModalComponent {
     return rows;
   }
 
-  repsTargetRepsToReps(targetReps: RepsTarget | undefined): number {
-    return repsTypeToReps(targetReps);
+  getRepsValue(targetReps: RepsTarget | undefined): number {
+    return this.workoutUtilsService.getRepsValue(targetReps) || 0;
   }
 
-  
-        getDurationValue(duration: DurationTarget | undefined): number {
-        return getDurationValue(duration);
-      }
-    
-        getWeightValue(duration: WeightTarget | undefined): number {
-        return getWeightValue(duration);
-      }
-    
-        getDistanceValue(distance: DistanceTarget | undefined): number {
-        return getDistanceValue(distance);
-      }
+  getDurationValue(duration: DurationTarget | undefined): number {
+    return this.workoutUtilsService.getDurationValue(duration) || 0;
+  }
+
+  getWeightValue(weight: WeightTarget | undefined): number {
+    return this.workoutUtilsService.getWeightValue(weight) || 0;
+  }
+
+  getDistanceValue(distance: DistanceTarget | undefined): number {
+    return this.workoutUtilsService.getDistanceValue(distance) || 0;
+  }
 }

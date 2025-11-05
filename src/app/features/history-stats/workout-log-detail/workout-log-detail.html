@@ -281,29 +281,29 @@
                     <!-- Reps -->
                     <div *ngIf="checkIfRepsAvailable(item)"><strong [ngClass]="checkTextClass(set, metricEnum.reps)"
                         [class.cursor-pointer]="true"
-                        (click)="showComparisonModal(set, metricEnum.reps)">{{ repsTargetRepsToReps(set.repsLogged) || '-' }}</strong></div>
+                        (click)="showComparisonModal(set, metricEnum.reps)">{{ workoutUtilsService.getRepsValue(set.repsLogged) || '-' }}</strong></div>
 
                     <!-- Weight -->
                     <div *ngIf="checkIfWeightAvailable(item)"><strong [ngClass]="checkTextClass(set, metricEnum.weight)"
                         [class.cursor-pointer]="true"
-                        (click)="showComparisonModal(set, metricEnum.weight)">{{ getWeightDisplay(item, set) }}</strong></div>
+                        (click)="showComparisonModal(set, metricEnum.weight)">{{ workoutUtilsService.getWeightValue(set.weightLogged) || '-' }}</strong></div>
 
                     <!-- Distance +++ -->
                     <div *ngIf="checkIfDistanceAvailable(item)">
                       <strong [ngClass]="checkTextClass(set, metricEnum.distance)"
                         [class.cursor-pointer]="true"
-                        (click)="showComparisonModal(set, metricEnum.distance)">{{set.distanceLogged ?? '-' }}</strong>
+                        (click)="showComparisonModal(set, metricEnum.distance)">{{ workoutUtilsService.getDistanceValue(set.distanceLogged) || '-' }}</strong>
                     </div>
 
                     <!-- Time -->
                     <div *ngIf="checkIfDurationAvailable(item)"><strong [ngClass]="checkTextClass(set, metricEnum.duration)"
                         [class.cursor-pointer]="true"
-                        (click)="showComparisonModal(set, metricEnum.duration)">{{ set.durationLogged ?? '-' }}</strong></div>
+                        (click)="showComparisonModal(set, metricEnum.duration)">{{ workoutUtilsService.getDurationValue(set.durationLogged) || '-' }}</strong></div>
 
                     <!-- Rest -->
                     <div><strong [ngClass]="checkTextClass(set, metricEnum.rest)"
                         [class.cursor-pointer]="true"
-                        (click)="showComparisonModal(set, metricEnum.rest)">{{ set.restLogged ?? '-' }}</strong></div>
+                        (click)="showComparisonModal(set, metricEnum.rest)">{{ workoutUtilsService.getRestValue(set.restLogged) || '-' }}</strong></div>
 
                     <!-- Notes -->
                     <div *ngIf="set.notes" class="cursor-pointer dark:text-white">

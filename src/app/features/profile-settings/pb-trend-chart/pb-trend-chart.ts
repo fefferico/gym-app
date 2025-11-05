@@ -16,6 +16,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { WorkoutService } from '../../../core/services/workout.service';
 import { repsTypeToReps } from '../../../core/services/workout-helper.service';
+import { WorkoutUtilsService } from '../../../core/services/workout-utils.service';
 
 interface ChartSeriesPoint {
     name: Date;
@@ -61,7 +62,7 @@ export class PbTrendChartComponent implements OnInit {
     private renderer = inject(Renderer2);
     private el = inject(ElementRef);
     private translate = inject(TranslateService);
-    private workoutService = inject(WorkoutService);
+    private workoutUtilsService = inject(WorkoutUtilsService);
     private themeSubscription: Subscription | undefined;
 
     chartData = signal<ChartData[] | null>(null);
@@ -297,7 +298,7 @@ private setYAxisLabel(pbType: string): void {
     public formatTableValue(record: ChartSeriesPoint): string {
         // If the PB is for duration, format the value as mm:ss
         if (this.currentPbType?.includes('Max Duration')) {
-            return this.workoutService.formatSecondsToTime(record.value) || record.value.toString();
+            return this.workoutUtilsService.formatSecondsToTime(record.value) || record.value.toString();
         }
         // Otherwise, return the value as a standard string
         return record.value.toString();

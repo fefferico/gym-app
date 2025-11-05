@@ -6,7 +6,7 @@
 <div class="container mx-auto">
     <header class="flex items-center justify-between p-2">
         <div class="flex justify-between items-center">
-            <button [routerLink]="mode === 'routineBuilder' ? '/workout' : '/history/list'"
+            <button [routerLink]="mode === BuilderMode.routineBuilder ? '/workout' : '/history/list'"
                 class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
                 <app-icon name="back"></app-icon>
             </button>
@@ -36,7 +36,7 @@
     <form [formGroup]="builderForm" class="space-y-6 mb-6 p-1 rounded-xl shadow-xl overflow-hidden min-h-screen">
         <section class="space-y-2 p-2 rounded-xl shadow-sm dark:shadow-none text-gray-700 dark:text-gray-200">
             <!-- ROUTINE BUILDER FIELDS -->
-            <ng-container *ngIf="mode === 'routineBuilder'">
+            <ng-container *ngIf="mode === BuilderMode.routineBuilder">
                 <!-- ROUTINE NAME -->
                 <div *ngIf="isViewMode">
                     <label
@@ -190,7 +190,7 @@
             </ng-container>
 
             <!-- MANUAL LOG ENTRY FIELDS -->
-            <ng-container *ngIf="mode === 'manualLogEntry'">
+            <ng-container *ngIf="mode === BuilderMode.manualLogEntry">
                 <!-- HEADER FOR LOG -->
                 <header *ngIf="checkIfLogForProgram()" class="flex items-center justify-between py-2">
                     <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">
@@ -305,7 +305,7 @@
             </ng-container>
         </section>
 
-        <section *ngIf="mode === 'manualLogEntry' || builderForm.get('goal')?.value !== metricEnum.rest">
+        <section *ngIf="mode === BuilderMode.manualLogEntry || builderForm.get('goal')?.value !== metricEnum.rest">
             <div *ngIf="exercisesFormArray.length>0" cdkDropList [cdkDropListData]="exercisesFormArray.controls"
                 (cdkDropListDropped)="onExerciseDrop($event)" [cdkDropListDisabled]="!isEditableMode()"
                 formArrayName="exercises" class="exercise-list-container">
@@ -362,7 +362,7 @@
                                             {{ 'workoutBuilder.superset.rounds' | translate }}:
                                         </span>
                                         <strong class="text-lg text-gray-900 dark:text-white">{{
-                                            getSetsFormArray(exerciseControl).length }}</strong>
+                                            workoutFormService.getSetsFormArray(exerciseControl).length }}</strong>
                                     </div>
 
                                     <!-- Col 1: Type Label -->
@@ -422,7 +422,7 @@
                                     <div *ngIf="!shouldShowExpandedExercise(exIndex)"
                                         class="flex-grow min-w-0 py-2 px-0">
                                         <!-- COMPACT: Show SETS SUMMARY if in compact view -->
-                                        <div *ngIf="getSetsFormArray(exerciseControl).controls.length > 0"
+                                        <div *ngIf="workoutFormService.getSetsFormArray(exerciseControl).controls.length > 0"
                                             class="flex items-center text-s text-gray-500 dark:text-gray-400 mt-0.5 gap-4 pl-2">
                                             <!-- <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
                                                 alt="Exercise Icon" class="w-6 h-6 sm:w-8 sm:h-8 object-contain"> -->
@@ -494,7 +494,7 @@
                                                                         <app-icon name="duration"
                                                                             class="h-4 w-4 mr-1"></app-icon>
                                                                         {{
-                                                                        workoutService.formatSecondsToTime(uniformValues.duration)
+                                                                        workoutUtilsService.formatSecondsToTime(uniformValues.duration)
                                                                         }}
                                                                     </span>
                                                                 </ng-container>
@@ -510,7 +510,7 @@
                                                                         <app-icon name="rest"
                                                                             class="h-4 w-4 mr-1"></app-icon>
                                                                         {{
-                                                                        workoutService.formatSecondsToTime(uniformValues.rest)
+                                                                        workoutUtilsService.formatSecondsToTime(uniformValues.rest)
                                                                         }}
                                                                     </span>
                                                                 </ng-container>
@@ -597,7 +597,8 @@
                                     <div *ngIf="expandedExerciseNotes() === exIndex">
                                         <label [for]="'exerciseNotes-' + exIndex"
                                             class="block text-s font-medium text-gray-600 dark:text-gray-400 mb-0.5">
-                                            {{ (mode === 'routineBuilder' ? 'workoutBuilder.exercise.notesLabel' :
+                                            {{ (mode === BuilderMode.routineBuilder ?
+                                            'workoutBuilder.exercise.notesLabel' :
                                             'workoutBuilder.exercise.loggedNotesLabel') | translate }}
                                         </label>
                                         <textarea [id]="'exerciseNotes-' + exIndex" formControlName="notes" rows="1"
@@ -659,7 +660,8 @@
                                             <!-- Reps Data Cell -->
                                             <div *ngIf="checkIfRepsIsVisible(set)"
                                                 class="flex items-center justify-center">
-                                                <strong>{{ formatMetricTarget(set.targetReps, metricEnum.reps) || '-'
+                                                <strong>{{ workoutUtilsService.formatMetricTarget(set.targetReps,
+                                                    metricEnum.reps) || '-'
                                                     }}</strong>
                                             </div>
 
@@ -728,7 +730,8 @@
                                                     {{ 'workoutBuilder.set.totalSets' | translate }}:
                                                 </span>
                                                 <strong class="text-lg text-gray-900 dark:text-white">{{
-                                                    getSetsFormArray(exerciseControl).length }}</strong>
+                                                    workoutFormService.getSetsFormArray(exerciseControl).length
+                                                    }}</strong>
                                             </div>
 
                                             <!-- +++ START: NEW COLLAPSIBLE "SET ALL" PANEL +++ -->
@@ -862,7 +865,7 @@
                                                 </div>
                                             </ng-container>
                                             <!-- Loop through sets for collapsed or expanded display -->
-                                            <div *ngFor="let setControl of getSetsFormArray(exerciseControl).controls; let setIndex = index"
+                                            <div *ngFor="let setControl of workoutFormService.getSetsFormArray(exerciseControl).controls; let setIndex = index"
                                                 #setElement [formGroupName]="setIndex"
                                                 [class.add-set-animated]="isNewlyAdded(exIndex, setIndex)">
 
@@ -886,55 +889,30 @@
                                                                 <div class="flex items-center justify-start gap-x-4">
                                                                     <div *ngIf="visibleCols[metricEnum.reps]"
                                                                         class="w-16 text-s text-center truncate">
-                                                                        {{ mode === 'routineBuilder' ?
-                                                                        formatMetricTarget(setControl.get('targetReps')?.value,
-                                                                        metricEnum.reps)
-                                                                        :
-                                                                        (setControl.get('repsLogged')?.value ?? '-')
-                                                                        }}
+                                                                        {{ getMetricDisplayValue(setControl,
+                                                                        metricEnum.reps) }}
                                                                     </div>
                                                                     <div *ngIf="visibleCols[metricEnum.weight]"
                                                                         class="w-20 text-s text-center truncate">
-                                                                        {{ mode === 'routineBuilder' ?
-                                                                        getSetDisplayValue(setControl,
-                                                                        metricEnum.weight)
-                                                                        :
-                                                                        (setControl.get('weightLogged')?.value ?? '-')
-                                                                        }}
+                                                                        {{ getMetricDisplayValue(setControl,
+                                                                        metricEnum.weight) }}
                                                                     </div>
                                                                     <div *ngIf="visibleCols[metricEnum.distance]"
                                                                         class="w-20 text-s text-center truncate">
-                                                                        {{ mode === 'routineBuilder' ?
-                                                                        getSetDisplayValue(setControl,
-                                                                        metricEnum.distance)
-                                                                        :
-                                                                        (setControl.get('distanceLogged')?.value ?? '-')
-                                                                        }}
+                                                                        {{ getMetricDisplayValue(setControl,
+                                                                        metricEnum.distance) }}
                                                                     </div>
                                                                     <div *ngIf="visibleCols[metricEnum.duration]"
                                                                         class="w-16 text-s text-center truncate">
-                                                                        {{ mode === 'routineBuilder' ?
-                                                                        getSetDisplayValue(setControl,
-                                                                        metricEnum.duration)
-                                                                        :
-                                                                        (setControl.get('durationLogged')?.value ?? '-')
-                                                                        }}
+                                                                        {{ getMetricDisplayValue(setControl,
+                                                                        metricEnum.duration) }}
                                                                     </div>
                                                                     <div *ngIf="visibleCols[metricEnum.rest]"
                                                                         class="w-24 text-s text-center truncate">
-                                                                        {{ mode === 'routineBuilder' ?
-                                                                        getSetDisplayValue(setControl, metricEnum.rest)
-                                                                        :
-                                                                        (setControl.get('restLogged')?.value ?? '-')
-                                                                        }}
+                                                                        {{ getMetricDisplayValue(setControl,
+                                                                        metricEnum.rest) }}
                                                                     </div>
-                                                                    <!-- <div id="notes" *ngIf="setControl?.value?.notes"
-                                                                        class="w-16 text-s text-center truncate">
-                                                                        {{ mode === 'routineBuilder' ?
-                                                                        ((setControl.get('notes')?.value) ?
-                                                                        (setControl.get('notes')?.value) : '-') : ''
-                                                                        }}
-                                                                    </div> -->
+
                                                                 </div>
                                                             </div>
 
@@ -1023,37 +1001,21 @@
                                                                 <!-- Use ng-container with ngSwitch to render the correct template for each field -->
                                                                 <ng-container [ngSwitch]="field">
                                                                     <div *ngSwitchCase="metricEnum.reps">
-                                                                        <!-- <ng-container
-                                                                            [ngTemplateOutlet]="repsInputTemplate"
-                                                                            [ngTemplateOutletContext]="{exerciseControl: exerciseControl, setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container> -->
                                                                         <ng-container
                                                                             [ngTemplateOutlet]="metricInputTemplate"
                                                                             [ngTemplateOutletContext]="{ setControl: setControl, field: metricEnum.reps }"></ng-container>
                                                                     </div>
                                                                     <div *ngSwitchCase="metricEnum.weight">
-                                                                        <!-- <ng-container
-                                                                            [ngTemplateOutlet]="weightInputTemplate"
-                                                                            [ngTemplateOutletContext]="{exerciseControl: exerciseControl, setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container> -->
                                                                         <ng-container
                                                                             [ngTemplateOutlet]="metricInputTemplate"
                                                                             [ngTemplateOutletContext]="{ setControl: setControl, field: metricEnum.weight }"></ng-container>
                                                                     </div>
                                                                     <div *ngSwitchCase="metricEnum.distance">
-                                                                        <!-- <ng-container>
-                                                                            <ng-container
-                                                                                [ngTemplateOutlet]="distanceInputTemplate"
-                                                                                [ngTemplateOutletContext]="{exerciseControl: exerciseControl, setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
-                                                                        </ng-container> -->
                                                                         <ng-container
                                                                             [ngTemplateOutlet]="metricInputTemplate"
                                                                             [ngTemplateOutletContext]="{ setControl: setControl, field: metricEnum.distance }"></ng-container>
                                                                     </div>
                                                                     <div *ngSwitchCase="metricEnum.duration">
-                                                                        <!-- <ng-container>
-                                                                            <ng-container
-                                                                                [ngTemplateOutlet]="durationInputTemplate"
-                                                                                [ngTemplateOutletContext]="{exerciseControl: exerciseControl, setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
-                                                                        </ng-container> -->
                                                                         <ng-container
                                                                             [ngTemplateOutlet]="metricInputTemplate"
                                                                             [ngTemplateOutletContext]="{ setControl: setControl, field: metricEnum.duration }"></ng-container>
@@ -1064,9 +1026,6 @@
                                                                             [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
                                                                     </div>
                                                                     <div *ngSwitchCase="metricEnum.rest">
-                                                                        <!-- <ng-container
-                                                                            [ngTemplateOutlet]="restInputTemplate"
-                                                                            [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container> -->
                                                                         <ng-container
                                                                             [ngTemplateOutlet]="metricInputTemplate"
                                                                             [ngTemplateOutletContext]="{ setControl: setControl, field: metricEnum.rest }"></ng-container>
@@ -1095,7 +1054,8 @@
                                                     <div *ngIf="setControl.get('notes')?.value">
                                                         <label [for]="'setNotes-' + exIndex + setIndex"
                                                             class="block text-s font-medium text-gray-600 dark:text-gray-400 mb-0.5">
-                                                            {{ (mode === 'routineBuilder' ? 'workoutBuilder.set.notes' :
+                                                            {{ (mode === BuilderMode.routineBuilder ?
+                                                            'workoutBuilder.set.notes' :
                                                             'workoutBuilder.set.notes') | translate }}
                                                         </label>
                                                         <textarea [id]="'setNotes-' + exIndex + setIndex"
@@ -1145,7 +1105,7 @@
                                     </span>
                                     <button appBumpClick type="button"
                                         (click)="removeRoundFromSuperset(exerciseControl, $event)"
-                                        [disabled]="getSetsFormArray(exerciseControl).length <= 1"
+                                        [disabled]="workoutFormService.getSetsFormArray(exerciseControl).length <= 1"
                                         class="p-1.5 rounded-full bg-red-500 dark:bg-red-500/80 hover:bg-red-500 text-white disabled:opacity-50 flex items-center"
                                         [aria-label]="'workoutBuilder.set.removeLastSet' | translate">
                                         <app-icon name="minus" class="h-6 w-6"></app-icon>
@@ -1185,7 +1145,7 @@
                 </ng-container>
             </div>
 
-            <div *ngIf="mode === 'manualLogEntry' && exercisesFormArray.length === 0 && !builderForm.get('routineIdForLog')?.value"
+            <div *ngIf="mode === BuilderMode.manualLogEntry && exercisesFormArray.length === 0 && !builderForm.get('routineIdForLog')?.value"
                 class="text-center text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-xl mt-4">
                 <p class="mb-2">Select a routine or ADD EXERCISEs manually to log</p>
                 <button appBumpClick type="button" (click)="openExerciseSelectionModal()"
@@ -1193,7 +1153,7 @@
                     + {{ 'workoutBuilder.logEntry.addFirstExercise' | translate }}
                 </button>
             </div>
-            <div *ngIf="mode === 'manualLogEntry' && exercisesFormArray.length === 0 && builderForm.get('routineIdForLog')?.value"
+            <div *ngIf="mode === BuilderMode.manualLogEntry && exercisesFormArray.length === 0 && builderForm.get('routineIdForLog')?.value"
                 class="text-center py-4 text-gray-500 dark:text-gray-400">
                 {{ 'workoutBuilder.logEntry.noExercisesInRoutine' | translate }}
             </div>
@@ -1206,7 +1166,7 @@
 
         <div *ngIf="!isViewMode" class="py-2 px-1 flex-col gap-2 flex items-center">
 
-            <div *ngIf="mode !== 'manualLogEntry' && (builderForm.get('goal')?.value !== metricEnum.rest)"
+            <div *ngIf="mode !== BuilderMode.manualLogEntry && (builderForm.get('goal')?.value !== metricEnum.rest)"
                 class="text-center text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-xl mt-4">
                 <button appBumpClick type="button" (click)="openExerciseSelectionModal()"
                     class="flex items-center justify-center px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800 disabled:opacity-50 min-w-[220px] ">
@@ -1221,7 +1181,7 @@
                 class="flex items-center justify-center px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50 min-w-[220px]">
                 <app-icon name="save" class="h-6 w-6 mr-1"></app-icon>
                 <!-- Button Text -->
-                {{ (mode === 'routineBuilder' ? 'workoutBuilder.routineBuilder.saveButton' : (isNewMode ?
+                {{ (mode === BuilderMode.routineBuilder ? 'workoutBuilder.routineBuilder.saveButton' : (isNewMode ?
                 'workoutBuilder.logEntry.logButton' : 'workoutBuilder.logEntry.saveLogButton')) | translate }}
             </button>
 
@@ -1238,126 +1198,6 @@
     </form>
 </div>
 
-<!-- DISTANCE INPUT TEMPLATE -->
-<ng-template #distanceInputTemplate let-setControl="setControl" let-exIndex="exIndex" let-setIndex="setIndex">
-    <div [formGroup]="setControl">
-        <label [for]="'distance-exp-' + exIndex + '-' + setIndex"
-            class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
-            <span>{{ 'workoutBuilder.set.distance' | translate }}
-                ({{unitService.getDistanceMeasureUnitSuffix()}})</span>
-            <button *ngIf="mode === 'routineBuilder'" type="button"
-                (click)="openMetricSchemeModal(setControl, metricEnum.distance, $event)"
-                [title]="'workoutBuilder.set.editDistance' | translate"
-                class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
-                {{ 'common.edit' | translate }}
-            </button>
-        </label>
-        <!-- ROUTINE BUILDER - DISTANCE -->
-        <ng-container *ngIf="mode === 'routineBuilder'">
-            <ng-container [ngSwitch]="setControl.get('targetDistance')?.value?.type">
-
-                <!-- CASE 1: Render Min/Max inputs for 'range' -->
-                <ng-container *ngSwitchCase="distanceTargetTypeEnum.range">
-                    <div class="flex items-center w-full justify-center bg-gray-200 dark:bg-gray-700 p-0.5 rounded-xl">
-                        <input type="number" placeholder="Min" min="0" [readonly]="isViewMode"
-                            class="w-full px-2 py-4 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl no-arrows h-16"
-                            [value]="setControl.get('targetDistance')?.value?.min"
-                            (input)="updateTargetField(setControl, 'targetDistance', 'min', $event)">
-                        <span class="input_number_class_separator">-</span>
-                        <input type="number" placeholder="Max" min="0" [readonly]="isViewMode"
-                            class="w-full px-2 py-4 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl no-arrows h-16"
-                            [value]="setControl.get('targetDistance')?.value?.max"
-                            (input)="updateTargetField(setControl, 'targetDistance', 'max', $event)">
-                    </div>
-                </ng-container>
-
-                <!-- CASE 2: Render Incrementer for 'exact' -->
-                <ng-container *ngSwitchCase="distanceTargetTypeEnum.exact">
-                    <ng-container [ngTemplateOutlet]="incrementerInputTemplate"
-                        [ngTemplateOutletContext]="{ setControl: setControl, field: metricEnum.distance }"></ng-container>
-                </ng-container>
-
-                <!-- Default Case: For null or undefined targetDistances, show the placeholder -->
-                <ng-container *ngSwitchDefault>
-                    <div class="mt-0.5 flex items-center justify-center w-full p-1.5 h-[42px] text-m font-bold border border-dashed border-gray-400 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-pointer h-16"
-                        (click)="openMetricSchemeModal(setControl, metricEnum.distance, $event)">
-                        <span>{{ formatMetricTarget(setControl.get('targetDistance')?.value, metricEnum.distance) ||
-                            ('workoutBuilder.set.setDistance' |
-                            translate) }}</span>
-                    </div>
-                </ng-container>
-            </ng-container>
-        </ng-container>
-
-        <!-- MANUAL LOG ENTRY: This section remains unchanged -->
-        <ng-container *ngIf="mode === 'manualLogEntry'">
-            <ng-container [ngTemplateOutlet]="incrementerInputTemplate"
-                [ngTemplateOutletContext]="{ setControl: setControl, field: metricEnum.distance }"></ng-container>
-        </ng-container>
-        <!-- END OF THE CORRECTED CHANGE -->
-    </div>
-</ng-template>
-
-
-<!-- DURATION INPUT TEMPLATE -->
-<ng-template #durationInputTemplate let-setControl="setControl" let-exIndex="exIndex" let-setIndex="setIndex">
-    <div [formGroup]="setControl">
-        <label [for]="'duration-exp-' + exIndex + '-' + setIndex"
-            class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
-            <span>{{ 'workoutBuilder.set.time' | translate }} (s) </span>
-            <button *ngIf="mode === 'routineBuilder'" type="button"
-                (click)="openMetricSchemeModal(setControl, metricEnum.duration, $event)"
-                [title]="'workoutBuilder.set.editDuration' | translate"
-                class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
-                {{ 'common.edit' | translate }}
-            </button>
-        </label>
-        <!-- ROUTINE BUILDER - DURATION -->
-        <ng-container *ngIf="mode === 'routineBuilder'">
-            <ng-container [ngSwitch]="setControl.get('targetDuration')?.value?.type">
-
-                <!-- CASE 1: Render Min/Max inputs for 'range' -->
-                <ng-container *ngSwitchCase="durationTargetTypeEnum.range">
-                    <div class="flex items-center w-full justify-center bg-gray-200 dark:bg-gray-700 p-0.5 rounded-xl">
-                        <input type="number" placeholder="Min" min="0" [readonly]="isViewMode"
-                            class="w-full px-2 py-4 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl no-arrows h-16"
-                            [value]="setControl.get('targetDuration')?.value?.min"
-                            (input)="updateTargetField(setControl, 'targetDuration', 'min', $event)">
-                        <span class="input_number_class_separator">-</span>
-                        <input type="number" placeholder="Max" min="0" [readonly]="isViewMode"
-                            class="w-full px-2 py-4 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl no-arrows h-16"
-                            [value]="setControl.get('targetDuration')?.value?.max"
-                            (input)="updateTargetField(setControl, 'targetDuration', 'max', $event)">
-                    </div>
-                </ng-container>
-
-                <!-- CASE 2: Render Incrementer for 'exact' -->
-                <ng-container *ngSwitchCase="durationTargetTypeEnum.exact">
-                    <ng-container [ngTemplateOutlet]="incrementerInputTemplate"
-                        [ngTemplateOutletContext]="{ setControl: setControl, field: metricEnum.duration }"></ng-container>
-                </ng-container>
-
-                <!-- Default Case: For null or undefined targetDurations, show the placeholder -->
-                <ng-container *ngSwitchDefault>
-                    <div class="mt-0.5 flex items-center justify-center w-full p-1.5 h-[42px] text-m font-bold border border-dashed border-gray-400 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-pointer h-16"
-                        (click)="openMetricSchemeModal(setControl, metricEnum.duration, $event)">
-                        <span>{{ formatMetricTarget(setControl.get('targetDuration')?.value, metricEnum.duration) ||
-                            ('workoutBuilder.set.setDuration' |
-                            translate) }}</span>
-                    </div>
-                </ng-container>
-            </ng-container>
-        </ng-container>
-
-        <!-- MANUAL LOG ENTRY: This section remains unchanged -->
-        <ng-container *ngIf="mode === 'manualLogEntry'">
-            <ng-container [ngTemplateOutlet]="incrementerInputTemplate"
-                [ngTemplateOutletContext]="{ setControl: setControl, field: metricEnum.duration }"></ng-container>
-        </ng-container>
-        <!-- END OF THE CORRECTED CHANGE -->
-    </div>
-</ng-template>
-
 <!-- TEMPO INPUT TEMPLATE -->
 <ng-template #tempoInputTemplate let-setControl="setControl" let-exIndex="exIndex" let-setIndex="setIndex">
     <div [formGroup]="setControl">
@@ -1366,75 +1206,18 @@
             <span>{{ 'workoutBuilder.set.tempo' | translate }}</span>
         </label>
         <!-- ROUTINE BUILDER - TEMPO -->
-        <ng-container *ngIf="mode === 'routineBuilder'">
+        <ng-container *ngIf="mode === BuilderMode.routineBuilder">
             <input type="text" formControlName="targetTempo"
                 [placeholder]="'workoutBuilder.set.tempoPlaceholder' | translate" [readonly]="isViewMode"
                 class="mt-0.5 input_number_class">
         </ng-container>
         <!-- LOG ENTRY - SINGLE TEMPO -->
-        <input *ngIf="mode === 'manualLogEntry'" type="text" [id]="'tempo-exp-' + exIndex + '-' + setIndex"
+        <input *ngIf="mode === BuilderMode.manualLogEntry" type="text" [id]="'tempo-exp-' + exIndex + '-' + setIndex"
             formControlName="targetTempo" [placeholder]="'workoutBuilder.set.tempoPlaceholder' | translate"
             [readonly]="isViewMode" class="mt-0.5 input_number_class">
     </div>
 </ng-template>
 
-<!-- REST INPUT TEMPLATE -->
-<ng-template #restInputTemplate let-setControl="setControl" let-exIndex="exIndex" let-setIndex="setIndex">
-    <div [formGroup]="setControl">
-        <label [for]="'rest-exp-' + exIndex + '-' + setIndex"
-            class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
-            <span>{{ 'workoutBuilder.set.rest' | translate }} (s) </span>
-            <button *ngIf="mode === 'routineBuilder'" type="button"
-                (click)="openMetricSchemeModal(setControl, metricEnum.rest, $event)"
-                [title]="'workoutBuilder.set.editRest' | translate"
-                class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
-                {{ 'common.edit' | translate }}
-            </button>
-        </label>
-        <!-- ROUTINE BUILDER - REST -->
-        <ng-container *ngIf="mode === 'routineBuilder'">
-            <ng-container [ngSwitch]="setControl.get('targetRest')?.value?.type">
-
-                <!-- CASE 1: Render Min/Max inputs for 'range' -->
-                <ng-container *ngSwitchCase="restTargetTypeEnum.range">
-                    <div class="flex items-center w-full justify-center bg-gray-200 dark:bg-gray-700 p-0.5 rounded-xl">
-                        <input type="number" placeholder="Min" min="0" [readonly]="isViewMode"
-                            class="w-full px-2 py-4 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl no-arrows h-16"
-                            [value]="setControl.get('targetRest')?.value?.minSeconds"
-                            (input)="updateTargetField(setControl, 'targetRest', 'min', $event)">
-                        <span class="input_number_class_separator">-</span>
-                        <input type="number" placeholder="Max" min="0" [readonly]="isViewMode"
-                            class="w-full px-2 py-4 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl no-arrows h-16"
-                            [value]="setControl.get('targetRest')?.value?.maxSeconds"
-                            (input)="updateTargetField(setControl, 'targetRest', 'max', $event)">
-                    </div>
-                </ng-container>
-
-                <!-- CASE 2: Render Incrementer for 'exact' -->
-                <ng-container *ngSwitchCase="restTargetTypeEnum.exact">
-                    <ng-container [ngTemplateOutlet]="incrementerInputTemplate"
-                        [ngTemplateOutletContext]="{ setControl: setControl, field: metricEnum.rest }"></ng-container>
-                </ng-container>
-
-                <!-- Default Case: For null or undefined targetRests, show the placeholder -->
-                <ng-container *ngSwitchDefault>
-                    <div class="mt-0.5 flex items-center justify-center w-full p-1.5 h-[42px] text-m font-bold border border-dashed border-gray-400 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-pointer h-16"
-                        (click)="openMetricSchemeModal(setControl, metricEnum.rest, $event)">
-                        <span>{{ formatMetricTarget(setControl.get('targetRest')?.value, metricEnum.rest) ||
-                            ('workoutBuilder.set.setRest' |
-                            translate) }}</span>
-                    </div>
-                </ng-container>
-            </ng-container>
-        </ng-container>
-
-        <!-- MANUAL LOG ENTRY: This section remains unchanged -->
-        <ng-container *ngIf="mode === 'manualLogEntry'">
-            <ng-container [ngTemplateOutlet]="incrementerInputTemplate"
-                [ngTemplateOutletContext]="{ setControl: setControl, field: metricEnum.rest }"></ng-container>
-        </ng-container>
-    </div>
-</ng-template>
 
 <ng-template #incrementerInputTemplate let-setControl="setControl" let-field="field">
     <div [formGroup]="setControl">
@@ -1478,237 +1261,76 @@
     </div>
 </ng-template>
 
-<!-- REPS INPUT TEMPLATE -->
-<ng-template #repsInputTemplate let-setControl="setControl" let-exIndex="exIndex" let-setIndex="setIndex">
-    <div [formGroup]="setControl">
-        <label [for]="'reps-exp-' + exIndex + '-' + setIndex"
-            class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
-            <span>{{ 'workoutBuilder.set.reps' | translate }} </span>
-            <!-- This button ALWAYS opens the modal to let the user switch schemes -->
-            <button *ngIf="mode === 'routineBuilder'" type="button"
-                (click)="openMetricSchemeModal(setControl, metricEnum.reps, $event)"
-                [title]="'workoutBuilder.set.editReps' | translate"
-                class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
-                {{ 'common.edit' | translate }}
-            </button>
-        </label>
-
-        <ng-container *ngIf="mode === 'routineBuilder'">
-            <ng-container [ngSwitch]="setControl.get('targetReps')?.value?.type">
-
-                <!-- CASE 1: Render Min/Max inputs for 'range' -->
-                <ng-container *ngSwitchCase="repsTargetTypeEnum.range">
-                    <div class="flex items-center w-full justify-center bg-gray-200 dark:bg-gray-700 p-0.5 rounded-xl">
-                        <input type="number" placeholder="Min" min="0" [readonly]="isViewMode"
-                            class="w-full px-2 py-4 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl no-arrows h-16"
-                            [value]="setControl.get('targetReps')?.value?.min"
-                            (input)="updateTargetField(setControl, 'targetReps', 'min', $event)">
-                        <span class="input_number_class_separator">-</span>
-                        <input type="number" placeholder="Max" min="0" [readonly]="isViewMode"
-                            class="w-full px-2 py-4 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl no-arrows h-16"
-                            [value]="setControl.get('targetReps')?.value?.max"
-                            (input)="updateTargetField(setControl, 'targetReps', 'max', $event)">
-                    </div>
-                </ng-container>
-
-                <!-- CASE 2: Render Incrementer for 'exact' -->
-                <ng-container *ngSwitchCase="repsTargetTypeEnum.exact">
-                    <ng-container [ngTemplateOutlet]="incrementerInputTemplate"
-                        [ngTemplateOutletContext]="{ setControl: setControl, field: metricEnum.reps }"></ng-container>
-                </ng-container>
-
-                <!-- CASE 2.1: Render Incrementer for 'min_plus' -->
-                <ng-container *ngSwitchCase="repsTargetTypeEnum.min_plus">
-                    <ng-container [ngTemplateOutlet]="incrementerInputTemplate"
-                        [ngTemplateOutletContext]="{ setControl: setControl, field: metricEnum.reps }"></ng-container>
-                </ng-container>
-
-                <!-- CASE 3: Render a static display for 'max' -->
-                <div *ngSwitchCase="repsTargetTypeEnum.max"
-                    class="w-full px-2 py-5 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border border-2 border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl">
-                    <span>{{ formatMetricTarget(setControl.get('targetReps')?.value, metricEnum.reps) }}</span>
-                </div>
-
-                <!-- CASE 4: Render a static display for 'amrap' -->
-                <div *ngSwitchCase="repsTargetTypeEnum.amrap"
-                    class="w-full px-2 py-5 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border border-2 border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl">
-                    <span>{{ formatMetricTarget(setControl.get('targetReps')?.value, metricEnum.reps) }}</span>
-                </div>
-
-                <!-- CASE 5: Render a static display for 'max_fraction' -->
-                <div *ngSwitchCase="repsTargetTypeEnum.max_fraction"
-                    class="w-full px-2 py-5 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border border-2 border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl">
-                    <span>{{ formatMetricTarget(setControl.get('targetReps')?.value, metricEnum.reps) }}</span>
-                </div>
-
-                <!-- Default Case: For null or undefined targetReps, show the placeholder -->
-                <ng-container *ngSwitchDefault>
-                    <div class="mt-0.5 flex items-center justify-center w-full p-1.5 h-[42px] text-m font-bold border border-dashed border-gray-400 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-pointer h-16"
-                        (click)="openMetricSchemeModal(setControl, metricEnum.reps, $event)">
-                        <span>{{ formatMetricTarget(setControl.get('targetReps')?.value, metricEnum.reps) ||
-                            ('workoutBuilder.set.setReps' |
-                            translate) }}</span>
-                    </div>
-                </ng-container>
-            </ng-container>
-        </ng-container>
-
-        <!-- MANUAL LOG ENTRY: This section remains unchanged -->
-        <ng-container *ngIf="mode === 'manualLogEntry'">
-            <ng-container [ngTemplateOutlet]="incrementerInputTemplate"
-                [ngTemplateOutletContext]="{ setControl: setControl, field: metricEnum.reps }"></ng-container>
-        </ng-container>
-    </div>
-</ng-template>
-
-
-<!-- WEIGHT INPUT TEMPLATE -->
-<ng-template #weightInputTemplate let-setControl="setControl" let-exIndex="exIndex" let-setIndex="setIndex">
-    <!-- THE FIX: The [formGroup] directive is put back here -->
-    <div [formGroup]="setControl">
-        <label [for]="'weight-exp-' + exIndex + '-' + setIndex"
-            class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
-            <span>{{ 'workoutBuilder.set.weight' | translate }}
-                ({{unitService.getWeightUnitSuffix()}})</span>
-            <button *ngIf="mode === 'routineBuilder'" type="button"
-                (click)="openMetricSchemeModal(setControl, metricEnum.weight, $event)"
-                [title]="'workoutBuilder.set.editWeight' | translate"
-                class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
-                {{ 'common.edit' | translate }}
-            </button>
-        </label>
-
-        <ng-container *ngIf="mode === 'routineBuilder'">
-            <ng-container [ngSwitch]="setControl.get('targetWeight')?.value?.type">
-                <!-- CASE 1: Render Min/Max inputs for 'range' -->
-                <ng-container *ngSwitchCase="weightTargetTypeEnum.range">
-                    <div class="flex items-center w-full justify-center bg-gray-200 dark:bg-gray-700 p-0.5 rounded-xl">
-                        <input type="number" placeholder="Min" min="0" [readonly]="isViewMode"
-                            class="w-full px-2 py-4 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl no-arrows h-16"
-                            [value]="setControl.get('targetWeight')?.value?.min"
-                            (input)="updateTargetField(setControl, 'targetWeight', 'min', $event)">
-                        <span class="input_number_class_separator">-</span>
-                        <input type="number" placeholder="Max" min="0" [readonly]="isViewMode"
-                            class="w-full px-2 py-4 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl no-arrows h-16"
-                            [value]="setControl.get('targetWeight')?.value?.max"
-                            (input)="updateTargetField(setControl, 'targetWeight', 'max', $event)">
-                    </div>
-                </ng-container>
-
-                <!-- CASE 2: Render Incrementer for 'exact' -->
-                <ng-container *ngSwitchCase="weightTargetTypeEnum.exact">
-                    <ng-container [ngTemplateOutlet]="incrementerInputTemplate"
-                        [ngTemplateOutletContext]="{ setControl: setControl, field: metricEnum.weight }">
-                    </ng-container>
-                </ng-container>
-
-                <ng-container *ngSwitchCase="weightTargetTypeEnum.bodyweight">
-                    <ng-container [ngTemplateOutlet]="incrementerInputTemplate"
-                        [ngTemplateOutletContext]="{ setControl: setControl, field: metricEnum.weight }">
-                    </ng-container>
-                </ng-container>
-
-                <ng-container *ngSwitchCase="weightTargetTypeEnum.percentage_1rm">
-                    <ng-container [ngTemplateOutlet]="incrementerInputTemplate"
-                        [ngTemplateOutletContext]="{ setControl: setControl, field: metricEnum.weight }">
-                    </ng-container>
-                </ng-container>
-
-                <!-- Default Case: For null or undefined targetWeights, show the placeholder -->
-                <ng-container *ngSwitchDefault>
-                    <div class="mt-0.5 flex items-center justify-center w-full p-1.5 h-[42px] text-m font-bold border border-dashed border-gray-400 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-pointer h-16"
-                        (click)="openMetricSchemeModal(setControl, metricEnum.weight, $event)">
-                        <span>{{ formatMetricTarget(setControl.get('targetWeight')?.value, metricEnum.weight) ||
-                            ('workoutBuilder.set.setWeight' |
-                            translate) }}</span>
-                    </div>
-                </ng-container>
-            </ng-container>
-        </ng-container>
-
-        <!-- MANUAL LOG ENTRY: This section remains unchanged -->
-        <ng-container *ngIf="mode === 'manualLogEntry'">
-            <ng-container [ngTemplateOutlet]="incrementerInputTemplate"
-                [ngTemplateOutletContext]="{ setControl: setControl, field: metricEnum.weight }"></ng-container>
-        </ng-container>
-        <!-- END OF THE CORRECTED CHANGE -->
-    </div>
-</ng-template>
-
 
 <ng-template #metricInputTemplate let-setControl="setControl" let-field="field">
     <div [formGroup]="setControl">
         <label class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
             <span>{{ 'metrics.' + field | translate }}</span>
-            <button *ngIf="mode === 'routineBuilder'" type="button"
-                (click)="openMetricSchemeModal(setControl, field, $event)"
+            <button type="button" (click)="openMetricSchemeModal(setControl, field, $event)"
                 class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
                 {{ 'common.edit' | translate }}
             </button>
         </label>
-        <ng-container *ngIf="mode === 'routineBuilder'">
-            <ng-container [ngSwitch]="setControl.get(getFormControlName(field))?.value?.type">
-                <!-- Range type: min/max inputs -->
-                <ng-container *ngSwitchCase="'range'">
-                    <div class="flex items-center w-full justify-center bg-gray-200 dark:bg-gray-700 p-0.5 rounded-xl">
-                        <input type="number" placeholder="Min" min="0" [readonly]="isViewMode"
-                            class="w-full px-2 py-4 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl no-arrows h-16"
-                            [value]="setControl.get(getFormControlName(field))?.value?.min ?? setControl.get(getFormControlName(field))?.value?.minSeconds"
-                            (input)="updateTargetField(setControl, getFormControlName(field), 'min', $event)">
-                        <span class="input_number_class_separator">-</span>
-                        <input type="number" placeholder="Max" min="0" [readonly]="isViewMode"
-                            class="w-full px-2 py-4 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl no-arrows h-16"
-                            [value]="setControl.get(getFormControlName(field))?.value?.max ?? setControl.get(getFormControlName(field))?.value?.maxSeconds"
-                            (input)="updateTargetField(setControl, getFormControlName(field), 'max', $event)">
-                    </div>
-                </ng-container>
-                <!-- Exact/min_plus/percentage_1rm types: incrementer -->
-                <ng-container *ngSwitchCase="'exact'">
-                    <ng-container [ngTemplateOutlet]="incrementerInputTemplate"
-                        [ngTemplateOutletContext]="{ setControl: setControl, field: field }"></ng-container>
-                </ng-container>
-                <ng-container *ngSwitchCase="'min_plus'">
-                    <ng-container [ngTemplateOutlet]="incrementerInputTemplate"
-                        [ngTemplateOutletContext]="{ setControl: setControl, field: field }"></ng-container>
-                </ng-container>
-                <ng-container *ngSwitchCase="'percentage_1rm'">
-                    <ng-container [ngTemplateOutlet]="incrementerInputTemplate"
-                        [ngTemplateOutletContext]="{ setControl: setControl, field: field }"></ng-container>
-                </ng-container>
-
-                <!-- CASE: Render a static display for 'max' -->
-                <div *ngSwitchCase="'bodyweight'"
-                    class="w-full px-2 py-5 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border border-2 border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl">
-                    <span>{{ formatMetricTarget(setControl.get(getFormControlName(field))?.value, field) }}</span>
+        <ng-container [ngSwitch]="setControl.get(getFormControlName(field))?.value?.type">
+            <!-- Range type: min/max inputs -->
+            <ng-container *ngSwitchCase="'range'">
+                <div class="flex items-center w-full justify-center bg-gray-200 dark:bg-gray-700 p-0.5 rounded-xl">
+                    <input type="number" placeholder="Min" min="0" [readonly]="isViewMode"
+                        class="w-full px-2 py-4 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl no-arrows h-16"
+                        [value]="setControl.get(getFormControlName(field))?.value?.min ?? setControl.get(getFormControlName(field))?.value?.minSeconds"
+                        (input)="updateTargetField(setControl, getFormControlName(field), 'min', $event)">
+                    <span class="input_number_class_separator">-</span>
+                    <input type="number" placeholder="Max" min="0" [readonly]="isViewMode"
+                        class="w-full px-2 py-4 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl no-arrows h-16"
+                        [value]="setControl.get(getFormControlName(field))?.value?.max ?? setControl.get(getFormControlName(field))?.value?.maxSeconds"
+                        (input)="updateTargetField(setControl, getFormControlName(field), 'max', $event)">
                 </div>
-                <div *ngSwitchCase="'max'"
-                    class="w-full px-2 py-5 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border border-2 border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl">
-                    <span>{{ formatMetricTarget(setControl.get(getFormControlName(field))?.value, field) }}</span>
-                </div>
-
-                <!-- CASE: Render a static display for 'amrap' -->
-                <div *ngSwitchCase="'amrap'"
-                    class="w-full px-2 py-5 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border border-2 border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl">
-                    <span>{{ formatMetricTarget(setControl.get(getFormControlName(field))?.value, field) }}</span>
-                </div>
-
-                <!-- CASE: Render a static display for 'max_fraction' -->
-                <div *ngSwitchCase="'max_fraction'"
-                    class="w-full px-2 py-5 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border border-2 border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl">
-                    <span>{{ formatMetricTarget(setControl.get(getFormControlName(field))?.value, field) }}</span>
-                </div>
-
-                <!-- Default: static display or text input -->
-                <ng-container *ngSwitchDefault>
-                    <input type="text" [formControlName]="getFormControlName(field)" [readonly]="isViewMode"
-                        class="mt-0.5 input_number_class">
-                </ng-container>
             </ng-container>
-        </ng-container>
-        <!-- Manual log entry: always use incrementer -->
-        <ng-container *ngIf="mode === 'manualLogEntry'">
-            <ng-container [ngTemplateOutlet]="incrementerInputTemplate"
-                [ngTemplateOutletContext]="{ setControl: setControl, field: field }"></ng-container>
+            <!-- Exact/min_plus/percentage_1rm types: incrementer -->
+            <ng-container *ngSwitchCase="'exact'">
+                <ng-container [ngTemplateOutlet]="incrementerInputTemplate"
+                    [ngTemplateOutletContext]="{ setControl: setControl, field: field }"></ng-container>
+            </ng-container>
+            <ng-container *ngSwitchCase="'min_plus'">
+                <ng-container [ngTemplateOutlet]="incrementerInputTemplate"
+                    [ngTemplateOutletContext]="{ setControl: setControl, field: field }"></ng-container>
+            </ng-container>
+            <ng-container *ngSwitchCase="'percentage_1rm'">
+                <ng-container [ngTemplateOutlet]="incrementerInputTemplate"
+                    [ngTemplateOutletContext]="{ setControl: setControl, field: field }"></ng-container>
+            </ng-container>
+
+            <!-- CASE: Render a static display for 'max' -->
+            <div *ngSwitchCase="'bodyweight'"
+                class="w-full px-2 py-5 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border border-2 border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl">
+                <span>{{ workoutUtilsService.formatMetricTarget(setControl.get(getFormControlName(field))?.value,
+                    field) }}</span>
+            </div>
+            <div *ngSwitchCase="'max'"
+                class="w-full px-2 py-5 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border border-2 border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl">
+                <span>{{ workoutUtilsService.formatMetricTarget(setControl.get(getFormControlName(field))?.value,
+                    field) }}</span>
+            </div>
+
+            <!-- CASE: Render a static display for 'amrap' -->
+            <div *ngSwitchCase="'amrap'"
+                class="w-full px-2 py-5 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border border-2 border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl">
+                <span>{{ workoutUtilsService.formatMetricTarget(setControl.get(getFormControlName(field))?.value,
+                    field) }}</span>
+            </div>
+
+            <!-- CASE: Render a static display for 'max_fraction' -->
+            <div *ngSwitchCase="'max_fraction'"
+                class="w-full px-2 py-5 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border border-2 border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl">
+                <span>{{ workoutUtilsService.formatMetricTarget(setControl.get(getFormControlName(field))?.value,
+                    field) }}</span>
+            </div>
+
+            <!-- Default: static display or text input -->
+            <ng-container *ngSwitchDefault>
+                <input type="text" [formControlName]="getFormControlName(field)" [readonly]="isViewMode"
+                    class="mt-0.5 input_number_class">
+            </ng-container>
         </ng-container>
     </div>
 </ng-template>

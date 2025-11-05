@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { LastPerformanceSummary, LoggedSet, PersonalBestSet, WorkoutLog, PBHistoryInstance, LoggedWorkoutExercise } from '../models/workout-log.model'; // Ensure PBHistoryInstance is imported
 import { StorageService } from './storage.service';
-import { ExerciseTargetSetParams, Routine } from '../models/workout.model';
+import { ExerciseTargetSetParams, METRIC, Routine } from '../models/workout.model';
 import { parseISO } from 'date-fns';
 import { AlertService } from './alert.service';
 import { WorkoutService } from './workout.service';
@@ -16,7 +16,7 @@ import { TrainingProgramService } from './training-program.service';
 import { PerceivedWorkoutInfo } from '../../features/workout-tracker/perceived-effort-modal.component';
 import { mapLegacyLoggedExercisesToCurrent } from '../models/workout-mapper';
 import { TranslateService } from '@ngx-translate/core';
-import { repsTypeToReps, genRepsTypeFromRepsNumber, getWeightValue, weightToExact, getDurationValue, getDistanceValue } from './workout-helper.service';
+import { repsTypeToReps, genRepsTypeFromRepsNumber, getWeightValue, weightToExact, getDurationValue, getDistanceValue, durationToExact, distanceToExact, restToExact, migrateSetRepsToRepsTarget, migrateSetWeightToWeightTarget, migrateSetDurationToDurationTarget, migrateSetDistanceToDistanceTarget, migrateSetRestToRestTarget, weightToBodyweight } from './workout-helper.service';
 
 export interface ExercisePerformanceDataPoint {
   date: Date;
@@ -509,6 +509,36 @@ export class TrackingService {
   public getDataForBackup(): WorkoutLog[] { return this.workoutLogsSubject.getValue(); }
   public getPBsForBackup(): Record<string, PersonalBestSet[]> { return this.personalBestsSubject.getValue(); }
 
+  private parseLoggedValue(val: any): number | null {
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string') {
+      const parsed = parseFloat(val);
+      return isNaN(parsed) ? null : parsed;
+    }
+    if (val && typeof val === 'object' && 'type' in val) {
+      // Handle current TargetType objects
+      switch (val.type) {
+        case 'exact':
+          if ('value' in val) return val.value;
+          if ('seconds' in val) return val.seconds; // For duration/rest
+          break;
+        case 'range':
+          if ('min' in val) return val.min; // Use min for ranges
+          if ('minSeconds' in val) return val.minSeconds; // For duration/rest ranges
+          break;
+        case 'bodyweight':
+          return 0; // Bodyweight implies 0 weight
+        case 'to_failure':
+        case 'amrap':
+        case 'max':
+          return null; // No specific numeric value
+        default:
+          break;
+      }
+    }
+    return null;
+  }
+
   /**
     * Merges imported workout logs with the current data.
     * - If an imported log has an ID that already exists, it will be updated.
@@ -557,11 +587,60 @@ export class TrackingService {
               if (!set.workoutLogId) {
                 set.workoutLogId = importedLog.id;
               }
+              // Migrate targets (e.g., targetReps from number to RepsTarget)
+              migrateSetRepsToRepsTarget(set);
+              migrateSetWeightToWeightTarget(set);
+              migrateSetDurationToDurationTarget(set);
+              migrateSetDistanceToDistanceTarget(set);
+              migrateSetRestToRestTarget(set);
 
-              if (set.repsLogged && typeof set.repsLogged === 'number') {
-                // Use the helper to convert the number to { type: 'exact', value: ... }
-                // We cast to 'any' to tell TypeScript we are intentionally changing the type.
-                (set as any).repsLogged = genRepsTypeFromRepsNumber(set.repsLogged as number);
+              // Convert legacy logged values (numbers/strings) to TargetType objects (separate from targets)
+              const repsVal = this.parseLoggedValue(set.repsLogged);
+              if (repsVal !== null && repsVal > 0) {
+                set.repsLogged = genRepsTypeFromRepsNumber(repsVal);
+              }
+
+              const weightVal = this.parseLoggedValue(set.weightLogged);
+              if (weightVal !== null) {
+                if (weightVal > 0) {
+                  set.weightLogged = weightToExact(weightVal);
+                } else if (weightVal === 0) {
+                  set.weightLogged = weightToBodyweight();
+                } else {
+                  // Invalid negative value, remove from fieldOrder
+                  if (set.fieldOrder && set.fieldOrder.includes(METRIC.weight)) {
+                    set.fieldOrder = set.fieldOrder.filter(f => f !== METRIC.weight);
+                  }
+                }
+              } else if (set.weightLogged === undefined || set.weightLogged === null) {
+                // Ensure fieldOrder is cleaned if no logged value
+                if (set.fieldOrder && set.fieldOrder.includes(METRIC.weight)) {
+                  set.fieldOrder = set.fieldOrder.filter(f => f !== METRIC.weight);
+                }
+              }
+
+              const durationVal = this.parseLoggedValue(set.durationLogged);
+              if (durationVal !== null && durationVal > 0) {
+                set.durationLogged = durationToExact(durationVal);
+              }
+
+              const distanceVal = this.parseLoggedValue(set.distanceLogged);
+              if (distanceVal !== null && distanceVal > 0) {
+                set.distanceLogged = distanceToExact(distanceVal);
+              }
+
+              const restVal = this.parseLoggedValue(set.restLogged);
+              if (restVal !== null && restVal > 0) {
+                set.restLogged = restToExact(restVal);
+              }
+
+              // Tempo is already a string, no conversion needed
+              if (typeof set.tempoLogged !== 'string') {
+                set.tempoLogged = undefined; // Or handle as needed
+              }
+
+              if (!set.workoutLogId) {
+                set.workoutLogId = importedLog.id;
               }
             });
           }

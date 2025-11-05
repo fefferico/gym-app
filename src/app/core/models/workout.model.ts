@@ -18,15 +18,16 @@ export interface RepsTargetScheme {
   isTextual: boolean; // True for AMRAP, MAX, etc.
   availableInBuilder: boolean; // Can this be set when planning a routine?
   availableInPlayer: boolean;  // Can this be logged during a workout?
+  availableInLogs?: boolean; // Can this appear in logged data?
 }
 
 export const REPS_TARGET_SCHEMES: RepsTargetScheme[] = [
-  { type: RepsTargetType.exact, labelKey: 'repsSchemes.exact', isTextual: false, availableInBuilder: true, availableInPlayer: true },
-  { type: RepsTargetType.range, labelKey: 'repsSchemes.range', isTextual: false, availableInBuilder: true, availableInPlayer: false }, // A user logs an exact number, not a range.
-  { type: RepsTargetType.min_plus, labelKey: 'repsSchemes.minPlus', isTextual: false, availableInBuilder: true, availableInPlayer: false }, // A user logs an exact number, not "5+".
-  { type: RepsTargetType.amrap, labelKey: 'repsSchemes.amrap', isTextual: true, availableInBuilder: true, availableInPlayer: true },
-  { type: RepsTargetType.max, labelKey: 'repsSchemes.max', isTextual: true, availableInBuilder: true, availableInPlayer: true },
-  { type: RepsTargetType.max_fraction, labelKey: 'repsSchemes.maxFraction', isTextual: true, availableInBuilder: true, availableInPlayer: true }
+  { type: RepsTargetType.exact, labelKey: 'repsSchemes.exact', isTextual: false, availableInBuilder: true, availableInPlayer: true, availableInLogs: true },
+  { type: RepsTargetType.range, labelKey: 'repsSchemes.range', isTextual: false, availableInBuilder: true, availableInPlayer: false, availableInLogs: false }, // A user logs an exact number, not a range.
+  { type: RepsTargetType.min_plus, labelKey: 'repsSchemes.minPlus', isTextual: false, availableInBuilder: true, availableInPlayer: false, availableInLogs: false }, // A user logs an exact number, not "5+".
+  { type: RepsTargetType.amrap, labelKey: 'repsSchemes.amrap', isTextual: true, availableInBuilder: true, availableInPlayer: true, availableInLogs: false },
+  { type: RepsTargetType.max, labelKey: 'repsSchemes.max', isTextual: true, availableInBuilder: true, availableInPlayer: true, availableInLogs: false },
+  { type: RepsTargetType.max_fraction, labelKey: 'repsSchemes.maxFraction', isTextual: true, availableInBuilder: true, availableInPlayer: true, availableInLogs: false }
 ];
 
 /**
@@ -63,13 +64,14 @@ export interface WeightTargetScheme {
   isNumeric: boolean; // Indicates if it takes a user-entered number
   availableInBuilder: boolean;
   availableInPlayer: boolean; // e.g., you can't log "bodyweight", you log an exact weight (even 0)
+  availableInLogs?: boolean; // Can this appear in logged data?
 }
 
 export const WEIGHT_TARGET_SCHEMES: WeightTargetScheme[] = [
-  { type: WeightTargetType.exact, labelKey: 'weightSchemes.exact', isNumeric: true, availableInBuilder: true, availableInPlayer: true },
-  { type: WeightTargetType.range, labelKey: 'weightSchemes.range', isNumeric: true, availableInBuilder: true, availableInPlayer: false },
-  { type: WeightTargetType.bodyweight, labelKey: 'weightSchemes.bodyweight', isNumeric: false, availableInBuilder: true, availableInPlayer: false },
-  { type: WeightTargetType.percentage_1rm, labelKey: 'weightSchemes.percentage1rm', isNumeric: true, availableInBuilder: true, availableInPlayer: false },
+  { type: WeightTargetType.exact, labelKey: 'weightSchemes.exact', isNumeric: true, availableInBuilder: true, availableInPlayer: true, availableInLogs: true },
+  { type: WeightTargetType.range, labelKey: 'weightSchemes.range', isNumeric: true, availableInBuilder: true, availableInPlayer: false, availableInLogs: false },
+  { type: WeightTargetType.bodyweight, labelKey: 'weightSchemes.bodyweight', isNumeric: false, availableInBuilder: true, availableInPlayer: false, availableInLogs: true },
+  { type: WeightTargetType.percentage_1rm, labelKey: 'weightSchemes.percentage1rm', isNumeric: true, availableInBuilder: true, availableInPlayer: false, availableInLogs: false },
   // { type: WeightTargetType.rm1, labelKey: 'weightSchemes.rm1', isNumeric: true, availableInBuilder: true, availableInPlayer: false },
   // { type: WeightTargetType.rm3, labelKey: 'weightSchemes.rm3', isNumeric: true, availableInBuilder: true, availableInPlayer: false },
   // { type: WeightTargetType.rm5, labelKey: 'weightSchemes.rm5', isNumeric: true, availableInBuilder: true, availableInPlayer: false },
@@ -100,12 +102,13 @@ export interface DurationTargetScheme {
   isNumeric: boolean;
   availableInBuilder: boolean;
   availableInPlayer: boolean;
+  availableInLogs?: boolean; // Can this appear in logged data?
 }
 
 export const DURATION_TARGET_SCHEMES: DurationTargetScheme[] = [
-  { type: DurationTargetType.exact, labelKey: 'durationSchemes.exact', isNumeric: true, availableInBuilder: true, availableInPlayer: true },
-  { type: DurationTargetType.range, labelKey: 'durationSchemes.range', isNumeric: true, availableInBuilder: true, availableInPlayer: false },
-  { type: DurationTargetType.to_failure, labelKey: 'durationSchemes.toFailure', isNumeric: false, availableInBuilder: true, availableInPlayer: false },
+  { type: DurationTargetType.exact, labelKey: 'durationSchemes.exact', isNumeric: true, availableInBuilder: true, availableInPlayer: true, availableInLogs: true },
+  { type: DurationTargetType.range, labelKey: 'durationSchemes.range', isNumeric: true, availableInBuilder: true, availableInPlayer: false, availableInLogs: false },
+  { type: DurationTargetType.to_failure, labelKey: 'durationSchemes.toFailure', isNumeric: false, availableInBuilder: true, availableInPlayer: false, availableInLogs: false },
 ];
 
 export type DurationTarget =
@@ -134,11 +137,12 @@ export interface DistanceTargetScheme {
   isNumeric: boolean;
   availableInBuilder: boolean;
   availableInPlayer: boolean;
+  availableInLogs?: boolean; // Can this appear in logged data?
 }
 
 export const DISTANCE_TARGET_SCHEMES: DistanceTargetScheme[] = [
-  { type: DistanceTargetType.exact, labelKey: 'distanceSchemes.exact', isNumeric: true, availableInBuilder: true, availableInPlayer: true },
-  { type: DistanceTargetType.range, labelKey: 'distanceSchemes.range', isNumeric: true, availableInBuilder: true, availableInPlayer: false },
+  { type: DistanceTargetType.exact, labelKey: 'distanceSchemes.exact', isNumeric: true, availableInBuilder: true, availableInPlayer: true, availableInLogs: true },
+  { type: DistanceTargetType.range, labelKey: 'distanceSchemes.range', isNumeric: true, availableInBuilder: true, availableInPlayer: false, availableInLogs: false },
 ];
 
 export type DistanceTarget =
@@ -160,11 +164,12 @@ export interface RestTargetScheme {
   isNumeric: boolean;
   availableInBuilder: boolean;
   availableInPlayer: boolean;
+  availableInLogs?: boolean; // Can this appear in logged data?
 }
 
 export const REST_TARGET_SCHEMES: RestTargetScheme[] = [
-  { type: RestTargetType.exact, labelKey: 'restSchemes.exact', isNumeric: true, availableInBuilder: true, availableInPlayer: true },
-  { type: RestTargetType.range, labelKey: 'restSchemes.range', isNumeric: true, availableInBuilder: true, availableInPlayer: false },
+  { type: RestTargetType.exact, labelKey: 'restSchemes.exact', isNumeric: true, availableInBuilder: true, availableInPlayer: true, availableInLogs: true },
+  { type: RestTargetType.range, labelKey: 'restSchemes.range', isNumeric: true, availableInBuilder: true, availableInPlayer: false, availableInLogs: false },
 ];
 
 export type RestTarget =
@@ -270,6 +275,11 @@ export enum METRIC {
   distance = "distance",
   tempo = "tempo",
   rest = "rest"
+}
+
+export interface LoggedRoutine extends Routine {
+  workoutLogId: string; // Required for logged routines to link back to WorkoutLog
+  // Add other log-specific fields if needed, e.g., date?: string;
 }
 
 export interface Routine {

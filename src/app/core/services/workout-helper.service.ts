@@ -1,6 +1,6 @@
 // src/app/core/services/workout-helper.service.ts
 
-import { DistanceTarget, DistanceTargetType, DurationTarget, DurationTargetType, ExerciseTargetSetParams, RepsTarget, RepsTargetType, RestTarget, RestTargetType, WeightTarget, WeightTargetType } from '../models/workout.model';
+import { DistanceTarget, DistanceTargetType, DurationTarget, DurationTargetType, ExerciseTargetSetParams, METRIC, RepsTarget, RepsTargetType, RestTarget, RestTargetType, WeightTarget, WeightTargetType } from '../models/workout.model';
 
 export function formatRepsTarget(reps: RepsTarget | null | undefined): string {
   if (!reps) {
@@ -42,7 +42,7 @@ export function migrateSetRepsToRepsTarget(set: Partial<any>): void {
 
   // Priority 1: Handle a defined range.
   if (typeof set['targetRepsMin'] === 'number' && typeof set['targetRepsMax'] === 'number' && set['targetRepsMin'] > 0 && set['targetRepsMax'] > 0) {
-    set['targetRepsNew'] = {
+    set['targetReps'] = {
       type: RepsTargetType.range,
       min: set['targetRepsMin'],
       max: set['targetRepsMax']
@@ -50,11 +50,205 @@ export function migrateSetRepsToRepsTarget(set: Partial<any>): void {
   }
   // Priority 2: Handle a single exact value.
   else if (typeof set['targetReps'] === 'number' && set['targetReps'] > 0) {
-    set['targetRepsNew'] = {
+    set['targetReps'] = {
       type: RepsTargetType.exact,
       value: set['targetReps']
     };
   }
+  cleanLegacySetProperties(set, METRIC.reps);
+}
+
+/**
+* Migrates legacy weight properties (targetWeight, targetWeightMin/Max) on a set
+* to the new structured `targetWeightNew` property if it doesn't already exist.
+* This function mutates the set object for efficiency.
+* @param set The set object to migrate.
+*/
+export function migrateSetWeightToWeightTarget(set: Partial<any>): void {
+  // Only perform migration if the new structure isn't already present.
+  if (set['targetWeightNew']) {
+    return;
+  }
+
+  // Helper to get a valid number from number or string
+  const getValidNumber = (val: any): number | null => {
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string') {
+      const parsed = parseFloat(val);
+      return isNaN(parsed) ? null : parsed;
+    }
+    return null;
+  };
+
+  const min = getValidNumber(set['targetWeightMin']);
+  const max = getValidNumber(set['targetWeightMax']);
+
+  // Priority 1: Handle a defined range.
+  if (min !== null && max !== null && min > 0 && max > 0) {
+    set['targetWeight'] = {
+      type: WeightTargetType.range,
+      min: min,
+      max: max
+    };
+  }
+  // Priority 2: Handle a single exact value.
+  else {
+    const exact = getValidNumber(set['targetWeight']);
+    if (exact !== null) {
+      if (exact === 0) {
+        // Treat 0 as bodyweight
+        set['targetWeight'] = {
+          type: WeightTargetType.bodyweight
+        };
+      } else if (exact > 0) {
+        set['targetWeight'] = {
+          type: WeightTargetType.exact,
+          value: exact
+        };
+      }
+      // If exact < 0, do nothing (invalid)
+    }
+  }
+  cleanLegacySetProperties(set, METRIC.weight);
+}
+
+/**
+* Migrates legacy duration properties (targetDuration, targetDurationMin/Max) on a set
+* to the new structured `targetDurationNew` property if it doesn't already exist.
+* This function mutates the set object for efficiency.
+* @param set The set object to migrate.
+*/
+export function migrateSetDurationToDurationTarget(set: Partial<any>): void {
+  // Only perform migration if the new structure isn't already present.
+  if (set['targetDurationNew']) {
+    return;
+  }
+
+  // Helper to get a valid number from number or string
+  const getValidNumber = (val: any): number | null => {
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string') {
+      const parsed = parseFloat(val);
+      return isNaN(parsed) ? null : parsed;
+    }
+    return null;
+  };
+
+  const min = getValidNumber(set['targetDurationMin']);
+  const max = getValidNumber(set['targetDurationMax']);
+
+  // Priority 1: Handle a defined range.
+  if (min !== null && max !== null && min > 0 && max > 0) {
+    set['targetDuration'] = {
+      type: DurationTargetType.range,
+      minSeconds: min,
+      maxSeconds: max
+    };
+  }
+  // Priority 2: Handle a single exact value.
+  else {
+    const exact = getValidNumber(set['targetDuration']);
+    if (exact !== null && exact > 0) {
+      set['targetDuration'] = {
+        type: DurationTargetType.exact,
+        seconds: exact
+      };
+    }
+  }
+  cleanLegacySetProperties(set, METRIC.duration);
+}
+
+/**
+* Migrates legacy distance properties (targetDistance, targetDistanceMin/Max) on a set
+* to the new structured `targetDistanceNew` property if it doesn't already exist.
+* This function mutates the set object for efficiency.
+* @param set The set object to migrate.
+*/
+export function migrateSetDistanceToDistanceTarget(set: Partial<any>): void {
+  // Only perform migration if the new structure isn't already present.
+  if (set['targetDistanceNew']) {
+    return;
+  }
+
+  // Helper to get a valid number from number or string
+  const getValidNumber = (val: any): number | null => {
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string') {
+      const parsed = parseFloat(val);
+      return isNaN(parsed) ? null : parsed;
+    }
+    return null;
+  };
+
+  const min = getValidNumber(set['targetDistanceMin']);
+  const max = getValidNumber(set['targetDistanceMax']);
+
+  // Priority 1: Handle a defined range.
+  if (min !== null && max !== null && min > 0 && max > 0) {
+    set['targetDistance'] = {
+      type: DistanceTargetType.range,
+      min: min,
+      max: max
+    };
+  }
+  // Priority 2: Handle a single exact value.
+  else {
+    const exact = getValidNumber(set['targetDistance']);
+    if (exact !== null && exact > 0) {
+      set['targetDistance'] = {
+        type: DistanceTargetType.exact,
+        value: exact
+      };
+    }
+  }
+
+  cleanLegacySetProperties(set, METRIC.distance);
+}
+
+/**
+* Migrates legacy rest properties (targetRest, targetRestMin/Max) on a set
+* to the new structured `targetRestNew` property if it doesn't already exist.
+* This function mutates the set object for efficiency.
+* @param set The set object to migrate.
+*/
+export function migrateSetRestToRestTarget(set: Partial<any>): void {
+  // Only perform migration if the new structure isn't already present.
+  if (set['targetRestNew']) {
+    return;
+  }
+
+  // Helper to get a valid number from number or string
+  const getValidNumber = (val: any): number | null => {
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string') {
+      const parsed = parseFloat(val);
+      return isNaN(parsed) ? null : parsed;
+    }
+    return null;
+  };
+
+  const min = getValidNumber(set['targetRestMin']);
+  const max = getValidNumber(set['targetRestMax']);
+
+  // Priority 1: Handle a defined range.
+  if (min !== null && max !== null && min > 0 && max > 0) {
+    set['targetRest'] = {
+      type: RestTargetType.range,
+      minSeconds: min,
+      maxSeconds: max
+    };
+  }
+  // Priority 2: Handle a single exact value.
+  else {
+    const exact = getValidNumber(set['targetRest']);
+    if (exact !== null && exact > 0) {
+      set['targetRest'] = {
+        type: RestTargetType.exact,
+        seconds: exact
+      };
+    }
+  }
+  cleanLegacySetProperties(set, METRIC.rest);
 }
 
 
@@ -301,6 +495,11 @@ export function weightToExact(weight: number | undefined): WeightTarget {
   return defaultObj;
 }
 
+export function weightToBodyweight(): WeightTarget {
+  const defaultObj = { type: WeightTargetType.bodyweight } as WeightTarget;
+  return defaultObj;
+}
+
 /**
   * Formats a WeightTarget object into a user-friendly string for display.
   * Note: This function does NOT add units (kg/lbs); the calling component should do that.
@@ -543,5 +742,37 @@ export function restTargetAsString(target: RestTarget | undefined | null): strin
     default:
       const _exhaustiveCheck: never = target;
       return '';
+  }
+}
+
+
+// proper method for removing legacy properties from ExerciseTargetSetParams for specific METRIC
+export function cleanLegacySetProperties(set: any, metric: METRIC): void {
+  switch (metric) {
+    case METRIC.reps: {
+      delete set['targetRepsMin'];
+      delete set['targetRepsMax'];
+      break;
+    }
+    case METRIC.weight: {
+      delete set['targetWeightMin'];
+      delete set['targetWeightMax'];
+      break;
+    }
+    case METRIC.duration: {
+      delete set['targetDurationMin'];
+      delete set['targetDurationMax'];
+      break;
+    }
+    case METRIC.distance: {
+      delete set['targetDistanceMin'];
+      delete set['targetDistanceMax'];
+      break;
+    }
+    case METRIC.rest: {
+      delete set['targetRestMin'];
+      delete set['targetRestMax'];
+      break;
+    }
   }
 }
