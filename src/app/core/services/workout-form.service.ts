@@ -9,7 +9,7 @@ import { WorkoutUtilsService } from './workout-utils.service';
 
 @Injectable({ providedIn: 'root' })
 export class WorkoutFormService {
-    
+
     private unitsService = inject(UnitsService);
     private translate = inject(TranslateService);
     private workoutUtilsService = inject(WorkoutUtilsService);
@@ -50,12 +50,11 @@ export class WorkoutFormService {
             if (forLogging) {
                 // Log mode: Use logged values from setData, falling back to target values if logged is null/undefined
                 const loggedData = setData as LoggedSet;
-                const targetData = setData as ExerciseTargetSetParams;
-                repsValue = loggedData.repsLogged ?? targetData.targetReps ?? null;
-                weightValue = loggedData.weightLogged ?? targetData.targetWeight ?? null;
-                durationValue = loggedData.durationLogged ?? targetData.targetDuration ?? null;
-                distanceValue = loggedData.distanceLogged ?? targetData.targetDistance ?? null;
-                restValue = loggedData.restLogged ?? targetData.targetRest ?? null;
+                repsValue = loggedData.repsLogged ?? null;
+                weightValue = loggedData.weightLogged ?? null;
+                durationValue = loggedData.durationLogged ?? null;
+                distanceValue = loggedData.distanceLogged ?? null;
+                restValue = loggedData.restLogged ?? null;
                 plannedSetIdValue = loggedData.plannedSetId;
                 timestampValue = loggedData.timestamp;
             } else {

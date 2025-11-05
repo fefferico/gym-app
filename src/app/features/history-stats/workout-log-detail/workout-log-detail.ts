@@ -433,19 +433,19 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   }
 
   checkIfDurationAvailable(loggedEx: LoggedWorkoutExercise): boolean {
-    return this.workoutUtilsService.checkIfMetricIsVisible(loggedEx, METRIC.duration);
+    return this.workoutUtilsService.checkIfMetricIsVisible(loggedEx, METRIC.duration, true);
   }
 
   checkIfRepsAvailable(loggedEx: DisplayLoggedExercise): boolean {
-    return this.workoutUtilsService.checkIfMetricIsVisible(loggedEx, METRIC.reps);
+    return this.workoutUtilsService.checkIfMetricIsVisible(loggedEx, METRIC.reps, true);
   }
 
   checkIfDistanceAvailable(loggedEx: DisplayLoggedExercise): boolean {
-    return this.workoutUtilsService.checkIfMetricIsVisible(loggedEx, METRIC.distance);
+    return this.workoutUtilsService.checkIfMetricIsVisible(loggedEx, METRIC.distance, true);
   }
 
   checkIfWeightAvailable(loggedEx: LoggedWorkoutExercise): boolean {
-    return this.workoutUtilsService.checkIfMetricIsVisible(loggedEx, METRIC.weight);
+    return this.workoutUtilsService.checkIfMetricIsVisible(loggedEx, METRIC.weight, true);
   }
 
   protected checkRange(performed: number | string, min?: number | string | null, max?: number | string | null): string {
@@ -985,10 +985,10 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
 
   getWeightDisplay(item: DisplayItem, set: LoggedSet): string {
     if (this.isStandardExercise(item) && item.baseExercise) {
-      return this.workoutUtilsService.getWeightDisplay(set, item.baseExercise);
+      return this.workoutUtilsService.getSetWeightDisplay(set, item.baseExercise);
     } else {
       if (set) {
-        return this.workoutUtilsService.getWeightDisplay(set, { ...item } as unknown as WorkoutExercise);
+        return this.workoutUtilsService.getSetWeightDisplay(set, { ...item } as unknown as WorkoutExercise);
       }
     }
     return '';

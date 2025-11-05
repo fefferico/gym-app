@@ -15,6 +15,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { PerceivedEffortModalComponent, PerceivedWorkoutInfo } from '../perceived-effort-modal.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { getDurationValue, getRepsValue, getWeightValue, repsTypeToReps } from '../../../core/services/workout-helper.service';
+import { WorkoutUtilsService } from '../../../core/services/workout-utils.service';
 
 
 interface DisplayLoggedExerciseSummary extends LoggedWorkoutExercise {
@@ -44,6 +45,7 @@ export class WorkoutSummaryComponent implements OnInit {
   private statsService = inject(StatsService); // For volume
   protected unitsService = inject(UnitsService); // Use 'protected' for direct template access
   private translate = inject(TranslateService);
+  private workoutUtilsService = inject(WorkoutUtilsService);
 
   workoutLog = signal<WorkoutLog | null | undefined>(undefined);
   displayExercisesSummary = signal<DisplayLoggedExerciseSummary[]>([]);
@@ -182,15 +184,19 @@ export class WorkoutSummaryComponent implements OnInit {
     let value = '';
     let repsLogged: number | undefined;
 
-    if (pb.weightLogged !== undefined && pb.weightLogged !== null && getWeightValue(pb.weightLogged) !== 0) {
-      value += `${pb.weightLogged}${this.unitsService.getWeightUnitSuffix()}`;
-      if (pb.repsLogged && (pb.pbType.includes('Heaviest') || getRepsValue(pb.repsLogged) > 1 && !pb.pbType.includes('RM'))) {
-        value += ` x ${repsTypeToReps(pb.repsLogged)}`;
+    const weightValue = this.workoutUtilsService.getWeightValue(pb.weightLogged);
+    const repsValue = this.workoutUtilsService.getRepsValue(pb.repsLogged);
+    const durationValue = this.workoutUtilsService.getDurationValue(pb.durationLogged);
+
+    if (weightValue !== undefined && pb.weightLogged !== null && weightValue !== 0) {
+      value += `${weightValue}${this.unitsService.getWeightUnitSuffix()}`;
+      if (repsValue !== undefined && (pb.pbType.includes('Heaviest') || repsValue > 1 && !pb.pbType.includes('RM'))) {
+        value += ` x ${this.workoutUtilsService.getRepsValue(pb.repsLogged)}`;
       }
     } else if (pb.repsLogged && pb.pbType.includes('Max Reps')) {
-      value = `${repsTypeToReps(pb.repsLogged)} ${this.translate.instant('workoutSummary.units.reps')}`;
-    } else if (pb.durationLogged && getDurationValue(pb.durationLogged) > 0 && pb.pbType.includes('Max Duration')) {
-      value = `${pb.durationLogged}${this.translate.instant('workoutSummary.units.seconds')}`;
+      value = `${repsValue} ${this.translate.instant('workoutSummary.units.reps')}`;
+    } else if (durationValue && durationValue > 0 && pb.pbType.includes('Max Duration')) {
+      value = `${durationValue} ${this.translate.instant('workoutSummary.units.seconds')}`;
     }
     return value || 'N/A';
   }

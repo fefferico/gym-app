@@ -274,8 +274,12 @@
                       <div *ngIf="getPersonalBestTypesForSet(set, item.exerciseId).length > 0" class="flex-shrink-0"
                         [title]="'logDetail.card.pbTooltip' | translate:{types: getPersonalBestTypesForSet(set, item.exerciseId).join('\n')}">
                         <span
-                          class="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-primary-dark text-white dark:text-amber-100">🏆
-                          {{ 'logDetail.card.pb' | translate }}</span>
+                          class="p-1 text-xs font-semibold rounded-full bg-primary-dark text-white dark:text-amber-100 flex items-center">
+                          <!-- class="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-primary-dark text-white dark:text-amber-100"> -->
+                          <!-- 🏆 -->
+                           <app-icon name="pb" class="h-5 w-5"></app-icon>
+                          <!-- {{ 'logDetail.card.pb' | translate }} -->
+                        </span>
                       </div>
                     </div>
                     <!-- Reps -->

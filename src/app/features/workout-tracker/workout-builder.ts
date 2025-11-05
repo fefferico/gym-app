@@ -2859,7 +2859,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     // remove from the availableSchemes the current one
     availableSchemes = availableSchemes.filter(s => s.type !== currentTarget?.type);
-
     if (availableSchemes.length === 0) {
       this.toastService.error(`No further available schemes found for metric: ${metric}. Consider that while logging metric types different from 'exact' are not allowed`, 6000, this.translate.instant('common.error'));
       return;

@@ -40,7 +40,7 @@
         <!-- Date Display -->
         <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
           <!-- {{ currentDate() | date:'fullDate' }} -->
-                          {{ formattedCurrentDate() }}
+          {{ formattedCurrentDate() }}
 
           <!-- <span *ngIf="isToday(currentDate())" class="font-bold text-primary dark:text-primary-light">(Today)</span> -->
         </h2>
@@ -80,8 +80,7 @@
 
       <div *ngIf="!isLoading()">
         <ng-container *ngIf="allActivePrograms().length > 0; else noProgramBlock" class="min-h-[100px]">
-          <div *ngIf="todaysScheduledWorkouts().length > 0; else noScheduledWorkoutInProgramBlock"
-            class="space-y-4">
+          <div *ngIf="todaysScheduledWorkouts().length > 0; else noScheduledWorkoutInProgramBlock" class="space-y-4">
             <div *ngFor="let workoutInfo of todaysScheduledWorkouts()" class="p-4 rounded-md flex flex-col items-center"
               [ngClass]="{'border-b border-gray-200 dark:border-gray-700 dark:bg-primary-dark/30': allActivePrograms().length > 1,
                           'bg-primary-50 dark:bg-gray-800': allActivePrograms().length === 1
@@ -97,7 +96,8 @@
                 </ng-container>
                 <ng-template #unscheduledHeader>
                   <span class="text-blue-500 dark:text-blue-400">{{ 'todaysWorkout.loggedUnscheduled' | translate
-                    }}</span><span class="text-primary dark:text-primary-light ml-1">{{ workoutInfo.routine.name }}</span>
+                    }}</span><span class="text-primary dark:text-primary-light ml-1">{{ workoutInfo.routine.name
+                    }}</span>
                 </ng-template>
 
                 <div class="my-2 text-xs font-semibold text-white bg-primary rounded-md p-1 flex-shrink w-fit"> {{
@@ -132,11 +132,9 @@
                     <span class="font-semibold text-m">{{ 'todaysWorkout.workoutCompleted' | translate }}</span>
                     <button appBumpClick (click)="viewLogDetails(getLogForRoutine(workoutInfo.routine.id).id)"
                       class="ml-auto flex items-center text-md font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-2 py-1 rounded hover:bg-sky-300">
-                      <app-icon name="eye" class="w-6 h-6">
+                      <app-icon name="eye" class="w-6 h-6 mr-1">
                       </app-icon>
-                      <span class="ml-1">
-                        {{ 'todaysWorkout.details' | translate }}
-                      </span>
+                      {{ 'todaysWorkout.details' | translate }}
                     </button>
                   </div>
                 </ng-container>
@@ -232,10 +230,9 @@
                         log.durationMinutes || 0}} min</span>
                     </p>
                     <button appBumpClick (click)="viewLogDetails(log.id)"
-                      class="flex items-center text-md font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-2 py-1 rounded hover:bg-sky-300">
-                      <app-icon name="eye" class="w-6 h-6">
-                      </app-icon>
-                      <span class="ml-1">
+                      class="flex items-center justify-center h-10 text-md font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-3 py-1 rounded hover:bg-sky-300">
+                      <app-icon name="eye" class="w-6 h-6 mr-2 align-middle"></app-icon>
+                      <span class="align-middle font-semibold">
                         {{ 'todaysWorkout.details' | translate }}
                       </span>
                     </button>
@@ -245,7 +242,8 @@
               <div *ngIf="logsForDay().length === 0">
                 <p class="text-m text-gray-500 dark:text-gray-400">
                   {{ 'todaysWorkout.feelFreeTo' | translate }}
-                  <button appBumpClick (click)="browseRoutines()" class="text-primary dark:text-primary-light hover:underline">{{
+                  <button appBumpClick (click)="browseRoutines()"
+                    class="text-primary dark:text-primary-light hover:underline">{{
                     'todaysWorkout.pickAnotherRoutine' | translate }}</button>{{ 'todaysWorkout.ifYouPrefer' | translate
                   }}
                 </p>
@@ -335,11 +333,9 @@
                     </p>
                     <button appBumpClick (click)="viewLogDetails(log.id)"
                       class="flex items-center text-md font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-2 py-1 rounded hover:bg-sky-300">
-                      <app-icon name="eye" class="w-6 h-6">
+                      <app-icon name="eye" class="w-6 h-6 mr-1">
                       </app-icon>
-                      <span class="ml-1">
-                        {{ 'todaysWorkout.details' | translate }}
-                      </span>
+                      {{ 'todaysWorkout.details' | translate }}
                     </button>
                   </div>
                 </div>
@@ -353,8 +349,9 @@
                   class="text-m text-gray-500 dark:text-gray-400">
                   {{ 'todaysWorkout.youCan' | translate }}<button appBumpClick (click)="managePrograms()"
                     class="text-primary dark:text-primary-light hover:underline">{{ 'todaysWorkout.setActiveProgram' |
-                    translate }}</button>{{ 'todaysWorkout.or' | translate }}<button appBumpClick (click)="browseRoutines()"
-                    class="text-primary dark:text-primary-light hover:underline">{{ 'todaysWorkout.browseRoutines' |
+                    translate }}</button>{{ 'todaysWorkout.or' | translate }}<button appBumpClick
+                    (click)="browseRoutines()" class="text-primary dark:text-primary-light hover:underline">{{
+                    'todaysWorkout.browseRoutines' |
                     translate }}</button>
                 </p>
                 <div class="mt-2 pt-2 border-t dark:border-gray-700 text-left"

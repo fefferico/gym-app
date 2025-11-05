@@ -3487,7 +3487,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         const setForRound = ex.sets[nextRound - 1];
         if (setForRound) {
           const reps = this.getSetTargetDisplay(setForRound, this.metricEnum.reps);
-          const weightDisplay = this.workoutUtilsService.getWeightDisplay(setForRound, ex);
+          const weightDisplay = this.workoutUtilsService.getSetWeightDisplay(setForRound, ex);
 
           header += `<br><span class="text-sm opacity-80">- ${this.workoutService.exerciseNameDisplay(ex)}: ${reps}</span>`;
         }
@@ -3515,7 +3515,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       detailsLine = `Last time: ${weight} x ${historicalSetPerformance.repsLogged} reps`;
     } else {
       const repsDisplay = this.getSetTargetDisplay(setData, this.metricEnum.reps);
-      const weightDisplay = this.workoutUtilsService.getWeightDisplay(setData, exerciseData);
+      const weightDisplay = this.workoutUtilsService.getSetWeightDisplay(setData, exerciseData);
       detailsLine = `Target: ${weightDisplay} x ${repsDisplay} reps`;
     }
 
@@ -4716,7 +4716,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       const weightPart = set.targetWeight ? ` @ ${set.targetWeight}kg` : '';
       const exercise = this.activeSetInfo()?.exerciseData;
       if (exercise) {
-        return `${this.workoutUtilsService.getSetTargetDisplay(set, field)} @ ${this.workoutUtilsService.getWeightDisplay(set, exercise) || ''}`;
+        return `${this.workoutUtilsService.getSetTargetDisplay(set, field)} @ ${this.workoutUtilsService.getSetWeightDisplay(set, exercise) || ''}`;
       } else {
         return `${this.workoutUtilsService.getSetTargetDisplay(set, field)} ${weightPart}`;
       }

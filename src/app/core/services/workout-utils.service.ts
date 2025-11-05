@@ -83,27 +83,27 @@ export class WorkoutUtilsService {
         switch (metric) {
             case METRIC.weight:
                 if (target.type === WeightTargetType.bodyweight) return 'Bodyweight';
-                if (target.type === WeightTargetType.exact) return `${target.value} kg`;
+                if (target.type === WeightTargetType.exact) return `${target.value}`;
                 if (target.type === WeightTargetType.percentage_1rm) return `${target.percentage}% 1RM`;
-                if (target.type === WeightTargetType.range) return `${target.min}-${target.max} kg`;
+                if (target.type === WeightTargetType.range) return `${target.min}-${target.max}`;
                 break;
             case METRIC.reps:
-                if (target.type === RepsTargetType.exact) return `${target.value} reps`;
-                if (target.type === RepsTargetType.range) return `${target.min}-${target.max} reps`;
+                if (target.type === RepsTargetType.exact) return `${target.value}`;
+                if (target.type === RepsTargetType.range) return `${target.min}-${target.max}`;
                 if (target.type === RepsTargetType.max) return 'Max reps';
                 if (target.type === RepsTargetType.amrap) return 'AMRAP';
                 break;
             case METRIC.duration:
-                if (target.type === DurationTargetType.exact) return `${target.seconds}s`;
-                if (target.type === DurationTargetType.range) return `${target.minSeconds}-${target.maxSeconds}s`;
+                if (target.type === DurationTargetType.exact) return `${target.seconds}`;
+                if (target.type === DurationTargetType.range) return `${target.minSeconds}-${target.maxSeconds}`;
                 break;
             case METRIC.distance:
-                if (target.type === DistanceTargetType.exact) return `${target.value} m`;
-                if (target.type === DistanceTargetType.range) return `${target.min}-${target.max} m`;
+                if (target.type === DistanceTargetType.exact) return `${target.value}`;
+                if (target.type === DistanceTargetType.range) return `${target.min}-${target.max}`;
                 break;
             case METRIC.rest:
-                if (target.type === RestTargetType.exact) return `${target.seconds}s`;
-                if (target.type === RestTargetType.range) return `${target.minSeconds}-${target.maxSeconds}s`;
+                if (target.type === RestTargetType.exact) return `${target.seconds}`;
+                if (target.type === RestTargetType.range) return `${target.minSeconds}-${target.maxSeconds}`;
                 break;
             default:
                 return target.value ? target.value.toString() : '-';
@@ -115,6 +115,7 @@ export class WorkoutUtilsService {
         if (!target) return undefined;
         if (target && target.type === RepsTargetType.exact) return target.value;
         if (target && target.type === RepsTargetType.range) return Math.floor((target.min + target.max) / 2);
+        if (target && target.type === RepsTargetType.min_plus) return target.value;
         return undefined;
     }
 
@@ -355,7 +356,7 @@ export class WorkoutUtilsService {
    * @param exercise The exercise context to determine the category.
    * @returns A formatted string for display (e.g., "100 kg", "Bodyweight", "N/A").
    */
-    getWeightDisplay(set: ExerciseTargetSetParams | LoggedSet, exercise: Exercise | WorkoutExercise): string {
+    getSetWeightDisplay(set: ExerciseTargetSetParams | LoggedSet, exercise: Exercise | WorkoutExercise): string {
         // The 'set' object could be a LoggedSet, which has a 'weightLogged' property.
         // We check for this property to determine which value to prioritize.
         const performedWeight = (set as any).weightLogged;
@@ -400,7 +401,7 @@ export class WorkoutUtilsService {
     }
 
 
-    public checkIfMetricIsVisible(control: any, metric: METRIC): boolean {
+    public checkIfMetricIsVisible(control: any, metric: METRIC, isLogged: boolean = false): boolean {
         if (!control) return false;
 
         const setHasMetricVisible = (set: any): boolean => {
@@ -410,19 +411,24 @@ export class WorkoutUtilsService {
             // Check target visibility
             switch (metric) {
                 case METRIC.duration:
-                    targetVisible = this.isDurationTargetVisible(set?.targetDuration);
+                    const durationValue = isLogged ? set?.durationLogged : set?.targetDuration;
+                    targetVisible = this.isDurationTargetVisible(durationValue);
                     break;
                 case METRIC.weight:
-                    targetVisible = this.isWeightTargetVisible(set?.targetWeight);
+                    const weightValue = isLogged ? set?.weightLogged : set?.targetWeight;
+                    targetVisible = this.isWeightTargetVisible(weightValue);
                     break;
                 case METRIC.reps:
-                    targetVisible = this.isRepsTargetVisible(set?.targetReps);
+                    const repsValue = isLogged ? set?.repsLogged : set?.targetReps;
+                    targetVisible = this.isRepsTargetVisible(repsValue);
                     break;
                 case METRIC.distance:
-                    targetVisible = this.isDistanceTargetVisible(set?.targetDistance);
+                    const distanceValue = isLogged ? set?.distanceLogged : set?.targetDistance;
+                    targetVisible = this.isDistanceTargetVisible(distanceValue);
                     break;
                 case METRIC.rest:
-                    targetVisible = this.isRestTargetVisible(set?.targetRest);
+                    const restValue = isLogged ? set?.restLogged : set?.targetRest;
+                    targetVisible = this.isRestTargetVisible(restValue);
                     break;
                 default:
                     return false;
@@ -933,15 +939,22 @@ export class WorkoutUtilsService {
 
         const setToUpdate: any = newRoutine.exercises[exIndex].sets[setIndex];
 
-        // 1. Remove the field's value
-        setToUpdate[`target${fieldToRemove.charAt(0).toUpperCase() + fieldToRemove.slice(1)}`] = undefined;
-        setToUpdate[`target${fieldToRemove.charAt(0).toUpperCase() + fieldToRemove.slice(1)}Min`] = undefined;
-        setToUpdate[`target${fieldToRemove.charAt(0).toUpperCase() + fieldToRemove.slice(1)}Max`] = undefined;
-        setToUpdate[`${fieldToRemove}Used`] = undefined;
-        setToUpdate[`${fieldToRemove}Achieved`] = undefined;
+        if (!this.isLoggedRoutine) {
+            // 1. Remove the field's value
+            setToUpdate[`target${fieldToRemove.charAt(0).toUpperCase() + fieldToRemove.slice(1)}`] = undefined;
+            setToUpdate[`target${fieldToRemove.charAt(0).toUpperCase() + fieldToRemove.slice(1)}Min`] = undefined;
+            setToUpdate[`target${fieldToRemove.charAt(0).toUpperCase() + fieldToRemove.slice(1)}Max`] = undefined;
+            setToUpdate[`${fieldToRemove}Used`] = undefined;
+            setToUpdate[`${fieldToRemove}Achieved`] = undefined;
 
-        // OLD REST
-        setToUpdate[`${fieldToRemove}AfterSet`] = undefined;
+            // OLD REST
+            setToUpdate[`${fieldToRemove}AfterSet`] = undefined;
+        } else {
+            // 1. Remove the logged field's value
+            setToUpdate[`${fieldToRemove}Logged`] = undefined;
+        }
+
+        
 
         // 2. Also remove the field from the order array
         if (setToUpdate.fieldOrder) {
@@ -1184,6 +1197,22 @@ export class WorkoutUtilsService {
             .filter(scheme => context === 'builder' ? scheme.availableInBuilder : scheme.availableInPlayer)
             .map(scheme => ({ type: scheme.type, label: this.translate.instant(scheme.labelKey) }));
     }
+
+    public repsTargetAsString(target: RepsTarget | undefined | null): string {
+        if (!target) return '';
+        switch (target.type) {
+            case RepsTargetType.exact:
+                return `${target.value}`;
+            case RepsTargetType.range:
+                return `${target.min}-${target.max}`;
+            case RepsTargetType.amrap:
+                return `AMRAP`;
+            default:
+                return '';
+        }
+    }
+
+
     // Creates a display string like "100kg", "80-90kg", or "Bodyweight"
     public weightTargetAsString(target: WeightTarget | undefined | null): string {
         if (!target) return '';
@@ -1269,10 +1298,12 @@ export class WorkoutUtilsService {
             // You can expand this with more icons as needed
             let iconName = 'pin';
             if (scheme.type.includes('range')) iconName = 'range';
+            if (scheme.type.includes('percentage')) iconName = 'percentage';
             if (scheme.type.includes('max')) iconName = 'max_performance';
+            if (scheme.type.includes('fraction')) iconName = 'fraction';
             if (scheme.type.includes('amrap')) iconName = 'repeat';
             if (scheme.type.includes('min_plus')) iconName = 'plus-circle';
-            if (scheme.type.includes('bodyweight')) iconName = 'bodyweight';
+            if (scheme.type.includes('bodyweight')) iconName = 'weight';
 
             return {
                 text: this.translate.instant(scheme.labelKey),

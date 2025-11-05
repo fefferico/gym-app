@@ -1265,7 +1265,14 @@
 <ng-template #metricInputTemplate let-setControl="setControl" let-field="field">
     <div [formGroup]="setControl">
         <label class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
-            <span>{{ 'metrics.' + field | translate }}</span>
+            <span>{{ 'metrics.' + field | translate }}
+<!-- show proper unit  -->
+            <span *ngIf="field === metricEnum.weight">({{unitService.currentWeightUnit()}})</span>
+            <!-- <span *ngIf="setControl.get(getFormControlName(field))?.value?.type === 'reps'">({{unitService.getRepsUnit()}})</span> -->
+            <span *ngIf="field === metricEnum.duration">(s)</span>
+            <span *ngIf="field === metricEnum.distance">({{unitService.currentDistanceMeasureUnit()}})</span>
+            <span *ngIf="field === metricEnum.rest">(s)</span>
+            </span>
             <button type="button" (click)="openMetricSchemeModal(setControl, field, $event)"
                 class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
                 {{ 'common.edit' | translate }}

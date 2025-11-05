@@ -373,7 +373,8 @@ export const deleteBtn = {
     actionKey: 'delete',
     iconName: `trash`,
     iconClass: 'w-8 h-8 mr-2',
-    buttonClass: ' hover:bg-red-600 hover:animate-pulse',
+    buttonClass: ' hover:bg-red-600',
+    // buttonClass: ' hover:bg-red-600 hover:animate-pulse',
 }
 
 

@@ -79,7 +79,7 @@ export class PerformanceComparisonModalComponent {
     protected weightUnitPipe = inject(WeightUnitPipe);
     protected decimalPipe = inject(DecimalPipe);
     private translate = inject(TranslateService);
-    private workoutUtilsService = inject(WorkoutUtilsService);
+    protected workoutUtilsService = inject(WorkoutUtilsService);
 
     // --- INPUTS ---
     public readonly exerciseSignal = signal<DisplayLoggedExercise | undefined>(undefined);

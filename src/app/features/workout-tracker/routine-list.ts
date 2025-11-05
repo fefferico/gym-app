@@ -1243,4 +1243,47 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   }
 
 
+  protected removeSpaceFromGoalName(goal: string): string {
+    // fix specific cases
+    if (goal.toLowerCase().replace(/\s+/g, '').includes('fatloss')) {
+      return 'fatLoss';
+    }
+    if (goal.toLowerCase().replace(/\s+/g, '').includes('sport')) {
+      return 'sportSpecific';
+    }
+    if (goal.toLowerCase().replace(/\s+/g, '').includes('flexibility')) {
+      return 'mobility';
+    }
+    if (goal.toLowerCase().replace(/\s+/g, '').includes('power')) {
+      return 'power';
+    }
+    if (goal.toLowerCase().replace(/\s+/g, '').includes('speed')) {
+      return 'speed';
+    }
+    if (goal.toLowerCase().replace(/\s+/g, '').includes('balance')) {
+      return 'balance';
+    }
+    if (goal.toLowerCase().replace(/\s+/g, '').includes('generalhealth')) {
+      return 'generalHealth';
+    }
+    // transform the string to CamelCase
+    return goal.replace(/\s+(.)/g, (_, char) => char.toUpperCase()).replace(/\s+/g, '');
+  }
+
+  protected removeSpaceFromMuscleName(muscle: string): string {
+    // fix specific case for "upper back"
+    if (muscle.toLowerCase() === 'chest (upper)') {
+      return 'chestUpper';
+    }
+    if (muscle.toLowerCase().includes('shoulders') && (muscle.toLowerCase().includes('anterior') || muscle.toLowerCase().includes('posterior') || muscle.toLowerCase().includes('lateral') || muscle.toLowerCase().includes('stabilizer') || muscle.toLowerCase().includes('medial'))) {
+      return 'shoulders';
+    }
+    if (muscle.toLowerCase() === 'middle back') {
+      return 'back';
+    }
+    // transform the string to CamelCase
+    return muscle.replace(/\s+(.)/g, (_, char) => char.toUpperCase()).replace(/\s+/g, '');
+  }
+
+
 }

@@ -2588,6 +2588,7 @@
   },
   "muscles": {
     "core": "Core",
+    "abs": "Abs",
     "rectusAbdominis": "Abs (Rectus Abdominis)",
     "obliques": "Obliques",
     "transverseAbdominis": "Transverse Abdominis",
@@ -2632,7 +2633,9 @@
     "fullBody": "Full Body",
     "posteriorChain": "Posterior Chain",
     "cardio": "Cardiovascular System",
-    "neck": "Neck"
+    "neck": "Neck",
+    "lowerBody": "Lower Body",
+    "upperBody": "Upper Body"
   },
   "exerciseForm": {
     "addTitle": "Add New Exercise",
@@ -2671,6 +2674,14 @@
     "equipmentSpecific": "Equipment-Specific",
     "custom": "Custom"
   },
+  "schemes":{
+    "selectType": "Select type",
+    "titles": {
+      "selectType": "Select type",
+      "setExact": "Type EXACT",
+      "setRange": "Type RANGE"
+    }
+  },
   "repsSchemes": {
     "exact": "Exact",
     "range": "Range",
@@ -2687,6 +2698,51 @@
       "setMaxFraction": "Type MAX/N",
       "setAmrap": "Type AMRAP",
       "setMinPlus": "Type MORE THAN X"
+    }
+  },
+  "weightSchemes": {
+    "exact": "Exact",
+    "range": "Range",
+    "bodyweight": "Bodyweight",
+    "percentage": "Percentage",
+    "percentage1rm": "Percentage of 1RM",
+    "titles": {
+      "selectType": "Select type",
+      "setExact": "Type EXACT",
+      "setBodyweight": "Type BODYWEIGHT",
+      "setAddedWeight": "Type ADDED WEIGHT",
+      "setPercentage": "Type PERCENTAGE"
+    }
+  },
+  "restSchemes": {
+    "exact": "Exact",
+    "range": "Range",
+    "untilReady": "Until Ready",
+    "titles": {
+      "selectType": "Select type",
+      "setExact": "Type EXACT",
+      "setRange": "Type RANGE",
+      "setUntilReady": "Type UNTIL READY"
+    }
+  },
+  "durationSchemes": {
+    "exact": "Exact",
+    "range": "Range",
+    "toFailure": "To Failure",
+    "titles": {
+      "selectType": "Select type",
+      "setExact": "Type EXACT",
+      "setRange": "Type RANGE",
+      "setToFailure": "Type TO FAILURE"
+    }
+  },
+  "distanceSchemes": {
+    "exact": "Exact",
+    "range": "Range",
+    "titles": {
+      "selectType": "Select type",
+      "setExact": "Type EXACT",
+      "setRange": "Type RANGE"
     }
   },
   "workoutLogDetail": {

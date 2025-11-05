@@ -2616,6 +2616,7 @@
   "applyToAllSets": "Applica",
   "muscles": {
     "core": "Core",
+    "abs": "Addominali",
     "rectusAbdominis": "Addominali (Retto dell'Addome)",
     "obliques": "Obliqui",
     "transverseAbdominis": "Addominale Trasverso",
@@ -2660,7 +2661,9 @@
     "fullBody": "Corpo Intero",
     "posteriorChain": "Catena Cinetica Posteriore",
     "cardio": "Sistema Cardiovascolare",
-    "neck": "Collo"
+    "neck": "Collo",
+    "lowerBody": "Parte Inferiore del Corpo",
+    "upperBody": "Parte Superiore del Corpo"
   },
   "exerciseForm": {
     "addTitle": "Aggiungi Nuovo Esercizio",
@@ -2699,6 +2702,14 @@
     "equipmentSpecific": "Specifico per Attrezzatura",
     "custom": "Personalizzato"
   },
+  "schemes":{
+    "selectType": "Seleziona tipo",
+    "titles": {
+      "selectType": "Seleziona tipo",
+      "setExact": "Tipo ESATTO",
+      "setRange": "Tipo INTERVALLO"
+    }
+  },
   "repsSchemes": {
     "exact": "Esatto",
     "range": "Intervallo",
@@ -2715,6 +2726,51 @@
       "setMaxFraction": "Tipo MAX/N",
       "setAmrap": "Tipo AMRAP",
       "setMinPlus": "Tipo PIU' DI X"
+    }
+  },
+  "weightSchemes": {
+    "exact": "Esatto",
+    "range": "Intervallo",
+    "bodyweight": "Peso Corporeo",
+    "percentage": "Percentuale",
+    "percentage1rm": "Percentuale del 1RM",
+    "titles": {
+      "selectType": "Seleziona il tipo",
+      "setExact": "Tipo ESATTO",
+      "setBodyweight": "Tipo BODYWEIGHT",
+      "setAddedWeight": "Tipo ADDED WEIGHT",
+      "setPercentage": "Tipo PERCENTAGE"
+    }
+  },
+  "restSchemes": {
+    "exact": "Esatto",
+    "range": "Intervallo",
+    "untilReady": "Fino a Pronto",
+    "titles": {
+      "selectType": "Seleziona il tipo",
+      "setExact": "Tipo ESATTO",
+      "setRange": "Tipo INTERVALLO",
+      "setUntilReady": "Tipo FINO A PRONTO"
+    }
+  },
+  "durationSchemes": {
+    "exact": "Esatto",
+    "range": "Intervallo",
+    "toFailure": "Fino a Fallimento",
+    "titles": {
+      "selectType": "Seleziona il tipo",
+      "setExact": "Tipo ESATTO",
+      "setRange": "Tipo INTERVALLO",
+      "setToFailure": "Tipo FINO A FALLIMENTO"
+    }
+  },
+  "distanceSchemes": {
+    "exact": "Esatto",
+    "range": "Intervallo",
+    "titles": {
+      "selectType": "Seleziona il tipo",
+      "setExact": "Tipo ESATTO",
+      "setRange": "Tipo INTERVALLO"
     }
   },
   "workoutLogDetail": {

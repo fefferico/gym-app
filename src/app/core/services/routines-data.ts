@@ -23,10 +23,10 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetReps": {type: targetRepsTypeENUM.exact, "value": 10},
                         "targetWeight": {type: weightTypeENUM.exact, value: 10},
                         "targetRest": {type: restTypeENUM.exact, seconds: 10},
-                        "type": "standard",
+                        type: "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
@@ -36,10 +36,10 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetReps": {type: targetRepsTypeENUM.exact, "value": 10},
                         "targetWeight": {type: weightTypeENUM.exact, value: 10},
                         "targetRest": {type: restTypeENUM.exact, seconds: 10},
-                        "type": "standard",
+                        type: "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
@@ -49,16 +49,16 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetReps": {type: targetRepsTypeENUM.exact, "value": 10},
                         "targetWeight": {type: weightTypeENUM.exact, value: 10},
                         "targetRest": {type: restTypeENUM.exact, seconds: 10},
-                        "type": "standard",
+                        type: "standard",
                         "notes": "Aim for 8-10 reps."
                     }
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
-                "type": "standard"
+                type: "standard"
             },
             {
                 "id": "bwa-ex2",
@@ -72,10 +72,10 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetReps": {type: targetRepsTypeENUM.exact, "value": 10},
                         "targetWeight": {type: weightTypeENUM.exact, value: 10},
                         "targetRest": {type: restTypeENUM.exact, seconds: 10},
-                        "type": "standard",
+                        type: "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
@@ -85,10 +85,10 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetReps": {type: targetRepsTypeENUM.exact, "value": 10},
                         "targetWeight": {type: weightTypeENUM.exact, value: 10},
                         "targetRest": {type: restTypeENUM.exact, seconds: 10},
-                        "type": "standard",
+                        type: "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
@@ -98,16 +98,16 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetReps": {type: targetRepsTypeENUM.exact, "value": 10},
                         "targetWeight": {type: weightTypeENUM.exact, value: 10},
                         "targetRest": {type: restTypeENUM.exact, seconds: 10},
-                        "type": "standard",
+                        type: "standard",
                         "notes": "Aim for 8-10 reps."
                     }
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
-                "type": "standard"
+                type: "standard"
             },
             {
                 "id": "bwa-ex3",
@@ -121,10 +121,10 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetReps": {type: targetRepsTypeENUM.exact, "value": 10},
                         "targetWeight": {type: weightTypeENUM.exact, value: 10},
                         "targetRest": {type: restTypeENUM.exact, seconds: 10},
-                        "type": "standard",
+                        type: "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
@@ -134,10 +134,10 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetReps": {type: targetRepsTypeENUM.exact, "value": 10},
                         "targetWeight": {type: weightTypeENUM.exact, value: 10},
                         "targetRest": {type: restTypeENUM.exact, seconds: 10},
-                        "type": "standard",
+                        type: "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
@@ -147,16 +147,16 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetReps": {type: targetRepsTypeENUM.exact, "value": 10},
                         "targetWeight": {type: weightTypeENUM.exact, value: 10},
                         "targetRest": {type: restTypeENUM.exact, seconds: 10},
-                        "type": "standard",
+                        type: "standard",
                         "notes": "Aim for 8-10 reps."
                     }
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
-                "type": "standard"
+                type: "standard"
             }
         ]
     },
@@ -178,10 +178,10 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 8},
+                        "targetReps": {type: targetRepsTypeENUM.exact, "value": 8},
                         "targetWeight": {type: weightTypeENUM.exact, value: 10},
                         "targetRest": {type: restTypeENUM.exact, seconds: 10},
-                        "type": "standard",
+                        type: "standard",
                         "notes": "Aim for 6-8 reps."
                     },
                     {
@@ -191,10 +191,10 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 8},
+                        "targetReps": {type: targetRepsTypeENUM.exact, "value": 8},
                         "targetWeight": {type: weightTypeENUM.exact, value: 10},
                         "targetRest": {type: restTypeENUM.exact, seconds: 10},
-                        "type": "standard",
+                        type: "standard",
                         "notes": "Aim for 6-8 reps."
                     },
                     {
@@ -204,16 +204,16 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 8},
+                        "targetReps": {type: targetRepsTypeENUM.exact, "value": 8},
                         "targetWeight": {type: weightTypeENUM.exact, value: 10},
                         "targetRest": {type: restTypeENUM.exact, seconds: 10},
-                        "type": "standard",
+                        type: "standard",
                         "notes": "Aim for 6-8 reps."
                     }
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
-                "type": "standard"
+                type: "standard"
             },
             {
                 "id": "bwb-ex2",
@@ -226,9 +226,9 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetReps": {type: targetRepsTypeENUM.exact, "value": 10},
                         "targetRest": {type: restTypeENUM.exact, seconds: 10},
-                        "type": "standard",
+                        type: "standard",
                         "notes": "If you cannot do pull-ups, substitute with Lat Pulldowns. Aim for 8-10 reps."
                     },
                     {
@@ -237,9 +237,9 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetReps": {type: targetRepsTypeENUM.exact, "value": 10},
                         "targetRest": {type: restTypeENUM.exact, seconds: 10},
-                        "type": "standard",
+                        type: "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
@@ -248,15 +248,15 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.reps,
                             metricENUM.rest
                         ],
-                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetReps": {type: targetRepsTypeENUM.exact, "value": 10},
                         "targetRest": {type: restTypeENUM.exact, seconds: 10},
-                        "type": "standard",
+                        type: "standard",
                         "notes": "Aim for 8-10 reps."
                     }
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
-                "type": "standard"
+                type: "standard"
             },
             {
                 "id": "bwb-ex3",
@@ -270,10 +270,10 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.weight,
                             metricENUM.rest
                         ],
-                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetReps": {type: targetRepsTypeENUM.exact, "value": 10},
                         "targetWeight": {type: weightTypeENUM.exact, value: 10},
                         "targetRest": {type: restTypeENUM.exact, seconds: 10},
-                        "type": "standard",
+                        type: "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
@@ -283,10 +283,10 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.weight,
                             metricENUM.rest
                         ],
-                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetReps": {type: targetRepsTypeENUM.exact, "value": 10},
                         "targetWeight": {type: weightTypeENUM.exact, value: 10},
                         "targetRest": {type: restTypeENUM.exact, seconds: 10},
-                        "type": "standard",
+                        type: "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
@@ -296,16 +296,16 @@ export const ROUTINES_DATA: Routine[] = [
                             metricENUM.weight,
                             metricENUM.rest
                         ],
-                        "targetReps": {"type": targetRepsTypeENUM.exact, "value": 10},
+                        "targetReps": {type: targetRepsTypeENUM.exact, "value": 10},
                         "targetWeight": {type: weightTypeENUM.exact, value: 10},
                         "targetRest": {type: restTypeENUM.exact, seconds: 10},
-                        "type": "standard",
+                        type: "standard",
                         "notes": "Aim for 8-10 reps."
                     }
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
-                "type": "standard"
+                type: "standard"
             }
         ]
     }

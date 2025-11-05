@@ -731,4 +731,14 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   getDistanceValue(distance: DistanceTarget | undefined): number {
     return getDistanceValue(distance);
   }
+
+  getTranslatedExercise(exercise: Exercise): Observable<Exercise> {
+  return this.translate.get('exercises').pipe(
+    map((translations: any) => ({
+      ...exercise,
+      name: translations[exercise.id]?.name || exercise.name,
+      description: translations[exercise.id]?.description || exercise.description,
+    }))
+  );
+}
 }

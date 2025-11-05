@@ -4,6 +4,7 @@ import { Muscle } from "../models/muscle.model";
 
 export type MuscleValue =
   | 'core'
+  | 'abs'
   | 'rectusAbdominis'
   | 'obliques'
   | 'transverseAbdominis'
@@ -18,6 +19,7 @@ export type MuscleValue =
   | 'erectorSpinae'
   | 'upperBack'
   | 'legs'
+  | 'lowerBody'
   | 'quadriceps'
   | 'hamstrings'
   | 'glutes'
@@ -56,6 +58,7 @@ export type MuscleValue =
 export const MUSCLES_DATA: Muscle[] = [
   // Core
   { id: 'core', name: 'muscles.core', bodyPart: 'bodyParts.core' },
+  { id: 'abs', name: 'muscles.abs', bodyPart: 'bodyParts.core' },
   { id: 'rectusAbdominis', name: 'muscles.rectusAbdominis', bodyPart: 'bodyParts.core' },
   { id: 'obliques', name: 'muscles.obliques', bodyPart: 'bodyParts.core' },
   { id: 'transverseAbdominis', name: 'muscles.transverseAbdominis', bodyPart: 'bodyParts.core' },
@@ -74,6 +77,7 @@ export const MUSCLES_DATA: Muscle[] = [
 
   // Legs
   { id: 'legs', name: 'muscles.legs', bodyPart: 'bodyParts.legs' },
+  { id: 'lowerBody', name: 'muscles.lowerBody', bodyPart: 'bodyParts.legs' },
   { id: 'quadriceps', name: 'muscles.quadriceps', bodyPart: 'bodyParts.legs' },
   { id: 'hamstrings', name: 'muscles.hamstrings', bodyPart: 'bodyParts.legs' },
   { id: 'glutes', name: 'muscles.glutes', bodyPart: 'bodyParts.legs' },

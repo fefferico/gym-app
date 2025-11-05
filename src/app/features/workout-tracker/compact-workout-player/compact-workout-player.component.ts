@@ -2184,7 +2184,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         // --- Displaying planned target ---
         const parts: string[] = [];
         const repsDisplay = this.workoutUtilsService.getSetTargetDisplay(plannedSet, METRIC.reps);
-        const weightDisplay = this.workoutUtilsService.getWeightDisplay(plannedSet, exercise);
+        const weightDisplay = this.workoutUtilsService.getSetWeightDisplay(plannedSet, exercise);
 
         // Handle weight and reps together for traditional display
         if (repsDisplay && repsDisplay !== '0' && weightDisplay !== this.translate.instant('workoutService.display.weightNotApplicable')) {
@@ -3326,7 +3326,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     } else {
       // Use the pre-calculated set to get the display values for reps and weight
       const repsDisplay = this.workoutUtilsService.getSetTargetDisplay(setForDisplay, METRIC.reps);
-      const weightDisplay = this.workoutUtilsService.getWeightDisplay(setForDisplay, exercise);
+      const weightDisplay = this.workoutUtilsService.getSetWeightDisplay(setForDisplay, exercise);
 
       return repsDisplay ? `Target: ${weightDisplay} x ${repsDisplay} reps` : 'No target set';
     }
@@ -3374,12 +3374,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const plannedSet = routine.exercises[exIndex].sets[setIndex];
     const loggedSet = this.getLoggedSet(exIndex, setIndex);
 
-    // PRIORITY 1: Show already logged data if it exists.
+    // PRIORITY 1: Show already logged data if it exists. (COMPLETED SET)
     if (loggedSet) {
       switch (field) {
-        case METRIC.reps: return (repsTargetAsString(loggedSet.repsLogged) ?? 0).toString();
-        case METRIC.weight: return (loggedSet.weightLogged ?? '').toString();
-        case METRIC.distance: return (loggedSet.distanceLogged ?? '').toString();
+        case METRIC.reps: return (this.workoutUtilsService.repsTargetAsString(loggedSet.repsLogged) ?? 0).toString();
+        case METRIC.weight: return (this.workoutUtilsService.weightTargetAsString(loggedSet.weightLogged) ?? '').toString();
+        case METRIC.distance: return (this.workoutUtilsService.distanceTargetAsString(loggedSet.distanceLogged) ?? '').toString();
         case METRIC.duration: return this.formatSecondsToTime(getDurationValue(loggedSet.durationLogged));
         case METRIC.tempo: return (loggedSet.tempoLogged ?? '-').toString();
         case METRIC.rest: return this.formatSecondsToTime(getRestValue(loggedSet.restLogged));
@@ -3390,9 +3390,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     // PRIORITY 2: Show what the user has typed for this specific field if it exists.
     if (userInputs) {
       switch (field) {
-        case METRIC.reps: if (userInputs.actualReps !== undefined) return repsTargetAsString(userInputs.actualReps); break;
-        case METRIC.weight: if (userInputs.actualWeight !== undefined) return userInputs.actualWeight.toString(); break;
-        case METRIC.distance: if (userInputs.actualDistance !== undefined) return userInputs.actualDistance.toString(); break;
+        case METRIC.reps: if (userInputs.actualReps !== undefined) return this.workoutUtilsService.repsTargetAsString(userInputs.actualReps); break;
+        case METRIC.weight: if (userInputs.actualWeight !== undefined) return getWeightValue(userInputs.actualWeight).toString(); break;
+        case METRIC.distance: if (userInputs.actualDistance !== undefined) return getDistanceValue(userInputs.actualDistance).toString(); break;
         case METRIC.duration: if (userInputs.actualDuration !== undefined) return this.formatSecondsToTime(getDurationValue(userInputs.actualDuration)); break;
         case METRIC.rest: if (userInputs.actualRest !== undefined) return this.formatSecondsToTime(getRestValue(userInputs.actualRest)); break;
         case METRIC.tempo: if (userInputs.tempoLogged !== undefined) return userInputs.tempoLogged; break;
@@ -4768,13 +4768,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return Array.from(this.invalidInputs()).some(key => key.startsWith(prefix));
   }
 
-    /**
-   * GENERIC: Opens a modal to configure the target scheme for any metric.
-   * @param exIndex The index of the exercise.
-   * @param setIndex The index of the set.
-   * @param metric The metric to be configured (e.g., 'reps', 'weight').
-   * @param event The mouse event to stop propagation.
-   */
+  /**
+ * GENERIC: Opens a modal to configure the target scheme for any metric.
+ * @param exIndex The index of the exercise.
+ * @param setIndex The index of the set.
+ * @param metric The metric to be configured (e.g., 'reps', 'weight').
+ * @param event The mouse event to stop propagation.
+ */
   async openMetricSchemeModal(exIndex: number, setIndex: number, metric: METRIC, event?: Event): Promise<void> {
     event?.stopPropagation();
 
@@ -4814,6 +4814,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         return;
     }
 
+    // remove from the availableSchemes the current one
+    availableSchemes = availableSchemes.filter(s => s.type !== currentTarget?.type);
+    if (availableSchemes.length === 0) {
+      this.toastService.error(`No further available schemes found for metric: ${metric}. Consider that while doing a workout metric types different from 'exact' are not allowed`, 8000, this.translate.instant('common.error'));
+      return;
+    }
+
     // 2. Call the generic service method.
     const result = await this.workoutUtilsService.showSchemeModal(
       metric,
@@ -4829,13 +4836,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-/**
-   * GENERIC: Updates a specific metric's target object for a given set within the routine.
-   * @param exIndex The index of the exercise.
-   * @param setIndex The index of the set.
-   * @param metric The metric to update.
-   * @param newTarget The new target object.
-   */
+  /**
+     * GENERIC: Updates a specific metric's target object for a given set within the routine.
+     * @param exIndex The index of the exercise.
+     * @param setIndex The index of the set.
+     * @param metric The metric to update.
+     * @param newTarget The new target object.
+     */
   updateSetMetricTarget(exIndex: number, setIndex: number, metric: METRIC, newTarget: AnyTarget): void {
     this.routine.update(routine => {
       if (!routine) return routine;
@@ -4883,16 +4890,16 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-    getDurationValue(duration: DurationTarget | undefined): number {
-      return getDurationValue(duration);
-    }
-  
-      getWeightValue(duration: WeightTarget | undefined): number {
-      return getWeightValue(duration);
-    }
-  
-      getDistanceValue(distance: DistanceTarget | undefined): number {
-      return getDistanceValue(distance);
-    }
+  getDurationValue(duration: DurationTarget | undefined): number {
+    return getDurationValue(duration);
+  }
+
+  getWeightValue(duration: WeightTarget | undefined): number {
+    return getWeightValue(duration);
+  }
+
+  getDistanceValue(distance: DistanceTarget | undefined): number {
+    return getDistanceValue(distance);
+  }
 
 }

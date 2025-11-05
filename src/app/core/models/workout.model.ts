@@ -25,9 +25,9 @@ export const REPS_TARGET_SCHEMES: RepsTargetScheme[] = [
   { type: RepsTargetType.exact, labelKey: 'repsSchemes.exact', isTextual: false, availableInBuilder: true, availableInPlayer: true, availableInLogs: true },
   { type: RepsTargetType.range, labelKey: 'repsSchemes.range', isTextual: false, availableInBuilder: true, availableInPlayer: false, availableInLogs: false }, // A user logs an exact number, not a range.
   { type: RepsTargetType.min_plus, labelKey: 'repsSchemes.minPlus', isTextual: false, availableInBuilder: true, availableInPlayer: false, availableInLogs: false }, // A user logs an exact number, not "5+".
-  { type: RepsTargetType.amrap, labelKey: 'repsSchemes.amrap', isTextual: true, availableInBuilder: true, availableInPlayer: true, availableInLogs: false },
-  { type: RepsTargetType.max, labelKey: 'repsSchemes.max', isTextual: true, availableInBuilder: true, availableInPlayer: true, availableInLogs: false },
-  { type: RepsTargetType.max_fraction, labelKey: 'repsSchemes.maxFraction', isTextual: true, availableInBuilder: true, availableInPlayer: true, availableInLogs: false }
+  { type: RepsTargetType.amrap, labelKey: 'repsSchemes.amrap', isTextual: true, availableInBuilder: true, availableInPlayer: false, availableInLogs: false },
+  { type: RepsTargetType.max, labelKey: 'repsSchemes.max', isTextual: true, availableInBuilder: true, availableInPlayer: false, availableInLogs: false },
+  { type: RepsTargetType.max_fraction, labelKey: 'repsSchemes.maxFraction', isTextual: true, availableInBuilder: true, availableInPlayer: false, availableInLogs: false }
 ];
 
 /**

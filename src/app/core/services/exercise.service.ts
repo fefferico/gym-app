@@ -805,14 +805,14 @@ export class ExerciseService {
    * @param exercise The base Exercise object with default (English) text.
    * @returns An Observable that emits a single, translated Exercise object.
    */
-    /**
-   * Takes a static Exercise object and returns an Observable of that
-   * exercise with its 'name' and 'description' fields translated to the
-   * currently active language.
-   *
-   * @param exercise The static Exercise object to translate.
-   * @returns An Observable<Exercise> that emits the fully translated exercise.
-   */
+  /**
+ * Takes a static Exercise object and returns an Observable of that
+ * exercise with its 'name' and 'description' fields translated to the
+ * currently active language.
+ *
+ * @param exercise The static Exercise object to translate.
+ * @returns An Observable<Exercise> that emits the fully translated exercise.
+ */
   getTranslatedExercise(exercise: Exercise): Observable<Exercise> {
     if (!exercise || !exercise.id) {
       return of(exercise); // Return original if invalid
@@ -835,14 +835,14 @@ export class ExerciseService {
     );
   }
 
-   /**
-   * --- NEW METHOD TO BE ADDED ---
-   * Translates the names of all exercises in a given list by calling
-   * getTranslatedExercise for each and waiting for all to complete.
-   *
-   * @param exercises The array of Exercise objects to translate.
-   * @returns An Observable that emits an array of translated Exercise objects.
-   */
+  /**
+  * --- NEW METHOD TO BE ADDED ---
+  * Translates the names of all exercises in a given list by calling
+  * getTranslatedExercise for each and waiting for all to complete.
+  *
+  * @param exercises The array of Exercise objects to translate.
+  * @returns An Observable that emits an array of translated Exercise objects.
+  */
   public getTranslatedExerciseList(exercises: Exercise[]): Observable<Exercise[]> {
     // If the input array is null or empty, there's nothing to do.
     // Return an observable that immediately emits an empty array.
@@ -863,7 +863,7 @@ export class ExerciseService {
     return forkJoin(translationObservables);
   }
 
-  
+
   /**
    * Retrieves a single exercise by its ID and returns a "hydrated" version
    * with fully resolved and translated muscle and equipment objects.
@@ -877,11 +877,15 @@ export class ExerciseService {
           return of(null); // If no exercise, return null immediately.
         }
 
+        // Build translation keys
+        const nameKey = `exercises.${exercise.id}.name`;
+        const descKey = `exercises.${exercise.id}.description`;
+
         // Combine streams for all necessary lookup maps
         return combineLatest([
           this.muscleMapService.musclesMap$,
-          this.equipmentService.equipmentMap$, 
-          this.translate.get([exercise.name, exercise.description]) // Translate name/desc
+          this.equipmentService.equipmentMap$,
+          this.translate.get([nameKey, descKey])
         ]).pipe(
           map(([musclesMap, equipmentMap, translations]) => {
             // Hydrate Primary Muscle Group
@@ -898,12 +902,12 @@ export class ExerciseService {
             const equipmentNeeded = (exercise.equipmentNeeded || [])
               .map(eqId => equipmentMap.get(eqId))
               .filter((eq): eq is Equipment => !!eq);
-            
+
             // Assemble the final hydrated object
             return {
               ...exercise,
-              name: translations[exercise.name], // Use translated name
-              description: translations[exercise.description], // Use translated desc
+              name: translations[nameKey] || exercise.name,
+              description: translations[descKey] || exercise.description,
               primaryMuscleGroup,
               muscleGroups,
               equipmentNeeded
