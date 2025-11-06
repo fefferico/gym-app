@@ -869,6 +869,10 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     return this.activeRoutineIdActions() === routineId;
   }
 
+  areActionsOpen(): boolean {
+    return !!this.activeRoutineIdActions();
+  }
+
   // When closing menu from the component's output
   onCloseActionMenu() {
     this.activeRoutineIdActions.set(null);

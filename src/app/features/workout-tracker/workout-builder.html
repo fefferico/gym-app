@@ -747,8 +747,22 @@
                                                 </button>
 
                                                 <!-- Collapsible Content -->
-                                                <div class="overflow-hidden transition-all duration-300 ease-in-out"
+                                                <div #allSetEditingPanel
+                                                    class="overflow-hidden transition-all duration-300 ease-in-out"
                                                     [style.maxHeight]="expandedSetAllPanel() === exIndex ? '500px' : '0px'">
+
+                                                    <!-- Metrics Toggle Chips -->
+                                                    <div class="flex flex-wrap gap-2 my-3 justify-center">
+                                                        <ng-container *ngFor="let metric of allAvailableMetrics">
+                                                            <button type="button" class="px-3 py-1 rounded-full border font-semibold text-xs transition
+                                                            " [ngClass]="{
+                                                            'bg-primary text-white border-primary-light': isMetricActiveForAllSets(exIndex, metric),
+                                                            'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600': !isMetricActiveForAllSets(exIndex, metric)
+                                                          }" (click)="toggleMetricForAllSets(exIndex, metric)">
+                                                                {{ 'metrics.' + metric | translate }}
+                                                            </button>
+                                                        </ng-container>
+                                                    </div>
                                                     <div
                                                         class="p-4 border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-xl bg-white dark:bg-gray-800">
                                                         <div class="grid grid-cols-2 gap-4">
@@ -760,7 +774,8 @@
                                                                     class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{
                                                                     'metrics.reps' | translate }}</label>
                                                                 <input type="number" [(ngModel)]="repsToSetForAll"
-                                                                    [ngModelOptions]="{standalone: true}"
+                                                                    [ngModelOptions]="{standalone: true}" min="1"
+                                                                    [step]="repsStep"
                                                                     class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
                                                             </div>
 
@@ -772,7 +787,8 @@
                                                                     'metrics.weight' | translate }}
                                                                     ({{ unitService.getWeightUnitSuffix() }})</label>
                                                                 <input type="number" [(ngModel)]="weightToSetForAll"
-                                                                    [ngModelOptions]="{standalone: true}"
+                                                                    [ngModelOptions]="{standalone: true}" min="0"
+                                                                    [step]="weightStep"
                                                                     class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
                                                             </div>
 
@@ -784,7 +800,8 @@
                                                                     'metrics.duration' | translate }}
                                                                     (s)</label>
                                                                 <input type="number" [(ngModel)]="durationToSetForAll"
-                                                                    [ngModelOptions]="{standalone: true}"
+                                                                    [ngModelOptions]="{standalone: true}" min="1"
+                                                                    [step]="durationStep"
                                                                     class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
                                                             </div>
 
@@ -797,7 +814,8 @@
                                                                     ({{ unitService.getDistanceMeasureUnitSuffix()
                                                                     }})</label>
                                                                 <input type="number" [(ngModel)]="distanceToSetForAll"
-                                                                    [ngModelOptions]="{standalone: true}"
+                                                                    [ngModelOptions]="{standalone: true}" min="0.1"
+                                                                    [step]="distanceStep"
                                                                     class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
                                                             </div>
 
@@ -809,7 +827,8 @@
                                                                     'metrics.rest' | translate }}
                                                                     (s)</label>
                                                                 <input type="number" [(ngModel)]="restToSetForAll"
-                                                                    [ngModelOptions]="{standalone: true}"
+                                                                    [ngModelOptions]="{standalone: true}" min="1"
+                                                                    [step]="restStep"
                                                                     class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
                                                             </div>
                                                         </div>
@@ -1232,21 +1251,24 @@
                 <app-icon name="minus" class="h-6 w-6 pointer-events-none"></app-icon>
             </button>
 
-            <!-- This container enables the layering -->
-            <div class="relative w-full flex-grow bg-gray-50 dark:bg-gray-800 rounded-xl">
-
-                <!-- The Animating Span (Bottom Layer) -->
-                <!-- It now has the SAME border classes as the input, but transparent, to ensure identical dimensions. -->
+            <!-- Editable Input -->
+            <div class="relative w-full flex-grow rounded-xl my-1 h-14">
+                <!-- Animated value span, always visible but not blocking input -->
                 <span
-                    class="absolute inset-0 flex items-center justify-center w-full px-1.5 py-2 text-center text-lg font-bold text-black dark:text-gray-200 border-y border-transparent"
-                    [@valueAnimation]="setControl.get(getFormControlName(field))?.value">
+                    class="absolute inset-0 flex items-center justify-center text-center text-lg font-bold text-black dark:text-gray-200 border-y border-transparent z-10 cursor-text select-none"
+                    [@valueAnimation]="getExactInputValue(setControl, field)"
+                    (click)="focusInput(setControl.get('id')?.value, field)">
                     {{ getSetMetricDisplayValue(setControl,field) || 0 }}
                 </span>
-
-                <!-- The Interactive Input (Top Layer) -->
-                <!-- The 'relative' class is removed as it's redundant. All other classes are kept. -->
-                <input [type]="'number'" [formControlName]="getFormControlName(field)" [readonly]="isViewMode"
-                    class="z-10 w-full px-1.5 py-2 text-center text-lg font-bold bg-transparent text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none no-arrows"
+                <!-- Input is always visible and interactive -->
+                <input type="number" #inputElem [attr.data-set-id]="setControl.get('id')?.value"
+                    [attr.data-field]="field" [value]="getExactInputValue(setControl, field)"
+                    (input)="onExactInputChange(setControl, field, $event)" [readonly]="isViewMode"
+                    (focus)="onInputFocus(setControl.get('id')?.value, field); selectInputText(inputElem)"
+                    (blur)="onInputBlur(setControl.get('id')?.value, field)"
+                    (wheel)="onInputWheel(setControl, field, $event)" (touchstart)="onInputTouchStart($event)"
+                    (touchmove)="onInputTouchMove(setControl, field, $event)"
+                    class="absolute inset-0 w-full h-full px-1.5 py-2 text-center text-lg font-bold bg-transparent dark:bg-gray-800 rounded-xl text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none no-arrows z-20"
                     [ngClass]="{ 'animating-input-text': isAnimatingSet() === setControl.get('id')?.value }">
             </div>
 
@@ -1266,12 +1288,12 @@
     <div [formGroup]="setControl">
         <label class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
             <span>{{ 'metrics.' + field | translate }}
-<!-- show proper unit  -->
-            <span *ngIf="field === metricEnum.weight">({{unitService.currentWeightUnit()}})</span>
-            <!-- <span *ngIf="setControl.get(getFormControlName(field))?.value?.type === 'reps'">({{unitService.getRepsUnit()}})</span> -->
-            <span *ngIf="field === metricEnum.duration">(s)</span>
-            <span *ngIf="field === metricEnum.distance">({{unitService.currentDistanceMeasureUnit()}})</span>
-            <span *ngIf="field === metricEnum.rest">(s)</span>
+                <!-- show proper unit  -->
+                <span *ngIf="field === metricEnum.weight">({{unitService.currentWeightUnit()}})</span>
+                <!-- <span *ngIf="setControl.get(getFormControlName(field))?.value?.type === 'reps'">({{unitService.getRepsUnit()}})</span> -->
+                <span *ngIf="field === metricEnum.duration">(s)</span>
+                <span *ngIf="field === metricEnum.distance">({{unitService.currentDistanceMeasureUnit()}})</span>
+                <span *ngIf="field === metricEnum.rest">(s)</span>
             </span>
             <button type="button" (click)="openMetricSchemeModal(setControl, field, $event)"
                 class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">

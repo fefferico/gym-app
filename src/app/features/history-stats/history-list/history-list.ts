@@ -881,6 +881,10 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.activeItemIdActions() === routineId;
   }
 
+  areActionsOpen(): boolean {
+    return !!this.activeItemIdActions();
+  }
+
   // When closing menu from the component's output
   onCloseActionMenu() {
     this.activeItemIdActions.set(null);

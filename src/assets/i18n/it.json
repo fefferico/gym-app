@@ -45,7 +45,7 @@
     "myRoutinesDescription": "Visualizza, crea o modifica le tue schede di allenamento",
     "trainingProgramsTitle": "Programmi di Allenamento",
     "trainingProgramsDescription": "Gestisci le tue schede di allenamento a lungo termine",
-    "workoutHistoryTitle": "Storico Allenamenti",
+    "workoutHistoryTitle": "Diario Allenamenti",
     "workoutHistoryDescription": "Rivedi i tuoi allenamenti passati e i tuoi progressi",
     "profileAndSettingsTitle": "Profilo e Impostazioni",
     "profileAndSettingsDescription": "Gestisci i tuoi dati e le preferenze dell'app",
@@ -166,7 +166,7 @@
       "exportButton": "ESPORTA DATI",
       "importTitle": "Ripristino dei tuoi dati",
       "importDescription": "Importa da un file di backup JSON.",
-      "syncTitle": "Dati e Storico",
+      "syncTitle": "Dati e Diario",
       "syncDescription": "Ricalcola statistiche e record.",
       "syncButton": "SINCRONIZZA CRONOLOGIA",
       "resetTitle": "Azzera Tutti i Dati",
@@ -417,14 +417,14 @@
     }
   },
   "historyList": {
-    "title": "Storico",
+    "title": "Diario",
     "toggleFilters": "Mostra/Nascondi Filtri",
     "view": {
       "list": "ELENCO",
       "calendar": "CALENDARIO"
     },
     "filters": {
-      "title": "Filtra Storico",
+      "title": "Filtra Diario",
       "fromDate": "Dal",
       "toDate": "Al",
       "routineName": "Nome Scheda",
@@ -817,6 +817,7 @@
       "ok": "OK"
     },
     "toasts": {
+      "noFurtherSchemes": "Non sono stati trovati ulteriori schemi disponibili per la metrica: {{metric}}. Tieni presente che durante un allenamento sono consentiti solo i tipi di metrica di tipo 'esatto'.",
       "intensityAdjusted": "L'intensità della scheda sarà modificata del {{percent}}%",
       "intensityAdjustedTitle": "Intensità Modificata",
       "workoutPaused": "Allenamento in Pausa",
@@ -922,6 +923,11 @@
       "quit": "ABBANDONA ALLENAMENTO",
       "countdown": "CONTO ALLA ROVESCIA",
       "stopwatch": "CRONOMETRO"
+    },
+    "set": {
+      "atLeastOneMetric": "È richiesto almeno un parametro",
+      "metricsUpdated": "Aggiornato: {{summary}}",
+      "none": "Nessuno"
     }
   },
   "actionButtons": {
@@ -952,7 +958,7 @@
     "unhide": "MOSTRA",
     "markFavourite": "PREFERITO",
     "unmarkFavourite": "RIMUOVI",
-    "logs": "STORICO",
+    "logs": "DIARIO",
     "view": "VEDI",
     "start": "INIZIA",
     "edit": "MODIFICA",
@@ -1123,6 +1129,9 @@
       "newCustomExerciseDescription": "Descrizione"
     },
     "set": {
+      "metricAdded": "{{metric}} aggiunto a tutte le serie.",
+      "metricRemoved": "{{metric}} rimosso da tutte le serie.",
+      "negativeNotAllowed": "I valori negativi non sono consentiti. I valori sono stati impostati su zero.",
       "set": "Serie",
       "totalSets": "Serie totali",
       "round": "Turno",
@@ -1376,7 +1385,7 @@
       "reps": "Rep",
       "weight": "Peso",
       "distance": "Distanza",
-      "time": "Tempo (s)",
+      "time": "Tempo",
       "rest": "Recupero",
       "notes": "Note",
       "noSetData": "-",
@@ -1453,7 +1462,7 @@
     "notFound": {
       "title": "Registrazione Allenamento Non Trovata",
       "message": "La registrazione dell'allenamento che stai cercando non esiste",
-      "backToHistory": "Torna allo Storico"
+      "backToHistory": "Torna al Diario"
     },
     "toasts": {
       "effortSaved": "Sforzo percepito salvato con successo!",
@@ -1683,7 +1692,7 @@
   },
   "restTimer": {
     "nextUp": "Prossimo",
-    "lastTime": "Serie precedente",
+    "lastTime": "Volta precedente",
     "skip": "Salta",
     "switchToStopwatch": "Passa al cronometro",
     "switchToTimer": "Passa al timer",
@@ -2365,7 +2374,7 @@
   "navigation": {
     "home": "HOME",
     "routines": "SCHEDE",
-    "history": "STORICO",
+    "history": "DIARIO",
     "programs": "PROGRAMMI",
     "stats": "STATISTICHE",
     "profile": "PROFILO"
@@ -2702,7 +2711,7 @@
     "equipmentSpecific": "Specifico per Attrezzatura",
     "custom": "Personalizzato"
   },
-  "schemes":{
+  "schemes": {
     "selectType": "Seleziona tipo",
     "titles": {
       "selectType": "Seleziona tipo",
@@ -2775,5 +2784,16 @@
   },
   "workoutLogDetail": {
     "targetComparison": "Confronto obiettivo"
+  },
+  "perceivedEffortModal": {
+    "title": "Valuta la tua sessione",
+    "effortQuestion": "Quanto è stata impegnativa questa sessione di allenamento?",
+    "effortMin": "Facile",
+    "effortMax": "Massimo sforzo",
+    "feelingQuestion": "Come ti senti dopo questa sessione di allenamento?",
+    "feelingMin": "Non produttivo",
+    "feelingMax": "Più forte che mai",
+    "skip": "SALTA",
+    "save": "SALVA VALUTAZIONE"
   }
 }

@@ -416,20 +416,30 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   }
 
 
-  getSetWeightsUsed(loggedEx: LoggedWorkoutExercise): string {
-    let stringResult = loggedEx.sets.map(set => set.weightLogged).join(' - ');
+  getExerciseWeightLogged(loggedEx: LoggedWorkoutExercise): string {
+    let stringResult = loggedEx.sets.map(set => this.workoutUtilsService.getWeightValue(set.weightLogged)).join(' - ');
     if (stringResult.length > 15) {
       stringResult = stringResult.substring(0, 15) + '...';
     }
     return stringResult;
   }
 
-  getSetdurationLogged(loggedEx: LoggedWorkoutExercise): string {
-    return loggedEx.sets.map(set => set.durationLogged).join(' - ');
+  getExerciseDurationLogged(loggedEx: LoggedWorkoutExercise): string {
+    const result = loggedEx?.sets.map(set => this.workoutUtilsService.getDurationValue(set.durationLogged)).join('s - ');
+    // If the resulting string does not contain any digit, return '0'
+    return /\d/.test(result) ? result : '0';
   }
 
-  getSetReps(loggedEx: LoggedWorkoutExercise): string {
-    return loggedEx?.sets.map(set => set.repsLogged).join(' - ');
+  getExerciseRepsLogged(loggedEx: LoggedWorkoutExercise): string {
+    const result = loggedEx?.sets.map(set => this.workoutUtilsService.getRepsValue(set.repsLogged)).join(' - ');
+  // If the resulting string does not contain any digit, return '0'
+  return /\d/.test(result) ? result : '0';
+}
+
+  getExerciseDistanceLogged(loggedEx: LoggedWorkoutExercise): string {
+    const result = loggedEx?.sets.map(set => this.workoutUtilsService.getDistanceValue(set.distanceLogged)).join(' - ');
+    // If the resulting string does not contain any digit, return '0'
+    return /\d/.test(result) ? result : '0';
   }
 
   checkIfDurationAvailable(loggedEx: LoggedWorkoutExercise): boolean {

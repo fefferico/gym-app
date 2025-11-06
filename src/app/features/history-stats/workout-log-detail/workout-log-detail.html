@@ -221,13 +221,16 @@
                         <p *ngIf="item.baseExercise?.category" class="truncate">{{ item.baseExercise?.category |
                           titlecase }}</p>
                         <p *ngIf="checkIfDurationAvailable(item)">{{ 'logDetail.card.time' | translate }}:
-                          {{getSetdurationLogged(item)}}</p>
+                          {{getExerciseDurationLogged(item)}}</p>
                         <p>{{ 'logDetail.card.set' | translate }}: {{item.sets.length}} <span
-                            *ngIf="getSetReps(item) !== '0'">({{ 'logDetail.card.reps' | translate }}:
-                            {{getSetReps(item)}})</span></p>
+                            *ngIf="getExerciseRepsLogged(item) !== '0'">({{ 'logDetail.card.reps' | translate }}:
+                            {{getExerciseRepsLogged(item)}})</span></p>
                         <p *ngIf="checkIfWeightAvailable(item)">{{ 'logDetail.card.weight' | translate }}
                           ({{unitService.getWeightUnitSuffix()}}):
-                          {{getSetWeightsUsed(item)}}</p>
+                          {{getExerciseWeightLogged(item)}}</p>
+                          <p *ngIf="checkIfDistanceAvailable(item)">{{ 'logDetail.card.distance' | translate }}
+                            ({{unitService.getDistanceMeasureUnitSuffix()}}):
+                            {{getExerciseDistanceLogged(item)}}</p>
                       </div>
                     </div>
                   </div>
@@ -259,15 +262,15 @@
                     ({{unitService.getDistanceMeasureUnitSuffix()}})</div>
                   <div *ngIf="checkIfDurationAvailable(item)"
                     class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">{{ 'logDetail.card.time' |
-                    translate }}</div>
+                    translate }} (s)</div>
                   <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">{{ 'logDetail.card.rest' |
-                    translate }}</div>
+                    translate }} (s)</div>
                   <div *ngIf="hasNotes(item)" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">{{
                     'logDetail.card.notes' | translate }}
                   </div>
                   <!-- SET ROWS -->
                   <ng-container *ngFor="let set of item.sets; let i = index; let last = last">
-                    <div class="font-medium text-gray-900 dark:text-white flex items-center space-x-2">
+                    <div class="font-medium text-gray-900 dark:text-white flex items-start space-x-2">
                       <span
                         [ngClass]="{'bg-blue-300 dark:bg-blue-400 p-1 rounded': set.type && set.type === 'warmup'}">{{ i
                         + 1 }}{{set.type === 'warmup' ? '*':''}}</span>
@@ -275,39 +278,36 @@
                         [title]="'logDetail.card.pbTooltip' | translate:{types: getPersonalBestTypesForSet(set, item.exerciseId).join('\n')}">
                         <span
                           class="p-1 text-xs font-semibold rounded-full bg-primary-dark text-white dark:text-amber-100 flex items-center">
-                          <!-- class="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-primary-dark text-white dark:text-amber-100"> -->
-                          <!-- 🏆 -->
                            <app-icon name="pb" class="h-5 w-5"></app-icon>
-                          <!-- {{ 'logDetail.card.pb' | translate }} -->
                         </span>
                       </div>
                     </div>
                     <!-- Reps -->
                     <div *ngIf="checkIfRepsAvailable(item)"><strong [ngClass]="checkTextClass(set, metricEnum.reps)"
                         [class.cursor-pointer]="true"
-                        (click)="showComparisonModal(set, metricEnum.reps)">{{ workoutUtilsService.getRepsValue(set.repsLogged) || '-' }}</strong></div>
+                        (click)="showComparisonModal(set, metricEnum.reps)">{{ workoutUtilsService.repsTargetAsString(set.repsLogged) || '-' }}</strong></div>
 
                     <!-- Weight -->
                     <div *ngIf="checkIfWeightAvailable(item)"><strong [ngClass]="checkTextClass(set, metricEnum.weight)"
                         [class.cursor-pointer]="true"
-                        (click)="showComparisonModal(set, metricEnum.weight)">{{ workoutUtilsService.getWeightValue(set.weightLogged) || '-' }}</strong></div>
+                        (click)="showComparisonModal(set, metricEnum.weight)">{{ workoutUtilsService.weightTargetAsString(set.weightLogged) || '-' }}</strong></div>
 
                     <!-- Distance +++ -->
                     <div *ngIf="checkIfDistanceAvailable(item)">
                       <strong [ngClass]="checkTextClass(set, metricEnum.distance)"
                         [class.cursor-pointer]="true"
-                        (click)="showComparisonModal(set, metricEnum.distance)">{{ workoutUtilsService.getDistanceValue(set.distanceLogged) || '-' }}</strong>
+                        (click)="showComparisonModal(set, metricEnum.distance)">{{ workoutUtilsService.distanceTargetAsString(set.distanceLogged) || '-' }}</strong>
                     </div>
 
                     <!-- Time -->
                     <div *ngIf="checkIfDurationAvailable(item)"><strong [ngClass]="checkTextClass(set, metricEnum.duration)"
                         [class.cursor-pointer]="true"
-                        (click)="showComparisonModal(set, metricEnum.duration)">{{ workoutUtilsService.getDurationValue(set.durationLogged) || '-' }}</strong></div>
+                        (click)="showComparisonModal(set, metricEnum.duration)">{{ workoutUtilsService.durationTargetAsString(set.durationLogged) || '-' }}</strong></div>
 
                     <!-- Rest -->
                     <div><strong [ngClass]="checkTextClass(set, metricEnum.rest)"
                         [class.cursor-pointer]="true"
-                        (click)="showComparisonModal(set, metricEnum.rest)">{{ workoutUtilsService.getRestValue(set.restLogged) || '-' }}</strong></div>
+                        (click)="showComparisonModal(set, metricEnum.rest)">{{ workoutUtilsService.restTargetAsString(set.restLogged) || '-' }}</strong></div>
 
                     <!-- Notes -->
                     <div *ngIf="set.notes" class="cursor-pointer dark:text-white">

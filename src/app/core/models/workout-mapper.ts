@@ -150,8 +150,17 @@ function mapLegacyLoggedSet(set: any): LoggedSet {
             fieldToAdd = true;
             value = newSet[newTarget];
         }
-                // convert old numeric fields to target objects (check for strings as well) - LOGGED
+        // convert old numeric fields to target objects (check for strings as well) - LOGGED
         if (typeof newSet[newLogged] === 'number' || typeof newSet[newLogged] === 'string') {
+            // Check for metrics that should not be added if value is 0
+            const zeroValue = Number(newSet[newLogged]) === 0;
+            const skipIfZero = ['rest', 'duration', 'distance', 'reps'].includes(metricKey);
+            if (skipIfZero && zeroValue) {
+                // Remove from fieldOrder if present
+                newSet.fieldOrder = newSet.fieldOrder.filter((metric: METRIC) => metric !== METRIC[metricKey]);
+                // Do not add this metric
+                return;
+            }
             newSet[newLogged] = { type: 'exact', value: Number(newSet[newLogged]) };
             fieldToAdd = true;
             value = newSet[newLogged];
@@ -261,7 +270,7 @@ export function mapExerciseTargetSetParamsToExerciseExecutedSetParams(exerciseTa
     return {
         id: exerciseTargetSetParams.id,
         type: exerciseTargetSetParams.type,
-        targetReps: repsTypeToReps(exerciseTargetSetParams.targetReps) || {type: RepsTargetType.exact, value: 0},
+        targetReps: repsTypeToReps(exerciseTargetSetParams.targetReps) || { type: RepsTargetType.exact, value: 0 },
         targetWeight: exerciseTargetSetParams.targetWeight || weightToExact(0),
         targetDistance: exerciseTargetSetParams.targetDistance || distanceToExact(0),
         targetDuration: exerciseTargetSetParams.targetDuration || durationToExact(0),

@@ -444,4 +444,5 @@
 
 </div>
 
-<app-fab-menu [actions]="fabMenuItems" (actionClicked)="onFabAction($event)"></app-fab-menu>
+  <app-fab-menu *ngIf="!isFilterAccordionOpen() && !areActionsOpen()" [actions]="fabMenuItems"
+    (actionClicked)="onFabAction($event)"></app-fab-menu>

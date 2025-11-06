@@ -141,6 +141,7 @@
 
                 <ng-container
                   *ngIf="!isProgramWorkoutLogged(workoutInfo.scheduledDayInfo) || !isWorkoutLogged(workoutInfo.scheduledDayInfo)">
+                  <!-- FUTURE DATE -->
                   <ng-container *ngIf="isFutureDate(currentDate())">
                     <div
                       class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-4">
@@ -155,7 +156,7 @@
                     </div>
                   </ng-container>
 
-                  <!-- MODIFIED: "Session Skipped" logic updated to check for unscheduled workouts -->
+                  <!-- PAST DATE -->
                   <ng-container
                     *ngIf="!isToday(currentDate()) && !isFutureDate(currentDate()) && !workoutInfo.scheduledDayInfo.isUnscheduled">
                     <div
@@ -176,11 +177,12 @@
                     </span>
                   </ng-container>
 
+                  <!-- TODAY'S DATE -->
                   <ng-container *ngIf="isToday(currentDate())">
                     <div
                       class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-4">
-                      <!-- UPDATED: Pass the scheduledDayInfo.id to the start function -->
                       <button
+                        appBumpClick
                         (click)="startProgramWorkout(workoutInfo.routine.id, workoutInfo.scheduledDayInfo.programId, workoutInfo.scheduledDayInfo.id, $event)"
                         class="flex justify-center items-center w-full sm:min-w-[200px] px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                         <app-icon name="play" class="w-6 h-6" [strokeWidth]="2.5"></app-icon>
@@ -266,13 +268,9 @@
                           </span>
                         </span>
                       </div>
-                      <button [disabled]="isAnimating()" (click)="startWorkout(routine.id, $event)"
+                      <button appBumpClick [disabled]="isAnimating()" (click)="startWorkout(routine.id, $event)"
                         class="flex items-center ml-2 text-m bg-primary text-white hover:bg-green-600 font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                          stroke="currentColor" class="size-4 mr-1">
-                          <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" />
-                        </svg>
+                        <app-icon name="play"></app-icon>
                         {{ 'todaysWorkout.start' | translate }}
                       </button>
                     </div>
@@ -347,9 +345,11 @@
               <div *ngIf="isToday(currentDate())">
                 <p *ngIf="allActivePrograms().length === 0 && subscriptionsService.canAccess(PremiumFeature.TRAINING_PROGRAMS)"
                   class="text-m text-gray-500 dark:text-gray-400">
-                  {{ 'todaysWorkout.youCan' | translate }}<button appBumpClick (click)="managePrograms()"
+                  {{ 'todaysWorkout.youCan' | translate }}
+                  <button appBumpClick (click)="managePrograms()"
                     class="text-primary dark:text-primary-light hover:underline">{{ 'todaysWorkout.setActiveProgram' |
-                    translate }}</button>{{ 'todaysWorkout.or' | translate }}<button appBumpClick
+                    translate }}</button>{{ 'todaysWorkout.or' | translate }}
+                    <button appBumpClick
                     (click)="browseRoutines()" class="text-primary dark:text-primary-light hover:underline">{{
                     'todaysWorkout.browseRoutines' |
                     translate }}</button>
@@ -379,11 +379,7 @@
                       </div>
                       <button appBumpClick (click)="startWorkout(routine.id, $event)" [disabled]="isAnimating()"
                         class="flex items-center ml-2 text-m bg-primary text-white hover:bg-green-600 font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                          stroke="currentColor" class="size-4 mr-1">
-                          <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" />
-                        </svg>
+                        <app-icon name="play"></app-icon>
                         {{ 'todaysWorkout.start' | translate }}
                       </button>
                     </div>

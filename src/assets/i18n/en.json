@@ -817,6 +817,7 @@
       "ok": "OK"
     },
     "toasts": {
+      "noFurtherSchemes": "No further available schemes found for metric: {{metric}}. Consider that while doing a workout, only 'exact' metric types are allowed.",
       "intensityAdjusted": "Routine intensity will be adjusted by {{percent}}%",
       "intensityAdjustedTitle": "Intensity Adjusted",
       "workoutPaused": "Workout Paused",
@@ -923,6 +924,11 @@
       "quit": "QUIT WORKOUT",
       "countdown": "COUNTDOWN",
       "stopwatch": "STOPWATCH"
+    },
+    "set": {
+      "atLeastOneMetric": "At least one metric is required",
+      "metricsUpdated": "Updated: {{summary}}",
+      "none": "None"
     }
   },
   "actionButtons": {
@@ -1124,6 +1130,9 @@
       "newCustomExerciseDescription": "Description"
     },
     "set": {
+      "metricAdded": "{{metric}} added to all sets.",
+      "metricRemoved": "{{metric}} removed from all sets.",
+      "negativeNotAllowed": "Negative values are not allowed. Values have been set to zero.",
       "set": "Set",
       "totalSets": "Total sets",
       "round": "Round",
@@ -1375,7 +1384,7 @@
       "reps": "Reps",
       "weight": "Weight",
       "distance": "Distance",
-      "time": "Time (s)",
+      "time": "Time",
       "rest": "Rest",
       "notes": "Notes",
       "noSetData": "-",
@@ -2674,7 +2683,7 @@
     "equipmentSpecific": "Equipment-Specific",
     "custom": "Custom"
   },
-  "schemes":{
+  "schemes": {
     "selectType": "Select type",
     "titles": {
       "selectType": "Select type",
@@ -2747,5 +2756,16 @@
   },
   "workoutLogDetail": {
     "targetComparison": "Target comparison"
+  },
+  "perceivedEffortModal": {
+    "title": "Rate Your Perceived Feelings",
+    "effortQuestion": "How challenging was this workout session?",
+    "effortMin": "Easy",
+    "effortMax": "Max Effort",
+    "feelingQuestion": "How do you feel after this workout session?",
+    "feelingMin": "Unproductive",
+    "feelingMax": "Stronger than ever",
+    "skip": "SKIP",
+    "save": "SAVE RATING"
   }
 }

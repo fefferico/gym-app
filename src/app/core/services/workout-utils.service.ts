@@ -48,25 +48,25 @@ export class WorkoutUtilsService {
         switch (metric) {
             case METRIC.weight:
                 if (target.type === WeightTargetType.bodyweight) return 'Bodyweight';
-                if (target.type === WeightTargetType.exact) return `${target.value} kg`;
+                if (target.type === WeightTargetType.exact) return `${target.value}`;
                 if (target.type === WeightTargetType.percentage_1rm) return `${target.percentage}% 1RM`;
                 if (target.type === WeightTargetType.range) return `${target.min}-${target.max} kg`;
                 break;
             case METRIC.reps:
-                if (target.type === RepsTargetType.exact) return `${target.value} reps`;
-                if (target.type === RepsTargetType.range) return `${target.min}-${target.max} reps`;
+                if (target.type === RepsTargetType.exact) return `${target.value}`;
+                if (target.type === RepsTargetType.range) return `${target.min}-${target.max}`;
                 break;
             case METRIC.duration:
-                if (target.type === DurationTargetType.exact) return `${target.seconds}s`;
-                if (target.type === DurationTargetType.range) return `${target.minSeconds}-${target.maxSeconds}s`;
+                if (target.type === DurationTargetType.exact) return `${target.seconds}`;
+                if (target.type === DurationTargetType.range) return `${target.minSeconds}-${target.maxSeconds}`;
                 break;
             case METRIC.distance:
-                if (target.type === DistanceTargetType.exact) return `${target.value} m`;
-                if (target.type === DistanceTargetType.range) return `${target.min}-${target.max} m`;
+                if (target.type === DistanceTargetType.exact) return `${target.value}`;
+                if (target.type === DistanceTargetType.range) return `${target.min}-${target.max}`;
                 break;
             case METRIC.rest:
-                if (target.type === RestTargetType.exact) return `${target.seconds}s`;
-                if (target.type === RestTargetType.range) return `${target.minSeconds}-${target.maxSeconds}s`;
+                if (target.type === RestTargetType.exact) return `${target.seconds}`;
+                if (target.type === RestTargetType.range) return `${target.minSeconds}-${target.maxSeconds}`;
                 break;
             default:
                 return target.value ? target.value.toString() : '-';
@@ -1239,8 +1239,8 @@ export class WorkoutUtilsService {
     public durationTargetAsString(target: DurationTarget | undefined | null): string {
         if (!target) return '';
         switch (target.type) {
-            case DurationTargetType.exact: return `${target.seconds}s`;
-            case DurationTargetType.range: return `${target.minSeconds}-${target.maxSeconds}s`;
+            case DurationTargetType.exact: return `${target.seconds}`;
+            case DurationTargetType.range: return `${target.minSeconds}-${target.maxSeconds}`;
             case DurationTargetType.to_failure: return this.translate.instant('durationSchemes.toFailure');
             default: return '';
         }
@@ -1271,9 +1271,9 @@ export class WorkoutUtilsService {
         if (!target) return '';
         switch (target.type) {
             case RestTargetType.exact:
-                return `${target.seconds}s`;
+                return `${target.seconds}`;
             case RestTargetType.range:
-                return `${target.minSeconds}-${target.maxSeconds}s`; // <-- Use minSeconds/maxSeconds
+                return `${target.minSeconds}-${target.maxSeconds}`; // <-- Use minSeconds/maxSeconds
             default:
                 return '';
         }

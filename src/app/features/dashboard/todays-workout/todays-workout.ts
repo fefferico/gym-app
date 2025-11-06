@@ -74,6 +74,8 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     de: de
   };
 
+  bumpTimeOut: number = 170;
+
   public PremiumFeature = PremiumFeature;
 
   private sanitizer = inject(DomSanitizer);
@@ -104,22 +106,22 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
      * A computed property that returns an array of the full month names
      * based on the current language.
      */
-    monthNames = computed(() => {
-      const currentLang = this.languageService.currentLang();
-      const locale = this.dateFnsLocales[currentLang] || enUS;
-  
-      // Create an array of numbers from 0 to 11, representing the months.
-      const months = Array.from({ length: 12 }, (_, i) => i);
-  
-      // For each month number, create a date and format it to get the month name.
-      return months.map(monthIndex => {
-        // Create a date for the specific month. The year and day are arbitrary.
-        const date = setMonth(new Date(), monthIndex);
-        // Format the date to get the stand-alone month name (e.g., "January").
-        // Use 'MMM' for abbreviated names (e.g., "Jan").
-        return format(date, 'LLLL', { locale });
-      });
+  monthNames = computed(() => {
+    const currentLang = this.languageService.currentLang();
+    const locale = this.dateFnsLocales[currentLang] || enUS;
+
+    // Create an array of numbers from 0 to 11, representing the months.
+    const months = Array.from({ length: 12 }, (_, i) => i);
+
+    // For each month number, create a date and format it to get the month name.
+    return months.map(monthIndex => {
+      // Create a date for the specific month. The year and day are arbitrary.
+      const date = setMonth(new Date(), monthIndex);
+      // Format the date to get the stand-alone month name (e.g., "January").
+      // Use 'MMM' for abbreviated names (e.g., "Jan").
+      return format(date, 'LLLL', { locale });
     });
+  });
 
 
   // --- Signals for State Management ---
@@ -423,11 +425,21 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
   startWorkout(routineId: string, event: Event): void {
     event?.stopPropagation();
     if (routineId) {
-      this.workoutService.navigateToPlayer(routineId);
+      setTimeout(() => {
+        this.workoutService.vibrate();
+        this.workoutService.navigateToPlayer(routineId);
+      }, this.bumpTimeOut);
     }
   }
 
-  viewRoutineDetails(routineId: string | undefined): void { if (routineId) { this.router.navigate(['/workout/routine/view', routineId]); } }
+  viewRoutineDetails(routineId: string | undefined): void {
+    if (routineId) {
+      setTimeout(() => {
+        this.workoutService.vibrate();
+        this.router.navigate(['/workout/routine/view', routineId]);
+      }, this.bumpTimeOut);
+    }
+  }
   viewLogDetails(logId: string): void {
     this.workoutService.vibrate();
     this.router.navigate(['/history/log', logId]);

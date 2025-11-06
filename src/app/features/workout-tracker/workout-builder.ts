@@ -4806,48 +4806,73 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
 
+  protected repsStep: number = 1;
+  protected weightStep: number = 0.1;
+  protected durationStep: number = 5;
+  protected distanceStep: number = 0.1;
+  protected restStep: number = 5;
   /**
-   * Applies the values entered in the "Set All" panel to every set of a specific exercise.
-   * If a metric being applied does not exist on a set, its form control is added before patching.
-   * @param exIndex The index of the exercise in the form array.
-   */
+ * Applies the values entered in the "Set All" panel to every set of a specific exercise.
+ * Now prevents negative numbers and non-numeric input.
+ */
   applyToAllSets(exIndex: number): void {
     const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
     const setsArray = this.workoutFormService.getSetsFormArray(exerciseControl);
     const patchData: { [key: string]: any } = {};
     const metricsToApply: METRIC[] = [];
 
+    // Helper to sanitize and validate numbers (no negatives, no NaN)
+    function sanitizeNumber(val: any, step: number, allowDecimals: boolean = false): number | null {
+      if (val === null || val === undefined) return null;
+      let num = Number(val);
+      if (isNaN(num)) return null;
+      num = Math.abs(num); // Always positive
+
+      // For weight, allow up to 2 decimals, otherwise round to nearest step
+      if (allowDecimals) {
+        // Round to 2 decimal digits
+        return Math.round(num * 100) / 100;
+      } else {
+        // Round to nearest step (integer or step size)
+        return Math.round(num / step) * step;
+      }
+    }
+
     // --- 1. Build the data patch object and identify all metrics being applied ---
-    if (this.repsToSetForAll() !== null) {
+    const reps = sanitizeNumber(this.repsToSetForAll(), this.repsStep);
+    if (reps !== null) {
       const field = this.mode === BuilderMode.manualLogEntry ? 'repsLogged' : 'targetReps';
-      patchData[field] = { type: RepsTargetType.exact, value: this.repsToSetForAll() };
+      patchData[field] = repsToExact(reps);
       metricsToApply.push(METRIC.reps);
     }
-    if (this.weightToSetForAll() !== null) {
+    const weight = sanitizeNumber(this.weightToSetForAll(), this.weightStep, true); // allowDecimals = true for weight
+    if (weight !== null) {
       const field = this.mode === BuilderMode.manualLogEntry ? 'weightLogged' : 'targetWeight';
-      patchData[field] = this.weightToSetForAll();
+      patchData[field] = weightToExact(weight);
       metricsToApply.push(METRIC.weight);
     }
-    if (this.durationToSetForAll() !== null) {
+    const duration = sanitizeNumber(this.durationToSetForAll(), this.durationStep);
+    if (duration !== null) {
       const field = this.mode === BuilderMode.manualLogEntry ? 'durationLogged' : 'targetDuration';
-      patchData[field] = this.durationToSetForAll();
+      patchData[field] = durationToExact(duration);
       metricsToApply.push(METRIC.duration);
     }
-    if (this.distanceToSetForAll() !== null) {
+    const distance = sanitizeNumber(this.distanceToSetForAll(), this.distanceStep);
+    if (distance !== null) {
       const field = this.mode === BuilderMode.manualLogEntry ? 'distanceLogged' : 'targetDistance';
-      patchData[field] = this.distanceToSetForAll();
+      patchData[field] = distanceToExact(distance);
       metricsToApply.push(METRIC.distance);
     }
-    if (this.restToSetForAll() !== null) {
+    const rest = sanitizeNumber(this.restToSetForAll(), this.restStep);
+    if (rest !== null) {
       const field = this.mode === BuilderMode.manualLogEntry ? 'restLogged' : 'targetRest';
-      patchData[field] = this.restToSetForAll();
+      patchData[field] = restToExact(rest);
       metricsToApply.push(METRIC.rest);
     }
     if (this.tempoToSetForAll() !== null && this.tempoToSetForAll()!.trim() !== '') {
       patchData['targetTempo'] = this.tempoToSetForAll();
       metricsToApply.push(METRIC.tempo);
     }
-
 
     if (Object.keys(patchData).length === 0) {
       this.toastService.info("No values entered to apply.");
@@ -4863,33 +4888,24 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       metricsToApply.forEach(metric => {
         const formControlName = this.getFormControlName(metric);
         if (formControlName && !setGroup.get(formControlName)) {
-          // The control is missing, so we add it.
           setGroup.addControl(formControlName, this.fb.control(null));
-
-          // For routine builder, we also need to add the corresponding min/max controls if they exist
           if (this.mode === BuilderMode.routineBuilder && [METRIC.reps, METRIC.weight, METRIC.duration, METRIC.distance, METRIC.rest].includes(metric)) {
             const capitalizedMetric = metric.charAt(0).toUpperCase() + metric.slice(1);
             setGroup.addControl(`target${capitalizedMetric}Min`, this.fb.control(null));
             setGroup.addControl(`target${capitalizedMetric}Max`, this.fb.control(null));
           }
         }
-
-        // Also update the fieldOrder array to make the new field visible
         if (!currentFieldOrder.includes(metric)) {
           currentFieldOrder.push(metric);
           didOrderChange = true;
         }
       });
 
-      // Patch the fieldOrder if it was modified
       if (didOrderChange) {
         setGroup.get('fieldOrder')?.patchValue(currentFieldOrder);
       }
-
-      // --- 3. Now it's safe to patch the values ---
       setGroup.patchValue(patchData);
     });
-
 
     // --- 4. Reset UI state ---
     this.repsToSetForAll.set(null);
@@ -4936,7 +4952,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return 0;
   }
 
-  isDraggingEnabled(exIndex: number): boolean {
+  protected isDraggingEnabled(exIndex: number): boolean {
     return this.isEditableMode() && !this.shouldShowExpandedExercise(exIndex) && !this.isSuperSet(exIndex);
   }
 
@@ -5056,27 +5072,27 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         case 'min_plus':
           // Use 'seconds' for duration/rest, 'value' for others
           const fieldKey = value.seconds !== undefined ? 'seconds' : 'value';
-          control.patchValue({ ...value, [fieldKey]: Math.max(0, (value[fieldKey] || 0) - step) });
+          control.patchValue({ ...value, [fieldKey]: Math.max(1, (value[fieldKey] || 0) - step) });
           break;
         case 'range':
           if (isTime) {
             // For time ranges, update minSeconds and maxSeconds
             control.patchValue({
               ...value,
-              minSeconds: value.minSeconds != null ? Math.max(0, value.minSeconds - step) : value.minSeconds,
-              maxSeconds: value.maxSeconds != null ? Math.max(0, value.maxSeconds - step) : value.maxSeconds,
+              minSeconds: value.minSeconds != null ? Math.max(1, value.minSeconds - step) : value.minSeconds,
+              maxSeconds: value.maxSeconds != null ? Math.max(1, value.maxSeconds - step) : value.maxSeconds,
             });
           } else {
             // For other ranges, update min and max
             control.patchValue({
               ...value,
-              min: value.min != null ? Math.max(0, value.min - step) : value.min,
-              max: value.max != null ? Math.max(0, value.max - step) : value.max,
+              min: value.min != null ? Math.max(1, value.min - step) : value.min,
+              max: value.max != null ? Math.max(1, value.max - step) : value.max,
             });
           }
           break;
         case 'percentage_1rm':
-          control.patchValue({ ...value, percentage: Math.max(0, (value.percentage || 0) - step) });
+          control.patchValue({ ...value, percentage: Math.max(1, (value.percentage || 0) - step) });
           break;
         default:
           // fallback for unknown types
@@ -5160,8 +5176,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     if (!targetControl || !currentTarget) return;
 
-    const inputValue = (event.target as HTMLInputElement).value;
-    const numericValue = inputValue === '' ? null : Number(inputValue);
+    let inputValue = (event.target as HTMLInputElement).value;
+    // Remove any non-numeric characters except dot (for decimals)
+    inputValue = inputValue.replace(/[^0-9.]/g, '');
+
+    // If the input is empty or not a valid number, do not update
+    if (inputValue === '' || isNaN(Number(inputValue))) return;
+
+    const numericValue = Number(inputValue);
 
     // For range types, update min/max or minSeconds/maxSeconds
     if (currentTarget.type === 'range') {
@@ -5271,4 +5293,227 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   protected readonly BuilderMode = BuilderMode;
   private isLongPressing = false;
 
+
+  // List all metrics you want to support as chips
+  allAvailableMetrics: METRIC[] = [
+    METRIC.reps,
+    METRIC.weight,
+    METRIC.distance,
+    METRIC.duration,
+    METRIC.rest
+    // Add METRIC.tempo if needed
+  ];
+
+  /**
+   * Checks if a metric is active (present in fieldOrder) for all sets of the exercise.
+   */
+  isMetricActiveForAllSets(exIndex: number, metric: METRIC): boolean {
+    const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
+    const setsArray = this.workoutFormService.getSetsFormArray(exerciseControl);
+    return setsArray.controls.every(setControl =>
+      (setControl.get('fieldOrder')?.value || []).includes(metric)
+    );
+  }
+
+  /**
+   * Toggles a metric for all sets of the exercise.
+   * Shows a toast when adding or removing.
+   * When adding, sets a default value for the metric.
+   */
+  toggleMetricForAllSets(exIndex: number, metric: METRIC): void {
+    const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
+    const setsArray = this.workoutFormService.getSetsFormArray(exerciseControl);
+
+    const shouldAdd = !this.isMetricActiveForAllSets(exIndex, metric);
+
+    setsArray.controls.forEach(setControl => {
+      let fieldOrder: METRIC[] = setControl.get('fieldOrder')?.value || [];
+      if (shouldAdd) {
+        if (!fieldOrder.includes(metric)) {
+          fieldOrder = [...fieldOrder, metric];
+          setControl.get('fieldOrder')?.setValue(fieldOrder);
+
+          // Set default value for the metric
+          const targetControlName = this.getTargetControlName(metric);
+          const loggedControlName = this.getLoggedControlName(metric);
+          const group = setControl as FormGroup;
+
+          // Only set if not already present
+          if (group.contains(targetControlName) && !group.get(targetControlName)?.value) {
+            switch (metric) {
+              case METRIC.rest:
+                group.get(targetControlName)?.setValue(restToExact(60));
+                break;
+              case METRIC.weight:
+                group.get(targetControlName)?.setValue(weightToExact(10));
+                break;
+              case METRIC.reps:
+                group.get(targetControlName)?.setValue(repsToExact(8));
+                break;
+              case METRIC.distance:
+                group.get(targetControlName)?.setValue(distanceToExact(2));
+                break;
+              case METRIC.duration:
+                group.get(targetControlName)?.setValue(durationToExact(45));
+                break;
+            }
+          }
+          if (group.contains(loggedControlName) && !group.get(loggedControlName)?.value) {
+            switch (metric) {
+              case METRIC.rest:
+                group.get(loggedControlName)?.setValue(restToExact(60));
+                break;
+              case METRIC.weight:
+                group.get(loggedControlName)?.setValue(weightToExact(10));
+                break;
+              case METRIC.reps:
+                group.get(loggedControlName)?.setValue(repsToExact(8));
+                break;
+              case METRIC.distance:
+                group.get(loggedControlName)?.setValue(distanceToExact(2));
+                break;
+              case METRIC.duration:
+                group.get(loggedControlName)?.setValue(durationToExact(45));
+                break;
+            }
+          }
+        }
+      } else {
+        if (fieldOrder.includes(metric)) {
+          fieldOrder = fieldOrder.filter(m => m !== metric);
+          setControl.get('fieldOrder')?.setValue(fieldOrder);
+
+          // Remove the related target/logged field
+          const targetControlName = this.getTargetControlName(metric);
+          const loggedControlName = this.getLoggedControlName(metric);
+
+          const group = setControl as FormGroup;
+          if (group.contains(targetControlName)) {
+            group.get(targetControlName)?.setValue(null);
+          }
+          if (group.contains(loggedControlName)) {
+            group.get(loggedControlName)?.setValue(null);
+          }
+        }
+      }
+    });
+
+    // Show feedback toast
+    if (shouldAdd) {
+      this.toastService.success(
+        this.translate.instant('workoutBuilder.set.metricAdded', { metric: this.translate.instant('metrics.' + metric) }),
+        2000
+      );
+    } else {
+      this.toastService.info(
+        this.translate.instant('workoutBuilder.set.metricRemoved', { metric: this.translate.instant('metrics.' + metric) }),
+        2000
+      );
+    }
+  }
+
+  /**
+   * Add or remove a custom array of metrics for all sets of an exercise.
+   */
+  setMetricsForAllSets(exIndex: number, metrics: METRIC[]): void {
+    const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
+    const setsArray = this.workoutFormService.getSetsFormArray(exerciseControl);
+
+    setsArray.controls.forEach(setControl => {
+      setControl.get('fieldOrder')?.setValue([...metrics]);
+      // Optionally, initialize/clear values for each metric here
+    });
+  }
+
+  getExactInputValue(setControl: AbstractControl, field: METRIC): number | null {
+    const val = setControl.get(this.getFormControlName(field))?.value;
+    if (!val) return null;
+    // For duration/rest use .seconds, otherwise use .value
+    if (field === METRIC.duration || field === METRIC.rest) {
+      return val.seconds ?? null;
+    }
+    return val.value ?? null;
+  }
+
+  onExactInputChange(setControl: AbstractControl, field: METRIC, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let newValue = input.value === '' ? null : Number(input.value);
+
+    // If not a valid number or less than 1, reset to 1
+    if (newValue === null || isNaN(newValue) || newValue < 1) {
+      newValue = 1;
+      input.value = '1';
+    }
+
+    const control = setControl.get(this.getFormControlName(field));
+    const current = control?.value;
+    if (!current) return;
+
+    // For duration/rest use .seconds, otherwise use .value
+    if (field === METRIC.duration || field === METRIC.rest) {
+      control.patchValue({ ...current, seconds: newValue });
+    } else {
+      control.patchValue({ ...current, value: newValue });
+    }
+    setControl.markAsDirty();
+  }
+
+  focusedInput: { [key: string]: boolean } = {};
+
+  onInputFocus(setId: string, field: string) {
+    this.focusedInput[setId + '-' + field] = true;
+  }
+  onInputBlur(setId: string, field: string) {
+    this.focusedInput[setId + '-' + field] = false;
+  }
+  isInputFocused(setId: string, field: string): boolean {
+    return !!this.focusedInput[setId + '-' + field];
+  }
+  focusInput(setId: string, field: string) {
+    setTimeout(() => {
+      const input: HTMLInputElement | null = document.querySelector(
+        `input[data-set-id="${setId}"][data-field="${field}"]`
+      );
+      if (input) input.focus();
+    });
+  }
+
+  private lastTouchY: number | null = null;
+
+  onInputWheel(setControl: AbstractControl, field: METRIC, event: WheelEvent) {
+    event.preventDefault();
+    if (event.deltaY < 0) {
+      this.incrementValue(setControl, field);
+    } else if (event.deltaY > 0) {
+      this.decrementValue(setControl, field);
+    }
+  }
+
+  onInputTouchStart(event: TouchEvent) {
+    if (event.touches.length === 1) {
+      this.lastTouchY = event.touches[0].clientY;
+    }
+  }
+
+  onInputTouchMove(setControl: AbstractControl, field: METRIC, event: TouchEvent) {
+    event.preventDefault(); // Prevent UI scroll!
+
+    if (event.touches.length === 1 && this.lastTouchY !== null) {
+      const currentY = event.touches[0].clientY;
+      const deltaY = currentY - this.lastTouchY;
+      // Sensitivity: adjust 20 as needed
+      if (Math.abs(deltaY) > 20) {
+        if (deltaY < 0) {
+          this.decrementValue(setControl, field);
+        } else {
+          this.incrementValue(setControl, field);
+        }
+        this.lastTouchY = currentY;
+      }
+    }
+  }
+
+  selectInputText(input: HTMLInputElement) {
+    setTimeout(() => input.select(), 0);
+  }
 }

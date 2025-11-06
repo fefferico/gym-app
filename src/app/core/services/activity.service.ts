@@ -10,6 +10,7 @@ import { ToastService } from './toast.service';
 import { Activity } from '../models/activity.model';
 import { ActivityLog } from '../models/activity-log.model';
 import { ACTIVITIES_DATA } from './activities-data';
+import { AlertService } from './alert.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +18,7 @@ import { ACTIVITIES_DATA } from './activities-data';
 export class ActivityService {
   private storageService = inject(StorageService);
   private toastService = inject(ToastService);
+  private alertService = inject(AlertService);
   private translate = inject(TranslateService); // Inject TranslateService
 
   private readonly ACTIVITIES_LOGS_STORAGE_KEY = 'fitTrackPro_activityLogs';
@@ -182,6 +184,17 @@ export class ActivityService {
       const message = this.translate.instant('activityService.mergeInfo');
       this.toastService.info(message, 2000);
     }
+  }
+
+    clearAllActivities_DEV_ONLY(): Promise<void> {
+    const title = this.translate.instant('activityService.alerts.clearAllTitle');
+    return this.alertService.showConfirm(title, this.translate.instant('activityService.alerts.clearAllMessage'))
+      .then(async (result) => {
+        if (result && result.data) {
+          this._saveLogsToStorage([]);
+          await this.alertService.showAlert(title, this.translate.instant('activityService.alerts.clearAllSuccess'));
+        }
+      });
   }
 
 }
