@@ -163,7 +163,7 @@ export class WorkoutGeneratorService {
         if (equipmentFilterValues.length > 0) {
             availableExercises = availableExercises.filter(ex => {
                 // Always include exercises that don't require any specific equipment
-                if (ex.category === 'bodyweight/calisthenics' || (!ex.equipment && (!ex.equipmentNeeded || ex.equipmentNeeded.length === 0))) {
+                if (ex.category === 'bodyweight-calisthenics' || (!ex.equipment && (!ex.equipmentNeeded || ex.equipmentNeeded.length === 0))) {
                     return true;
                 }
 
@@ -184,7 +184,7 @@ export class WorkoutGeneratorService {
         // Filter by Muscles to Avoid
         if (options.avoidMuscles.length > 0) {
             const avoidSet = new Set(options.avoidMuscles);
-            availableExercises = availableExercises.filter(ex => !avoidSet.has(ex.primaryMuscleGroup));
+            availableExercises = availableExercises.filter(ex => ex && ex.primaryMuscleGroup && !avoidSet.has(ex.primaryMuscleGroup));
         }
 
         // Filter by Target Muscles
@@ -245,7 +245,7 @@ export class WorkoutGeneratorService {
         // This inherently respects all exclusions applied by getSelectableExercises.
         const equipmentGoals = new Set<string>();
         allValidExercises.forEach(ex => {
-            if (ex.equipment && ex.category !== 'bodyweight/calisthenics') {
+            if (ex.equipment && ex.category !== 'bodyweight-calisthenics') {
                 equipmentGoals.add(ex.equipment.toLowerCase());
             }
             // Also consider the equipmentNeeded array if it exists
@@ -297,6 +297,9 @@ export class WorkoutGeneratorService {
 
             // 3. Validate the chosen exercise against all remaining constraints.
             const muscle = exerciseToAdd.primaryMuscleGroup;
+            if (!muscle) {
+                continue; // Skip exercises without a primary muscle group.
+            }
             const currentMuscleCount = muscleCounts.get(muscle) || 0;
 
             // Constraint: Muscle group overuse (e.g., no more than 3 chest exercises)
@@ -315,7 +318,9 @@ export class WorkoutGeneratorService {
             // 4. If all checks pass, add the exercise to the workout.
             workout.push(tempWorkoutExercise);
             totalEstimatedSeconds += exerciseDuration;
-            muscleCounts.set(muscle, currentMuscleCount + 1);
+            if (muscle) {
+                muscleCounts.set(muscle?.toString(), currentMuscleCount + 1);
+            }
         }
 
         return this.shuffleArray(workout); // Final shuffle for variety in exercise order.
@@ -376,7 +381,7 @@ export class WorkoutGeneratorService {
                 targetDuration: durationToExact(duration),
                 targetDistance: distanceToExact(1),
             };
-        } else if (exercise.category === 'bodyweight/calisthenics') {
+        } else if (exercise.category === 'bodyweight-calisthenics') {
             templateSet = {
                 fieldOrder: [METRIC.reps, METRIC.rest],
                 targetReps: { type: RepsTargetType.range, min: repRange.min, max: repRange.max },
@@ -430,7 +435,7 @@ export class WorkoutGeneratorService {
                 targetDistance: distanceToExact(1),   // Default to 1 km/mi
                 targetRest: restToExact(90),
             }));
-        } else if (exercise.category === 'bodyweight/calisthenics') {
+        } else if (exercise.category === 'bodyweight-calisthenics') {
             // Bodyweight exercises get reps but no weight
             sets = Array.from({ length: numSets }, () => ({
                 id: uuidv4(),

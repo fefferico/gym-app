@@ -11,6 +11,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BumpClickDirective } from '../../directives/bump-click.directive';
 import { Muscle } from '../../../core/models/muscle.model';
+import { MuscleMapService } from '../../../core/services/muscle-map.service';
+import { MuscleValue } from '../../../core/services/muscles-data';
 
 type ListItem = Exercise | { isHeader: true; label: string };
 
@@ -25,6 +27,8 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     private trackingService = inject(TrackingService);
     private toastService = inject(ToastService);
     private translate = inject(TranslateService);
+    private muscleMapService = inject(MuscleMapService);
+    private translatedMuscles = signal<Muscle[]>([]);
 
     isMultiSelect = input<boolean>(false);
     isFocusInputOnStart = input<boolean>(false);
@@ -77,6 +81,10 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
             } else {
                 this.translatedExercises.set([]); // Handle empty input
             }
+
+            this.muscleMapService.getTranslatedMuscles().pipe(take(1)).subscribe(muscles => {
+                this.translatedMuscles.set(muscles);
+            });
         });
 
         // Effect 2: Enrich the TRANSLATED exercises with usage counts.
@@ -145,12 +153,12 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     // +++ NEW: State management signals for filters and sorting +++
     isFilterAccordionOpen = signal(false);
     selectedCategory = signal<string | null>(null);
-    selectedMuscleGroup = signal<string | null>(null);
+    selectedMuscleGroup = signal<MuscleValue | null>(null);
     sortMode = signal<'alpha' | 'lastUsed' | 'frequency'>('alpha');
 
     // +++ NEW: Observables to populate filter dropdowns +++
     categories$: Observable<string[]> = this.exerciseService.getUniqueCategories();
-    primaryMuscleGroups$: Observable<string[]> = this.exerciseService.getUniquePrimaryMuscleGroups();
+    primaryMuscleGroups$: Observable<Muscle[]> = this.exerciseService.getUniquePrimaryMuscleGroups();
 
     // --- CORE LOGIC: Replaced with a powerful computed signal for processing ---
     processedExercises = computed<ListItem[]>(() => {
@@ -165,16 +173,23 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
             exerciseList = exerciseList.filter(ex => ex.category === category);
         }
         if (muscleGroup) {
-            exerciseList = exerciseList.filter(ex => ex.primaryMuscleGroup === muscleGroup);
+            exerciseList = exerciseList.filter(ex =>
+                ex.primaryMuscleGroup === muscleGroup ||
+                (Array.isArray(ex.muscleGroups) && ex.muscleGroups.includes(muscleGroup))
+            );
         }
         if (term) {
             const normalizedTerm = this.exerciseService.normalizeExerciseNameForSearch(term);
             exerciseList = exerciseList.filter(ex => {
+                // Also search in translated muscle names
+                const primaryMuscleName = this.getMuscleNameById(ex.primaryMuscleGroup || '');
+                const muscleNames = (ex.muscleGroups || []).map(muscle => this.getMuscleNameById(muscle)).join(' ');
                 return normalizedTerm.split(' ').every(part =>
                     ex.name.toLowerCase().includes(part) ||
                     (ex.category?.toLowerCase().includes(part)) ||
                     (ex.description?.toLowerCase().includes(part)) ||
-                    (ex.primaryMuscleGroup?.toLowerCase().includes(part))
+                    (primaryMuscleName?.toLowerCase().includes(part)) ||
+                    muscleNames.toLowerCase().includes(part)
                 );
             });
         }
@@ -343,7 +358,16 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     }
 
     onMuscleGroupChange(event: Event): void {
-        this.selectedMuscleGroup.set((event.target as HTMLSelectElement).value || null);
+        const selectedMuscle = this.getMuscleById((event.target as HTMLSelectElement).value);
+        if (!selectedMuscle) {
+            this.selectedMuscleGroup.set(null);
+            return;
+        }
+        this.selectedMuscleGroup.set(this.muscleToMuscleValue(selectedMuscle));
+    }
+
+    private muscleToMuscleValue(muscle: Muscle): MuscleValue {
+        return muscle.id as MuscleValue;
     }
 
     onSortModeChange(event: Event): void {
@@ -363,5 +387,13 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
         if (showToast) {
             this.toastService.info(this.translate.instant('exerciseSelectionModal.toasts.filtersCleared'));
         }
+    }
+
+    getMuscleNameById(id: string): string {
+        return this.translatedMuscles().find(m => m.id === id)?.name || id;
+    }
+
+    getMuscleById(id: string): Muscle | null {
+        return this.translatedMuscles().find(m => m.id === id) || null;
     }
 }

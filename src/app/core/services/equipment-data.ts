@@ -1,60 +1,94 @@
 export type EquipmentValue =
-  | 'barbell'
-  | 'dumbbell'
-  | 'kettlebell'
-  | 'ezCurlBar'
-  | 'plates'
-  | 'machine'
-  | 'cableMachine'
-  | 'abductorMachine'
-  | 'adductorMachine'
-  | 'pecDeckMachine'
-  | 'chestPressMachine'
-  | 'inclineChestPressMachine'
-  | 'latPulldownMachine'
-  | 'seatedRowMachine'
-  | 'legPressMachine'
-  | 'legExtensionMachine'
-  | 'legCurlMachine'
-  | 'shoulderPressMachine'
-  | 'reversePecDeckMachine'
-  | 'calfRaiseMachine'
-  | 'hackSquatMachine'
-  | 'seatedCalfRaiseMachine'
-  | 'abdominalCrunchMachine'
-  | 'hyperextensionMachine'
-  | 'treadmill'
-  | 'stationaryBike'
-  | 'ellipticalTrainer'
-  | 'stairClimbingMachine'
-  | 'bodyweight'
-  | 'pull-up-bar'
-  | 'dipStation'
-  | 'parallettes'
-  | 'gymnasticRings'
-  | 'bench'
-  | 'inclineBench'
-  | 'rack'
-  | 'resistanceBand'
-  | 'plyoBox'
-  | 'medicineBall'
-  | 'jumpRope'
-  | 'padding'
-  | 'towel'
-  | 'prowlerSled'
-  | 'largeTire'
-  | 'battleRopes'
-  | 'sandbag'
-  | 'bulgarianBag'
-  | 'steelMace'
-  | 'steelClubs'
-  | 'indianClubs'
-  | 'vipr'
-  | 'doorway'
-  | 'anchorPoint'
-  | 'stairs';
+    | 'barbell'
+    | 'bar'
+    | 'table'
+    | 'dumbbell'
+    | 'kettlebell'
+    | 'ez-curl-bar'
+    | 'bicycle'
+    | 'plates'
+    | 'machine'
+    | 'cable-machine'
+    | 'abductor-machine'
+    | 'adductor-machine'
+    | 'pec-deck-machine'
+    | 'chest-press-machine'
+    | 'incline-chest-press-machine'
+    | 'lat-pulldown-machine'
+    | 'seated-row-machine'
+    | 'leg-press-machine'
+    | 'leg-extension-machine'
+    | 'leg-curl-machine'
+    | 'lying-leg-curl-machine'
+    | 'shoulder-press-machine'
+    | 'reverse-pec-deck-machine'
+    | 'calf-raise-machine'
+    | 'hack-squat-machine'
+    | 'seated-calf-raise-machine'
+    | 'abdominal-crunch-machine'
+    | 'yoga-mat'
+    | 'mat'
+    | 'hyperextension-machine'
+    | 'hyperextension-bench'
+    | 'treadmill'
+    | 'macebell'
+    | 'stationary-bike'
+    | 'elliptical-trainer'
+    | 'stair-climbing-machine'
+    | 'bodyweight'
+    | 'pull-up-bar'
+    | 'dip-station'
+    | 'power-rack-squat-rack'
+    | 'parallettes'
+    | 'gymnastic-rings'
+    | 'bench'
+    | 'harness-straps'
+    | 'incline-bench'
+    | 'rack'
+    | 'resistance-band'
+    | 'resistance-band-loop'
+    | 'plyo-box'
+    | 'box'
+    | 'medicine-ball'
+    | 'jump-rope'
+    | 'rope'
+    | 'padding'
+    | 'farmers-walk-handles'
+    | 'towel'
+    | 'prowler-sled'
+    | 'large-tire'
+    | 'tire'
+    | 'battle-ropes'
+    | 'rope-attachment-cables'
+    | 'straight-bar-attachment-cables'
+    | 'd-handle'
+    | 'sandbag'
+    | 'bulgarian-bag'
+    | 'steel-mace'
+    | 'steel-club'
+    | 'indian-club'
+    | 'vipr'
+    | 'doorway'
+    | 'wall'
+    | 'anchor-point'
+    | 'stairs';
 
 export const EQUIPMENT_DATA = [
+    {
+        "id": "table",
+        "name": "Table",
+        "category": "Accessories"
+    },
+    {
+        "id": "wall",
+        "name": "Wall",
+        "category": "Accessories"
+    },
+    {
+        "id": "bar",
+        "name": "Bar",
+        "category": "Free Weights"
+    },
     {
         "id": "abdominal-crunch-machine",
         "name": "Abdominal Crunch Machine",
@@ -346,6 +380,11 @@ export const EQUIPMENT_DATA = [
         "category": "Machines"
     },
     {
+        "id": "lying-leg-curl-machine",
+        "name": "Lying Leg Curl Machine",
+        "category": "Machines"
+    },
+    {
         "id": "leg-extension-machine",
         "name": "Leg Extension Machine",
         "category": "Machines"
@@ -401,6 +440,11 @@ export const EQUIPMENT_DATA = [
         "category": "Functional & Bodyweight"
     },
     {
+        "id": "box",
+        "name": "Box",
+        "category": "Functional & Bodyweight"
+    },
+    {
         "id": "power-rack-squat-rack",
         "name": "Power Rack / Squat Rack",
         "category": "Functional & Bodyweight"
@@ -421,8 +465,8 @@ export const EQUIPMENT_DATA = [
         "category": "Functional & Bodyweight"
     },
     {
-        "id": "resistance-bands-loop",
-        "name": "Resistance Bands (Loop)",
+        "id": "resistance-band-loop",
+        "name": "Resistance Band (Loop)",
         "category": "Accessories"
     },
     {
@@ -506,8 +550,13 @@ export const EQUIPMENT_DATA = [
         "category": "Cardio"
     },
     {
-        "id": "steel-clubs",
-        "name": "Steel Clubs",
+        "id": "macebell",
+        "name": "Mace Bell",
+        "category": "Free Weights"
+    },
+    {
+        "id": "steel-club",
+        "name": "Steel Club",
         "category": "Free Weights"
     },
     {
@@ -601,55 +650,60 @@ export const EQUIPMENT_DATA = [
         "category": "Accessories"
     },
     {
+        "id": "mat",
+        "name": "Mat",
+        "category": "Accessories"
+    },
+    {
         "id": "yoke",
         "name": "Yoke",
         "category": "Functional & Bodyweight"
     },
 
     // Free Weights
-  { id: 'ezCurlBar', name: 'EZ-Curl Bar', category: 'Free Weights' },
+    { id: 'ez-curl-bar', name: 'EZ-Curl Bar', category: 'Free Weights' },
 
-  // Machines
-  { id: 'machine', name: 'Machine', category: 'Machines' },
-  { id: 'cableMachine', name: 'Cable Machine', category: 'Machines' },
-  { id: 'abductorMachine', name: 'Abductor Machine', category: 'Machines' },
-  { id: 'adductorMachine', name: 'Adductor Machine', category: 'Machines' },
-  { id: 'pecDeckMachine', name: 'Pec Deck Machine', category: 'Machines' },
-  { id: 'chestPressMachine', name: 'Chest Press Machine', category: 'Machines' },
-  { id: 'inclineChestPressMachine', name: 'Incline Chest Press Machine', category: 'Machines' },
-  { id: 'latPulldownMachine', name: 'Lat Pulldown Machine', category: 'Machines' },
-  { id: 'seatedRowMachine', name: 'Seated Row Machine', category: 'Machines' },
-  { id: 'legPressMachine', name: 'Leg Press Machine', category: 'Machines' },
-  { id: 'legExtensionMachine', name: 'Leg Extension Machine', category: 'Machines' },
-  { id: 'legCurlMachine', name: 'Leg Curl Machine', category: 'Machines' },
-  { id: 'shoulderPressMachine', name: 'Shoulder Press Machine', category: 'Machines' },
-  { id: 'reversePecDeckMachine', name: 'Reverse Pec Deck Machine', category: 'Machines' },
-  { id: 'calfRaiseMachine', name: 'Calf Raise Machine', category: 'Machines' },
-  { id: 'hackSquatMachine', name: 'Hack Squat Machine', category: 'Machines' },
-  { id: 'seatedCalfRaiseMachine', name: 'Seated Calf Raise Machine', category: 'Machines' },
-  { id: 'abdominalCrunchMachine', name: 'Abdominal Crunch Machine', category: 'Machines' },
-  { id: 'hyperextensionMachine', name: 'Hyperextension Machine', category: 'Machines' },
-  { id: 'treadmill', name: 'Treadmill', category: 'Machines' },
-  { id: 'stationaryBike', name: 'Stationary Bike', category: 'Machines' },
-  { id: 'ellipticalTrainer', name: 'Elliptical Trainer', category: 'Machines' },
-  { id: 'stairClimbingMachine', name: 'Stair Climbing Machine', category: 'Machines' },
+    // Machines
+    { id: 'machine', name: 'Machine', category: 'Machines' },
+    { id: 'cable-machine', name: 'Cable Machine', category: 'Machines' },
+    { id: 'abductor-machine', name: 'Abductor Machine', category: 'Machines' },
+    { id: 'adductor-machine', name: 'Adductor Machine', category: 'Machines' },
+    { id: 'pec-deck-machine', name: 'Pec Deck Machine', category: 'Machines' },
+    { id: 'chest-press-machine', name: 'Chest Press Machine', category: 'Machines' },
+    { id: 'incline-chest-press-machine', name: 'Incline Chest Press Machine', category: 'Machines' },
+    { id: 'lat-pulldown-machine', name: 'Lat Pulldown Machine', category: 'Machines' },
+    { id: 'seated-row-machine', name: 'Seated Row Machine', category: 'Machines' },
+    { id: 'leg-press-machine', name: 'Leg Press Machine', category: 'Machines' },
+    { id: 'leg-extension-machine', name: 'Leg Extension Machine', category: 'Machines' },
+    { id: 'leg-curl-machine', name: 'Leg Curl Machine', category: 'Machines' },
+    { id: 'shoulder-press-machine', name: 'Shoulder Press Machine', category: 'Machines' },
+    { id: 'reverse-pec-deck-machine', name: 'Reverse Pec Deck Machine', category: 'Machines' },
+    { id: 'calf-raise-machine', name: 'Calf Raise Machine', category: 'Machines' },
+    { id: 'hack-squat-machine', name: 'Hack Squat Machine', category: 'Machines' },
+    { id: 'seated-calf-raise-machine', name: 'Seated Calf Raise Machine', category: 'Machines' },
+    { id: 'abdominal-crunch-machine', name: 'Abdominal Crunch Machine', category: 'Machines' },
+    { id: 'hyperextension-machine', name: 'Hyperextension Machine', category: 'Machines' },
+    { id: 'treadmill', name: 'Treadmill', category: 'Machines' },
+    { id: 'stationary-bike', name: 'Stationary Bike', category: 'Machines' },
+    { id: 'elliptical-trainer', name: 'Elliptical Trainer', category: 'Machines' },
+    { id: 'stair-climbing-machine', name: 'Stair Climbing Machine', category: 'Machines' },
 
-  // Bodyweight & Calisthenics
-  { id: 'bodyweight', name: 'Bodyweight', category: 'Bodyweight' },
+    // Bodyweight & Calisthenics
+    { id: 'bodyweight', name: 'Bodyweight', category: 'Bodyweight' },
 
-  // Benches & Racks
-  { id: 'bench', name: 'Bench', category: 'Benches & Racks' },
-  { id: 'rack', name: 'Rack / Squat Rack', category: 'Benches & Racks' },
+    // Benches & Racks
+    { id: 'bench', name: 'Bench', category: 'Benches & Racks' },
+    { id: 'rack', name: 'Rack / Squat Rack', category: 'Benches & Racks' },
 
-  // Accessories
-  { id: 'medicineBall', name: 'Medicine Ball / Slam Ball', category: 'Accessories' },
-  { id: 'padding', name: 'Padding', category: 'Accessories' },
-  
-  // Strongman & Other
-  { id: 'bulgarianBag', name: 'Bulgarian Bag', category: 'Other' },
-  { id: 'indianClubs', name: 'Indian Clubs', category: 'Other' },
-  { id: 'vipr', name: 'ViPR', category: 'Other' },
+    // Accessories
+    { id: 'medicine-ball', name: 'Medicine Ball / Slam Ball', category: 'Accessories' },
+    { id: 'padding', name: 'Padding', category: 'Accessories' },
 
-  // General
-  { id: 'stairs', name: 'Stairs', category: 'General' }
+    // Strongman & Other
+    { id: 'bulgarian-bag', name: 'Bulgarian Bag', category: 'Other' },
+    { id: 'indian-clubs', name: 'Indian Clubs', category: 'Other' },
+    { id: 'vipr', name: 'ViPR', category: 'Other' },
+
+    // General
+    { id: 'stairs', name: 'Stairs', category: 'General' }
 ]

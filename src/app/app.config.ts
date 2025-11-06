@@ -124,6 +124,7 @@ export const appConfig: ApplicationConfig = {
             return new MultiHttpLoader(http, [
               { prefix: './assets/i18n/', suffix: '.json' },
               { prefix: './assets/i18n/', suffix: '.exercises.json' },
+              { prefix: './assets/i18n/', suffix: '.equipments.json' },
             ]);
           },
           deps: [HttpClient]

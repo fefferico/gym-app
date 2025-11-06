@@ -1422,7 +1422,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
   private loadBaseExerciseAndPBs(exerciseId: string): void {
     if (exerciseId.startsWith('custom-exercise-')) {
-      this.currentBaseExercise.set({ id: exerciseId, name: this.activeSetInfo()?.exerciseData.exerciseName || 'Custom Exercise', category: 'custom', description: '', iconName: 'custom-exercise', muscleGroups: [], primaryMuscleGroup: '', equipment: '', imageUrls: [] });
+      this.currentBaseExercise.set({ id: exerciseId, name: this.activeSetInfo()?.exerciseData.exerciseName || 'Custom Exercise', category: 'custom', description: '', iconName: 'custom-exercise', muscleGroups: [], primaryMuscleGroup: undefined, equipment: undefined, imageUrls: [] });
       this.exercisePBs.set([]);
       return;
     }
@@ -2126,7 +2126,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const newWorkoutExercise: Exercise = {
       id: `custom-adhoc-ex-${uuidv4()}`,
       name: 'Custom exercise',
-      description: '', category: 'bodyweight/calisthenics', muscleGroups: [], primaryMuscleGroup: '', imageUrls: []
+      description: '', category: 'bodyweight-calisthenics', muscleGroups: [], primaryMuscleGroup: undefined, imageUrls: []
     };
     this.selectExerciseToAddFromModal(newWorkoutExercise);
   }

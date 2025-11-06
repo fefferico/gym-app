@@ -38,7 +38,9 @@
           <select id="muscle-group-filter" (change)="onMuscleGroupChange($event)" [value]="selectedMuscleGroup() || ''"
             class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
             <option value="">{{ 'exerciseList.filters.allMuscles' | translate }}</option>
-            <option *ngFor="let group of primaryMuscleGroups$ | async" [value]="group">{{ group | titlecase }}</option>
+            @for (group of primaryMuscleGroups$ | async; track group.name) {
+              <option [value]="group.name">{{ group.name | titlecase }}</option>
+            }
           </select>
         </div>
         <!-- Search Filter -->

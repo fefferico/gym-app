@@ -1,10 +1,19 @@
+import { EquipmentValue } from "../services/equipment-data";
+import { MuscleValue } from "../services/muscles-data";
+import { Equipment } from "./equipment.model";
 import { Muscle } from "./muscle.model";
 
 // src/app/core/models/exercise.model.ts
 export const EXERCISE_CATEGORIES = [
-  'bodyweight/calisthenics',
+  'bodyweight-calisthenics',
+  'rehabilitation-mobility',
+  'yoga-pilates',
+  'powerlifting',
+  'olympic-weightlifting',
+  'crossfit',
   'dumbbells',
   'kettlebells',
+  'strength',
   'barbells',
   'machines',
   'cables',
@@ -24,13 +33,13 @@ export interface Exercise {
   name: string;
   description: string;
   category: ExerciseCategory;
-  muscleGroups: string[]; // e.g., ['Chest', 'Triceps', 'Shoulders (Anterior)']
-  primaryMuscleGroup: string; // For easier filtering/display
-  equipmentNeeded?: string[]; // e.g., ['Dumbbells', 'Bench'] or empty for bodyweight
+  muscleGroups: MuscleValue[]; // e.g., ['Chest', 'Triceps', 'Shoulders (Anterior)']
+  primaryMuscleGroup?: MuscleValue; // For easier filtering/display
+  equipmentNeeded?: EquipmentValue[]; // e.g., ['Dumbbells', 'Bench'] or empty for bodyweight
   imageUrls: string[]; // Paths to static images in assets, e.g., ['exercises/push-up_1.jpg', 'exercises/push-up_2.jpg']
   videoUrl?: string; // Optional: Link to a demonstration video (e.g., YouTube)
   notes?: string; // Optional: Tips, common mistakes, variations
-  equipment?: string; // << NEW: e.g., 'Barbell', 'Dumbbell', 'Machine', 'Bodyweight/Calisthenics'
+  equipment?: EquipmentValue; // << NEW: e.g., 'Barbell', 'Dumbbell', 'Machine', 'Bodyweight/Calisthenics'
   iconName?: string;
   isCustom?: boolean; // Flag to indicate if this is a user-defined exercise
   createdAt?: string; // Timestamp for when the exercise was created

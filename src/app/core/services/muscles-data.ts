@@ -8,6 +8,7 @@ export type MuscleValue =
   | 'rectusAbdominis'
   | 'obliques'
   | 'transverseAbdominis'
+  | 'fingerGrip'
   | 'back'
   | 'lats'
   | 'traps'
@@ -48,10 +49,13 @@ export type MuscleValue =
   | 'posteriorDeltoid'
   | 'rotatorCuff'
   | 'fullBody'
+  | 'upperBody'
   | 'posteriorChain'
   | 'cardio'
   | 'thigh'
   | 'ankle'
+  | 'knee'
+  | 'feet'
   | 'neck';
 
 
@@ -92,12 +96,15 @@ export const MUSCLES_DATA: Muscle[] = [
   { id: 'tfl', name: 'muscles.tfl', bodyPart: 'bodyParts.legs' },
   { id: 'thigh', name: 'muscles.thigh', bodyPart: 'bodyParts.legs' },
   { id: 'ankle', name: 'muscles.ankle', bodyPart: 'bodyParts.legs' },
+  { id: 'knee', name: 'muscles.knee', bodyPart: 'bodyParts.legs' },
+  { id: 'feet', name: 'muscles.feet', bodyPart: 'bodyParts.legs' },
 
   // Chest
   { id: 'chest', name: 'muscles.chest', bodyPart: 'bodyParts.chest' },
   { id: 'chestUpper', name: 'muscles.chestUpper', bodyPart: 'bodyParts.chest' },
   { id: 'chestLower', name: 'muscles.chestLower', bodyPart: 'bodyParts.chest' },
   { id: 'serratusAnterior', name: 'muscles.serratusAnterior', bodyPart: 'bodyParts.chest' },
+  { id: 'upperBody', name: 'muscles.upperBody', bodyPart: 'bodyParts.chest' },
 
   // Arms
   { id: 'arms', name: 'muscles.arms', bodyPart: 'bodyParts.arms' },
@@ -106,6 +113,7 @@ export const MUSCLES_DATA: Muscle[] = [
   { id: 'forearms', name: 'muscles.forearms', bodyPart: 'bodyParts.arms' },
   { id: 'brachialis', name: 'muscles.brachialis', bodyPart: 'bodyParts.arms' },
   { id: 'wrists', name: 'muscles.wrists', bodyPart: 'bodyParts.arms' },
+  { id: 'fingerGrip', name: 'muscles.fingerGrip', bodyPart: 'bodyParts.arms' },
 
   // Shoulders
   { id: 'shoulders', name: 'muscles.shoulders', bodyPart: 'bodyParts.shoulders' },

@@ -2456,7 +2456,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         description: description,
         category: 'custom',
         muscleGroups: [],
-        primaryMuscleGroup: '',
+        primaryMuscleGroup: undefined,
         imageUrls: []
       };
 
@@ -4779,7 +4779,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return this.availableExercises.find(e => e.id === selectedExerciseId);
   }
 
-  isBodyweight = computed<boolean>(() => this.baseExercise()?.category === 'bodyweight/calisthenics');
+  isBodyweight = computed<boolean>(() => this.baseExercise()?.category === 'bodyweight-calisthenics');
   isCardio = computed<boolean>(() => this.baseExercise()?.category === 'cardio');
 
 

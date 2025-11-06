@@ -96,12 +96,21 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
 
   handleUpgradeClick(): void {
     this.subscriptionService.togglePremium_DEV_ONLY();
-    const newStatus = this.subscriptionService.isPremium() ? this.translate.instant('settings.subscription.premiumMember') : this.translate.instant('settings.subscription.freeTier');
+    const isNowPremium = this.subscriptionService.isPremium();
+    const newStatus = isNowPremium ? this.translate.instant('settings.subscription.premiumMember') : this.translate.instant('settings.subscription.freeTier');
     this.toastService.success(this.translate.instant('toasts.upgradeSuccess', { status: newStatus }), 3000, this.translate.instant('toasts.statusUpdated'));
 
-    if (this.subscriptionService.isPremium()) {
+    if (isNowPremium) {
       this.toastService.veryImportant(this.translate.instant('toasts.upgradeGratitude'), 10000, this.translate.instant('toasts.thankYou'));
       this.workoutService.enableAllRoutines_DEV_ONLY();
+    } else {
+      // Downgraded to free tier: only first 4 routines enabled, rest disabled
+      const routines = this.workoutService.getCurrentRoutines();
+      routines.forEach((routine, idx) => {
+        routine.isDisabled = idx > 3;
+      });
+  this.workoutService.saveRoutinesToStorage(routines);
+      this.toastService.veryImportant(this.translate.instant('toasts.routinesDisabledOnDowngrade', { count: routines.length > 4 ? routines.length - 4 : 0 }), 10000, this.translate.instant('toasts.routinesDisabledTitle'));
     }
   }
 

@@ -175,7 +175,7 @@ export class WorkoutService {
     }
   }
 
-  private saveRoutinesToStorage(routines: Routine[]): void {
+  public saveRoutinesToStorage(routines: Routine[]): void {
     this.storageService.setItem(this.ROUTINES_STORAGE_KEY, routines);
     this.routinesSubject.next([...this._sortRoutines(routines)]);
   }

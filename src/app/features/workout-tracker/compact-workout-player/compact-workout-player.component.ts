@@ -1742,7 +1742,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const newCustomExercise: Exercise = {
       id: `custom-adhoc-ex-${uuidv4()}`,
       name: 'Custom exercise',
-      description: '', category: 'bodyweight/calisthenics', muscleGroups: [], primaryMuscleGroup: '', imageUrls: []
+      description: '', category: 'bodyweight-calisthenics', muscleGroups: [], primaryMuscleGroup: undefined, imageUrls: []
     };
     await this.selectExerciseToAddFromModal(newCustomExercise);
   }

@@ -78,7 +78,7 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
         const uniqueMuscles$ = combineLatest([uniqueMuscleIds$, musclesMap$]).pipe(
             map(([ids, muscleMap]) => {
                 const muscles = ids
-                    .map(id => muscleMap.get(id))
+                    .map(id => muscleMap.get(typeof id === 'string' ? id : id.id))
                     // Filter out any potential undefined values if an ID has no match
                     .filter((muscle): muscle is Muscle => muscle !== undefined);
                 

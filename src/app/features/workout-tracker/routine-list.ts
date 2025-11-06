@@ -2,8 +2,8 @@
 import { Component, inject, OnInit, PLATFORM_ID, signal, computed, OnDestroy, HostListener, ViewChildren, ViewChild, ElementRef } from '@angular/core'; // Added computed, OnDestroy
 import { CommonModule, DatePipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { firstValueFrom, Observable, Subscription, take } from 'rxjs'; // Added Subscription
-import { PausedWorkoutState, Routine } from '../../core/models/workout.model'; // Added ExerciseDetail
+import { combineLatest, firstValueFrom, map, Observable, Subscription, take } from 'rxjs'; // Added Subscription
+import { PausedWorkoutState, Routine, WorkoutExercise } from '../../core/models/workout.model'; // Added ExerciseDetail
 import { Exercise } from '../../core/models/exercise.model'; // Added Exercise
 import { WorkoutService } from '../../core/services/workout.service';
 import { ExerciseService } from '../../core/services/exercise.service'; // Import ExerciseService
@@ -35,6 +35,7 @@ import { ColorsService } from '../../core/services/colors.service';
 import { BumpClickDirective } from '../../shared/directives/bump-click.directive';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CategoryService } from '../../core/services/workout-category.service';
+import { EQUIPMENT_NORMALIZATION_MAP, EquipmentService } from '../../core/services/equipment.service';
 
 @Component({
   selector: 'app-routine-list',
@@ -97,6 +98,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   private translate = inject(TranslateService);
   protected colorsService = inject(ColorsService);
   protected categoryService = inject(CategoryService);
+  protected equipmentService = inject(EquipmentService);
 
   categories = toSignal(this.categoryService.getTranslatedCategories(), { initialValue: [] });
 
@@ -141,15 +143,25 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     return Array.from(muscles).sort();
   });
 
-  uniqueRoutineEquipments = computed<string[]>(() => {
-    const routines = this.allRoutinesForList();
-    const equipments = new Set<string>();
-    routines.forEach(r => r.exercises.forEach(ex => {
-      const fullEx = this.allExercisesMap.get(ex.exerciseId);
-      fullEx?.equipmentNeeded?.forEach(eq => equipments.add(eq.split(' (')[0].trim()));
-    }));
-    return Array.from(equipments).sort();
-  });
+equipmentTranslations: Record<string, string> = {};
+uniqueRoutineEquipments = computed<{ key: string, label: string }[]>(() => {
+  const routines = this.allRoutinesForList();
+  const equipments = new Set<string>();
+  routines.forEach(r => r.exercises.forEach((ex: WorkoutExercise) => {
+    const fullEx = this.allExercisesMap.get(ex.exerciseId);
+    fullEx?.equipmentNeeded?.forEach(eqRaw => {
+      if (!eqRaw) return;
+      const eqKey = EQUIPMENT_NORMALIZATION_MAP[eqRaw.toLowerCase().trim()] || eqRaw.toLowerCase().trim();
+      equipments.add(eqKey);
+    });
+  }));
+  return Array.from(equipments)
+    .map(key => ({
+      key,
+      label: this.equipmentTranslations[key] || key
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+});
 
   uniquePrimaryCategories = computed<string[]>(() => {
     const routines = this.allRoutinesForList();
@@ -370,6 +382,14 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
       // --- END: GHOST LOADING IMPLEMENTATION ---
     });
+
+    // Fetch all equipment translations once
+  this.equipmentService.getTranslatedEquipment().pipe(take(1)).subscribe(translatedEquipments => {
+    this.equipmentTranslations = {};
+    translatedEquipments.forEach(eq => {
+      this.equipmentTranslations[eq.id] = eq.name;
+    });
+  });
 
     // This observable is for the template's async pipe if needed for loading states, before filtering kicks in.
     this.routines$ = this.workoutService.routines$;
@@ -848,21 +868,24 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
   toggleActions(routineId: string, event: MouseEvent): void {
     event.stopPropagation();
-
+  
+    // Fast path: If already open for this routine, close it
+    if (this.activeRoutineIdActions() === routineId) {
+      this.activeRoutineIdActions.set(null);
+      return;
+    }
+  
+    // Only check for disabled/premium if opening
     const clickedRoutine = this.allRoutinesForList().find(routine => routine.id === routineId);
-
     if (clickedRoutine?.isDisabled) {
-      const totalRoutines = this.allRoutinesForList() ? this.allRoutinesForList().length : 0;
+      const totalRoutines = this.allRoutinesForList().length;
       if (!this.subscriptionService.canAccess(PremiumFeature.UNLIMITED_ROUTINES, totalRoutines)) {
         this.subscriptionService.showUpgradeModal('You have reached the maximum number of custom routines available to Free Tier users. Upgrade now to unlock the possibility to create endless routines and much more!');
         return;
       }
     }
-
-
-
-
-    this.activeRoutineIdActions.update(current => (current === routineId ? null : routineId));
+  
+    this.activeRoutineIdActions.set(routineId);
   }
 
   areActionsVisible(routineId: string): boolean {

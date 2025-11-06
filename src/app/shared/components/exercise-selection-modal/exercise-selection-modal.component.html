@@ -48,7 +48,7 @@
                         <select (change)="onMuscleGroupChange($event)" [value]="selectedMuscleGroup() || ''"
                             class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200">
                             <option value="">{{ 'exerciseSelectionModal.allMuscles' | translate }}</option>
-                            <option *ngFor="let muscle of primaryMuscleGroups$ | async" [value]="muscle">{{ muscle |
+                            <option *ngFor="let muscle of primaryMuscleGroups$ | async" [value]="muscle">{{ muscle.name|
                                 titlecase }}</option>
                         </select>
                     </div>

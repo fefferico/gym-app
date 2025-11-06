@@ -8,6 +8,34 @@ import { TranslateService } from '@ngx-translate/core';
 import { Equipment } from '../models/equipment.model';
 import { EQUIPMENT_DATA } from './equipment-data';
 
+// Build a map: legacyNameOrId (lowercase, trimmed) => canonicalId
+export const EQUIPMENT_NORMALIZATION_MAP: Record<string, string> = (() => {
+  const map: Record<string, string> = {};
+  for (const eq of EQUIPMENT_DATA) {
+    const kebabId = eq.id.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+    map[kebabId] = kebabId;
+    map[eq.id.toLowerCase().trim()] = kebabId;
+    if (eq.name) {
+      map[eq.name.toLowerCase().trim()] = kebabId;
+    }
+  }
+
+  // --- Custom/legacy mappings ---
+  map['hyperextension bench/machine'] = 'hyperextension-bench'; // or 'hyperextension-machine' if that's your canonical id
+  map['hyperextension bench'] = 'hyperextension-bench';
+  map['hyperextension machine'] = 'hyperextension-machine';
+  // Add more as needed...
+
+  return map;
+})();
+
+function toKebabCase(str: string): string {
+  return str
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .replace(/[\s_]+/g, '-')
+    .toLowerCase();
+}
+
 /**
  * Manages and provides access to all equipment data.
  * This service acts as the single source of truth for equipment definitions,
@@ -35,12 +63,6 @@ export class EquipmentService {
     shareReplay(1) // Cache the last emitted map and share it
   );
 
-  /**
-   * An observable stream that provides the complete list of equipment with all names
-   * fully translated into the current application language.
-   * Ideal for displaying lists of equipment in the UI.
-   * @returns An Observable emitting an array of translated Equipment objects.
-   */
   public getTranslatedEquipment(): Observable<Equipment[]> {
     return this.allEquipment$.pipe(
       switchMap(equipment => {
@@ -48,22 +70,19 @@ export class EquipmentService {
           return of([]);
         }
 
-        // Collect all the translation keys from the equipment names
-        const translationKeys = equipment.map(eq => eq.name);
+        // Build translation keys for each equipment
+        const translationKeys = equipment.map(eq => `equipments.${eq.id}`);
 
-        // Use the translate service to get the translated strings
-        return this.translate.get(translationKeys).pipe(
+        return this.translate.stream(translationKeys).pipe(
           map(translations => {
-            // Map the original equipment data to a new array with the translated names
             return equipment.map(eq => ({
               ...eq,
-              // Replace the key with its translated value
-              name: translations[eq.name] || eq.name 
+              name: translations[`equipments.${eq.id}`] || eq.id
             }));
           })
         );
       }),
-      shareReplay(1) // Also cache the translated list
+      shareReplay(1)
     );
   }
 
@@ -78,4 +97,7 @@ export class EquipmentService {
       shareReplay(1)
     );
   }
+
+
+
 }

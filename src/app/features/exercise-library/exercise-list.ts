@@ -92,9 +92,9 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
   private langChangeSub?: Subscription;
 
   categories$: Observable<string[]> | undefined;
-  primaryMuscleGroups$: Observable<string[]> | undefined;
+  primaryMuscleGroups$: Observable<Muscle[]> | undefined;
   selectedCategory = signal<string | null>(null);
-  selectedMuscleGroup = signal<string | null>(null);
+  selectedMuscleGroup = signal<Muscle | null>(null);
   searchTerm = signal<string>('');
   allExercises = signal<Exercise[]>([]);
 
@@ -124,7 +124,7 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
     }
     const muscleGroup = this.selectedMuscleGroup();
     if (muscleGroup) {
-      exercises = exercises.filter(ex => ex.primaryMuscleGroup === muscleGroup);
+      exercises = exercises.filter(ex => ex.primaryMuscleGroup === muscleGroup.id);
     }
 
     let term = this.searchTerm();
@@ -193,7 +193,15 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
 
   onMuscleGroupChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
-    this.selectedMuscleGroup.set(target.value || null);
+    if (!target.value || !this.primaryMuscleGroups$) {
+      this.selectedMuscleGroup.set(null);
+      return;
+    }
+    // Subscribe to the observable to get the array and then find the muscle group
+    this.primaryMuscleGroups$?.subscribe((muscleGroups: Muscle[]) => {
+      const selectedMuscleGroup = muscleGroups.find((mg: Muscle) => mg.id === target.value) || null;
+      this.selectedMuscleGroup.set(selectedMuscleGroup);
+    });
   }
 
   onSearchTermChange(event: Event): void {

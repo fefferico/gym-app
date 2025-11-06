@@ -149,18 +149,19 @@
                     </div>
                 </div>
                 <div class="mt-4" *ngIf="uniqueRoutineEquipments().length > 0">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{
-                        'routineList.filters.equipmentLabel' | translate }}</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {{ 'routineList.filters.equipmentLabel' | translate }}
+                    </label>
                     <div class="flex flex-wrap gap-2">
                         <button *ngFor="let equipment of uniqueRoutineEquipments()"
-                            (click)="toggleEquipmentFilter(equipment)" type="button" role="switch"
-                            [attr.aria-checked]="selectedEquipment().includes(equipment)"
+                            (click)="toggleEquipmentFilter(equipment.key)" type="button" role="switch"
+                            [attr.aria-checked]="selectedEquipment().includes(equipment.key)"
                             class="px-3 py-1.5 text-xs font-semibold rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
                             [ngClass]="{
-                                'bg-primary text-white focus:ring-primary-dark': selectedEquipment().includes(equipment),
-                                'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 focus:ring-gray-400': !selectedEquipment().includes(equipment)
-                            }">
-                            {{ equipment | titlecase }}
+                                        'bg-primary text-white focus:ring-primary-dark': selectedEquipment().includes(equipment.key),
+                                        'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 focus:ring-gray-400': !selectedEquipment().includes(equipment.key)
+                                      }">
+                            {{ equipment.label }}
                         </button>
                     </div>
                 </div>
@@ -278,7 +279,8 @@
                                     [disabled]="routine.isDisabled"
                                     [ngClass]="{ 'cursor-not-allowed opacity-50': routine.isDisabled } "
                                     class="bg-blue-100 text-xs text-blue-700 dark:bg-blue-700 dark:text-blue-200 px-1.5 py-0.5 rounded-full hover:bg-blue-200 dark:hover:bg-blue-600">
-                                    {{ ('workoutBuilder.goals.'+removeSpaceFromGoalName(routine.goal)) | translate | titlecase }}
+                                    {{ ('workoutBuilder.goals.'+removeSpaceFromGoalName(routine.goal)) | translate |
+                                    titlecase }}
                                 </button>
                             </div>
                         </div>
@@ -291,7 +293,7 @@
                                     [disabled]="routine.isDisabled"
                                     [ngClass]="{ 'cursor-not-allowed opacity-50': routine.isDisabled } "
                                     class="bg-blue-100 text-xs text-blue-700 dark:bg-blue-700 dark:text-blue-200 px-1.5 py-0.5 rounded-full hover:bg-blue-200 dark:hover:bg-blue-600">
-                                        {{ getCategoryNameById(routine.primaryCategory) }}
+                                    {{ getCategoryNameById(routine.primaryCategory) }}
                                 </button>
                             </div>
                         </div>
@@ -402,15 +404,17 @@
                 <app-icon name="routines" class="h-16 w-16 text-gray-400 dark:text-gray-500"
                     aria-hidden="true"></app-icon>
                 <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    {{ (routineSearchTerm() || selectedRoutineGoal() || selectedRoutineMuscleGroup() ?
+                    {{ (routineSearchTerm() || selectedRoutineGoal() || selectedRoutineMuscleGroup()
+                    || uniquePrimaryCategories()?
                     'routineList.noRoutines.noMatchTitle' : 'routineList.noRoutines.noRoutinesTitle') | translate }}
                 </h3>
                 <p class="text-gray-500 dark:text-gray-400 mb-6">
-                    {{ (routineSearchTerm() || selectedRoutineGoal() || selectedRoutineMuscleGroup() ?
+                    {{ (routineSearchTerm() || selectedRoutineGoal() || selectedRoutineMuscleGroup()
+                    || uniquePrimaryCategories()?
                     'routineList.noRoutines.noMatchMessage' : 'routineList.noRoutines.noRoutinesMessage') | translate }}
                 </p>
                 <div class="flex justify-center"><button appPress (shortPress)="navigateToCreateRoutine()"
-                        *ngIf="!(routineSearchTerm() || selectedRoutineGoal() || selectedRoutineMuscleGroup())"
+                        *ngIf="!(routineSearchTerm() || selectedRoutineGoal() || selectedRoutineMuscleGroup() || uniquePrimaryCategories())"
                         class="flex items-center bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-6 rounded-md shadow-md hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-opacity-75">
                         <app-icon name="create" class="h-5 w-5 mr-2"></app-icon>
                         {{ 'routineList.noRoutines.createFirstButton' | translate }}
@@ -444,5 +448,5 @@
 
 </div>
 
-  <app-fab-menu *ngIf="!isFilterAccordionOpen() && !areActionsOpen()" [actions]="fabMenuItems"
+<app-fab-menu *ngIf="!isFilterAccordionOpen() && !areActionsOpen()" [actions]="fabMenuItems"
     (actionClicked)="onFabAction($event)"></app-fab-menu>

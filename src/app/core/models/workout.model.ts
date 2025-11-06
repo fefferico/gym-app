@@ -1,5 +1,6 @@
 // src/app/core/models/workout.model.ts
 
+import { MuscleValue } from "../services/muscles-data";
 import { Exercise, ExerciseCategory } from "./exercise.model";
 import { LastPerformanceSummary, LoggedSet, LoggedWorkoutExercise } from "./workout-log.model";
 
@@ -290,7 +291,7 @@ export interface Routine {
   estimatedDuration?: number;
   lastPerformed?: string;
   goal?: 'hypertrophy' | 'strength' | 'muscular endurance' | 'tabata' | 'cardiovascular endurance' | 'fat loss / body composition' | 'mobility & flexibility' | 'power / explosiveness' | 'speed & agility' | 'balance & coordination' | 'skill acquisition' | 'rehabilitation / injury prevention' | 'mental health / stress relief' | 'general health & longevity' | 'sport-specific performance' | 'maintenance' | 'rest' | 'custom';
-  targetMuscleGroups?: string[];
+  targetMuscleGroups?: MuscleValue[];
   notes?: string;
   createdAt?: string;
   updatedAt?: string;

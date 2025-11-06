@@ -26,7 +26,7 @@
     <div>
       <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'exerciseForm.labels.category' | translate }}</label>
       <select id="category" formControlName="category" class="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-        <option *ngFor="let cat of categories" [value]="cat">{{ 'categories.' + cat | translate }}</option>
+        <option *ngFor="let cat of categories" [value]="cat">{{ 'equipment.categories.' + cat | translate }}</option>
       </select>
     </div>
 

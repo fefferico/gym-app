@@ -23,6 +23,10 @@ import { toSignal } from '@angular/core/rxjs-interop';
   styleUrls: ['./exercise-form.scss']
 })
 export class ExerciseFormComponent implements OnInit {
+
+    translatedEquipment: Equipment[] = [];
+  translatedMuscles: Muscle[] = [];
+
   // --- Service Injections ---
   private fb = inject(FormBuilder);
   private router = inject(Router);
@@ -55,13 +59,13 @@ export class ExerciseFormComponent implements OnInit {
   private muscleMap = new Map<string, string>(); // <id, translatedName>
   private equipmentMap = new Map<string, string>(); // <id, translatedName>
 
-  categories: ExerciseCategory[] = ['barbells', 'dumbbells', 'bodyweight/calisthenics', 'machines', 'cables', 'kettlebells', 'bands', 'other', 'stretching', 'cardio'];
+  categories: ExerciseCategory[] = ['barbells', 'dumbbells', 'bodyweight-calisthenics', 'machines', 'cables', 'kettlebells', 'bands', 'other', 'stretching', 'cardio'];
 
 constructor() {
     this.exerciseForm = this.fb.group({
       name: ['', Validators.required],
       description: [''],
-      category: ['bodyweight/calisthenics' as ExerciseCategory, Validators.required],
+      category: ['bodyweight-calisthenics' as ExerciseCategory, Validators.required],
       primaryMuscleGroup: ['', Validators.required], // Will store muscle ID
       muscleGroups: this.fb.array([]), // Will store muscle IDs
       equipmentNeeded: this.fb.array([]), // Will store equipment IDs
@@ -99,6 +103,13 @@ constructor() {
     });
     this.muscleSearchCtrl.valueChanges.subscribe(value => this.filterMuscles(value || ''));
     this.equipmentSearchCtrl.valueChanges.subscribe(value => this.filterEquipment(value || ''));
+
+        this.equipmentService.getTranslatedEquipment().pipe(take(1)).subscribe(eqs => {
+      this.translatedEquipment = eqs;
+    });
+    this.muscleMapService.getTranslatedMuscles().pipe(take(1)).subscribe(muscles => {
+      this.translatedMuscles = muscles;
+    });
   }
 
   hideMuscleSuggestions(): void {
@@ -132,12 +143,17 @@ constructor() {
       name: exercise.name,
       description: exercise.description,
       category: exercise.category,
-      primaryMuscleGroup: exercise.primaryMuscleGroup, // Patch with ID
+      primaryMuscleGroup: typeof exercise.primaryMuscleGroup === 'object' && exercise.primaryMuscleGroup !== null
+        ? exercise.primaryMuscleGroup
+        : exercise.primaryMuscleGroup,
       videoUrl: exercise.videoUrl || '',
       notes: exercise.notes || ''
     });
-    this.setFormArrayControls('muscleGroups', exercise.muscleGroups); // Patch with IDs
-    this.setFormArrayControls('equipmentNeeded', exercise.equipmentNeeded || []); // Patch with IDs
+    // Extract IDs from complex objects for muscleGroups and equipmentNeeded
+    const muscleGroupIds = (exercise.muscleGroups || []).map(m => typeof m === 'object' && m !== null ? m : m);
+    const equipmentIds = (exercise.equipmentNeeded || []).map(e => typeof e === 'object' && e !== null ? e : e);
+    this.setFormArrayControls('muscleGroups', muscleGroupIds);
+    this.setFormArrayControls('equipmentNeeded', equipmentIds);
   }
 
   async onSubmit(): Promise<void> {
@@ -176,8 +192,14 @@ private muscleNameMap = new Map<string, string>(); // <id, translatedName>
     ids.forEach(id => formArray.push(this.fb.control(id, Validators.required)));
   }
 
-  getMuscleNameById = (id: string): string => this.muscleNameMap.get(id) || id;
-  getEquipmentNameById = (id: string): string => this.equipmentNameMap.get(id) || id;
+  // getMuscleNameById = (id: string): string => this.muscleNameMap.get(id) || id;
+  getMuscleNameById(id: string): string {
+    return this.translatedMuscles.find(m => m.id === id)?.name || id;
+  }
+  // getEquipmentNameById = (id: string): string => this.equipmentNameMap.get(id) || id;
+   getEquipmentNameById(id: string): string {
+    return this.translatedEquipment.find(eq => eq.id === id)?.name || id;
+  }
 
   // --- START: CORRECTED FILTER METHODS ---
   private filterMuscles(query: string): void {
@@ -187,7 +209,7 @@ private muscleNameMap = new Map<string, string>(); // <id, translatedName>
     }
     const lowerCaseQuery = query.toLowerCase().trim();
     const currentMuscleIds = this.getFormArray('muscleGroups').value as string[];
-    const filtered = this.allMuscles().filter(muscle => {
+    const filtered = this.translatedMuscles.filter(muscle => {
         const nameMatches = muscle.name.toLowerCase().includes(lowerCaseQuery);
         const idMatches = muscle.id.toLowerCase().includes(lowerCaseQuery);
         const isAlreadySelected = currentMuscleIds.includes(muscle.id);
@@ -204,7 +226,7 @@ private muscleNameMap = new Map<string, string>(); // <id, translatedName>
     }
     const lowerCaseQuery = query.toLowerCase().trim();
     const currentEquipmentIds = this.getFormArray('equipmentNeeded').value as string[];
-    const filtered = this.allEquipment().filter(equipment => {
+    const filtered = this.translatedEquipment.filter(equipment => {
         const nameMatches = equipment.name.toLowerCase().includes(lowerCaseQuery);
         const idMatches = equipment.id.toLowerCase().includes(lowerCaseQuery);
         const isAlreadySelected = currentEquipmentIds.includes(equipment.id);

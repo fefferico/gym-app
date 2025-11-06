@@ -375,8 +375,8 @@ export class WorkoutUtilsService {
             return this.translate.instant('workoutService.display.weightNotApplicable');
         }
 
-        // 2. Handle bodyweight/calisthenics exercises.
-        if (exercise?.category === 'bodyweight/calisthenics') {
+        // 2. Handle bodyweight-calisthenics exercises.
+        if (exercise?.category === 'bodyweight-calisthenics') {
             // If additional weight was used or targeted, display it.
             if (displayWeight != null && displayWeight > 0) {
                 return `${displayWeight} ${this.unitsService.getWeightUnitSuffix()}`;
