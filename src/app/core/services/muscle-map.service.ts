@@ -1,8 +1,15 @@
-import { inject, Injectable, Renderer2 } from '@angular/core';
+import { inject, Injectable, Renderer2, signal } from '@angular/core';
 import { map, Observable, ObservableInput, of, shareReplay, startWith, switchMap } from 'rxjs';
 import { Muscle } from '../models/muscle.model';
 import { MUSCLES_DATA } from './muscles-data';
 import { TranslateService } from '@ngx-translate/core';
+import { toObservable } from '@angular/core/rxjs-interop';
+
+export interface HydratedMuscle {
+    id: string;
+    name: string;
+    bodyPart: string;
+}
 
 /**
  * Maps standardized muscle group names to the unique IDs of the paths in the SVG.
@@ -44,7 +51,18 @@ export class MuscleMapService {
     private readonly DEFAULT_COLOR = '#808080';   // Grey for unworked muscles
     private readonly STROKE_COLOR = '#333333';    // Border color for muscles
 
-    constructor() { }
+    private translate = inject(TranslateService);
+
+
+
+    constructor() {
+        this.loadTranslations();
+
+        // Reload translations on language change
+        this.translate.onLangChange.subscribe(() => {
+            this.loadTranslations();
+        });
+    }
 
     /**
      * Applies coloring to the SVG elements based on primary and secondary muscle groups.
@@ -109,32 +127,31 @@ export class MuscleMapService {
     }
 
     muscles$: Observable<Muscle[]> = of(MUSCLES_DATA);
-    private translate = inject(TranslateService);
 
     // Create a quick-lookup map for muscles
     musclesMap$: Observable<Map<string, Muscle>> = this.muscles$.pipe(
         map(muscles => new Map(muscles.map(m => [m.id, m])))
     );
 
-     /**
-     * An observable stream that provides the complete list of muscles with all names
-     * fully translated. This stream automatically updates whenever the application's
-     * language changes.
-     */
+    /**
+    * An observable stream that provides the complete list of muscles with all names
+    * fully translated. This stream automatically updates whenever the application's
+    * language changes.
+    */
     public readonly translatedMuscles$: Observable<Muscle[]> = this.translate.onLangChange.pipe(
         startWith(null), // Trigger immediately
         switchMap(() => {
             return this.muscles$.pipe(
                 switchMap(muscles => {
                     // This now correctly gets an array of keys like ['muscles.core', 'muscles.lats', ...]
-                    const translationKeys = muscles.map(m => m.name); 
+                    const translationKeys = muscles.map(m => m.name);
 
                     return this.translate.get(translationKeys).pipe(
                         map(translations => {
                             return muscles.map(muscle => ({
                                 ...muscle,
                                 // It finds 'muscles.lats' in the translations object and returns "Dorsali"
-                                name: translations[muscle.name] || muscle.name 
+                                name: translations[muscle.name] || muscle.name
                             }));
                         })
                     );
@@ -149,4 +166,60 @@ export class MuscleMapService {
     public getTranslatedMuscles(): Observable<Muscle[]> {
         return this.translatedMuscles$;
     }
+
+    private hydratedMuscles = signal<HydratedMuscle[]>([]);
+  hydratedMuscles$ = toObservable(this.hydratedMuscles);
+
+    // Loads translations for all muscles
+    private loadTranslations() {
+        const keys = MUSCLES_DATA.map(m => m.name);
+        this.translate.get(keys).subscribe(translations => {
+            const hydrated = MUSCLES_DATA.map(muscle => ({
+                ...muscle,
+                name: translations[muscle.name] || muscle.name
+            }));
+            this.hydratedMuscles.set(hydrated);
+        });
+    }
+
+    // Returns all hydrated muscles
+    getHydratedMuscles(): HydratedMuscle[] {
+        return this.hydratedMuscles();
+    }
+
+    // Returns all canonical muscle IDs
+    getAllMuscleIds(): string[] {
+        return MUSCLES_DATA.map(m => m.id);
+    }
+
+    // Returns a single hydrated muscle by ID
+    getMuscleById(id: string): HydratedMuscle | undefined {
+        return this.hydratedMuscles().find(muscle => muscle.id === id);
+    }
 }
+
+export const MUSCLE_NORMALIZATION_MAP: Record<string, string> = (() => {
+  const map: Record<string, string> = {};
+  for (const muscle of MUSCLES_DATA) {
+    // Map canonical id to itself
+    map[muscle.id.toLowerCase().trim()] = muscle.id;
+    // Map display name to id
+    if (muscle.name) {
+      map[muscle.name.toLowerCase().trim()] = muscle.id;
+    }
+    // Optionally, add aliases if present
+    // if (muscle.aliases) {
+    //   for (const alias of muscle.aliases) {
+    //     map[alias.toLowerCase().trim()] = muscle.id;
+    //   }
+    // }
+  }
+  // Add custom/legacy mappings if needed
+  map['upper chest'] = 'chest-upper';
+  map['traps (upper)'] = 'traps-upper';
+  map['lower back'] = 'lowerBack';
+  map['lower back (erector spinae)'] = 'lowerBack';
+  map['abs (rectus abdominis)'] = 'abs';
+  // ...etc.
+  return map;
+})();

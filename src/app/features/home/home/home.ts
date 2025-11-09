@@ -247,6 +247,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.isCalculatorModalVisible = false;
   }
 
+  navigateToExerciseLibrary(): void {
+    this.workoutService.vibrate();
+    setTimeout(() => {
+      this.router.navigate(['/library']);
+    }, this.bumpTimeOut);
+  }
+
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe(); // Unsubscribe to prevent memory leaks
   }

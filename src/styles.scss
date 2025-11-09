@@ -369,3 +369,10 @@ body {
 .animate-bump-out {
   animation: bump-out 0.3s ease-out; // Example animation
 }
+
+.hover-light-border-card {
+    @apply hover:bg-gray-50 hover:border-2 hover:border-primary-light hover:border-b-0 hover:border-r-0;
+}
+.hover-dark-border-card {
+    @apply dark:bg-gray-700 dark:border-none dark:hover:bg-gray-600;
+}

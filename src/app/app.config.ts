@@ -125,6 +125,9 @@ export const appConfig: ApplicationConfig = {
               { prefix: './assets/i18n/', suffix: '.json' },
               { prefix: './assets/i18n/', suffix: '.exercises.json' },
               { prefix: './assets/i18n/', suffix: '.equipments.json' },
+              { prefix: './assets/i18n/', suffix: '.categories.json' },
+              { prefix: './assets/i18n/', suffix: '.workout-categories.json' },
+              { prefix: './assets/i18n/', suffix: '.muscles.json' },
             ]);
           },
           deps: [HttpClient]

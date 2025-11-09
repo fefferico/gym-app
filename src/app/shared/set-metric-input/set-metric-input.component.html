@@ -1,0 +1,112 @@
+<!-- TEMPO INPUT -->
+<ng-container *ngIf="field === 'tempo'">
+  <div [formGroup]="setControl">
+    <label [for]="'tempo-exp-' + exIndex + '-' + setIndex"
+      class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
+      <span>{{ 'workoutBuilder.set.tempo' | translate }}</span>
+    </label>
+    <ng-container *ngIf="mode === 'routineBuilder'">
+      <input type="text" formControlName="targetTempo"
+        [placeholder]="'workoutBuilder.set.tempoPlaceholder' | translate" [readonly]="isViewMode"
+        class="mt-0.5 input_number_class">
+    </ng-container>
+    <input *ngIf="mode === 'manualLogEntry'" type="text" [id]="'tempo-exp-' + exIndex + '-' + setIndex"
+      formControlName="targetTempo" [placeholder]="'workoutBuilder.set.tempoPlaceholder' | translate"
+      [readonly]="isViewMode" class="mt-0.5 input_number_class">
+  </div>
+</ng-container>
+
+<!-- INCREMENTER INPUT -->
+<ng-container *ngIf="field === 'incrementer'">
+  <div [formGroup]="setControl">
+    <div class="flex items-stretch w-full shadow-sm p-0.5 bg-gray-200 dark:bg-gray-700 rounded-xl">
+      <button appBumpClick type="button" appPress (shortPress)="onShortPressDecrement(setControl, field)"
+        (longPress)="onLongPressDecrement(setControl, field)" (pressRelease)="onPressRelease()"
+        class="flex items-center px-3 py-5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-l-xl border-y border-l border-gray-200 dark:border-gray-700 transition-colors">
+        <app-icon name="minus" class="h-6 w-6 pointer-events-none"></app-icon>
+      </button>
+      <div class="relative w-full flex-grow rounded-xl my-1 h-14">
+        <span
+          class="absolute inset-0 flex items-center justify-center text-center text-lg font-bold text-black dark:text-gray-200 border-y border-transparent z-10 cursor-text select-none"
+          (click)="focusInput(setControl.get('id')?.value, field)">
+          <!-- [@valueAnimation]="getExactInputValue(setControl, field)" -->
+          {{ getSetMetricDisplayValue(setControl,field) || 0 }}
+        </span>
+        <input type="number" #inputElem [attr.data-set-id]="setControl.get('id')?.value"
+          [attr.data-field]="field" [value]="getExactInputValue(setControl, field)"
+          (input)="onExactInputChange(setControl, field, $event)" [readonly]="isViewMode"
+          (focus)="onInputFocus(setControl.get('id')?.value, field); selectInputText(inputElem)"
+          (blur)="onInputBlur(setControl.get('id')?.value, field)"
+          (wheel)="onInputWheel(setControl, field, $event)" (touchstart)="onInputTouchStart($event)"
+          (touchmove)="onInputTouchMove(setControl, field, $event)"
+          class="absolute inset-0 w-full h-full px-1.5 py-2 text-center text-lg font-bold bg-transparent dark:bg-gray-800 rounded-xl text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none no-arrows z-20"
+          [ngClass]="{ 'animating-input-text': isAnimatingSet() === setControl.get('id')?.value }">
+      </div>
+      <button appBumpClick type="button" appPress (shortPress)="onShortPressIncrement(setControl, field)"
+        (longPress)="onLongPressIncrement(setControl, field)" (pressRelease)="onPressRelease()"
+        class="flex items-center px-3 py-5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-r-xl border-y border-r border-gray-200 dark:border-gray-700 transition-colors">
+        <app-icon name="plus" class="h-6 w-6 pointer-events-none"></app-icon>
+      </button>
+    </div>
+  </div>
+</ng-container>
+
+<!-- METRIC INPUT -->
+<ng-container *ngIf="field !== 'tempo' && field !== 'incrementer'">
+  <div [formGroup]="setControl">
+    <label class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
+      <span>{{ 'metrics.' + field | translate }}
+        <span *ngIf="field === metricEnum.weight">({{unitService.currentWeightUnit()}})</span>
+        <span *ngIf="field === metricEnum.duration">(s)</span>
+        <span *ngIf="field === metricEnum.distance">({{unitService.currentDistanceMeasureUnit()}})</span>
+        <span *ngIf="field === metricEnum.rest">(s)</span>
+      </span>
+      <button type="button" (click)="openMetricSchemeModal(setControl, field, $event)"
+        class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
+        {{ 'common.edit' | translate }}
+      </button>
+    </label>
+    <ng-container [ngSwitch]="setControl.get(getFormControlName(field))?.value?.type">
+      <ng-container *ngSwitchCase="'range'">
+        <div class="flex items-center w-full justify-center bg-gray-200 dark:bg-gray-700 p-0.5 rounded-xl">
+          <input type="number" placeholder="Min" min="0" [readonly]="isViewMode"
+            class="w-full px-2 py-4 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl no-arrows h-16"
+            [value]="setControl.get(getFormControlName(field))?.value?.min ?? setControl.get(getFormControlName(field))?.value?.minSeconds"
+            (input)="updateTargetField(setControl, getFormControlName, 'min', $event)">
+          <span class="input_number_class_separator">-</span>
+          <input type="number" placeholder="Max" min="0" [readonly]="isViewMode"
+            class="w-full px-2 py-4 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl no-arrows h-16"
+            [value]="setControl.get(getFormControlName(field))?.value?.max ?? setControl.get(getFormControlName(field))?.value?.maxSeconds"
+            (input)="updateTargetField(setControl, getFormControlName, 'max', $event)">
+        </div>
+      </ng-container>
+      <ng-container *ngSwitchCase="'exact'">
+        <app-set-metric-input
+          [setControl]="setControl"
+          [field]="'incrementer'"
+          [isViewMode]="isViewMode"
+          [getSetMetricDisplayValue]="getSetMetricDisplayValue"
+          [getExactInputValue]="getExactInputValue"
+          [onShortPressDecrement]="onShortPressDecrement"
+          [onLongPressDecrement]="onLongPressDecrement"
+          [onPressRelease]="onPressRelease"
+          [onShortPressIncrement]="onShortPressIncrement"
+          [onLongPressIncrement]="onLongPressIncrement"
+          [onExactInputChange]="onExactInputChange"
+          [onInputFocus]="onInputFocus"
+          [selectInputText]="selectInputText"
+          [onInputBlur]="onInputBlur"
+          [onInputWheel]="onInputWheel"
+          [onInputTouchStart]="onInputTouchStart"
+          [onInputTouchMove]="onInputTouchMove"
+          [isAnimatingSet]="isAnimatingSet">
+        </app-set-metric-input>
+      </ng-container>
+      <!-- ...repeat for other cases as in your original template... -->
+      <ng-container *ngSwitchDefault>
+  <input type="text" [formControlName]="getFormControlName(field)" [readonly]="isViewMode"
+          class="mt-0.5 input_number_class">
+      </ng-container>
+    </ng-container>
+  </div>
+</ng-container>

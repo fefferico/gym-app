@@ -1,0 +1,23 @@
+{
+  "categories": {
+    "bodyweight-calisthenics": "Poids du corps & Calisthenics",
+    "rehabilitation-mobility": "Rééducation & Mobilité",
+    "yoga-pilates": "Yoga & Pilates",
+    "powerlifting": "Force athlétique",
+    "olympic-weightlifting": "Haltérophilie olympique",
+    "crossfit": "CrossFit",
+    "dumbbells": "Haltères",
+    "kettlebells": "Kettlebells",
+    "strength": "Force",
+    "barbells": "Barres",
+    "machines": "Machines",
+    "cables": "Câbles",
+    "bands": "Bandes",
+    "cardio": "Cardio",
+    "stretching": "Étirements",
+    "plyometrics": "Plyométrie",
+    "strongman": "Strongman",
+    "custom": "Personnalisé",
+    "other": "Autre"
+  }
+}

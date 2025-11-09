@@ -1188,6 +1188,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           return;
         }
       }
+      if (this.isDestroyed) return;
       this.audioService.playSound(AUDIO_TYPES.tada);
       this.router.navigate(['/workout/summary', savedLog.id], {
         queryParams: { newlyCompleted: 'true' }
@@ -1967,8 +1968,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (confirmQuit && confirmQuit.data) {
       this.isSessionConcluded = true;
       this.toggleMainSessionActionMenu(null);
-      this.router.navigate(['/home']);
       this.toastService.info(this.translate.instant('compactPlayer.toasts.noSetsLoggedError'), 4000);
+      this.router.navigate(['/home']);
     }
   }
 

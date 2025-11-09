@@ -1,5 +1,7 @@
 // src/app/core/models/training-program.model.ts
 
+import { WorkoutExercise } from "./workout.model";
+
 /**
  * Defines a specific day within a training program's schedule.
  */

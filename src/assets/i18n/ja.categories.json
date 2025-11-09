@@ -1,0 +1,23 @@
+{
+  "categories": {
+    "bodyweight-calisthenics": "自重＆カリステニクス",
+    "rehabilitation-mobility": "リハビリ＆モビリティ",
+    "yoga-pilates": "ヨガ＆ピラティス",
+    "powerlifting": "パワーリフティング",
+    "olympic-weightlifting": "オリンピックウェイトリフティング",
+    "crossfit": "クロスフィット",
+    "dumbbells": "ダンベル",
+    "kettlebells": "ケトルベル",
+    "strength": "筋力",
+    "barbells": "バーベル",
+    "machines": "マシン",
+    "cables": "ケーブル",
+    "bands": "バンド",
+    "cardio": "有酸素運動",
+    "stretching": "ストレッチ",
+    "plyometrics": "プライオメトリクス",
+    "strongman": "ストロングマン",
+    "custom": "カスタム",
+    "other": "その他"
+  }
+}

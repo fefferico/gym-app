@@ -1,0 +1,15 @@
+{
+  "workout-categories": {
+    "strengthTraining": "Силовая тренировка",
+    "cardioEndurance": "Кардио и выносливость",
+    "flexibilityMobility": "Гибкость и мобильность",
+    "mindBodyRecovery": "Разум, тело и восстановление",
+    "sportSpecific": "Спортивная специализация",
+    "quickWorkouts": "Быстрые тренировки",
+    "specialty": "Специальные",
+    "targetedWorkouts": "Целевые тренировки",
+    "guidedPrograms": "Программы с руководством",
+    "equipmentSpecific": "Оборудование",
+    "custom": "Пользовательское"
+  }
+}

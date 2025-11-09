@@ -1,15 +1,15 @@
-import { Category } from "../models/workout-category.model";
+import { WorkoutCategory } from "../models/workout-category.model";
 
-export const CATEGORY_DATA: Category[] = [
-  { id: 'strengthTraining', name: 'categories.strengthTraining' },
-  { id: 'cardioEndurance', name: 'categories.cardioEndurance' },
-  { id: 'flexibilityMobility', name: 'categories.flexibilityMobility' },
-  { id: 'mindBodyRecovery', name: 'categories.mindBodyRecovery' },
-  { id: 'sportSpecific', name: 'categories.sportSpecific' },
-  { id: 'quickWorkouts', name: 'categories.quickWorkouts' },
-  { id: 'specialty', name: 'categories.specialty' },
-  { id: 'targetedWorkouts', name: 'categories.targetedWorkouts' },
-  { id: 'guidedPrograms', name: 'categories.guidedPrograms' },
-  { id: 'equipmentSpecific', name: 'categories.equipmentSpecific' },
-  { id: 'custom', name: 'categories.custom' }
+export const WORKOUT_CATEGORY_DATA: WorkoutCategory[] = [
+  { id: 'strengthTraining', name: 'workout-categories.strengthTraining' },
+  { id: 'cardioEndurance', name: 'workout-categories.cardioEndurance' },
+  { id: 'flexibilityMobility', name: 'workout-categories.flexibilityMobility' },
+  { id: 'mindBodyRecovery', name: 'workout-categories.mindBodyRecovery' },
+  { id: 'sportSpecific', name: 'workout-categories.sportSpecific' },
+  { id: 'quickWorkouts', name: 'workout-categories.quickWorkouts' },
+  { id: 'specialty', name: 'workout-categories.specialty' },
+  { id: 'targetedWorkouts', name: 'workout-categories.targetedWorkouts' },
+  { id: 'guidedPrograms', name: 'workout-categories.guidedPrograms' },
+  { id: 'equipmentSpecific', name: 'workout-categories.equipmentSpecific' },
+  { id: 'custom', name: 'workout-categories.custom' }
 ];

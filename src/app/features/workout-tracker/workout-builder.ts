@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef, PLATFORM_ID, Input, HostListener, ViewChild, effect, AfterViewChecked, Signal, NgZone } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef, PLATFORM_ID, Input, Output, EventEmitter, HostListener, ViewChild, effect, AfterViewChecked, Signal, NgZone } from '@angular/core';
 import { CommonModule, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@angular/common'; // Added TitleCasePipe
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl, FormsModule, FormControl, ValidatorFn, ValidationErrors } from '@angular/forms';
@@ -48,12 +48,15 @@ import { PressDirective } from '../../shared/directives/press.directive';
 import { AUDIO_TYPES, AudioService } from '../../core/services/audio.service';
 import { BumpClickDirective } from '../../shared/directives/bump-click.directive';
 import { RoutineGoal } from '../../core/models/routine-goal.model';
-import { CategoryService } from '../../core/services/workout-category.service';
+import { WorkoutCategoryService } from '../../core/services/workout-category.service';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { repsTargetAsString, repsTypeToReps, genRepsTypeFromRepsNumber, getWeightValue, getDistanceValue, getDurationValue, restToExact, weightToExact, durationToExact, distanceToExact, repsToExact, getRestValue, getRepsValue, durationTargetAsString, restTargetAsString, weightTargetAsString, distanceTargetAsString } from '../../core/services/workout-helper.service';
 import { WorkoutUtilsService } from '../../core/services/workout-utils.service';
 import { WorkoutFormService } from '../../core/services/workout-form.service';
 import { is } from 'date-fns/locale';
+import { EXERCISE_CATEGORY_NORMALIZATION_MAP } from '../../core/services/exercise-category.service';
+import { WORKOUT_CATEGORY_DATA } from '../../core/services/workout-category-data';
+import { WorkoutCategory } from '../../core/models/workout-category.model';
 
 export enum BuilderMode {
   routineBuilder = 'routineBuilder',
@@ -109,6 +112,12 @@ export enum SET_TYPE {
   ],
 })
 export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit {
+  // --- NEW: Context-aware inputs/outputs for modal integration ---
+  @Input() context: 'route' | 'modal' = 'route';
+  @Input() initialRoutine: Routine | null = null;
+  @Output() routineConfirmed = new EventEmitter<Routine>();
+  @Output() modalClose = new EventEmitter<void>();
+
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
@@ -128,13 +137,15 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private workoutGeneratorService = inject(WorkoutGeneratorService);
   private subscriptionService = inject(SubscriptionService);
   protected audioService = inject(AudioService);
-  protected categoryService = inject(CategoryService);
   protected workoutUtilsService = inject(WorkoutUtilsService);
+  protected workoutCategoryService = inject(WorkoutCategoryService);
   protected workoutFormService = inject(WorkoutFormService);
 
 
   // Property to hold the available options for the builder
   availableRepSchemes: { type: RepsTargetType; label: string }[] = [];
+
+  availableExerciseCategories: WorkoutCategory[] = [];
 
   @ViewChildren('setRepsInput') setRepsInputs!: QueryList<ElementRef<HTMLInputElement>>;
   @ViewChildren('expandedSetElement') expandedSetElements!: QueryList<ElementRef<HTMLDivElement>>;
@@ -329,9 +340,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     });
   }
 
-  categories = toSignal(this.categoryService.getTranslatedCategories(), { initialValue: [] });
-
-
+  categories = toSignal(this.workoutCategoryService.getTranslatedCategories(), { initialValue: [] });
   ngOnInit(): void {
     // Populate the list for the builder context
     this.availableRepSchemes = this.workoutUtilsService.getAvailableRepsSchemes('builder');
@@ -4970,7 +4979,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
 
   private intervalId: any = null;
-
   onShortPressIncrement(setControl: AbstractControl, field: METRIC): void {
     this.incrementValue(setControl, field);
   }

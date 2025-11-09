@@ -182,7 +182,7 @@
                         </div>
                         <div *ngIf="loggedEx.sets.length > 0; else noSetData"
                           class="text-sm text-gray-700 dark:text-gray-200 font-semibold ml-auto text-right flex-shrink-0">
-                          {{ loggedEx.sets[0].repsLogged || '-' }} reps
+                          {{ workoutUtilsService.getRepsValue(loggedEx.sets[0].repsLogged) || '-' }} reps
                           <span *ngIf="loggedEx.sets[0].weightLogged != null"
                             class="font-normal text-gray-600 dark:text-gray-400">
                             @ {{ getWeightValue(loggedEx.sets[0].weightLogged) | weightUnit:'1.0-2' }}

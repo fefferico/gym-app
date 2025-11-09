@@ -34,7 +34,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ColorsService } from '../../core/services/colors.service';
 import { BumpClickDirective } from '../../shared/directives/bump-click.directive';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { CategoryService } from '../../core/services/workout-category.service';
+import { WorkoutCategoryService } from '../../core/services/workout-category.service';
 import { EQUIPMENT_NORMALIZATION_MAP, EquipmentService } from '../../core/services/equipment.service';
 
 @Component({
@@ -97,7 +97,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   protected subscriptionService = inject(SubscriptionService);
   private translate = inject(TranslateService);
   protected colorsService = inject(ColorsService);
-  protected categoryService = inject(CategoryService);
+  protected categoryService = inject(WorkoutCategoryService);
   protected equipmentService = inject(EquipmentService);
 
   categories = toSignal(this.categoryService.getTranslatedCategories(), { initialValue: [] });

@@ -12,10 +12,12 @@ import { ToastService } from './toast.service';
 import { TranslateService } from '@ngx-translate/core';
 import { Muscle } from '../models/muscle.model';
 import { Equipment } from '../models/equipment.model';
-import { EQUIPMENT_NORMALIZATION_MAP, EquipmentService } from './equipment.service';
-import { MuscleMapService } from './muscle-map.service';
+import { EQUIPMENT_NORMALIZATION_MAP, EquipmentService, HydratedEquipment } from './equipment.service';
+import { MUSCLE_NORMALIZATION_MAP, MuscleMapService } from './muscle-map.service';
 import { MUSCLES_DATA, MuscleValue } from './muscles-data';
 import { EquipmentValue } from './equipment-data';
+import { EXERCISE_CATEGORY_NORMALIZATION_MAP, ExerciseCategoryService, HydratedCategory } from './exercise-category.service';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 /**
  * Maps standardized muscle group names to the unique IDs of the paths in muscle-anatomy.svg.
@@ -48,7 +50,7 @@ export interface MuscleHighlightData {
 export interface HydratedExercise extends Omit<Exercise, 'primaryMuscleGroup' | 'muscleGroups' | 'equipmentNeeded'> {
   primaryMuscleGroup?: Muscle;
   muscleGroups: Muscle[];
-  equipmentNeeded: Equipment[];
+  equipmentNeeded: HydratedEquipment[];
 }
 
 @Injectable({
@@ -62,6 +64,7 @@ export class ExerciseService {
   private translate = inject(TranslateService);
   private equipmentService = inject(EquipmentService);
   private muscleMapService = inject(MuscleMapService);
+  private exerciseCategoryService = inject(ExerciseCategoryService);
 
   private readonly EXERCISES_STORAGE_KEY = 'fitTrackPro_exercises';
   // private readonly EXERCISES_JSON_PATH = 'assets/data/exercises.json'; // Not used if EXERCISES_DATA is primary
@@ -72,8 +75,11 @@ export class ExerciseService {
   // New BehaviorSubject for loading state
   private isLoadingExercisesSubject = new BehaviorSubject<boolean>(true); // Start as true
   public isLoadingExercises$: Observable<boolean> = this.isLoadingExercisesSubject.asObservable();
+  protected exerciseCategories: HydratedCategory[];
 
   constructor() {
+      this.exerciseCategories = this.exerciseCategoryService.getHydratedCategories();
+
     this.isLoadingExercisesSubject.next(true);
     const exercisesFromStorage = this._loadExercisesFromStorage();
     this.exercisesSubject = new BehaviorSubject<Exercise[]>(exercisesFromStorage);
@@ -344,34 +350,45 @@ export class ExerciseService {
     );
   }
 
-  getUniqueCategories(): Observable<string[]> {
-    return this.exercises$.pipe(
-      map(exercises => [...new Set(exercises.map(ex => ex.category))].sort())
-    );
-  }
+getUniqueCategories(): Observable<string[]> {
+  return this.exercises$.pipe(
+    map(exercises => {
+      const normalizedCategories = exercises
+        .map(ex => EXERCISE_CATEGORY_NORMALIZATION_MAP[ex.category?.toLowerCase().trim() || ''] || ex.category?.toLowerCase().trim())
+        .filter((cat): cat is string => !!cat);
+      return [...new Set(normalizedCategories)].sort();
+    })
+  );
+}
 
   getUniquePrimaryMuscleGroups(): Observable<Muscle[]> {
-    return combineLatest([
-      this.exercises$,
-      this.muscleMapService.musclesMap$
-    ]).pipe(
-      map(([exercises, musclesMap]) => {
-        // 1. Collect unique, valid MuscleValue IDs from exercises
-        const uniqueIds = [
-          ...new Set(
-            exercises
-              .map(ex => ex.primaryMuscleGroup)
-              .filter((group): group is MuscleValue => typeof group === 'string' && group.trim() !== '')
-          )
-        ].sort();
-  
-        // 2. Map those IDs to Muscle objects, filtering out any missing ones
-        return uniqueIds
-          .map(id => musclesMap.get(id))
-          .filter((m): m is Muscle => !!m);
-      })
-    );
-  }
+  return combineLatest([
+    this.exercises$,
+    this.muscleMapService.musclesMap$
+  ]).pipe(
+    map(([exercises, musclesMap]) => {
+      // 1. Collect unique, normalized MuscleValue IDs from exercises
+      const uniqueIds = [
+        ...new Set(
+          exercises
+            .map(ex => {
+              const raw = ex.primaryMuscleGroup;
+              if (typeof raw === 'string' && raw.trim() !== '') {
+                return MUSCLE_NORMALIZATION_MAP[raw.toLowerCase().trim()] || raw.toLowerCase().trim();
+              }
+              return undefined;
+            })
+            .filter((group): group is MuscleValue => !!group)
+        )
+      ].sort();
+
+      // 2. Map those IDs to Muscle objects, filtering out any missing ones
+      return uniqueIds
+        .map(id => musclesMap.get(id))
+        .filter((m): m is Muscle => !!m);
+    })
+  );
+}
 
   /**
    * Retrieves a list of similar exercises based on matching muscle groups.
@@ -911,6 +928,60 @@ export class ExerciseService {
     return forkJoin(translationObservables);
   }
 
+  public getHydratedExercises(): Observable<HydratedExercise[]> {
+    return combineLatest([
+      this.getTranslatedExerciseList(this.exercisesSubject.getValue()), // Observable<Exercise[]>
+      this.muscleMapService.musclesMap$,                                // Observable<Map<string, Muscle>>
+      this.equipmentService.hydratedEquipments$,                        // Observable<Equipment[]>
+      this.exerciseCategoryService.hydratedCategories$                  // Observable<HydratedCategory[]>
+    ]).pipe(
+      map(([exercises, musclesMap, equipments, categories]) => {
+        // Build fast lookup maps
+        const equipmentMap = new Map(equipments.map(eq => [eq.id, eq]));
+        const categoryMap = new Map(categories.map(cat => [cat.id, cat]));
+  
+        return exercises.map(ex => {
+          // Hydrate primary muscle group
+          const normalizedPrimary = ex.primaryMuscleGroup
+            ? MUSCLE_NORMALIZATION_MAP[ex.primaryMuscleGroup.toLowerCase().trim()] || ex.primaryMuscleGroup.toLowerCase().trim()
+            : undefined;
+          const primaryMuscleGroup = normalizedPrimary ? musclesMap.get(normalizedPrimary) : undefined;
+  
+          // Hydrate muscle groups
+          const muscleGroups = (ex.muscleGroups || [])
+            .map(muscleId => {
+              const normId = MUSCLE_NORMALIZATION_MAP[muscleId.toLowerCase().trim()] || muscleId.toLowerCase().trim();
+              return musclesMap.get(normId);
+            })
+            .filter((m): m is Muscle => !!m);
+  
+          // Hydrate equipment
+const equipmentNeeded = (ex.equipmentNeeded || [])
+  .map(eqRaw => {
+    if (!eqRaw) return undefined;
+    const eqKey = EQUIPMENT_NORMALIZATION_MAP[eqRaw.toLowerCase().trim()] || eqRaw.toLowerCase().trim();
+    return equipmentMap.get(eqKey as EquipmentValue);
+  })
+  .filter((eq): eq is HydratedEquipment => !!eq);
+  
+          // Hydrate category
+          const normalizedCategory = ex.category
+            ? EXERCISE_CATEGORY_NORMALIZATION_MAP[ex.category.toLowerCase().trim()] || ex.category.toLowerCase().trim()
+            : undefined;
+          const hydratedCategory = normalizedCategory ? categoryMap.get(normalizedCategory) : undefined;
+  
+          return {
+            ...ex,
+            primaryMuscleGroup,
+            muscleGroups,
+            equipmentNeeded,
+  category: (hydratedCategory?.id || ex.category) as HydratedExercise['category'],
+            categoryLabel: hydratedCategory?.label || ex.category
+          };
+        });
+      })
+    );
+  }
 
   /**
    * Retrieves a single exercise by its ID and returns a "hydrated" version
@@ -957,13 +1028,13 @@ export class ExerciseService {
             .filter((m): m is Muscle => !!m);
 
             // HYDRATE EQUIPMENT (with normalization and translation)
-            const equipmentNeeded = (exercise.equipmentNeeded || [])
-              .map(eqRaw => {
-                if (!eqRaw) return undefined;
-                const eqKey = EQUIPMENT_NORMALIZATION_MAP[eqRaw.toLowerCase().trim()] || eqRaw.toLowerCase().trim();
-                return translatedEquipmentMap.get(eqKey);
-              })
-              .filter((eq): eq is Equipment => !!eq);
+const equipmentNeeded = (exercise.equipmentNeeded || [])
+  .map(eqRaw => {
+    if (!eqRaw) return undefined;
+    const eqKey = EQUIPMENT_NORMALIZATION_MAP[eqRaw.toLowerCase().trim()] || eqRaw.toLowerCase().trim();
+    return translatedEquipmentMap.get(eqKey);
+  })
+  .filter((eq): eq is HydratedEquipment => !!eq);
 
             // Assemble the final hydrated object
             return {
@@ -980,6 +1051,16 @@ export class ExerciseService {
     );
   }
 
+  public mapHydratedExerciseToExercise(hydrated: HydratedExercise): Exercise {
+    return {
+      ...hydrated,
+      primaryMuscleGroup: hydrated.primaryMuscleGroup?.id as MuscleValue ?? undefined,
+      muscleGroups: hydrated.muscleGroups.map(m => m.id) as MuscleValue[],
+      equipmentNeeded: hydrated.equipmentNeeded.map(eq => eq.id) as EquipmentValue[],
+      // Remove hydrated-only fields if needed (e.g., categoryLabel)
+    };
+  }
+
 
 
 }
@@ -993,28 +1074,5 @@ export class ExerciseService {
   return map;
 })();
 
-export const MUSCLE_NORMALIZATION_MAP: Record<string, string> = (() => {
-  const map: Record<string, string> = {};
-  for (const muscle of MUSCLES_DATA) {
-    // Map canonical id to itself
-    map[muscle.id.toLowerCase().trim()] = muscle.id;
-    // Map display name to id
-    if (muscle.name) {
-      map[muscle.name.toLowerCase().trim()] = muscle.id;
-    }
-    // Optionally, add aliases if present
-    // if (muscle.aliases) {
-    //   for (const alias of muscle.aliases) {
-    //     map[alias.toLowerCase().trim()] = muscle.id;
-    //   }
-    // }
-  }
-  // Add custom/legacy mappings if needed
-  map['upper chest'] = 'chest-upper';
-  map['traps (upper)'] = 'traps-upper';
-  map['lower back'] = 'lowerBack';
-  map['lower back (erector spinae)'] = 'lowerBack';
-  map['abs (rectus abdominis)'] = 'abs';
-  // ...etc.
-  return map;
-})();
+
+

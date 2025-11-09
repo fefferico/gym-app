@@ -1,0 +1,23 @@
+{
+  "categories": {
+    "bodyweight-calisthenics": "تمارين وزن الجسم وكاليستنكس",
+    "rehabilitation-mobility": "إعادة التأهيل والحركة",
+    "yoga-pilates": "يوغا وبيلاتس",
+    "powerlifting": "رفع الأثقال",
+    "olympic-weightlifting": "رفع الأثقال الأولمبي",
+    "crossfit": "كروس فيت",
+    "dumbbells": "دمبلز",
+    "kettlebells": "كتل بيل",
+    "strength": "قوة",
+    "barbells": "باربلز",
+    "machines": "آلات",
+    "cables": "كابلات",
+    "bands": "أشرطة مطاطية",
+    "cardio": "تمارين القلب",
+    "stretching": "تمارين التمدد",
+    "plyometrics": "بليومتريكس",
+    "strongman": "سترونجمان",
+    "custom": "مخصص",
+    "other": "أخرى"
+  }
+}

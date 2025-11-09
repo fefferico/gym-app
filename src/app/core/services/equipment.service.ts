@@ -1,12 +1,20 @@
 // src/app/core/services/equipment.service.ts
 
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map, shareReplay, switchMap } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 
 import { Equipment } from '../models/equipment.model';
-import { EQUIPMENT_DATA } from './equipment-data';
+import { EQUIPMENT_DATA, EquipmentValue } from './equipment-data';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { EXERCISE_CATEGORIES_DATA } from './exercise-categories-data';
+
+export interface HydratedEquipment {
+  id: EquipmentValue;
+  name: string;
+  category: string;
+}
 
 // Build a map: legacyNameOrId (lowercase, trimmed) => canonicalId
 export const EQUIPMENT_NORMALIZATION_MAP: Record<string, string> = (() => {
@@ -46,6 +54,15 @@ function toKebabCase(str: string): string {
 })
 export class EquipmentService {
   private translate = inject(TranslateService);
+
+  constructor() {
+    this.loadTranslations();
+
+    // Reload translations on language change
+    this.translate.onLangChange.subscribe(() => {
+      this.loadTranslations();
+    });
+  }
 
   /**
    * An observable stream of the raw equipment data with untranslated names (keys).
@@ -98,6 +115,43 @@ export class EquipmentService {
     );
   }
 
+  // Signal for hydrated equipments
+  private hydratedEquipments = signal<HydratedEquipment[]>([]);
+  hydratedEquipments$ = toObservable(this.hydratedEquipments);
 
+  // Loads translations for all equipments
+private loadTranslations() {
+  const equipmentKeys = EQUIPMENT_DATA.map(eq => `equipments.${eq.id}`);
+  // Filter out nulls so categoryKeys is string[]
+  const categoryKeys = EQUIPMENT_DATA
+    .map(eq => eq.category ? `categories.${eq.category}` : null)
+    .filter((key): key is string => !!key);
+
+  const allKeys = [...equipmentKeys, ...categoryKeys];
+
+  this.translate.get(allKeys).subscribe(translations => {
+    const hydrated = EQUIPMENT_DATA.map(eq => ({
+      id: eq.id as EquipmentValue,
+      name: translations[`equipments.${eq.id}`] || eq.id,
+      category: eq.category ? translations[`categories.${eq.category}`] || eq.category : ''
+    }));
+    this.hydratedEquipments.set(hydrated);
+  });
+}
+
+  // Returns all hydrated categories
+  getHydratedCategories(): HydratedEquipment[] {
+    return this.hydratedEquipments();
+  }
+
+  // Returns all canonical equipment IDs
+  getAllEquipments(): Equipment[] {
+    return EQUIPMENT_DATA;
+  }
+
+  // Returns a single hydrated equipment by ID
+  getEquipmentById(id: string): HydratedEquipment | undefined {
+    return this.hydratedEquipments().find(eq => eq.id === id);
+  }
 
 }

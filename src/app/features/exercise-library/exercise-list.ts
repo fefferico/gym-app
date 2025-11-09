@@ -2,7 +2,7 @@
 import { Component, inject, OnInit, signal, computed, effect, PLATFORM_ID, HostListener, OnDestroy } from '@angular/core';
 import { AsyncPipe, CommonModule, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { combineLatest, Observable, Subscription } from 'rxjs';
+import { combineLatest, map, Observable, Subscription } from 'rxjs';
 import { Exercise } from '../../core/models/exercise.model';
 import { ExerciseService } from '../../core/services/exercise.service';
 import { animate, state, style, transition, trigger } from '@angular/animations';
@@ -20,11 +20,26 @@ import { deleteBtn, editBtn, hideBtn, unhideBtn, viewBtn } from '../../core/serv
 import { TrackingService } from '../../core/services/tracking.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Muscle } from '../../core/models/muscle.model';
+import { EXERCISE_CATEGORIES_DATA } from '../../core/services/exercise-categories-data';
+import { ExerciseCategoryService, HydratedCategory } from '../../core/services/exercise-category.service';
+import { MuscleMapService } from '../../core/services/muscle-map.service';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { EquipmentService, HydratedEquipment } from '../../core/services/equipment.service';
+import { BumpClickDirective } from '../../shared/directives/bump-click.directive';
+
+export type DisplayExercise = Exercise & {
+  categoryLabel: string;
+  muscleGroupLabel: string;
+  muscleGroupsHydrated: Muscle[]; // use a different property name
+  equipmentNeededHydrated: HydratedEquipment[]; // use a different property name
+  equipmentLabel: string;
+  iconName?: string;
+};
 
 @Component({
   selector: 'app-exercise-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, AsyncPipe, TitleCasePipe, PressDirective, ActionMenuComponent, IconComponent, TranslateModule],
+  imports: [CommonModule, RouterLink, AsyncPipe, TitleCasePipe, PressDirective, ActionMenuComponent, IconComponent, TranslateModule, BumpClickDirective],
   templateUrl: './exercise-list.html',
   styleUrl: './exercise-list.scss',
   animations: [
@@ -76,6 +91,7 @@ import { Muscle } from '../../core/models/muscle.model';
   ]
 })
 export class ExerciseListComponent implements OnInit, OnDestroy {
+
   public exerciseService = inject(ExerciseService);
   private router = inject(Router);
   private alertService = inject(AlertService);
@@ -86,21 +102,26 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
   private appSettingsService = inject(AppSettingsService);
   private trackingService = inject(TrackingService);
   private translate = inject(TranslateService);
+  private exerciseCategoryService = inject(ExerciseCategoryService);
+  private muscleGroupService = inject(MuscleMapService);
+  private equipmentService = inject(EquipmentService);
+
+  categories = this.exerciseCategoryService.getHydratedCategories();
+  hydratedMuscles = this.muscleGroupService.getHydratedMuscles();
+  hydratedEquipments = this.equipmentService.getTranslatedEquipment();
+
 
   // This will hold the raw, untranslated data
   private staticExercises: Exercise[] = [];
   private langChangeSub?: Subscription;
 
-  categories$: Observable<string[]> | undefined;
   primaryMuscleGroups$: Observable<Muscle[]> | undefined;
   selectedCategory = signal<string | null>(null);
   selectedMuscleGroup = signal<Muscle | null>(null);
   searchTerm = signal<string>('');
   allExercises = signal<Exercise[]>([]);
 
-  // --- NEW ---
   showHiddenExercises = signal<boolean>(false);
-  // -----------
 
   actionsVisibleId = signal<string | null>(null);
   menuModeDropdown: boolean = false;
@@ -108,11 +129,45 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
   menuModeModal: boolean = false;
   isFilterAccordionOpen = signal(false);
 
-  filteredExercises = computed(() => {
-    let exercises = this.allExercises();
-    const showHidden = this.showHiddenExercises(); // Get value once
+  // Signal for hydrated exercises
+  hydratedExercises = toSignal(
+    combineLatest([
+      this.exerciseService.getHydratedExercises(), 
+      this.exerciseCategoryService.hydratedCategories$, 
+      this.muscleGroupService.hydratedMuscles$, 
+      this.equipmentService.hydratedEquipments$ 
+    ]).pipe(
+      map(([exercises, categories, muscles, equipments]) =>
+        exercises.map(ex => {
+          const categoryObj = categories.find(cat => cat.id === ex.category);
+          const muscleObj = muscles.find(muscle => muscle.id === ex.primaryMuscleGroup?.id);
+          const equipmentArray = [
+            ...new Set(
+              equipments
+                .filter(equipment => [ex.equipmentNeeded.map(eq => eq.id)].toString().includes(equipment.id))
+                .map(eq => eq.name)
+            )
+          ];          
+          
+          return {
+            ...ex,
+            categoryLabel: categoryObj?.label || ex.category,
+            muscleGroupLabel: muscleObj?.name || ex.primaryMuscleGroup,
+            equipmentLabel: equipmentArray.join(', ')
+          };
+        })
+      )
+    ),
+  { initialValue: [] } // <-- pass as an object!
+  );
 
-    // --- NEW: Filter by isHidden status first ---
+  filteredExercises = computed(() => {
+    let exercises = this.hydratedExercises();
+    const showHidden = this.showHiddenExercises(); // Get value once
+    if (!exercises){
+      return [];
+    }
+
     if (!showHidden) {
       exercises = exercises.filter(ex => !ex.isHidden);
     }
@@ -124,7 +179,7 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
     }
     const muscleGroup = this.selectedMuscleGroup();
     if (muscleGroup) {
-      exercises = exercises.filter(ex => ex.primaryMuscleGroup === muscleGroup.id);
+      exercises = exercises.filter(ex => ex.primaryMuscleGroup?.id === muscleGroup.id);
     }
 
     let term = this.searchTerm();
@@ -141,13 +196,22 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
       });
     }
 
-    return exercises.map(ex => ({
-      ...ex,
-      iconName: this.exerciseService.determineExerciseIcon(ex, ex?.name)
-    }));
+    return exercises.map(ex => {
+      const categoryObj = this.categories.find(cat => cat.id === ex.category);
+      const muscleGroupObj = this.muscleGroupService.getHydratedMuscles().find(mg => mg.id === ex.primaryMuscleGroup?.id);
+
+      return {
+        ...ex,
+        iconName: this.exerciseService.determineExerciseIcon(this.exerciseService.mapHydratedExerciseToExercise(ex), ex?.name),
+        categoryLabel: categoryObj?.label || ex.category,
+        muscleGroupLabel: muscleGroupObj?.name || ex.primaryMuscleGroup?.name
+      };
+    });
   });
 
-  constructor() { }
+  constructor() {
+    this.categories = this.exerciseCategoryService.getHydratedCategories();
+  }
 
   showBackToTopButton = signal<boolean>(false);
   @HostListener('window:scroll', [])
@@ -164,7 +228,6 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
       window.scrollTo(0, 0);
       this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     }
-    this.categories$ = this.exerciseService.getUniqueCategories();
     this.primaryMuscleGroups$ = this.exerciseService.getUniquePrimaryMuscleGroups();
 
     this.menuModeDropdown = this.appSettingsService.isMenuModeDropdown();
@@ -181,8 +244,6 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
     this.langChangeSub = this.translate.onLangChange.subscribe(() => {
       this.translateAllExercises();
     });
-
-    // this.refreshFabMenuItems();
   }
 
 
@@ -392,13 +453,25 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
    * Merges the static exercise data with the current language translations.
    */
   private translateAllExercises(): void {
-    // Get the entire 'exercises' block from the current language's JSON file
     this.translate.get('exercises').subscribe(translations => {
-      const translatedList = this.staticExercises.map(ex => ({
-        ...ex, // Keep all static data (id, category, images, etc.)
-        name: translations[ex.id]?.name || ex.name, // Use translated name, or fallback to static
-        description: translations[ex.id]?.description || ex.description, // Fallback for description
-      }));
+      // Get hydrated categories (with translated labels)
+      const hydratedCategories = this.exerciseCategoryService.getHydratedCategories();
+      const hydratedMuscleGroups = this.muscleGroupService.getHydratedMuscles();
+
+      const translatedList = this.staticExercises.map(ex => {
+        // Find the hydrated category for this exercise
+        const categoryObj = hydratedCategories.find(cat => cat.id === ex.category);
+        const muscleGroupObj = hydratedMuscleGroups.find(mg => mg.id === ex.primaryMuscleGroup);
+
+        return {
+          ...ex,
+          name: translations[ex.id]?.name || ex.name,
+          description: translations[ex.id]?.description || ex.description,
+          categoryLabel: categoryObj?.label || ex.category, // fallback to ID if not found
+          muscleGroupLabel: muscleGroupObj?.name || ex.primaryMuscleGroup // fallback to ID if not found
+        } as Exercise & { categoryLabel: string, muscleGroupLabel: string };
+      });
+
       this.allExercises.set(translatedList);
     });
   }

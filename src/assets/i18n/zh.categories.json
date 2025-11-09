@@ -1,0 +1,23 @@
+{
+  "categories": {
+    "bodyweight-calisthenics": "自身体重训练 & 健美操",
+    "rehabilitation-mobility": "康复 & 灵活性",
+    "yoga-pilates": "瑜伽 & 普拉提",
+    "powerlifting": "力量举",
+    "olympic-weightlifting": "奥林匹克举重",
+    "crossfit": "CrossFit",
+    "dumbbells": "哑铃",
+    "kettlebells": "壶铃",
+    "strength": "力量",
+    "barbells": "杠铃",
+    "machines": "器械",
+    "cables": "拉索",
+    "bands": "弹力带",
+    "cardio": "有氧",
+    "stretching": "拉伸",
+    "plyometrics": "爆发力训练",
+    "strongman": "强人",
+    "custom": "自定义",
+    "other": "其他"
+  }
+}

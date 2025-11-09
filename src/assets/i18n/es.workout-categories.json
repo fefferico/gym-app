@@ -1,0 +1,15 @@
+{
+  "workout-categories": {
+    "strengthTraining": "Entrenamiento de fuerza",
+    "cardioEndurance": "Cardio y resistencia",
+    "flexibilityMobility": "Flexibilidad y movilidad",
+    "mindBodyRecovery": "Mente, cuerpo y recuperación",
+    "sportSpecific": "Específico para deportes",
+    "quickWorkouts": "Entrenamientos rápidos",
+    "specialty": "Especialidad",
+    "targetedWorkouts": "Entrenamientos dirigidos",
+    "guidedPrograms": "Programas guiados",
+    "equipmentSpecific": "Específico para equipos",
+    "custom": "Personalizado"
+  }
+}

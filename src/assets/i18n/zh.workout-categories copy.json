@@ -1,0 +1,15 @@
+{
+  "workout-categories": {
+    "strengthTraining": "力量训练",
+    "cardioEndurance": "有氧与耐力",
+    "flexibilityMobility": "柔韧性与灵活性",
+    "mindBodyRecovery": "身心与恢复",
+    "sportSpecific": "专项运动",
+    "quickWorkouts": "快速锻炼",
+    "specialty": "特色",
+    "targetedWorkouts": "针对性锻炼",
+    "guidedPrograms": "指导课程",
+    "equipmentSpecific": "器械专项",
+    "custom": "自定义"
+  }
+}

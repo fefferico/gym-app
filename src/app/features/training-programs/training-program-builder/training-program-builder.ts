@@ -1,14 +1,14 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
 import { CommonModule, DatePipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormsModule, AbstractControl } from '@angular/forms';
 import { Subscription, of, firstValueFrom } from 'rxjs';
 import { switchMap, tap, take, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
 import { TrainingProgram, ScheduledRoutineDay, TrainingProgramHistoryEntry, ProgramWeek } from '../../../core/models/training-program.model';
-import { Routine } from '../../../core/models/workout.model';
+import { AnyScheme, DISTANCE_TARGET_SCHEMES, DURATION_TARGET_SCHEMES, ExerciseTargetSetParams, METRIC, REPS_TARGET_SCHEMES, RepsTarget, RepsTargetType, REST_TARGET_SCHEMES, Routine, WEIGHT_TARGET_SCHEMES, WorkoutExercise } from '../../../core/models/workout.model';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { WorkoutService } from '../../../core/services/workout.service';
 import { SpinnerService } from '../../../core/services/spinner.service';
@@ -21,11 +21,21 @@ import { ActionMenuComponent } from '../../../shared/components/action-menu/acti
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { IconComponent } from "../../../shared/components/icon/icon.component";
-import { addDays, differenceInDays, format, getDay, parseISO } from 'date-fns';
+import { addDays, differenceInDays, format, getDay, isThisWeek, parseISO } from 'date-fns';
 import { TrackingService } from '../../../core/services/tracking.service';
 import { WorkoutLog } from '../../../core/models/workout-log.model';
 import { MenuMode } from '../../../core/models/app-settings.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ExerciseSelectionModalComponent } from '../../../shared/components/exercise-selection-modal/exercise-selection-modal.component';
+import { Exercise } from '../../../core/models/exercise.model';
+import { ExerciseService } from '../../../core/services/exercise.service';
+import { distanceToExact, durationToExact, genRepsTypeFromRepsNumber, repsToExact, restToExact, weightToExact } from '../../../core/services/workout-helper.service';
+import { WorkoutFormService } from '../../../core/services/workout-form.service';
+import { AlertInput } from '../../../core/models/alert.model';
+import { WorkoutUtilsService } from '../../../core/services/workout-utils.service';
+import { SetMetricInputComponent } from '../../../shared/set-metric-input/set-metric-input.component';
+import { UnitsService } from '../../../core/services/units.service';
+import { AppSettingsService } from '../../../core/services/app-settings.service';
 
 interface DayOption {
     value: number;
@@ -49,23 +59,32 @@ interface ProgramGoal { value: Routine['goal'], label: string }
         PressDirective,
         TooltipDirective,
         IconComponent,
-        TranslateModule
+        TranslateModule,
+        ExerciseSelectionModalComponent,
+        SetMetricInputComponent
     ],
     templateUrl: './training-program-builder.html',
     styleUrls: ['./training-program-builder.scss']
 })
 export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
+
+    metricEnum = METRIC;
     private fb = inject(FormBuilder);
     private router = inject(Router);
     private route = inject(ActivatedRoute);
     private trainingProgramService = inject(TrainingProgramService);
     private workoutService = inject(WorkoutService);
+    private exerciseService = inject(ExerciseService);
     private spinnerService = inject(SpinnerService);
     private alertService = inject(AlertService);
     private toastService = inject(ToastService);
     private cdr = inject(ChangeDetectorRef);
     private trackingService = inject(TrackingService);
-    private translate = inject(TranslateService); 
+    private translate = inject(TranslateService);
+    private workoutFormService = inject(WorkoutFormService);
+    protected workoutUtilService = inject(WorkoutUtilsService);
+    protected unitsService = inject(UnitsService);
+    private appSettingsService = inject(AppSettingsService);
 
     programForm!: FormGroup;
     submitted = false; // Add this flag
@@ -82,7 +101,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     private sanitizer = inject(DomSanitizer);
     public sanitizedDescription: SafeHtml = '';
 
-exerciseInfoTooltipString = this.translate.instant('workoutBuilder.exerciseInfoTooltip');
+    exerciseInfoTooltipString = this.translate.instant('workoutBuilder.exerciseInfoTooltip');
     infoTooltipString: string = this.translate.instant('programBuilder.form.cycleLengthHint');
     // For routine selection modal
     isRoutineModalOpen = signal(false);
@@ -325,6 +344,7 @@ exerciseInfoTooltipString = this.translate.instant('workoutBuilder.exerciseInfoT
             window.scrollTo(0, 0);
         }
         this.loadAvailableRoutines();
+        this.loadAvailableExercises();
 
         this.workoutLogsSubscription = this.trackingService.workoutLogs$.subscribe(logs => this.allWorkoutLogs.set(logs));
 
@@ -1218,4 +1238,279 @@ exerciseInfoTooltipString = this.translate.instant('workoutBuilder.exerciseInfoT
     isDayExpanded(dayId: string): boolean {
         return this.expandedDayIds().has(dayId);
     }
+
+
+    isExerciseModalOpen = signal(false);
+    exerciseModalTarget: { weekIndex?: number, dayIndex: number } | null = null;
+    selectedExercisesForModal: WorkoutExercise[] = [];
+
+    openExerciseSelectionModal(dayIndex: number, weekIndex?: number) {
+        this.exerciseModalTarget = { weekIndex, dayIndex };
+        this.selectedExercisesForModal = [];
+        this.isExerciseModalOpen.set(true);
+    }
+
+    closeExerciseSelectionModal() {
+        this.isExerciseModalOpen.set(false);
+        this.exerciseModalTarget = null;
+        this.selectedExercisesForModal = [];
+    }
+
+    async selectExercisesForDay(selectedExercises: Exercise[]) {
+        if (!this.exerciseModalTarget) return;
+        const { weekIndex, dayIndex } = this.exerciseModalTarget;
+
+        // 1. Find the day control
+        let dayControl: FormGroup | undefined;
+        if (weekIndex !== undefined) {
+            dayControl = this.getWeekScheduleDayControl(weekIndex, dayIndex);
+        } else {
+            dayControl = this.scheduleFormArray.at(dayIndex) as FormGroup;
+        }
+        if (!dayControl) return;
+
+        const routineId = dayControl.get('routineId')?.value;
+        let routine: Routine | undefined = routineId && this.isCustomRoutine(routineId)
+            ? this.availableRoutines.find(r => r.id === routineId)
+            : undefined;
+
+        // 2. Convert selected Exercise[] to WorkoutExercise[]
+        const workoutExercises: WorkoutExercise[] = selectedExercises.map(exerciseFromLibrary => {
+            const isCardio = this.isExerciseCardioOnly(exerciseFromLibrary.id);
+
+            let fieldOrder = [];
+            if (isCardio) {
+                fieldOrder = [METRIC.duration, METRIC.distance, METRIC.rest];
+            } else {
+                fieldOrder = [METRIC.reps, METRIC.weight, METRIC.rest];
+            }
+
+            const baseSet = {
+                id: this.workoutService.generateExerciseSetId(),
+                type: 'standard',
+                fieldOrder: fieldOrder,
+                targetReps: isCardio ? undefined : repsToExact(8),
+                targetWeight: isCardio ? undefined : weightToExact(10),
+                targetRest: restToExact(60),
+                targetDuration: isCardio ? durationToExact(60) : undefined,
+                targetDistance: isCardio ? distanceToExact(1) : undefined,
+                targetTempo: undefined,
+                notes: undefined
+            } as ExerciseTargetSetParams;
+
+            return {
+                id: this.workoutService.generateWorkoutExerciseId(),
+                exerciseId: exerciseFromLibrary.id,
+                exerciseName: exerciseFromLibrary.name,
+                sets: [baseSet],
+                type: 'standard',
+                supersetId: null,
+                supersetOrder: null,
+            };
+        });
+
+        if (routine) {
+            // 3a. Append to existing custom routine
+            routine.exercises.push(...workoutExercises);
+        } else {
+            // 3b. Create a new fake routine
+            const fakeRoutine: Routine = {
+                id: 'custom-' + uuidv4(),
+                name: 'Custom Day',
+                exercises: workoutExercises,
+                isHidden: true
+            };
+            this.customRoutines.push(fakeRoutine);
+            this.availableRoutines.push(fakeRoutine);
+            dayControl.patchValue({
+                routineId: fakeRoutine.id,
+                routineName: fakeRoutine.name
+            });
+        }
+
+        this.closeExerciseSelectionModal();
+    }
+
+    isCustomRoutine(routineId: string): boolean {
+        return routineId.startsWith('custom-');
+    }
+
+    getExercisesForDay(routineId: string): WorkoutExercise[] {
+        const routine = this.availableRoutines.find(r => r.id === routineId);
+        return routine?.exercises || [];
+    }
+
+
+    customRoutines: Routine[] = [];
+    availableExercises: Exercise[] = [];
+    modalExerciseSearchTerm = signal('');
+    filteredAvailableExercises = computed(() => {
+        let term = this.modalExerciseSearchTerm().toLowerCase();
+        if (!term) {
+            return this.availableExercises;
+        }
+        term = this.exerciseService.normalizeExerciseNameForSearch(term);
+        return this.availableExercises.filter(ex =>
+            ex.name.toLowerCase().includes(term) ||
+            (ex.category && ex.category.toLowerCase().includes(term)) ||
+            (ex.description && ex.description.toLowerCase().includes(term)) ||
+            (ex.primaryMuscleGroup && ex.primaryMuscleGroup.toLowerCase().includes(term))
+        );
+    });
+
+    isExerciseCardioOnly(exerciseId: string): boolean {
+        // This method should be async or use a callback to handle the Observable.
+        // Here's a synchronous fallback using availableExercises if possible:
+        if (!exerciseId) return false;
+        const exerciseDetails = this.availableExercises.find(e => e.id === exerciseId);
+        if (exerciseDetails && exerciseDetails.category) {
+            return exerciseDetails.category === 'cardio';
+        }
+        return false;
+    }
+
+    selectExercisesFromLibrary(selectedExercises: Exercise[]): void {
+        selectedExercises.forEach(exerciseFromLibrary => {
+
+            const isCardio = this.isExerciseCardioOnly(exerciseFromLibrary.id);
+
+            let fieldOrder = [];
+            if (isCardio) {
+                fieldOrder = [
+                    METRIC.duration, METRIC.distance, METRIC.rest
+                ];
+            } else {
+                fieldOrder = [
+                    METRIC.reps, METRIC.weight, METRIC.rest
+                ];
+            }
+
+            const baseSet = {
+                id: this.workoutService.generateExerciseSetId(),
+                type: 'standard',
+                fieldOrder: fieldOrder,
+                targetReps: isCardio ? undefined : repsToExact(8),
+                targetWeight: isCardio ? undefined : weightToExact(10),
+                targetRest: restToExact(60),
+                targetDuration: isCardio ? durationToExact(60) : undefined,
+                targetDistance: isCardio ? distanceToExact(1) : undefined,
+                targetTempo: undefined,
+                notes: undefined
+            } as ExerciseTargetSetParams;
+
+            const workoutExercise: WorkoutExercise = {
+                id: this.workoutService.generateWorkoutExerciseId(),
+                exerciseId: exerciseFromLibrary.id,
+                exerciseName: exerciseFromLibrary.name,
+                sets: [baseSet],
+                type: 'standard',
+                supersetId: null,
+                supersetOrder: null,
+            };
+        });
+        this.generateFakeRoutineForSelectedExercises(selectedExercises);
+    }
+
+    // generate fake routine for selected exercises
+    private generateFakeRoutineForSelectedExercises(exercises: Exercise[]): Routine {
+        const workoutExercises: WorkoutExercise[] = exercises.map(exerciseFromLibrary => {
+            return {
+                id: this.workoutService.generateWorkoutExerciseId(),
+                exerciseId: exerciseFromLibrary.id,
+                exerciseName: exerciseFromLibrary.name,
+                sets: [],
+                type: 'standard',
+                supersetId: null,
+                supersetOrder: null,
+            };
+        });
+        return {
+            id: 'custom-' + uuidv4(),
+            name: 'Fake Routine',
+            exercises: workoutExercises
+        };
+    }
+
+    async handleTrulyCustomExerciseEntry(showError: boolean = false): Promise<void> {
+        const inputs: AlertInput[] = [
+            { name: 'exerciseName', type: 'text', placeholder: this.translate.instant('workoutBuilder.exercise.newCustomExerciseName'), value: '', attributes: { required: true }, label: this.translate.instant('workoutBuilder.exercise.newCustomExerciseName'), },
+            { name: 'numSets', type: 'number', placeholder: this.translate.instant('workoutBuilder.exercise.newCustomExerciseSets'), value: '3', attributes: { min: '1', required: true }, label: this.translate.instant('workoutBuilder.exercise.newCustomExerciseSets') },
+            { name: 'equipmentNeeded', type: 'text', placeholder: this.translate.instant('workoutBuilder.exercise.newCustomExerciseEquipment'), value: '', attributes: { required: false }, label: this.translate.instant('workoutBuilder.exercise.newCustomExerciseEquipment') },
+            { name: 'description', type: 'textarea', placeholder: this.translate.instant('workoutBuilder.exercise.newCustomExerciseDescription'), value: '', attributes: { required: false }, label: this.translate.instant('workoutBuilder.exercise.newCustomExerciseDescription') },
+        ];
+
+        if (showError) {
+            this.toastService.error(this.translate.instant('newCustomExerciseInvalidInput'), 0, this.translate.instant('common.error'));
+        }
+        const result = await this.alertService.showPromptDialog(this.translate.instant('workoutBuilder.exercise.newCustomExerciseTitle'), this.translate.instant('workoutBuilder.exercise.newCustomExerciseMsg'), inputs, this.translate.instant('workoutBuilder.exercise.newCustomExerciseBtn'));
+
+        if (result && result['exerciseName']) {
+            const exerciseName = String(result['exerciseName']).trim();
+            const description = String(result['description']).trim();
+            const numSets = result['numSets'] ? parseInt(String(result['numSets']), 10) : 3;
+            if (!exerciseName || numSets <= 0) {
+                this.toastService.error(this.translate.instant('newCustomExerciseInvalidInput'), 0, this.translate.instant('common.error')); return;
+            }
+            const newExerciseSets: ExerciseTargetSetParams[] = Array.from({ length: numSets }, () => ({
+                id: `custom-adhoc-set-${uuidv4()}`,
+                fieldOrder: [METRIC.reps, METRIC.weight, METRIC.rest],
+                targetReps: genRepsTypeFromRepsNumber(8),
+                targetWeight: weightToExact(10),
+                targetDuration: undefined,
+                targetRest: restToExact(60), type:
+                    'standard',
+                notes: '',
+            }));
+            const slug = exerciseName.trim().toLowerCase().replace(/\s+/g, '-');
+            const newExercise: Exercise = {
+                id: `custom-adhoc-ex-${slug}-${uuidv4()}`,
+                name: exerciseName,
+                description: description,
+                category: 'custom',
+                muscleGroups: [],
+                primaryMuscleGroup: undefined,
+                imageUrls: []
+            };
+
+            this.closeExerciseSelectionModal();
+            this.exerciseService.addExercise(newExercise);
+
+            const workoutExercise: WorkoutExercise = {
+                id: this.workoutService.generateWorkoutExerciseId(),
+                exerciseId: newExercise.id,
+                exerciseName: newExercise.name,
+                sets: newExerciseSets,
+                type: 'standard',
+                supersetId: null,
+                supersetOrder: null,
+            };
+            const newExerciseFormGroup = this.workoutFormService.createExerciseFormGroup(workoutExercise, true, false);
+        } else {
+            if (!result) {
+                return
+            }
+            this.handleTrulyCustomExerciseEntry(true);
+            return;
+        }
+    }
+
+
+    private loadAvailableExercises(): void {
+        this.exerciseService.getExercises().pipe(
+            take(1),
+            // Use switchMap to chain the call to the translation service
+            switchMap(untranslatedExercises => {
+                if (!untranslatedExercises || untranslatedExercises.length === 0) {
+                    return of([]); // Return empty if there's nothing to translate
+                }
+                return this.exerciseService.getTranslatedExerciseList(untranslatedExercises);
+            })
+        ).subscribe(translatedExercises => {
+            // The component's master list of exercises is now translated
+            this.availableExercises = translatedExercises;
+        });
+    }
 }
+
+
+
