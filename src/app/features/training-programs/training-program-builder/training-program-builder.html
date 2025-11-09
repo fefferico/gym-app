@@ -257,8 +257,8 @@
 
                 <div *ngIf="scheduleFormArray.length > 0" cdkDropList [cdkDropListData]="scheduleFormGroups"
                     (cdkDropListDropped)="onScheduleDrop($event)" formArrayName="schedule" class="space-y-4">
-                    <div *ngFor="let dayCtrl of scheduleFormArray.controls; let i = index" [formGroupName]="i" cdkDrag
-                        [cdkDragDisabled]="isViewMode"
+                    <div *ngFor="let dayCtrl of scheduleFormArray.controls; let dayIndex = index" [formGroupName]="dayIndex" cdkDrag
+                        [cdkDragDisabled]="isViewMode" appShatterable
                         class="scheduled-day-card p-3 border rounded-md shadow-sm bg-gray-50 dark:bg-gray-600/70 dark:border-gray-600 relative">
                         <!-- Card header with toggle -->
                         <div class="flex justify-between items-start">
@@ -275,8 +275,8 @@
                                         class="w-5 h-5 text-gray-500 dark:text-gray-400"></app-icon>
                                 </button>
                             </div>
-                            <button *ngIf="!isViewMode" type="button" appPress (shortPress)="removeScheduledDay(i)"
-                                title="Remove DAY"
+                            <button appShatterTrigger *ngIf="!isViewMode" type="button" appPress
+                                (shortPress)="removeScheduledDay(dayIndex)" title="Remove DAY"
                                 class="flex px-1 items-center hover:text-red-700 dark:hover:text-red-300 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white text-sm font-medium">
                                 <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon><span>REMOVE DAY</span>
                             </button>
@@ -288,8 +288,8 @@
                         <!-- ========================================================== -->
                         <div class="flex justify-between items-center mb-2" [ngClass]="{'mt-1': isEditableMode()}">
                             <h4 class="text-md font-medium text-gray-800 dark:text-gray-100">
-                                <label [for]="'dayName-cycled-' + i" class="sr-only">Day Name</label>
-                                <input type="text" [id]="'dayName-cycled-' + i" formControlName="dayName"
+                                <label [for]="'dayName-cycled-' + dayIndex" class="sr-only">Day Name</label>
+                                <input type="text" [id]="'dayName-cycled-' + dayIndex" formControlName="dayName"
                                     [placeholder]="'programBuilder.schedule.dayNamePlaceholder' | translate"
                                     class="text-lg font-bold bg-transparent border-0 border-b-2 border-gray-300 dark:border-gray-500 focus:ring-0 focus:border-primary dark:text-gray-100 p-1 w-full sm:w-1/2">
                             </h4>
@@ -303,125 +303,91 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 dark:text-gray-300">
                                 <!-- ...existing day fields... -->
                                 <div>
-                                    <label [for]="'dayOfWeek-' + i"
+                                    <label [for]="'dayOfWeek-' + dayIndex"
                                         class="block text-xs font-medium text-gray-700 dark:text-gray-300">
                                         {{ f['cycleLength'].value > 0 ? ('programBuilder.schedule.cycleDayLabel' |
                                         translate) : ('programBuilder.schedule.dayOfWeekLabel' | translate) }}
                                     </label>
-                                    <select [id]="'dayOfWeek-' + i" formControlName="dayOfWeek"
+                                    <select [id]="'dayOfWeek-' + dayIndex" formControlName="dayOfWeek"
                                         class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-500 dark:text-gray-300">
                                         <option *ngFor="let dayOpt of currentDayOptions()" [value]="dayOpt.value">{{
                                             dayOpt.label }}</option>
                                     </select>
-                                    <div *ngIf="getScheduleDayControl(i).get('dayOfWeek')?.invalid && getScheduleDayControl(i).get('dayOfWeek')?.touched"
+                                    <div *ngIf="getScheduleDayControl(dayIndex).get('dayOfWeek')?.invalid && getScheduleDayControl(dayIndex).get('dayOfWeek')?.touched"
                                         class="text-red-500 dark:text-red-400 text-xs mt-1">
                                         {{ 'programBuilder.schedule.dayRequired' | translate }}
                                     </div>
                                 </div>
                                 <div>
-                                    <label [for]="'routineName-' + i"
+                                    <label [for]="'routineName-' + dayIndex"
                                         class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{
                                         'programBuilder.schedule.routineLabel' | translate }}</label>
                                     <div class="mt-1 flex rounded-md shadow-sm"
-                                        [ngClass]="{'ring-2 ring-offset-1 ring-red-500 dark:ring-red-400': getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted)}">
-                                        <input type="text" [id]="'routineName-' + i" readonly
-                                            [value]="getScheduleDayControl(i).get('routineName')?.value || (getScheduleDayControl(i).get('routineId')?.value ? ('programBuilder.schedule.loadingRoutine' | translate) : ('programBuilder.schedule.noRoutine' | translate))"
+                                        [ngClass]="{'ring-2 ring-offset-1 ring-red-500 dark:ring-red-400': getScheduleDayControl(dayIndex).get('routineId')?.invalid && (getScheduleDayControl(dayIndex).get('routineId')?.touched || submitted)}">
+                                        <input type="text" [id]="'routineName-' + dayIndex" readonly
+                                            [value]="getScheduleDayControl(dayIndex).get('routineName')?.value || (getScheduleDayControl(dayIndex).get('routineId')?.value ? ('programBuilder.schedule.loadingRoutine' | translate) : ('programBuilder.schedule.noRoutine' | translate))"
                                             class="flex-1 min-w-0 block w-full px-3 py-2 text-sm rounded-none rounded-l-md border-gray-300 dark:border-gray-200 dark:bg-gray-400 cursor-default focus:outline-none focus:ring-0 focus:border-gray-300 dark:text-gray-800 font-medium"
-                                            [ngClass]="{'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 placeholder-red-400': getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted), 'rounded-r-md':isViewMode}">
+                                            [ngClass]="{'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 placeholder-red-400': getScheduleDayControl(dayIndex).get('routineId')?.invalid && (getScheduleDayControl(dayIndex).get('routineId')?.touched || submitted), 'rounded-r-md':isViewMode}">
                                         <button *ngIf="!isViewMode" type="button" appPress
-                                            (shortPress)="openRoutineSelectionModal(i)"
+                                            (shortPress)="openRoutineSelectionModal(dayIndex)"
                                             class="inline-flex items-center px-3 py-2 border border-l-0 rounded-r-md text-sm font-medium transition-colors duration-150"
                                             [ngClass]="{
-                                                'border-blue-300 dark:border-blue-500 bg-blue-50 dark:bg-blue-500 text-white hover:bg-blue-100 dark:hover:bg-blue-400': !getScheduleDayControl(i).get('routineId')?.value && !(getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted)),
-                                                'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-700 text-green-700 dark:text-green-100 hover:bg-green-100 dark:hover:bg-green-600': getScheduleDayControl(i).get('routineId')?.value,
-                                                'border-red-500 dark:border-red-400 bg-red-100 dark:bg-red-600 text-red-700 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-500': getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted) 
+                                                'border-blue-300 dark:border-blue-500 bg-blue-50 dark:bg-blue-500 text-white hover:bg-blue-100 dark:hover:bg-blue-400': !getScheduleDayControl(dayIndex).get('routineId')?.value && !(getScheduleDayControl(dayIndex).get('routineId')?.invalid && (getScheduleDayControl(dayIndex).get('routineId')?.touched || submitted)),
+                                                'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-700 text-green-700 dark:text-green-100 hover:bg-green-100 dark:hover:bg-green-600': getScheduleDayControl(dayIndex).get('routineId')?.value,
+                                                'border-red-500 dark:border-red-400 bg-red-100 dark:bg-red-600 text-red-700 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-500': getScheduleDayControl(dayIndex).get('routineId')?.invalid && (getScheduleDayControl(dayIndex).get('routineId')?.touched || submitted) 
                                             }">
                                             <app-icon name="change" class="h-4 w-4"></app-icon>
                                             <span class="ml-1">
-                                                {{ (getScheduleDayControl(i).get('routineId')?.value ?
+                                                {{ (getScheduleDayControl(dayIndex).get('routineId')?.value ?
                                                 'programBuilder.schedule.change' :
                                                 'programBuilder.schedule.select') | translate }}
                                             </span>
                                         </button>
-                                        <button *ngIf="!isViewMode" type="button"
-                                            (click)="openExerciseSelectionModal(i)"
-                                            class="inline-flex items-center px-3 py-2 border rounded-md text-sm font-medium transition-colors duration-150 bg-yellow-50 text-yellow-700 hover:bg-yellow-100">
+                                        <button *ngIf="!isViewMode" type="button" (click)="openCustomWorkoutModal(dayIndex)"
+                                            class="ml-1 inline-flex items-center px-3 py-2 border rounded-md text-sm font-medium transition-colors duration-150 bg-purple-50 dark:bg-purple-700 text-purple-700 dark:text-purple-100 hover:bg-purple-100 dark:hover:bg-purple-600">
                                             <app-icon name="plus" class="h-4 w-4"></app-icon>
-                                            <span class="ml-1">Add Exercises</span>
+                                            <span class="ml-1">{{ 'trainingPrograms.adHocRoutine' | translate }}</span>
+                                        </button>
+                                        <button *ngIf="isCustomRoutine(dayCtrl.get('routineId')?.value) && !isViewMode"
+                                            type="button" (click)="editCustomRoutine(dayCtrl.get('routineId')?.value, dayIndex)"
+                                            class="ml-2 px-2 py-1 rounded bg-yellow-100 text-yellow-700 text-xs font-medium hover:bg-yellow-200">
+                                            <app-icon name="edit" class="h-4 w-4 mr-1"></app-icon>
+                                            {{ 'common.edit' | translate }}
                                         </button>
                                     </div>
-                                    <div *ngIf="getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted)"
+                                    <div *ngIf="getScheduleDayControl(dayIndex).get('routineId')?.invalid && (getScheduleDayControl(dayIndex).get('routineId')?.touched || submitted)"
                                         class="text-red-500 dark:text-red-400 text-xs mt-1">
                                         {{ 'programBuilder.schedule.routineRequired' | translate }}
                                     </div>
                                 </div>
                                 <div class="sm:col-span-2"
                                     *ngIf="programForm.get('timeOfDay')?.value || isEditableMode()">
-                                    <label [for]="'timeOfDay-' + i"
+                                    <label [for]="'timeOfDay-' + dayIndex"
                                         class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{
                                         'programBuilder.schedule.timeLabel' | translate }}</label>
-                                    <input type="text" [id]="'timeOfDay-' + i" formControlName="timeOfDay"
+                                    <input type="text" [id]="'timeOfDay-' + dayIndex" formControlName="timeOfDay"
                                         [placeholder]="'programBuilder.schedule.timePlaceholder' | translate"
                                         class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-500">
                                 </div>
                                 <div class="sm:col-span-2" *ngIf="programForm.get('notes')?.value || isEditableMode()">
-                                    <label [for]="'dayNotes-' + i"
+                                    <label [for]="'dayNotes-' + dayIndex"
                                         class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{
                                         'programBuilder.schedule.notesLabel' | translate }}</label>
-                                    <textarea [id]="'dayNotes-' + i" formControlName="notes" rows="2"
+                                    <textarea [id]="'dayNotes-' + dayIndex" formControlName="notes" rows="2"
                                         class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-500"></textarea>
                                 </div>
                             </div>
                             <!-- Show exercises if this day is a custom routine -->
-                            <div
-                                *ngIf="dayCtrl.get('routineId')?.value && isCustomRoutine(dayCtrl.get('routineId')?.value)">
+                            <div *ngIf="dayCtrl.get('routineId')?.value">
+                                <!-- *ngIf="dayCtrl.get('routineId')?.value && isCustomRoutine(dayCtrl.get('routineId')?.value)"> -->
                                 <div
                                     class="mt-2 text-sm bg-gray-100 dark:bg-gray-700 p-2 rounded-md text-gray-800 dark:text-gray-200">
                                     <span class="font-semibold">{{ 'exerciseList.title' | translate }}</span>
-                                    <li *ngFor="let ex of getExercisesForDay(dayCtrl.get('routineId')?.value); let exIndex = index"
-                                        class="mb-2 flex items-start gap-2">
-                                        <!-- Exercise Icon (optional, if you have a method for it) -->
-                                        <!-- <app-icon [name]="getExerciseIcon(ex.exerciseId)" class="h-5 w-5 mt-1 text-primary dark:text-primary-light"></app-icon> -->
-                                        <div>
-                                            <div
-                                                class="font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-                                                {{ ex.exerciseName }}
-                                                <span *ngIf="isExerciseCardioOnly(ex.exerciseId)"
-                                                    class="ml-2 px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-medium">Cardio</span>
-                                                <span *ngIf="!isExerciseCardioOnly(ex.exerciseId)"
-                                                    class="ml-2 px-2 py-0.5 rounded bg-green-100 text-green-700 text-xs font-medium">Strength</span>
-                                            </div>
-                                            <div
-                                                class="text-xs text-gray-600 dark:text-gray-300 mt-1 flex flex-wrap gap-2">
-                                                <ng-container *ngFor="let set of ex.sets; let s = index">
-                                                    <span *ngIf="isViewMode"
-                                                        class="inline-block px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 mr-1 mb-1">
-                                                        Set {{ s + 1 }}:
-                                                        <ng-container *ngIf="set.targetReps !== undefined">
-                                                            {{ workoutUtilService.getRepsValue(set.targetReps) }} reps
-                                                        </ng-container>
-                                                        <ng-container *ngIf="set.targetWeight !== undefined">
-                                                            @ {{ workoutUtilService.getWeightValue(set.targetWeight) }}
-                                                            kg
-                                                        </ng-container>
-                                                        <ng-container *ngIf="set.targetDuration !== undefined">
-                                                            {{ workoutUtilService.getDurationValue(set.targetDuration)
-                                                            }} sec
-                                                        </ng-container>
-                                                        <ng-container *ngIf="set.targetDistance !== undefined">
-                                                            {{ workoutUtilService.getDistanceValue(set.targetDistance)
-                                                            }} m
-                                                        </ng-container>
-                                                        <ng-container *ngIf="set.targetRest !== undefined">
-                                                            <span class="ml-1 text-gray-400">| Rest: {{
-                                                                workoutUtilService.getRestValue(set.targetRest)
-                                                                }}s</span>
-                                                        </ng-container>
-                                                    </span>
-                                                </ng-container>
-                                            </div>
-                                        </div>
-                                    </li>
+                                    <ng-container
+                                        *ngFor="let ex of getExercisesForDay(dayCtrl.get('routineId')?.value); let exIndex = index">
+                                        <ng-container
+                                            *ngTemplateOutlet="exerciseSetDisplay; context: { ex: ex }"></ng-container>
+                                    </ng-container>
                                 </div>
                             </div>
                         </div>
@@ -510,7 +476,7 @@
                                 (cdkDropListDropped)="onDayDropInWeek($event, weekIndex)" formArrayName="schedule"
                                 class="space-y-4">
                                 <div *ngFor="let dayCtrl of getWeekScheduleGroups(weekIndex); let dayIndex = index"
-                                    [formGroupName]="dayIndex" cdkDrag [cdkDragDisabled]="isViewMode"
+                                    [formGroupName]="dayIndex" cdkDrag [cdkDragDisabled]="isViewMode" appShatterable
                                     class="scheduled-day-card p-3 border rounded-md shadow-sm bg-white dark:bg-gray-600/70 dark:border-gray-600 relative">
                                     <!-- Day card header with toggle -->
                                     <div class="flex justify-between items-start">
@@ -527,7 +493,7 @@
                                                     class="w-5 h-5 text-gray-500 dark:text-gray-400"></app-icon>
                                             </button>
                                         </div>
-                                        <button *ngIf="!isViewMode" type="button" appPress
+                                        <button appShatterTrigger *ngIf="!isViewMode" type="button" appPress
                                             (shortPress)="removeScheduledDay(dayIndex, weekIndex)" title="Remove DAY"
                                             class="flex p-1 items-center hover:text-red-700 dark:hover:text-red-300 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white">
                                             <app-icon name="cancel" class="h-5 w-5"></app-icon>
@@ -585,11 +551,19 @@
                                                         'programBuilder.schedule.select') | translate}}
                                                     </button>
                                                     <button *ngIf="!isViewMode" type="button"
-                                                        (click)="openExerciseSelectionModal(dayIndex, weekIndex)"
-                                                        class="inline-flex items-center px-3 py-2 border rounded-md text-sm font-medium transition-colors duration-150 bg-yellow-50 text-yellow-700 hover:bg-yellow-100">
+                                                        (click)="openCustomWorkoutModal(dayIndex, weekIndex)"
+                                                        class="ml-1 inline-flex items-center px-3 py-2 border rounded-md text-sm font-medium transition-colors duration-150 bg-purple-50 dark:bg-purple-700 text-purple-700 dark:text-purple-100 hover:bg-purple-100 dark:hover:bg-purple-600">
                                                         <app-icon name="plus" class="h-4 w-4"></app-icon>
-                                                        <span class="ml-1">{{ 'exerciseList.addButton' | translate
-                                                            }}</span>
+                                                        <span class="ml-1">{{ 'trainingPrograms.adHocRoutine' |
+                                                            translate }}</span>
+                                                    </button>
+                                                    <button
+                                                        *ngIf="isCustomRoutine(dayCtrl.get('routineId')?.value) && !isViewMode"
+                                                        type="button"
+                                                        (click)="editCustomRoutine(dayCtrl.get('routineId')?.value, dayIndex, weekIndex)"
+                                                        class="ml-2 px-2 py-1 rounded bg-yellow-100 text-yellow-700 text-xs font-medium hover:bg-yellow-200">
+                                                        <app-icon name="edit" class="h-4 w-4 mr-1"></app-icon>
+                                                        {{ 'common.edit' | translate }}
                                                     </button>
                                                 </div>
                                             </div>
@@ -604,62 +578,16 @@
                                             </div>
                                         </div>
                                         <!-- Show exercises if this day is a custom routine -->
-                                        <div #customRoutine
-                                            *ngIf="dayCtrl.get('routineId')?.value && isCustomRoutine(dayCtrl.get('routineId')?.value)">
+                                        <div #customRoutine *ngIf="dayCtrl.get('routineId')?.value">
+                                            <!-- *ngIf="dayCtrl.get('routineId')?.value && isCustomRoutine(dayCtrl.get('routineId')?.value)"> -->
                                             <div class="mt-2">
-                                                <span class="font-semibold">Exercises:</span>
-                                                <li *ngFor="let ex of getExercisesForDay(dayCtrl.get('routineId')?.value); let exIndex = index"
-                                                    class="mb-2 flex items-start gap-2">
-                                                    <!-- Exercise Icon (optional, if you have a method for it) -->
-                                                    <!-- <app-icon [name]="getExerciseIcon(ex.exerciseId)" class="h-5 w-5 mt-1 text-primary dark:text-primary-light"></app-icon> -->
-                                                    <div>
-                                                        <div
-                                                            class="font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-                                                            {{ ex.exerciseName }}
-                                                            <span *ngIf="isExerciseCardioOnly(ex.exerciseId)"
-                                                                class="ml-2 px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-medium">Cardio</span>
-                                                            <span *ngIf="!isExerciseCardioOnly(ex.exerciseId)"
-                                                                class="ml-2 px-2 py-0.5 rounded bg-green-100 text-green-700 text-xs font-medium">Strength</span>
-                                                        </div>
-                                                        <div
-                                                            class="text-xs text-gray-600 dark:text-gray-300 mt-1 flex flex-wrap gap-2">
-                                                            <ng-container *ngFor="let set of ex.sets; let s = index">
-                                                                <span
-                                                                    class="inline-block px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 mr-1 mb-1">
-                                                                    Set {{ s + 1 }}:
-                                                                    <ng-container *ngIf="set.targetReps !== undefined">
-                                                                        {{
-                                                                        workoutUtilService.getRepsValue(set.targetReps)
-                                                                        }} reps
-                                                                    </ng-container>
-                                                                    <ng-container
-                                                                        *ngIf="set.targetWeight !== undefined">
-                                                                        @ {{
-                                                                        workoutUtilService.getWeightValue(set.targetWeight)
-                                                                        }} kg
-                                                                    </ng-container>
-                                                                    <ng-container
-                                                                        *ngIf="set.targetDuration !== undefined">
-                                                                        {{
-                                                                        workoutUtilService.getDurationValue(set.targetDuration)
-                                                                        }} sec
-                                                                    </ng-container>
-                                                                    <ng-container
-                                                                        *ngIf="set.targetDistance !== undefined">
-                                                                        {{
-                                                                        workoutUtilService.getDistanceValue(set.targetDistance)
-                                                                        }} m
-                                                                    </ng-container>
-                                                                    <ng-container *ngIf="set.targetRest !== undefined">
-                                                                        <span class="ml-1 text-gray-400">| Rest: {{
-                                                                            workoutUtilService.getRestValue(set.targetRest)
-                                                                            }}s</span>
-                                                                    </ng-container>
-                                                                </span>
-                                                            </ng-container>
-                                                        </div>
-                                                    </div>
-                                                </li>
+                                                <span class="font-semibold">{{ 'exerciseList.title' | translate
+                                                    }}</span>
+                                                <ng-container
+                                                    *ngFor="let ex of getExercisesForDay(dayCtrl.get('routineId')?.value); let exIndex = index">
+                                                    <ng-container
+                                                        *ngTemplateOutlet="exerciseSetDisplay; context: { ex: ex }"></ng-container>
+                                                </ng-container>
                                             </div>
                                         </div>
                                     </div>
@@ -1021,3 +949,69 @@
     (exercisesSelected)="selectExercisesForDay($event)" (createCustomClicked)="handleTrulyCustomExerciseEntry()"
     (close)="closeExerciseSelectionModal()">
 </app-exercise-selection-modal>
+
+<!-- NEW: Custom Workout Builder Modal -->
+<div *ngIf="isCustomWorkoutModalOpen()"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70">
+    <div class="w-full h-full max-w-none max-h-none bg-white dark:bg-gray-900 rounded-none shadow-none flex flex-col">
+        <!-- Modal Header (optional, can be sticky) -->
+        <div class="flex items-center justify-between p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-900 z-10">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                {{ 'trainingPrograms.addCustomRoutine' | translate }}
+            </h2>
+            <button (click)="closeCustomWorkoutModal()"
+                class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <app-icon name="close" class="h-6 w-6"></app-icon>
+            </button>
+        </div>
+        <!-- Modal Body (Full Height, Scrollable) -->
+        <div class="flex-1 overflow-y-auto">
+            <app-workout-builder
+                [context]="'modal'"
+                [mode]="builderMode.customProgramEntryBuilder"
+                [initialRoutine]="customRoutineToEdit"
+                (routineConfirmed)="handleCustomRoutineConfirmed($event)"
+                (modalClose)="closeCustomWorkoutModal()">
+            </app-workout-builder>
+        </div>
+    </div>
+</div>
+
+<ng-template #exerciseSetDisplay let-ex="ex">
+    <li class="mb-2 flex items-start gap-2">
+        <!-- Exercise Icon (optional) -->
+        <!-- <app-icon [name]="getExerciseIcon(ex.exerciseId)" class="h-5 w-5 mt-1 text-primary dark:text-primary-light"></app-icon> -->
+        <div>
+            <div class="font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                {{ ex.exerciseName }}
+                <span *ngIf="isExerciseCardioOnly(ex.exerciseId)"
+                    class="ml-2 px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-medium">Cardio</span>
+                <span *ngIf="!isExerciseCardioOnly(ex.exerciseId)"
+                    class="ml-2 px-2 py-0.5 rounded bg-green-100 text-green-700 text-xs font-medium">Strength</span>
+            </div>
+            <div class="text-xs text-gray-600 dark:text-gray-300 mt-1 flex flex-wrap gap-2">
+                <ng-container *ngFor="let set of ex.sets; let s = index">
+                    <span class="inline-block px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 mr-1 mb-1">
+                        Set #{{ s + 1 }}:
+                        <ng-container *ngIf="set.targetReps !== undefined">
+                            {{ workoutUtilService.getRepsValue(set.targetReps) }} reps
+                        </ng-container>
+                        <ng-container *ngIf="set.targetWeight !== undefined">
+                            @ {{ workoutUtilService.getWeightValue(set.targetWeight) }} kg
+                        </ng-container>
+                        <ng-container *ngIf="set.targetDuration !== undefined">
+                            {{ workoutUtilService.getDurationValue(set.targetDuration) }} sec
+                        </ng-container>
+                        <ng-container *ngIf="set.targetDistance !== undefined">
+                            {{ workoutUtilService.getDistanceValue(set.targetDistance) }} m
+                        </ng-container>
+                        <ng-container *ngIf="set.targetRest !== undefined">
+                            <span class="ml-1 text-gray-400">| Rest: {{ workoutUtilService.getRestValue(set.targetRest)
+                                }}s</span>
+                        </ng-container>
+                    </span>
+                </ng-container>
+            </div>
+        </div>
+    </li>
+</ng-template>

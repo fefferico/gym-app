@@ -3,10 +3,10 @@
     {{ errorMessage() }}
 </div>
 
-<div class="container mx-auto">
+<div class="container mx-auto" [ngClass]="{'pb-32' : context === 'modal'}">
     <header class="flex items-center justify-between p-2">
         <div class="flex justify-between items-center">
-            <button [routerLink]="mode === BuilderMode.routineBuilder ? '/workout' : '/history/list'"
+            <button (click)="handleCancel()"
                 class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
                 <app-icon name="back"></app-icon>
             </button>
@@ -15,8 +15,8 @@
         <!-- Action Buttons Group -->
         <div class="flex items-center space-x-2 flex-shrink-0">
             <!-- Wrapper for "More Actions" button and its dropdown -->
-            <div *ngIf="liveFormAsRoutine() as routine" class="">
-                <div *ngIf="routine.id && !isNewMode" class="relative">
+            <div *ngIf="liveFormAsRoutine() as routine">
+                <div *ngIf="routine.id && !isNewMode && mode !== BuilderMode.customProgramEntryBuilder" class="relative">
                     <button appBumpClick (click)="toggleActions(routine.id, $event)"
                         class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
                         <app-icon name="menu-action" class="h-10 w-10"></app-icon>
@@ -36,7 +36,7 @@
     <form [formGroup]="builderForm" class="space-y-6 mb-6 p-1 rounded-xl shadow-xl overflow-hidden min-h-screen">
         <section class="space-y-2 p-2 rounded-xl shadow-sm dark:shadow-none text-gray-700 dark:text-gray-200">
             <!-- ROUTINE BUILDER FIELDS -->
-            <ng-container *ngIf="mode === BuilderMode.routineBuilder">
+            <ng-container *ngIf="isRoutineMode">
                 <!-- ROUTINE NAME -->
                 <div *ngIf="isViewMode">
                     <label
@@ -597,7 +597,7 @@
                                     <div *ngIf="expandedExerciseNotes() === exIndex">
                                         <label [for]="'exerciseNotes-' + exIndex"
                                             class="block text-s font-medium text-gray-600 dark:text-gray-400 mb-0.5">
-                                            {{ (mode === BuilderMode.routineBuilder ?
+                                            {{ (isRoutineMode ?
                                             'workoutBuilder.exercise.notesLabel' :
                                             'workoutBuilder.exercise.loggedNotesLabel') | translate }}
                                         </label>
@@ -1073,7 +1073,7 @@
                                                     <div *ngIf="setControl.get('notes')?.value">
                                                         <label [for]="'setNotes-' + exIndex + setIndex"
                                                             class="block text-s font-medium text-gray-600 dark:text-gray-400 mb-0.5">
-                                                            {{ (mode === BuilderMode.routineBuilder ?
+                                                            {{ (isRoutineMode ?
                                                             'workoutBuilder.set.notes' :
                                                             'workoutBuilder.set.notes') | translate }}
                                                         </label>
@@ -1183,7 +1183,7 @@
             <p class="text-m text-blue-700 dark:text-blue-300">{{ 'workoutBuilder.restDayMessage' | translate }}</p>
         </section>
 
-        <div *ngIf="!isViewMode" class="py-2 px-1 flex-col gap-2 flex items-center">
+        <div *ngIf="!isViewMode" class="py-2 px-1 flex-col gap-2 flex items-center sticky bottom-0">
 
             <div *ngIf="mode !== BuilderMode.manualLogEntry && (builderForm.get('goal')?.value !== metricEnum.rest)"
                 class="text-center text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-xl mt-4">
@@ -1200,8 +1200,7 @@
                 class="flex items-center justify-center px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50 min-w-[220px]">
                 <app-icon name="save" class="h-6 w-6 mr-1"></app-icon>
                 <!-- Button Text -->
-                {{ (mode === BuilderMode.routineBuilder ? 'workoutBuilder.routineBuilder.saveButton' : (isNewMode ?
-                'workoutBuilder.logEntry.logButton' : 'workoutBuilder.logEntry.saveLogButton')) | translate }}
+                {{ getSubmitButtonLabel() | translate }}
             </button>
 
             <!-- WORKOUT GENERATOR -->

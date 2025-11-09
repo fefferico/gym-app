@@ -495,6 +495,8 @@
   },
   "trainingPrograms": {
     "title": "Programmi",
+    "addCustomRoutine": "Scheda ad-hoc per programma",
+    "adHocRoutine": "Scheda ad-hoc",
     "toggleFilters": "Mostra/Nascondi Filtri",
     "view": {
       "myPrograms": "I MIEI PROGRAMMI",
@@ -530,7 +532,8 @@
       "lastScheduling": "Ultima programmazione",
       "goals": "Obiettivi",
       "iteration": "Iterazione",
-      "currentWeek": "Settimana Corrente:"
+      "currentWeek": "Settimana Corrente:",
+      "exercises": "Esercizi"
     },
     "noPrograms": {
       "noMatchTitle": "Nessun Programma Corrisponde ai Filtri",
@@ -1062,7 +1065,8 @@
       "estimatedDuration": "Durata stimata",
       "totExercises": "Tot. esercizi",
       "lastDuration": "Ultima durata",
-      "saveButton": "SALVA SCHEDA"
+      "saveButton": "SALVA SCHEDA",
+      "saveCustomRoutineButton": "SALVA MODIFICHE SCHEDA"
     },
     "logEntry": {
       "logForProgramTitle": "Log per Programma: {{programName}} - Scheda: {{routineName}}",

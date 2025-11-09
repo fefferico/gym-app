@@ -15,7 +15,6 @@ import { WorkoutLog, LoggedWorkoutExercise, LoggedSet, EnrichedWorkoutLog } from
 import { WorkoutService } from '../../core/services/workout.service';
 import { ExerciseService } from '../../core/services/exercise.service';
 import { UnitsService } from '../../core/services/units.service';
-import { WeightUnitPipe } from '../../shared/pipes/weight-unit-pipe';
 import { SpinnerService } from '../../core/services/spinner.service';
 import { AlertService } from '../../core/services/alert.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -53,13 +52,11 @@ import { animate, style, transition, trigger } from '@angular/animations';
 import { repsTargetAsString, repsTypeToReps, genRepsTypeFromRepsNumber, getWeightValue, getDistanceValue, getDurationValue, restToExact, weightToExact, durationToExact, distanceToExact, repsToExact, getRestValue, getRepsValue, durationTargetAsString, restTargetAsString, weightTargetAsString, distanceTargetAsString } from '../../core/services/workout-helper.service';
 import { WorkoutUtilsService } from '../../core/services/workout-utils.service';
 import { WorkoutFormService } from '../../core/services/workout-form.service';
-import { is } from 'date-fns/locale';
-import { EXERCISE_CATEGORY_NORMALIZATION_MAP } from '../../core/services/exercise-category.service';
-import { WORKOUT_CATEGORY_DATA } from '../../core/services/workout-category-data';
 import { WorkoutCategory } from '../../core/models/workout-category.model';
 
 export enum BuilderMode {
   routineBuilder = 'routineBuilder',
+  customProgramEntryBuilder = 'customProgramEntryBuilder',
   manualLogEntry = 'manualLogEntry',
 }
 
@@ -115,6 +112,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   // --- NEW: Context-aware inputs/outputs for modal integration ---
   @Input() context: 'route' | 'modal' = 'route';
   @Input() initialRoutine: Routine | null = null;
+  @Input() mode: BuilderMode = BuilderMode.routineBuilder;
+
   @Output() routineConfirmed = new EventEmitter<Routine>();
   @Output() modalClose = new EventEmitter<void>();
 
@@ -141,6 +140,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   protected workoutCategoryService = inject(WorkoutCategoryService);
   protected workoutFormService = inject(WorkoutFormService);
 
+  protected isRoutineMode = false;
+
 
   // Property to hold the available options for the builder
   availableRepSchemes: { type: RepsTargetType; label: string }[] = [];
@@ -163,7 +164,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   lastLoggedRoutineInfo = signal<{ [id: string]: { duration: number, name: string, startTime: number | null } }>({});
   builderForm!: FormGroup;
-  mode: BuilderMode = BuilderMode.routineBuilder;
   isEditableMode = signal<boolean>(false);
   isEditMode = false;
   isNewMode = true;
@@ -342,6 +342,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   categories = toSignal(this.workoutCategoryService.getTranslatedCategories(), { initialValue: [] });
   ngOnInit(): void {
+    console.log('WorkoutBuilderComponent mode:', this.mode, 'context:', this.context);
+
+    this.isRoutineMode = this.mode === BuilderMode.routineBuilder || this.mode === BuilderMode.customProgramEntryBuilder;
+
     // Populate the list for the builder context
     this.availableRepSchemes = this.workoutUtilsService.getAvailableRepsSchemes('builder');
     this.spinnerService.hide();
@@ -364,9 +368,18 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.routeSub = this.route.data.pipe(
       switchMap(data => {
         this.isGeneratedRoutine.set(false);
-        this.mode = data['mode'] as BuilderMode || BuilderMode.routineBuilder;
-        this.isNewMode = data['isNew'] === true; // True if creating new (Routine or Log)
+        if (!this.context) {
+          this.context = 'route';
+        }
+        if (this.context === 'route') {
+          this.mode = data['mode'] as BuilderMode || BuilderMode.routineBuilder;
+          this.isNewMode = data['isNew'] === true;
+        }
+        if (this.context === 'modal') {
+          window.scrollTo(0, 0);
+        }
         console.log(`Builder ngOnInit: Mode=${this.mode}, isNewMode=${this.isNewMode}`);
+        console.log(`isNewMode: ${this.isNewMode}`);
 
         // Check for the query parameter to auto-open the generator modal.
         const openGenerator = this.route.snapshot.queryParamMap.get('openGenerator');
@@ -390,17 +403,25 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         this.dateParam = paramDate ? new Date(paramDate) : null;
 
         // isViewMode is specific to viewing a Routine template
-        this.isViewMode = (this.mode === BuilderMode.routineBuilder && !!this.currentRoutineId && !this.isNewMode && this.route.snapshot.routeConfig?.path?.includes('view')) || false;
+        this.isViewMode = (this.isRoutineMode && !!this.currentRoutineId && !this.isNewMode && this.route.snapshot.routeConfig?.path?.includes('view')) || false;
         // isEditMode is true if not new and not view (i.e. editing a routine or a log)
-        this.isEditMode = !this.isNewMode && !this.isViewMode;
+        this.isEditMode = (!this.isNewMode && !this.isViewMode) || this.mode === BuilderMode.customProgramEntryBuilder;
         this.isEditableMode.set(this.isEditMode || this.isNewMode);
+
+        console.log(`Builder isEditableMode: Mode=${this.isEditableMode()}`);
+
 
         this.configureFormValidatorsAndFieldsForMode();
         this.expandedSetPath.set(null);
         this.exercisesFormArray.clear({ emitEvent: false }); // Clear before reset
         this.builderForm.reset(this.getDefaultFormValuesForMode(), { emitEvent: false });
 
-        if (this.mode === BuilderMode.routineBuilder) {
+        if (this.isRoutineMode) {
+          if (this.mode === BuilderMode.customProgramEntryBuilder && this.initialRoutine) {
+            this.loadedRoutine.set(this.initialRoutine);
+            this.patchFormWithRoutineData(this.initialRoutine as Routine);
+            return of(null); // No need to load from service
+          }
           if (this.currentLogId && this.isNewMode) { // Creating a new Routine from a Log
             return this.trackingService.getWorkoutLogById(this.currentLogId);
           }
@@ -552,14 +573,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         if (this.previousGoalValue !== goalValue && goalValue !== 'tabata') {
           this.previousGoalValue = goalValue;
         }
-        if (this.mode === BuilderMode.routineBuilder && goalValue === METRIC.rest) {
+        if (this.isRoutineMode && goalValue === METRIC.rest) {
           while (this.exercisesFormArray.length) this.exercisesFormArray.removeAt(0);
           this.exercisesFormArray.clearValidators();
         }
         // --- NEW/MODIFIED: Tabata and Post-Tabata Logic ---
         const exercises = this.exercisesFormArray.controls as FormGroup[];
         // --- START OF CORRECTION ---
-        if (this.mode === BuilderMode.routineBuilder && goalValue === 'tabata') {
+        if (this.isRoutineMode && goalValue === 'tabata') {
           const exercises = this.exercisesFormArray.controls as FormGroup[];
           if (exercises.length < 2) {
             this.toastService.warning('Tabata routines require at least 2 exercises. Please add more exercises first.', 5000);
@@ -614,7 +635,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           });
           this.toastService.info("Routine converted to Tabata format.");
 
-        } else if (this.mode === BuilderMode.routineBuilder && this.builderForm.get('goal')?.value !== 'tabata') {
+        } else if (this.isRoutineMode && this.builderForm.get('goal')?.value !== 'tabata') {
           const firstExercise = this.exercisesFormArray.at(0) as FormGroup;
           if (firstExercise && firstExercise.get('supersetId')?.value && firstExercise.get('sets')?.value?.length === this.exercisesFormArray.length) {
             this.exercisesFormArray.controls.forEach(exerciseControl => {
@@ -797,7 +818,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // durationCtrl?.clearValidators();
 
 
-    if (this.mode === BuilderMode.routineBuilder) {
+    if (this.isRoutineMode) {
       nameCtrl?.setValidators(Validators.required);
       goalCtrl?.setValidators(Validators.required);
       this.builderForm.get('exercises')?.setValidators(Validators.nullValidator); // Exercises not strictly required if goal is 'rest'
@@ -817,7 +838,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     } else {
       this.builderForm.enable({ emitEvent: false });
       // Specific field disabling based on mode after enabling all
-      if (this.mode === BuilderMode.routineBuilder) {
+      if (this.isRoutineMode) {
         this.builderForm.get('workoutDate')?.disable({ emitEvent: false });
         this.builderForm.get('startTime')?.disable({ emitEvent: false });
         this.builderForm.get('endTime')?.disable({ emitEvent: false });
@@ -1347,7 +1368,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       };
 
       let newExerciseFormGroup: FormGroup;
-      if (this.mode === BuilderMode.routineBuilder) {
+      if (this.isRoutineMode) {
         newExerciseFormGroup = this.workoutFormService.createExerciseFormGroup(workoutExercise, true, false);
         // ADD listeners for routine duration calculation
         this.addRepsListener(newExerciseFormGroup);
@@ -1355,7 +1376,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         this.addDistanceListener(newExerciseFormGroup);
 
         this.exercisesFormArray.push(newExerciseFormGroup);
-        this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
+        // this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
       } else {
         newExerciseFormGroup = this.workoutFormService.createExerciseFormGroup(workoutExercise, false, true);
         this.exercisesFormArray.push(newExerciseFormGroup);
@@ -1363,7 +1384,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
       // Optionally, only expand the last one added
       if (selectedExercises.indexOf(exerciseFromLibrary) === selectedExercises.length - 1) {
-        this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
+        this.ngZone.runOutsideAngular(() => {
+          setTimeout(() => {
+            this.ngZone.run(() => {
+              this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
+            });
+          }, 0);
+        });
       }
     });
 
@@ -2043,7 +2070,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     // --- NEW: TABATA VALIDATION BLOCK ---
     const formValueForValidation = this.builderForm.getRawValue();
-    if (this.mode === BuilderMode.routineBuilder && formValueForValidation.goal === 'tabata') {
+    if (this.isRoutineMode && formValueForValidation.goal === 'tabata') {
       const exercises = this.exercisesFormArray.controls as FormGroup[];
 
       if (exercises.length >= 2) {
@@ -2086,9 +2113,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
     // --- END: TABATA VALIDATION BLOCK ---
 
-    const isRestGoalRoutine = this.mode === BuilderMode.routineBuilder && this.builderForm.get('goal')?.value === METRIC.rest;
+    const isRestGoalRoutine = this.isRoutineMode && this.builderForm.get('goal')?.value === METRIC.rest;
 
-    if ((this.mode === BuilderMode.routineBuilder && (this.builderForm.get('name')?.invalid || this.builderForm.get('goal')?.invalid)) ||
+    if ((this.isRoutineMode && (this.builderForm.get('name')?.invalid || this.builderForm.get('goal')?.invalid)) ||
       (this.mode === BuilderMode.manualLogEntry && (this.builderForm.get('workoutDate')?.invalid || this.builderForm.get('startTime')?.invalid || this.builderForm.get('endTime')?.invalid
         //  || this.builderForm.get('durationMinutes')?.invalid
       )
@@ -2132,11 +2159,21 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.spinnerService.show(this.isNewMode ? "Saving..." : "Updating...");
 
     try {
-      if (this.mode === BuilderMode.routineBuilder) {
+      if (this.isRoutineMode) {
         // First, map the form value to a valid Routine object
         const routinePayload = this.mapFormToRoutine(formValue);
         let savedRoutine: Routine; // Variable to hold the result from the service
 
+        // --- NEW: Handle modal context ---
+        if (this.context === 'modal') {
+          // In modal mode, emit the routine without saving to DB
+          this.routineConfirmed.emit(routinePayload);
+          this.toastService.success(`Routine created!`, 2000, "Success");
+          this.modalClose.emit();
+          return;
+        }
+
+        // --- EXISTING: Handle route context ---
         if (this.isNewMode) {
           // Await the async service call
           savedRoutine = await this.workoutService.addRoutine(routinePayload);
@@ -2259,6 +2296,17 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.toastService.error(`Failed to save: ${e.message || 'Unknown error'}`, 0, "Save Error");
     } finally {
       this.spinnerService.hide();
+    }
+  }
+
+  // --- NEW: Handle cancel/back in both route and modal contexts ---
+  handleCancel(): void {
+    if (this.context === 'modal') {
+      // In modal mode, just close the modal without saving
+      this.modalClose.emit();
+    } else {
+      // In route mode, navigate away
+      this.router.navigate([this.mode === BuilderMode.routineBuilder ? '/workout' : '/history/list']);
     }
   }
 
@@ -3243,7 +3291,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   isFormInvalid(): boolean {
-    return this.builderForm.invalid || (this.exercisesFormArray.length === 0 && !(this.mode === BuilderMode.routineBuilder && this.builderForm.get('goal')?.value === METRIC.rest))
+    return this.builderForm.invalid || (this.exercisesFormArray.length === 0 && !(this.isRoutineMode && this.builderForm.get('goal')?.value === METRIC.rest))
   }
 
   /**
@@ -3829,7 +3877,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   fabMenuItems: FabAction[] = [];
 
   private refreshFabMenuItems(): void {
-    const isSave = this.mode === BuilderMode.routineBuilder ? (!this.currentRoutineId ? false : true) : (this.isNewMode ? true : false);
+    const isSave = this.isRoutineMode ? (!this.currentRoutineId ? false : true) : (this.isNewMode ? true : false);
     if (this.isEditableMode()) {
       this.fabMenuItems = [{
         label: 'fab.add_exercise',
@@ -4898,7 +4946,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         const formControlName = this.getFormControlName(metric);
         if (formControlName && !setGroup.get(formControlName)) {
           setGroup.addControl(formControlName, this.fb.control(null));
-          if (this.mode === BuilderMode.routineBuilder && [METRIC.reps, METRIC.weight, METRIC.duration, METRIC.distance, METRIC.rest].includes(metric)) {
+          if (this.isRoutineMode && [METRIC.reps, METRIC.weight, METRIC.duration, METRIC.distance, METRIC.rest].includes(metric)) {
             const capitalizedMetric = metric.charAt(0).toUpperCase() + metric.slice(1);
             setGroup.addControl(`target${capitalizedMetric}Min`, this.fb.control(null));
             setGroup.addControl(`target${capitalizedMetric}Max`, this.fb.control(null));
@@ -5265,7 +5313,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   getMetricDisplayValue(setControl: AbstractControl, metric: METRIC): string {
     const targetValue = setControl.get(this.getTargetControlName(metric))?.value;
     const loggedValue = setControl.get(this.getLoggedControlName(metric))?.value;
-    const value = this.mode === BuilderMode.routineBuilder ? targetValue : loggedValue;
+    const value = this.isRoutineMode ? targetValue : loggedValue;
     return this.workoutUtilsService.formatMetricTarget(value, metric) || '-';
   }
 
@@ -5524,4 +5572,18 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   selectInputText(input: HTMLInputElement) {
     setTimeout(() => input.select(), 0);
   }
+
+  // transform this template logic into proper method
+  getSubmitButtonLabel(): string {
+    if (this.mode === BuilderMode.routineBuilder) {
+      return this.translate.instant('workoutBuilder.routineBuilder.saveButton');
+    }
+    if (this.mode === BuilderMode.customProgramEntryBuilder) {
+      return this.translate.instant('workoutBuilder.routineBuilder.saveCustomRoutineButton');
+    }
+    return this.isNewMode
+      ? this.translate.instant('workoutBuilder.logEntry.logButton')
+      : this.translate.instant('workoutBuilder.logEntry.saveLogButton');
+  }
+
 }

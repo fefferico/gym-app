@@ -543,6 +543,8 @@
   },
   "trainingPrograms": {
     "title": "Programs",
+    "addCustomRoutine": "Program ad-hoc routine",
+    "adHocRoutine": "Ad-hoc routine",
     "toggleFilters": "Toggle Filters",
     "view": {
       "myPrograms": "MY PROGRAMS",
@@ -578,7 +580,8 @@
       "lastScheduling": "Last scheduling",
       "goals": "Goals",
       "iteration": "Iteration",
-      "currentWeek": "Current Week:"
+      "currentWeek": "Current Week:",
+      "exercises": "Exercises"
     },
     "noPrograms": {
       "noMatchTitle": "No Programs Match Filters",
@@ -1063,7 +1066,8 @@
       "estimatedDuration": "Est. duration",
       "totExercises": "Tot. exercises",
       "lastDuration": "Last duration",
-      "saveButton": "SAVE ROUTINE"
+      "saveButton": "SAVE ROUTINE",
+      "saveCustomRoutineButton": "SAVE ROUTINE EDITS"
     },
     "logEntry": {
       "logForProgramTitle": "Log for Program: {{programName}} - Routine: {{routineName}}",

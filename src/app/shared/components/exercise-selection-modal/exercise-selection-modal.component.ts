@@ -396,4 +396,11 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     getMuscleById(id: string): Muscle | null {
         return this.translatedMuscles().find(m => m.id === id) || null;
     }
+
+    getSelectionIndex(item: Exercise): number | null {
+        if (!this.isMultiSelect()) return null;
+        const selectedIds = this.selectedExerciseIds();
+        const idx = selectedIds.findIndex(id => id === item.id);
+        return idx !== -1 ? idx + 1 : null;
+    }
 }

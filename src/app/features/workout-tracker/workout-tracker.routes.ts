@@ -1,7 +1,7 @@
 // src/app/features/workout-tracker/workout-tracker.routes.ts
 import { Routes } from '@angular/router';
 import { RoutineListComponent } from './routine-list';
-import { WorkoutBuilderComponent } from './workout-builder'; // This now serves multiple purposes
+import { BuilderMode, WorkoutBuilderComponent } from './workout-builder'; // This now serves multiple purposes
 import { WorkoutSummaryComponent } from './workout-summary/workout-summary';
 import { KettleBellWorkoutTrackerComponent } from '../../kb-workout-tracker/kb-workout-tracker';
 import { CompactWorkoutPlayerComponent } from './compact-workout-player/compact-workout-player.component';
@@ -31,7 +31,7 @@ export const WORKOUT_TRACKER_ROUTES: Routes = [
   {
     path: 'routine/edit/:routineId', // Changed path for clarity
     component: WorkoutBuilderComponent,
-    data: { mode: 'routineBuilder', isNew: false,showPausedWorkoutBanner: false, animation: 'RoutineEditDetail' }, // Pass mode and isNew
+    data: { mode: BuilderMode.routineBuilder, isNew: false,showPausedWorkoutBanner: false, animation: 'RoutineEditDetail' }, // Pass mode and isNew
     title: 'Edit Routine'
   },
   {

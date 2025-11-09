@@ -29,6 +29,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ExerciseSelectionModalComponent } from '../../../shared/components/exercise-selection-modal/exercise-selection-modal.component';
 import { Exercise } from '../../../core/models/exercise.model';
 import { ExerciseService } from '../../../core/services/exercise.service';
+import { BuilderMode, WorkoutBuilderComponent } from '../../workout-tracker/workout-builder';
 import { distanceToExact, durationToExact, genRepsTypeFromRepsNumber, repsToExact, restToExact, weightToExact } from '../../../core/services/workout-helper.service';
 import { WorkoutFormService } from '../../../core/services/workout-form.service';
 import { AlertInput } from '../../../core/models/alert.model';
@@ -36,6 +37,8 @@ import { WorkoutUtilsService } from '../../../core/services/workout-utils.servic
 import { SetMetricInputComponent } from '../../../shared/set-metric-input/set-metric-input.component';
 import { UnitsService } from '../../../core/services/units.service';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
+import { ShatterableDirective } from '../../../animations/shatterable.directive';
+import { ShatterTriggerDirective } from '../../../animations/shatter-trigger.directive';
 
 interface DayOption {
     value: number;
@@ -61,7 +64,8 @@ interface ProgramGoal { value: Routine['goal'], label: string }
         IconComponent,
         TranslateModule,
         ExerciseSelectionModalComponent,
-        SetMetricInputComponent
+        WorkoutBuilderComponent,
+        ShatterableDirective, ShatterTriggerDirective
     ],
     templateUrl: './training-program-builder.html',
     styleUrls: ['./training-program-builder.scss']
@@ -138,8 +142,14 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
     filteredAvailableRoutines = computed(() => {
         const term = this.modalSearchTerm().toLowerCase();
-        if (!term) return this.availableRoutines;
-        return this.availableRoutines.filter(r => r.name.toLowerCase().includes(term));
+        // Combine availableRoutines and temporaryCustomRoutines (avoid duplicates by id)
+        const tempRoutines = Array.from(this.temporaryCustomRoutines.values());
+        const allRoutines = [
+            ...this.availableRoutines,
+            ...tempRoutines.filter(tr => !this.availableRoutines.some(r => r.id === tr.id))
+        ];
+        const filtered = !term ? allRoutines : allRoutines.filter(r => r.name.toLowerCase().includes(term));
+        return filtered.sort((a, b) => a.name.localeCompare(b.name));
     });
 
 
@@ -750,6 +760,30 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
         const formValue = this.programForm.getRawValue();
 
+        // --- NEW: Persist temporary custom routines to the database ---
+        const persistencePromises: Promise<any>[] = [];
+        for (const [key, routine] of this.temporaryCustomRoutines.entries()) {
+            if (routine.isHidden) {
+                // Unhide the routine and persist it
+                routine.isHidden = false;
+                const result = this.workoutService.addRoutine(routine);
+                if (result instanceof Promise) {
+                    persistencePromises.push(result);
+                }
+            }
+        }
+
+        // Wait for all temporary routines to be persisted
+        if (persistencePromises.length > 0) {
+            try {
+                await Promise.all(persistencePromises);
+                this.toastService.success(`${persistencePromises.length} custom routine(s) saved.`, 2000, 'Success');
+            } catch (error) {
+                this.toastService.error('Failed to save custom routines.', 0, 'Save Error');
+                return;
+            }
+        }
+
         // --- NEW: Custom structural validation ---
         if (formValue.programType === 'linear') {
             if (!formValue.weeks || formValue.weeks.length === 0) {
@@ -1244,6 +1278,12 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     exerciseModalTarget: { weekIndex?: number, dayIndex: number } | null = null;
     selectedExercisesForModal: WorkoutExercise[] = [];
 
+    // --- NEW: Custom Workout Modal State ---
+    isCustomWorkoutModalOpen = signal(false);
+    customRoutineToEdit: Routine | null = null;
+    customWorkoutModalTarget: { weekIndex?: number, dayIndex: number } | null = null;
+    temporaryCustomRoutines = new Map<string, Routine>(); // Key: 'weekIndex-dayIndex' or 'dayIndex'
+
     openExerciseSelectionModal(dayIndex: number, weekIndex?: number) {
         this.exerciseModalTarget = { weekIndex, dayIndex };
         this.selectedExercisesForModal = [];
@@ -1254,6 +1294,50 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         this.isExerciseModalOpen.set(false);
         this.exerciseModalTarget = null;
         this.selectedExercisesForModal = [];
+    }
+
+    builderMode = BuilderMode;
+
+    openCustomWorkoutModal(dayIndex: number, weekIndex?: number) {
+        this.customWorkoutModalTarget = { weekIndex, dayIndex };
+        this.isCustomWorkoutModalOpen.set(true);
+    }
+
+    closeCustomWorkoutModal() {
+        this.isCustomWorkoutModalOpen.set(false);
+        this.customWorkoutModalTarget = null;
+    }
+
+    handleCustomRoutineConfirmed(routine: Routine) {
+        if (!this.customWorkoutModalTarget) return;
+        const { weekIndex, dayIndex } = this.customWorkoutModalTarget;
+        const cacheKey = weekIndex !== undefined ? `${weekIndex}-${dayIndex}` : `${dayIndex}`;
+
+        // Store the temporary routine
+        this.temporaryCustomRoutines.set(cacheKey, routine);
+        this.updateRoutineNameInSchedule(routine);
+        // Get the day control and update it
+        let dayControl: FormGroup | undefined;
+        if (weekIndex !== undefined) {
+            dayControl = this.getWeekScheduleDayControl(weekIndex, dayIndex);
+        } else {
+            dayControl = this.scheduleFormArray.at(dayIndex) as FormGroup;
+        }
+
+        if (dayControl) {
+            dayControl.patchValue({
+                routineId: routine.id,
+                routineName: routine.name
+            });
+        }
+
+        // Add to custom routines list for reference
+        if (!this.customRoutines.find(r => r.id === routine.id)) {
+            this.customRoutines.push(routine);
+        }
+
+        this.toastService.success(`Custom routine "${routine.name}" created!`, 3000, 'Success');
+        this.closeCustomWorkoutModal();
     }
 
     async selectExercisesForDay(selectedExercises: Exercise[]) {
@@ -1331,12 +1415,22 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         this.closeExerciseSelectionModal();
     }
 
-    isCustomRoutine(routineId: string): boolean {
-        return routineId.startsWith('custom-');
+isCustomRoutine(routineId: string): boolean {
+  return Array.from(this.temporaryCustomRoutines.values()).some(r => r.id === routineId);
+}
+
+    editCustomRoutine(routineId: string, dayIndex: number, weekIndex?: number): void {
+        const routine = Array.from(this.temporaryCustomRoutines.values()).find(r => r.id === routineId);
+        if (!routine) return;
+
+        this.customWorkoutModalTarget = { weekIndex, dayIndex };
+        this.customRoutineToEdit = routine; // Store for passing to modal
+        this.isCustomWorkoutModalOpen.set(true);
     }
 
     getExercisesForDay(routineId: string): WorkoutExercise[] {
-        const routine = this.availableRoutines.find(r => r.id === routineId);
+        let routine = this.availableRoutines.find(r => r.id === routineId)
+            || Array.from(this.temporaryCustomRoutines.values()).find(r => r.id === routineId);
         return routine?.exercises || [];
     }
 
@@ -1508,6 +1602,25 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         ).subscribe(translatedExercises => {
             // The component's master list of exercises is now translated
             this.availableExercises = translatedExercises;
+        });
+    }
+
+    private updateRoutineNameInSchedule(routine: Routine): void {
+        // Update cycled program days
+        this.scheduleFormArray.controls.forEach((dayCtrl: AbstractControl) => {
+            if (dayCtrl.get('routineId')?.value === routine.id) {
+                dayCtrl.patchValue({ routineName: routine.name });
+            }
+        });
+
+        // Update linear program weeks/days
+        this.weeksFormArray.controls.forEach((weekCtrl: AbstractControl) => {
+            const scheduleArray = (weekCtrl.get('schedule') as FormArray);
+            scheduleArray.controls.forEach((dayCtrl: AbstractControl) => {
+                if (dayCtrl.get('routineId')?.value === routine.id) {
+                    dayCtrl.patchValue({ routineName: routine.name });
+                }
+            });
         });
     }
 }
