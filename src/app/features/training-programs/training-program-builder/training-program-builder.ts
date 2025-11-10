@@ -133,10 +133,40 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         return [];
     });
 
+    getCurrentDayOptionsForWeek(weekIndex: number, currentValue?: number): DayOption[] {
+        const weekSchedule = this.getWeekScheduleGroups(weekIndex);
+        const usedDays = new Set(weekSchedule.map(ctrl => ctrl.get('dayOfWeek')?.value));
+        // Remove the current value from the used set so it stays available
+        if (currentValue !== undefined && currentValue !== null) {
+            usedDays.delete(currentValue);
+        }
+        return this.dayOfWeekOptions.filter(opt => !usedDays.has(opt.value));
+    }
+
     currentDayOptions = computed<DayOption[]>(() => {
-        // --- FIX 3: Depend on the new signal ---
+        const programType = this.programForm.get('programType')?.value;
         const cycleLength = this.cycleLengthSignal();
-        return (cycleLength && cycleLength > 0) ? this.cycleDayOptions() : this.dayOfWeekOptions;
+
+        // For linear programs, this will be handled per week (see below)
+        if (programType === 'linear') {
+            // Return all dayOfWeekOptions by default; filter in the week context if needed
+            return this.dayOfWeekOptions;
+        }
+
+        // For cycled programs
+        if (cycleLength && cycleLength > 0) {
+            // Get used days in the schedule
+            const usedDays = new Set(this.scheduleFormArray.controls.map(ctrl => ctrl.get('dayOfWeek')?.value));
+            // Only return unused days
+            return Array.from({ length: cycleLength }, (_, i) => ({
+                value: i + 1,
+                label: `Day ${i + 1}`
+            })).filter(opt => !usedDays.has(opt.value));
+        }
+
+        // Default: weekly schedule, filter out used days
+        const usedDays = new Set(this.scheduleFormArray.controls.map(ctrl => ctrl.get('dayOfWeek')?.value));
+        return this.dayOfWeekOptions.filter(opt => !usedDays.has(opt.value));
     });
 
 
@@ -672,12 +702,9 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         }
 
         this.cdr.detectChanges();
-
+        const dayId = newDayGroup?.get('id')?.value;
         setTimeout(() => {
-            const elements = document.querySelectorAll('.scheduled-day-card');
-            if (elements.length > 0) {
-                elements[elements.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+            this.scrollToDayHeader(dayId);
         }, 50);
     }
 
@@ -763,13 +790,19 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         // --- NEW: Persist temporary custom routines to the database ---
         const persistencePromises: Promise<any>[] = [];
         for (const [key, routine] of this.temporaryCustomRoutines.entries()) {
-            if (routine.isHidden) {
-                // Unhide the routine and persist it
-                routine.isHidden = false;
-                const result = this.workoutService.addRoutine(routine);
-                if (result instanceof Promise) {
-                    persistencePromises.push(result);
-                }
+            routine.isHidden = false;
+            // Check if the routine already exists in availableRoutines (i.e., already persisted)
+            const existing = this.availableRoutines.find(r => r.id === routine.id);
+            let result: Promise<any> | Routine;
+            if (existing) {
+                // Update the existing routine
+                result = this.workoutService.updateRoutine(routine);
+            } else {
+                // Add as new routine
+                result = this.workoutService.addRoutine(routine);
+            }
+            if (result instanceof Promise) {
+                persistencePromises.push(result);
             }
         }
 
@@ -1299,6 +1332,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     builderMode = BuilderMode;
 
     openCustomWorkoutModal(dayIndex: number, weekIndex?: number) {
+        this.customRoutineToEdit = null;
         this.customWorkoutModalTarget = { weekIndex, dayIndex };
         this.isCustomWorkoutModalOpen.set(true);
     }
@@ -1415,9 +1449,9 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         this.closeExerciseSelectionModal();
     }
 
-isCustomRoutine(routineId: string): boolean {
-  return Array.from(this.temporaryCustomRoutines.values()).some(r => r.id === routineId);
-}
+    isCustomRoutine(routineId: string): boolean {
+        return Array.from(this.temporaryCustomRoutines.values()).some(r => r.id === routineId);
+    }
 
     editCustomRoutine(routineId: string, dayIndex: number, weekIndex?: number): void {
         const routine = Array.from(this.temporaryCustomRoutines.values()).find(r => r.id === routineId);
@@ -1622,6 +1656,31 @@ isCustomRoutine(routineId: string): boolean {
                 }
             });
         });
+    }
+    public expandedExerciseLists: { [dayId: string]: boolean } = {};
+
+    toggleExerciseList(dayId: string) {
+        this.expandedExerciseLists[dayId] = !this.expandedExerciseLists[dayId];
+        setTimeout(() => {
+            if (this.expandedExerciseLists[dayId]) {
+                // Just expanded: scroll to the exercise list
+                const element = document.getElementById(`exercise-list-${dayId}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            } else {
+                // Just collapsed: scroll to the day header/card
+                this.scrollToDayHeader(dayId);
+            }
+        }, 100);
+    }
+
+    // generate snippet for scrolling into day-expanded-${dayId} when expandedExerciseLists[dayId] is toggled
+    scrollToDayHeader(dayId: string) {
+        const header = document.getElementById(`day-expanded-${dayId}`);
+        if (header) {
+            header.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     }
 }
 

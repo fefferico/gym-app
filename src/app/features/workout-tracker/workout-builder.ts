@@ -343,14 +343,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   categories = toSignal(this.workoutCategoryService.getTranslatedCategories(), { initialValue: [] });
   ngOnInit(): void {
     console.log('WorkoutBuilderComponent mode:', this.mode, 'context:', this.context);
-
+    window.scrollTo(0, 0);
     this.isRoutineMode = this.mode === BuilderMode.routineBuilder || this.mode === BuilderMode.customProgramEntryBuilder;
 
     // Populate the list for the builder context
     this.availableRepSchemes = this.workoutUtilsService.getAvailableRepsSchemes('builder');
     this.spinnerService.hide();
 
-    if (isPlatformBrowser(this.platformId)) { window.scrollTo(0, 0); }
     this.loadAvailableExercises(); // For exercise selection modal
 
     this.subscriptions.add(

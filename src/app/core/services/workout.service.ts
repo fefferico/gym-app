@@ -200,11 +200,11 @@ export class WorkoutService {
     return this.routinesSubject.getValue().find(r => r.id === id);
   }
 
-  addRoutine(newRoutineData: Omit<Routine, 'id'>): Routine {
+  addRoutine(newRoutineData: Omit<Routine, 'id'> & { id?: string }): Routine {
     const currentRoutines = this.routinesSubject.getValue();
     const newRoutine: Routine = {
       ...newRoutineData,
-      id: uuidv4(),
+      id: newRoutineData.id || uuidv4(),
     };
     const updatedRoutines = [...currentRoutines, newRoutine];
     this.saveRoutinesToStorage(updatedRoutines);

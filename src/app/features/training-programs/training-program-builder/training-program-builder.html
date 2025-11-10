@@ -257,19 +257,20 @@
 
                 <div *ngIf="scheduleFormArray.length > 0" cdkDropList [cdkDropListData]="scheduleFormGroups"
                     (cdkDropListDropped)="onScheduleDrop($event)" formArrayName="schedule" class="space-y-4">
-                    <div *ngFor="let dayCtrl of scheduleFormArray.controls; let dayIndex = index" [formGroupName]="dayIndex" cdkDrag
+                    <div *ngFor="let dayCtrl of scheduleFormArray.controls; let dayIndex = index"
+                        [id]="'day-expanded-' + dayCtrl.get('id')?.value" [formGroupName]="dayIndex" cdkDrag
                         [cdkDragDisabled]="isViewMode" appShatterable
                         class="scheduled-day-card p-3 border rounded-md shadow-sm bg-gray-50 dark:bg-gray-600/70 dark:border-gray-600 relative">
                         <!-- Card header with toggle -->
-                        <div class="flex justify-between items-start">
+                        <div class="flex justify-between items-start cursor-pointer"  (click)="toggleDay(dayCtrl.get('id')?.value)">
                             <div class="flex items-center flex-shrink-0">
                                 <div *ngIf="!isViewMode" cdkDragHandle
                                     class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 cursor-grab"
                                     title="Drag to reorder day">
                                     <app-icon name="drag"></app-icon>
                                 </div>
-                                <button type="button" (click)="toggleDay(dayCtrl.get('id')?.value)"
-                                    class="p-1 -ml-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-500 focus:outline-none">
+                                <button type="button"
+                                    class="p-1 -ml-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-500 focus:outline-none inline-flex">
                                     <app-icon
                                         [name]="isDayExpanded(dayCtrl.get('id')?.value) ? 'chevron-down' : 'chevron-right'"
                                         class="w-5 h-5 text-gray-500 dark:text-gray-400"></app-icon>
@@ -277,7 +278,7 @@
                             </div>
                             <button appShatterTrigger *ngIf="!isViewMode" type="button" appPress
                                 (shortPress)="removeScheduledDay(dayIndex)" title="Remove DAY"
-                                class="flex px-1 items-center hover:text-red-700 dark:hover:text-red-300 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white text-sm font-medium">
+                                class="flex px-2 items-center hover:text-red-700 dark:hover:text-red-300 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white text-sm font-medium">
                                 <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon><span>REMOVE DAY</span>
                             </button>
                         </div>
@@ -291,7 +292,9 @@
                                 <label [for]="'dayName-cycled-' + dayIndex" class="sr-only">Day Name</label>
                                 <input type="text" [id]="'dayName-cycled-' + dayIndex" formControlName="dayName"
                                     [placeholder]="'programBuilder.schedule.dayNamePlaceholder' | translate"
-                                    class="text-lg font-bold bg-transparent border-0 border-b-2 border-gray-300 dark:border-gray-500 focus:ring-0 focus:border-primary dark:text-gray-100 p-1 w-full sm:w-1/2">
+                                    class="text-lg font-bold bg-transparent focus:ring-0 focus:border-primary dark:text-gray-100 p-1 w-full sm:w-1/2"
+                                    [ngClass]="{
+'border-0 border-b-2 border-gray-300 dark:border-gray-500': !isViewMode                                    }">
                             </h4>
                         </div>
                         <!-- ========================================================== -->
@@ -310,8 +313,11 @@
                                     </label>
                                     <select [id]="'dayOfWeek-' + dayIndex" formControlName="dayOfWeek"
                                         class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-500 dark:text-gray-300">
-                                        <option *ngFor="let dayOpt of currentDayOptions()" [value]="dayOpt.value">{{
-                                            dayOpt.label }}</option>
+                                        <!-- <option *ngFor="let dayOpt of currentDayOptions()" [value]="dayOpt.value">{{
+                                            dayOpt.label }}</option> -->
+                                        <option *ngFor="let opt of currentDayOptions()" [value]="opt.value">
+                                            {{ opt.label }}
+                                        </option>
                                     </select>
                                     <div *ngIf="getScheduleDayControl(dayIndex).get('dayOfWeek')?.invalid && getScheduleDayControl(dayIndex).get('dayOfWeek')?.touched"
                                         class="text-red-500 dark:text-red-400 text-xs mt-1">
@@ -327,7 +333,9 @@
                                         <input type="text" [id]="'routineName-' + dayIndex" readonly
                                             [value]="getScheduleDayControl(dayIndex).get('routineName')?.value || (getScheduleDayControl(dayIndex).get('routineId')?.value ? ('programBuilder.schedule.loadingRoutine' | translate) : ('programBuilder.schedule.noRoutine' | translate))"
                                             class="flex-1 min-w-0 block w-full px-3 py-2 text-sm rounded-none rounded-l-md border-gray-300 dark:border-gray-200 dark:bg-gray-400 cursor-default focus:outline-none focus:ring-0 focus:border-gray-300 dark:text-gray-800 font-medium"
-                                            [ngClass]="{'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 placeholder-red-400': getScheduleDayControl(dayIndex).get('routineId')?.invalid && (getScheduleDayControl(dayIndex).get('routineId')?.touched || submitted), 'rounded-r-md':isViewMode}">
+                                            [ngClass]="{
+                                                'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 placeholder-red-400': getScheduleDayControl(dayIndex).get('routineId')?.invalid && (getScheduleDayControl(dayIndex).get('routineId')?.touched || submitted), 
+                                                'rounded-r-md':isViewMode}">
                                         <button *ngIf="!isViewMode" type="button" appPress
                                             (shortPress)="openRoutineSelectionModal(dayIndex)"
                                             class="inline-flex items-center px-3 py-2 border border-l-0 rounded-r-md text-sm font-medium transition-colors duration-150"
@@ -343,13 +351,15 @@
                                                 'programBuilder.schedule.select') | translate }}
                                             </span>
                                         </button>
-                                        <button *ngIf="!isViewMode" type="button" (click)="openCustomWorkoutModal(dayIndex)"
-                                            class="ml-1 inline-flex items-center px-3 py-2 border rounded-md text-sm font-medium transition-colors duration-150 bg-purple-50 dark:bg-purple-700 text-purple-700 dark:text-purple-100 hover:bg-purple-100 dark:hover:bg-purple-600">
+                                        <button *ngIf="!isViewMode" type="button"
+                                            (click)="openCustomWorkoutModal(dayIndex)"
+                                            class="ml-1 inline-flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 bg-purple-50 dark:bg-purple-700 text-purple-700 dark:text-purple-100 hover:bg-purple-100 dark:hover:bg-purple-600">
                                             <app-icon name="plus" class="h-4 w-4"></app-icon>
                                             <span class="ml-1">{{ 'trainingPrograms.adHocRoutine' | translate }}</span>
                                         </button>
                                         <button *ngIf="isCustomRoutine(dayCtrl.get('routineId')?.value) && !isViewMode"
-                                            type="button" (click)="editCustomRoutine(dayCtrl.get('routineId')?.value, dayIndex)"
+                                            type="button"
+                                            (click)="editCustomRoutine(dayCtrl.get('routineId')?.value, dayIndex)"
                                             class="ml-2 px-2 py-1 rounded bg-yellow-100 text-yellow-700 text-xs font-medium hover:bg-yellow-200">
                                             <app-icon name="edit" class="h-4 w-4 mr-1"></app-icon>
                                             {{ 'common.edit' | translate }}
@@ -380,14 +390,23 @@
                             <!-- Show exercises if this day is a custom routine -->
                             <div *ngIf="dayCtrl.get('routineId')?.value">
                                 <!-- *ngIf="dayCtrl.get('routineId')?.value && isCustomRoutine(dayCtrl.get('routineId')?.value)"> -->
-                                <div
-                                    class="mt-2 text-sm bg-gray-100 dark:bg-gray-700 p-2 rounded-md text-gray-800 dark:text-gray-200">
-                                    <span class="font-semibold">{{ 'exerciseList.title' | translate }}</span>
-                                    <ng-container
-                                        *ngFor="let ex of getExercisesForDay(dayCtrl.get('routineId')?.value); let exIndex = index">
+                                <div class="mt-2 text-sm bg-gray-100 dark:bg-gray-700 p-2 rounded-md text-gray-800 dark:text-gray-200"
+                                    [id]="'exercise-list-' + dayCtrl.get('id')?.value">
+                                    <button type="button"
+                                        class="flex items-center gap-2 font-semibold text-primary hover:underline mb-2"
+                                        (click)="toggleExerciseList(dayCtrl.get('id')?.value)">
+                                        <app-icon
+                                            [name]="expandedExerciseLists[dayCtrl.get('id')?.value] ? 'chevron-down' : 'chevron-right'"
+                                            class="w-4 h-4"></app-icon>
+                                        {{ 'exerciseList.title' | translate }}
+                                    </button>
+                                    <ul *ngIf="expandedExerciseLists[dayCtrl.get('id')?.value]">
                                         <ng-container
-                                            *ngTemplateOutlet="exerciseSetDisplay; context: { ex: ex }"></ng-container>
-                                    </ng-container>
+                                            *ngFor="let ex of getExercisesForDay(dayCtrl.get('routineId')?.value); let exIndex = index">
+                                            <ng-container
+                                                *ngTemplateOutlet="exerciseSetDisplay; context: { ex: ex }"></ng-container>
+                                        </ng-container>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
@@ -448,7 +467,7 @@
                                     </svg>
                                 </div>
                                 <button type="button" (click)="toggleWeek(weekCtrl.get('id')?.value)"
-                                    class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none">
+                                    class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none inline-flex">
                                     <app-icon
                                         [name]="isWeekExpanded(weekCtrl.get('id')?.value) ? 'chevron-down' : 'chevron-right'"
                                         class="w-6 h-6 text-gray-500 dark:text-gray-400"></app-icon>
@@ -459,7 +478,9 @@
                                 <label [for]="'weekName-' + weekIndex" class="sr-only">Week Name</label>
                                 <input type="text" [id]="'weekName-' + weekIndex" formControlName="name"
                                     [placeholder]="'programBuilder.weeks.weekNamePlaceholder' | translate"
-                                    class="text-lg font-bold bg-transparent border-0 border-b-2 border-gray-300 dark:border-gray-500 focus:ring-0 focus:border-primary dark:text-gray-100 p-1 w-full sm:w-1/2">
+                                    class="text-lg font-bold bg-transparent focus:ring-0 focus:border-primary dark:text-gray-100 p-1 w-full sm:w-1/2"
+                                    [ngClass]="{
+'border-0 border-b-2 border-gray-300 dark:border-gray-500': !isViewMode                                    }">
                             </div>
                             <button *ngIf="!isViewMode" type="button" appPress (shortPress)="removeWeek(weekIndex)"
                                 title="Remove WEEK"
@@ -477,17 +498,18 @@
                                 class="space-y-4">
                                 <div *ngFor="let dayCtrl of getWeekScheduleGroups(weekIndex); let dayIndex = index"
                                     [formGroupName]="dayIndex" cdkDrag [cdkDragDisabled]="isViewMode" appShatterable
+                                    [id]="'day-expanded-' + dayCtrl.get('id')?.value"
                                     class="scheduled-day-card p-3 border rounded-md shadow-sm bg-white dark:bg-gray-600/70 dark:border-gray-600 relative">
                                     <!-- Day card header with toggle -->
-                                    <div class="flex justify-between items-start">
+                                    <div class="flex justify-between items-start cursor-pointer" (click)="toggleDay(dayCtrl.get('id')?.value)">
                                         <div class="flex items-center flex-shrink-0">
                                             <div *ngIf="!isViewMode" cdkDragHandle
                                                 class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 cursor-grab"
                                                 title="Drag to reorder day">
                                                 <app-icon name="drag"></app-icon>
                                             </div>
-                                            <button type="button" (click)="toggleDay(dayCtrl.get('id')?.value)"
-                                                class="p-1 -ml-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-500 focus:outline-none">
+                                            <button type="button"
+                                                class="p-1 -ml-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-500 focus:outline-none inline-flex">
                                                 <app-icon
                                                     [name]="isDayExpanded(dayCtrl.get('id')?.value) ? 'chevron-down' : 'chevron-right'"
                                                     class="w-5 h-5 text-gray-500 dark:text-gray-400"></app-icon>
@@ -495,7 +517,7 @@
                                         </div>
                                         <button appShatterTrigger *ngIf="!isViewMode" type="button" appPress
                                             (shortPress)="removeScheduledDay(dayIndex, weekIndex)" title="Remove DAY"
-                                            class="flex p-1 items-center hover:text-red-700 dark:hover:text-red-300 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white">
+                                            class="flex p-2 items-center hover:text-red-700 dark:hover:text-red-300 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white">
                                             <app-icon name="cancel" class="h-5 w-5"></app-icon>
                                         </button>
                                     </div>
@@ -505,7 +527,9 @@
                                             <label [for]="'dayName-' + dayIndex" class="sr-only">Day Name</label>
                                             <input type="text" [id]="'dayName-' + dayIndex" formControlName="dayName"
                                                 [placeholder]="'programBuilder.schedule.dayNamePlaceholder' | translate"
-                                                class="text-lg font-bold bg-transparent border-0 border-b-2 border-gray-300 dark:border-gray-500 focus:ring-0 focus:border-primary dark:text-gray-100 p-1 w-full sm:w-1/2">
+                                                class="text-lg font-bold bg-transparent focus:ring-0 focus:border-primary dark:text-gray-100 p-1 w-full sm:w-1/2"
+                                                [ngClass]="{
+'border-0 border-b-2 border-gray-300 dark:border-gray-500': !isViewMode                                    }">
                                         </h4>
                                     </div>
 
@@ -520,9 +544,14 @@
                                                 <select [id]="'dayOfWeek-' + weekIndex + '-' + dayIndex"
                                                     formControlName="dayOfWeek"
                                                     class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm dark:bg-gray-700 dark:border-gray-500">
-                                                    <option *ngFor="let dayOpt of dayOfWeekOptions"
+                                                    <!-- <option *ngFor="let dayOpt of dayOfWeekOptions"
                                                         [value]="dayOpt.value">
-                                                        {{ dayOpt.label }}</option>
+                                                        {{ dayOpt.label }}</option> -->
+                                                    <option
+                                                        *ngFor="let opt of getCurrentDayOptionsForWeek(weekIndex, dayCtrl.get('dayOfWeek')?.value)"
+                                                        [value]="opt.value">
+                                                        {{ opt.label }}
+                                                    </option>
                                                 </select>
                                             </div>
                                             <!-- Routine Selection -->
@@ -534,7 +563,9 @@
                                                     <input type="text"
                                                         [id]="'routineName-' + weekIndex + '-' + dayIndex" readonly
                                                         [value]="getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.value || ('programBuilder.schedule.noRoutine' | translate)"
-                                                        class="flex-1 block w-full px-3 py-2 text-sm rounded-l-md dark:bg-gray-400 cursor-default dark:text-gray-800 font-medium">
+                                                        class="flex-1 block w-full px-3 py-2 text-sm rounded-l-md dark:bg-gray-400 cursor-default dark:text-gray-800 font-medium"
+                                                        [ngClass]="{
+                                                            'rounded-r-md':isViewMode}">
                                                     <button *ngIf="!isViewMode" type="button" appPress
                                                         (shortPress)="openRoutineSelectionModal(weekIndex, dayIndex)"
                                                         class="inline-flex items-center px-3 py-2 border border-l-0 rounded-r-md text-sm transition-colors duration-150 border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-700 text-green-700 dark:text-green-100 hover:bg-green-100 dark:hover:bg-green-600 font-medium "
@@ -552,8 +583,8 @@
                                                     </button>
                                                     <button *ngIf="!isViewMode" type="button"
                                                         (click)="openCustomWorkoutModal(dayIndex, weekIndex)"
-                                                        class="ml-1 inline-flex items-center px-3 py-2 border rounded-md text-sm font-medium transition-colors duration-150 bg-purple-50 dark:bg-purple-700 text-purple-700 dark:text-purple-100 hover:bg-purple-100 dark:hover:bg-purple-600">
-                                                        <app-icon name="plus" class="h-4 w-4"></app-icon>
+                                                        class="ml-1 inline-flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 bg-purple-50 dark:bg-purple-700 text-purple-700 dark:text-purple-100 hover:bg-purple-100 dark:hover:bg-purple-600">
+                                                        <app-icon name="plus-circle" class="h-4 w-4"></app-icon>
                                                         <span class="ml-1">{{ 'trainingPrograms.adHocRoutine' |
                                                             translate }}</span>
                                                     </button>
@@ -580,14 +611,23 @@
                                         <!-- Show exercises if this day is a custom routine -->
                                         <div #customRoutine *ngIf="dayCtrl.get('routineId')?.value">
                                             <!-- *ngIf="dayCtrl.get('routineId')?.value && isCustomRoutine(dayCtrl.get('routineId')?.value)"> -->
-                                            <div class="mt-2">
-                                                <span class="font-semibold">{{ 'exerciseList.title' | translate
-                                                    }}</span>
-                                                <ng-container
-                                                    *ngFor="let ex of getExercisesForDay(dayCtrl.get('routineId')?.value); let exIndex = index">
+                                            <div class="mt-2 text-sm bg-gray-100 dark:bg-gray-700 p-2 rounded-md text-gray-800 dark:text-gray-200"
+                                                [id]="'exercise-list-' + dayCtrl.get('id')?.value">
+                                                <button type="button"
+                                                    class="flex items-center gap-2 font-semibold text-primary hover:underline mb-2"
+                                                    (click)="toggleExerciseList(dayCtrl.get('id')?.value)">
+                                                    <app-icon
+                                                        [name]="expandedExerciseLists[dayCtrl.get('id')?.value] ? 'chevron-down' : 'chevron-right'"
+                                                        class="w-4 h-4"></app-icon>
+                                                    {{ 'exerciseList.title' | translate }}
+                                                </button>
+                                                <ul *ngIf="expandedExerciseLists[dayCtrl.get('id')?.value]">
                                                     <ng-container
-                                                        *ngTemplateOutlet="exerciseSetDisplay; context: { ex: ex }"></ng-container>
-                                                </ng-container>
+                                                        *ngFor="let ex of getExercisesForDay(dayCtrl.get('routineId')?.value); let exIndex = index">
+                                                        <ng-container
+                                                            *ngTemplateOutlet="exerciseSetDisplay; context: { ex: ex }"></ng-container>
+                                                    </ng-container>
+                                                </ul>
                                             </div>
                                         </div>
                                     </div>
@@ -616,7 +656,8 @@
                         </div>
                         <!-- Collapsed Week Preview -->
                         <div *ngIf="!isWeekExpanded(weekCtrl.get('id')?.value)"
-                            class="mt-2 pl-4 border-l-2 border-gray-200 dark:border-gray-600">
+                            (click)="toggleWeek(weekCtrl.get('id')?.value)"
+                            class="mt-2 pl-4 border-l-2 border-gray-200 dark:border-gray-600 cursor-pointer">
                             <ul class="list-none space-y-1">
                                 <li *ngFor="let day of getWeekScheduleGroups(weekIndex)"
                                     class="text-sm text-gray-600 dark:text-gray-300">
@@ -966,11 +1007,8 @@
         </div>
         <!-- Modal Body (Full Height, Scrollable) -->
         <div class="flex-1 overflow-y-auto">
-            <app-workout-builder
-                [context]="'modal'"
-                [mode]="builderMode.customProgramEntryBuilder"
-                [initialRoutine]="customRoutineToEdit"
-                (routineConfirmed)="handleCustomRoutineConfirmed($event)"
+            <app-workout-builder [context]="'modal'" [mode]="builderMode.customProgramEntryBuilder"
+                [initialRoutine]="customRoutineToEdit" (routineConfirmed)="handleCustomRoutineConfirmed($event)"
                 (modalClose)="closeCustomWorkoutModal()">
             </app-workout-builder>
         </div>
@@ -984,10 +1022,10 @@
         <div>
             <div class="font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                 {{ ex.exerciseName }}
-                <span *ngIf="isExerciseCardioOnly(ex.exerciseId)"
+                <!-- <span *ngIf="isExerciseCardioOnly(ex.exerciseId)"
                     class="ml-2 px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-medium">Cardio</span>
                 <span *ngIf="!isExerciseCardioOnly(ex.exerciseId)"
-                    class="ml-2 px-2 py-0.5 rounded bg-green-100 text-green-700 text-xs font-medium">Strength</span>
+                    class="ml-2 px-2 py-0.5 rounded bg-green-100 text-green-700 text-xs font-medium">Strength</span> -->
             </div>
             <div class="text-xs text-gray-600 dark:text-gray-300 mt-1 flex flex-wrap gap-2">
                 <ng-container *ngFor="let set of ex.sets; let s = index">

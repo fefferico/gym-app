@@ -398,7 +398,7 @@ export class WorkoutGeneratorService {
         const sets: ExerciseTargetSetParams[] = Array.from({ length: numSets }, () => ({
             id: uuidv4(),
             type: 'standard',
-            targetRest: rest,
+            targetRest: restToExact(rest),
             ...templateSet, // Spread the category-specific properties
         } as ExerciseTargetSetParams));
 
