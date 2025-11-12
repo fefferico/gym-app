@@ -175,7 +175,7 @@ export class AlertService {
         cancelText?: string,
         customButtons: AlertButton[] = [],
         isCancelVisible: boolean = true
-    ): Promise<{ [key: string]: string | number | boolean } | null> {
+    ): Promise<{ [key: string]: string | number | boolean | number[] } | null> {
         const isDesktop = isPlatformBrowser(this.platformId) && !('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
         const finalOkText = okText || this.translate.instant('alertService.buttons.ok');

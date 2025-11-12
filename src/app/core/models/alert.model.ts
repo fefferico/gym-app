@@ -16,10 +16,10 @@ export interface AlertButton {
 }
 
 export interface AlertInput {
-  type?: 'text' | 'number' | 'email' | 'password' | 'search' | 'tel' | 'url' | 'date' | 'textarea' | 'checkbox' | 'radio'; // Add more as needed
+  type?: 'text' | 'number' | 'email' | 'password' | 'search' | 'tel' | 'url' | 'date' | 'textarea' | 'checkbox' | 'radio' | 'select'; // Add more as needed
   name: string; // Will be the key in the returned data object
   placeholder?: string;
-  value?: string | number | boolean;
+  value?: string | number | boolean | number[];
   label?: string; // Optional label for the input
   id?: string; // Optional id for the input element
   min?: number | string; // For number/date types
@@ -28,6 +28,8 @@ export interface AlertInput {
   // Add more attributes as needed: pattern, step, rows (for textarea), etc.
   attributes?: any;
   autofocus?: boolean;
+  options?: { label: string; value: string | number | boolean }[]; // For radio (and potentially select) types
+  checked?: boolean;
 }
 
 export interface AlertOptions {

@@ -78,7 +78,7 @@ export class ExerciseService {
   protected exerciseCategories: HydratedCategory[];
 
   constructor() {
-      this.exerciseCategories = this.exerciseCategoryService.getHydratedCategories();
+    this.exerciseCategories = this.exerciseCategoryService.getHydratedCategories();
 
     this.isLoadingExercisesSubject.next(true);
     const exercisesFromStorage = this._loadExercisesFromStorage();
@@ -100,27 +100,45 @@ export class ExerciseService {
     try {
       // Cast the imported data to the Exercise[] type for type safety.
       const assetExercises = EXERCISES_DATA as Exercise[];
-
-      // Create a Set of existing exercise IDs for efficient lookup.
       const existingExerciseIds = new Set(existingExercises.map(r => r.id));
-
-      // Filter the asset exercises to only include those that are NOT already in storage.
       const newExercisesToSeed = assetExercises.filter(
         assetExercise => !existingExerciseIds.has(assetExercise.id)
       );
 
-      // If there are new exercises to add, merge them and update the state.
-      if (newExercisesToSeed.length > 0) {
-        console.log(`Seeding ${newExercisesToSeed.length} new exercises from static data`);
-        const mergedExercises = [...existingExercises, ...newExercisesToSeed];
+      // --- Normalize muscle groups and primaryMuscleGroup here ---
+      const normalizedExercises = newExercisesToSeed.map(ex => ({
+        ...ex,
+        primaryMuscleGroup: ex.primaryMuscleGroup
+          ? (MUSCLE_NORMALIZATION_MAP[ex.primaryMuscleGroup.toLowerCase().trim()] ||
+            ex.primaryMuscleGroup.toLowerCase().trim()) as MuscleValue
+          : undefined,
+        muscleGroups: Array.isArray(ex.muscleGroups)
+          ? ex.muscleGroups.map(muscle =>
+            (MUSCLE_NORMALIZATION_MAP[muscle.toLowerCase().trim()] || muscle.toLowerCase().trim()) as MuscleValue
+          )
+          : [],
+      }));
 
-        // Update the subject with the full, merged list.
+      if (normalizedExercises.length > 0) {
+        const mergedExercises = [...existingExercises, ...normalizedExercises];
         this.exercisesSubject.next(mergedExercises);
-        // Save the merged list back to storage for the next session.
         this._saveExercisesToStorage(mergedExercises);
       } else {
-        console.log("No new exercises to seed from static data. All are present in storage");
+        // If there are new exercises to add, merge them and update the state.
+        if (newExercisesToSeed.length > 0) {
+          console.log(`Seeding ${newExercisesToSeed.length} new exercises from static data`);
+          const mergedExercises = [...existingExercises, ...newExercisesToSeed];
+
+          // Update the subject with the full, merged list.
+          this.exercisesSubject.next(mergedExercises);
+          // Save the merged list back to storage for the next session.
+          this._saveExercisesToStorage(mergedExercises);
+        } else {
+          console.log("No new exercises to seed from static data. All are present in storage");
+        }
       }
+
+
     } catch (error) {
       console.error('Failed to process or seed exercises from static data:', error);
     } finally {
@@ -175,7 +193,7 @@ export class ExerciseService {
       map(exercises => {
         const exercise = exercises.find(ex => ex.id === id);
         if (!exercise) return undefined;
-  
+
         // Normalize primaryMuscleGroup
         let normalizedPrimary: string | undefined = exercise.primaryMuscleGroup;
         if (normalizedPrimary && typeof normalizedPrimary === 'string') {
@@ -183,7 +201,7 @@ export class ExerciseService {
             MUSCLE_NORMALIZATION_MAP[normalizedPrimary.toLowerCase().trim()] ||
             normalizedPrimary.toLowerCase().trim();
         }
-  
+
         // Normalize muscleGroups
         let normalizedGroups: string[] = [];
         if (Array.isArray(exercise.muscleGroups)) {
@@ -192,14 +210,14 @@ export class ExerciseService {
           );
         }
 
-              // Normalize equipmentNeeded
-      let normalizedEquipment: string[] = [];
-      if (Array.isArray(exercise.equipmentNeeded)) {
-        normalizedEquipment = exercise.equipmentNeeded.map(eq =>
-          EQUIPMENT_NORMALIZATION_MAP[eq.toLowerCase().trim()] || eq.toLowerCase().trim()
-        );
-      }
-  
+        // Normalize equipmentNeeded
+        let normalizedEquipment: string[] = [];
+        if (Array.isArray(exercise.equipmentNeeded)) {
+          normalizedEquipment = exercise.equipmentNeeded.map(eq =>
+            EQUIPMENT_NORMALIZATION_MAP[eq.toLowerCase().trim()] || eq.toLowerCase().trim()
+          );
+        }
+
         // Return a new object with normalized muscle groups
         return {
           ...exercise,
@@ -350,45 +368,45 @@ export class ExerciseService {
     );
   }
 
-getUniqueCategories(): Observable<string[]> {
-  return this.exercises$.pipe(
-    map(exercises => {
-      const normalizedCategories = exercises
-        .map(ex => EXERCISE_CATEGORY_NORMALIZATION_MAP[ex.category?.toLowerCase().trim() || ''] || ex.category?.toLowerCase().trim())
-        .filter((cat): cat is string => !!cat);
-      return [...new Set(normalizedCategories)].sort();
-    })
-  );
-}
+  getUniqueCategories(): Observable<string[]> {
+    return this.exercises$.pipe(
+      map(exercises => {
+        const normalizedCategories = exercises
+          .map(ex => EXERCISE_CATEGORY_NORMALIZATION_MAP[ex.category?.toLowerCase().trim() || ''] || ex.category?.toLowerCase().trim())
+          .filter((cat): cat is string => !!cat);
+        return [...new Set(normalizedCategories)].sort();
+      })
+    );
+  }
 
   getUniquePrimaryMuscleGroups(): Observable<Muscle[]> {
-  return combineLatest([
-    this.exercises$,
-    this.muscleMapService.musclesMap$
-  ]).pipe(
-    map(([exercises, musclesMap]) => {
-      // 1. Collect unique, normalized MuscleValue IDs from exercises
-      const uniqueIds = [
-        ...new Set(
-          exercises
-            .map(ex => {
-              const raw = ex.primaryMuscleGroup;
-              if (typeof raw === 'string' && raw.trim() !== '') {
-                return MUSCLE_NORMALIZATION_MAP[raw.toLowerCase().trim()] || raw.toLowerCase().trim();
-              }
-              return undefined;
-            })
-            .filter((group): group is MuscleValue => !!group)
-        )
-      ].sort();
+    return combineLatest([
+      this.exercises$,
+      this.muscleMapService.musclesMap$
+    ]).pipe(
+      map(([exercises, musclesMap]) => {
+        // 1. Collect unique, normalized MuscleValue IDs from exercises
+        const uniqueIds = [
+          ...new Set(
+            exercises
+              .map(ex => {
+                const raw = ex.primaryMuscleGroup;
+                if (typeof raw === 'string' && raw.trim() !== '') {
+                  return MUSCLE_NORMALIZATION_MAP[raw.toLowerCase().trim()] || raw.toLowerCase().trim();
+                }
+                return undefined;
+              })
+              .filter((group): group is MuscleValue => !!group)
+          )
+        ].sort();
 
-      // 2. Map those IDs to Muscle objects, filtering out any missing ones
-      return uniqueIds
-        .map(id => musclesMap.get(id))
-        .filter((m): m is Muscle => !!m);
-    })
-  );
-}
+        // 2. Map those IDs to Muscle objects, filtering out any missing ones
+        return uniqueIds
+          .map(id => musclesMap.get(id))
+          .filter((m): m is Muscle => !!m);
+      })
+    );
+  }
 
   /**
    * Retrieves a list of similar exercises based on matching muscle groups.
@@ -939,14 +957,14 @@ getUniqueCategories(): Observable<string[]> {
         // Build fast lookup maps
         const equipmentMap = new Map(equipments.map(eq => [eq.id, eq]));
         const categoryMap = new Map(categories.map(cat => [cat.id, cat]));
-  
+
         return exercises.map(ex => {
           // Hydrate primary muscle group
           const normalizedPrimary = ex.primaryMuscleGroup
             ? MUSCLE_NORMALIZATION_MAP[ex.primaryMuscleGroup.toLowerCase().trim()] || ex.primaryMuscleGroup.toLowerCase().trim()
             : undefined;
           const primaryMuscleGroup = normalizedPrimary ? musclesMap.get(normalizedPrimary) : undefined;
-  
+
           // Hydrate muscle groups
           const muscleGroups = (ex.muscleGroups || [])
             .map(muscleId => {
@@ -954,28 +972,28 @@ getUniqueCategories(): Observable<string[]> {
               return musclesMap.get(normId);
             })
             .filter((m): m is Muscle => !!m);
-  
+
           // Hydrate equipment
-const equipmentNeeded = (ex.equipmentNeeded || [])
-  .map(eqRaw => {
-    if (!eqRaw) return undefined;
-    const eqKey = EQUIPMENT_NORMALIZATION_MAP[eqRaw.toLowerCase().trim()] || eqRaw.toLowerCase().trim();
-    return equipmentMap.get(eqKey as EquipmentValue);
-  })
-  .filter((eq): eq is HydratedEquipment => !!eq);
-  
+          const equipmentNeeded = (ex.equipmentNeeded || [])
+            .map(eqRaw => {
+              if (!eqRaw) return undefined;
+              const eqKey = EQUIPMENT_NORMALIZATION_MAP[eqRaw.toLowerCase().trim()] || eqRaw.toLowerCase().trim();
+              return equipmentMap.get(eqKey as EquipmentValue);
+            })
+            .filter((eq): eq is HydratedEquipment => !!eq);
+
           // Hydrate category
           const normalizedCategory = ex.category
             ? EXERCISE_CATEGORY_NORMALIZATION_MAP[ex.category.toLowerCase().trim()] || ex.category.toLowerCase().trim()
             : undefined;
           const hydratedCategory = normalizedCategory ? categoryMap.get(normalizedCategory) : undefined;
-  
+
           return {
             ...ex,
             primaryMuscleGroup,
             muscleGroups,
             equipmentNeeded,
-  category: (hydratedCategory?.id || ex.category) as HydratedExercise['category'],
+            category: (hydratedCategory?.id || ex.category) as HydratedExercise['category'],
             categoryLabel: hydratedCategory?.label || ex.category
           };
         });
@@ -1011,30 +1029,30 @@ const equipmentNeeded = (ex.equipmentNeeded || [])
             const translatedEquipmentMap = new Map(translatedEquipments.map(eq => [eq.id, eq]));
 
             // Hydrate Primary Muscle Group
-          // --- Normalize and hydrate primaryMuscleGroup ---
-          const primaryMuscleGroup = exercise.primaryMuscleGroup
-            ? musclesMap.get(
+            // --- Normalize and hydrate primaryMuscleGroup ---
+            const primaryMuscleGroup = exercise.primaryMuscleGroup
+              ? musclesMap.get(
                 MUSCLE_NORMALIZATION_MAP[exercise.primaryMuscleGroup.toLowerCase().trim()] ||
                 exercise.primaryMuscleGroup.toLowerCase().trim()
               )
-            : undefined;
+              : undefined;
 
-          // --- Normalize and hydrate muscleGroups ---
-          const muscleGroups = (exercise.muscleGroups || [])
-            .map(muscleId => {
-              const normId = MUSCLE_NORMALIZATION_MAP[muscleId.toLowerCase().trim()] || muscleId.toLowerCase().trim();
-              return musclesMap.get(normId);
-            })
-            .filter((m): m is Muscle => !!m);
+            // --- Normalize and hydrate muscleGroups ---
+            const muscleGroups = (exercise.muscleGroups || [])
+              .map(muscleId => {
+                const normId = MUSCLE_NORMALIZATION_MAP[muscleId.toLowerCase().trim()] || muscleId.toLowerCase().trim();
+                return musclesMap.get(normId);
+              })
+              .filter((m): m is Muscle => !!m);
 
             // HYDRATE EQUIPMENT (with normalization and translation)
-const equipmentNeeded = (exercise.equipmentNeeded || [])
-  .map(eqRaw => {
-    if (!eqRaw) return undefined;
-    const eqKey = EQUIPMENT_NORMALIZATION_MAP[eqRaw.toLowerCase().trim()] || eqRaw.toLowerCase().trim();
-    return translatedEquipmentMap.get(eqKey);
-  })
-  .filter((eq): eq is HydratedEquipment => !!eq);
+            const equipmentNeeded = (exercise.equipmentNeeded || [])
+              .map(eqRaw => {
+                if (!eqRaw) return undefined;
+                const eqKey = EQUIPMENT_NORMALIZATION_MAP[eqRaw.toLowerCase().trim()] || eqRaw.toLowerCase().trim();
+                return translatedEquipmentMap.get(eqKey);
+              })
+              .filter((eq): eq is HydratedEquipment => !!eq);
 
             // Assemble the final hydrated object
             return {
@@ -1064,7 +1082,7 @@ const equipmentNeeded = (exercise.equipmentNeeded || [])
 
 
 }
-  const EXERCISE_NORMALIZATION_MAP: Record<string, string> = (() => {
+const EXERCISE_NORMALIZATION_MAP: Record<string, string> = (() => {
   const map: Record<string, string> = {};
   for (const ex of EXERCISES_DATA) {
     map[ex.id.toLowerCase().trim()] = ex.id;

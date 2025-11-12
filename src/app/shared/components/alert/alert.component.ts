@@ -40,15 +40,16 @@ import { trigger, style, animate, transition } from '@angular/animations';
   ]
 })
 export class AlertComponent implements OnInit {
+  Array = Array;
   @Input() options: AlertOptions | null = null;
-  @Output() dismissed = new EventEmitter<{ role: string, data?: any, values?: { [key: string]: string | number | boolean } } | undefined>();
+  @Output() dismissed = new EventEmitter<{ role: string, data?: any, values?: { [key: string]: string | number | boolean | number[] } } | undefined>();
   @ViewChildren('alertInput') inputElements!: QueryList<ElementRef<HTMLInputElement | HTMLTextAreaElement>>;
   @ViewChild('singleButton') singleButton?: ElementRef<HTMLButtonElement>;
   @ViewChildren('alertButton') allButtons!: QueryList<ElementRef<HTMLButtonElement>>;
 
   standardCssButtonClass: string = " w-full flex justify-center items-center text-white text-left px-4 py-2 rounded-md text-xl font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 ";
 
-  inputValues: { [key: string]: string | number | boolean } = {};
+  inputValues: { [key: string]: string | number | boolean | number[] } = {};
 
   private toastService = inject(ToastService);
   private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
@@ -76,14 +77,24 @@ export class AlertComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.options?.inputs) {
-      this.options.inputs.forEach(input => {
-        if (input.type === 'checkbox') {
-          this.inputValues[input.name] = input.value !== undefined ? !!input.value : false;
+    this.options.inputs.forEach(input => {
+      if (input.type === 'checkbox') {
+        // If the value is an array, use it directly (for checkbox groups)
+        if (Array.isArray(input.value)) {
+          this.inputValues[input.name] = input.value;
         } else {
-          this.inputValues[input.name] = input.value !== undefined ? input.value : (input.type === 'number' ? 0 : '');
+          // Otherwise, treat as a single boolean checkbox
+          this.inputValues[input.name] = input.value !== undefined ? !!input.value : false;
         }
-      });
-    }
+      } else if (input.type === 'radio' && input.options && input.options.length > 0) {
+        this.inputValues[input.name] = input.value !== undefined
+          ? input.value
+          : input.options[0].value;
+      } else {
+        this.inputValues[input.name] = input.value !== undefined ? input.value : (input.type === 'number' ? 0 : '');
+      }
+    });
+  }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -254,7 +265,7 @@ export class AlertComponent implements OnInit {
     }
   }
 
-  private dismissWith(result: { role: string, data?: any, values?: { [key: string]: string | number | boolean } } | undefined): void {
+  private dismissWith(result: { role: string, data?: any, values?: { [key: string]: string | number | boolean | number[] } } | undefined): void {
     this.dismissed.emit(result);
   }
 

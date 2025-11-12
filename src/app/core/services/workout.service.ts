@@ -21,6 +21,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { mapLoggedSetToExerciseTargetSetParams, mapLoggedWorkoutExerciseToWorkoutExercise, mapWorkoutExerciseToLoggedWorkoutExercise } from '../models/workout-mapper';
 import { ExerciseService } from './exercise.service';
 import { compareRepsTargets, migrateSetRepsToRepsTarget, repsTypeToReps, repsTargetToExactRepsTarget, genRepsTypeFromRepsNumber, repsToExact, compareDurationTargets, compareDistanceTargets, compareWeightTargets, getDurationValue, genDurationTypeFromDurationNumber, getRestValue, weightToExact, restToExact, distanceToExact, durationToExact, getWeightValue, getDistanceValue, migrateSetWeightToWeightTarget, migrateSetDurationToDurationTarget, migrateSetDistanceToDistanceTarget, migrateSetRestToRestTarget } from './workout-helper.service';
+import { TrainingProgramService } from './training-program.service';
 
 @Injectable({
   providedIn: 'root',
@@ -42,6 +43,7 @@ export class WorkoutService {
   private alertService = inject(AlertService);
   private unitsService = inject(UnitsService);
   private translate = inject(TranslateService);
+
   protected subscriptionService = inject(SubscriptionService);
   private readonly ROUTINES_STORAGE_KEY = 'fitTrackPro_routines';
   private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
@@ -252,14 +254,40 @@ export class WorkoutService {
     return undefined;
   }
 
-  deleteRoutine(id: string): void {
+  async deleteRoutine(id: string): Promise<boolean> {
+    // 1. Check if the routine is used in any program
+    const trainingProgramService = this.injector.get(TrainingProgramService);
+    const allPrograms = await firstValueFrom(trainingProgramService.getAllPrograms()); // Adjust as needed for your app
+
+    const isUsed = allPrograms.some(program => {
+      if (program.programType === 'linear' && program.weeks) {
+        return program.weeks.some(week =>
+          week.schedule.some(day => day.routineId === id)
+        );
+      } else if (program.programType === 'cycled' && program.schedule) {
+        return program.schedule.some(day => day.routineId === id);
+      }
+      return false;
+    });
+
+    if (isUsed) {
+      await this.alertService.showAlert(
+        this.translate.instant('workoutService.alerts.deleteRoutineBlockedTitle'),
+        this.translate.instant('workoutService.alerts.deleteRoutineBlockedMsg')
+      );
+      return false;
+    }
+
+    // 2. Proceed with deletion if not used
     const currentRoutines = this.routinesSubject.getValue();
     const updatedRoutines = currentRoutines.filter(r => r.id !== id);
     if (updatedRoutines.length < currentRoutines.length) {
       this.saveRoutinesToStorage(updatedRoutines);
       console.log('Deleted routine with id:', id);
+      return true;
     } else {
       console.warn(`WorkoutService: Routine with id ${id} not found for deletion`);
+      return false;
     }
   }
 
@@ -1200,5 +1228,155 @@ export class WorkoutService {
     return allRoutines.slice(0, count);
   }
 
- 
+
+  /**
+  * Generates one or more routines based on a standard template name.
+  * @param template The template name (e.g. '3x3', '5x5', 'ppl', '531')
+  * @param availableExercises The list of available exercises to match by name
+  * @returns Routine[] (usually length 1, except for PPL which returns 3)
+  */
+  public generateRoutineFromTemplate(
+    template: string,
+    availableExercises: Exercise[]
+  ): Routine[] {
+    // Helper to find an exercise by name
+    const findExercise = (idOrName: string): Exercise => {
+      return (
+        availableExercises.find(e =>
+          e.id === idOrName ||
+          e.name.toLowerCase().includes(idOrName.toLowerCase())
+        ) || availableExercises[0]
+      );
+    };
+
+    // Helper to create a set
+    const createSet = (
+      reps: number | [number, number] | 'amrap',
+      weight: number | 'bodyweight' | [number, number] | { percent1rm: number },
+      rest: number | [number, number] = 90
+    ): ExerciseTargetSetParams => {
+      let targetReps: RepsTarget;
+      if (Array.isArray(reps)) {
+        targetReps = { type: RepsTargetType.range, min: reps[0], max: reps[1] };
+      } else if (reps === 'amrap') {
+        targetReps = { type: RepsTargetType.amrap };
+      } else {
+        targetReps = repsToExact(reps);
+      }
+
+      let targetWeight: WeightTarget;
+      if (Array.isArray(weight)) {
+        targetWeight = { type: WeightTargetType.range, min: weight[0], max: weight[1] };
+      } else if (typeof weight === 'object' && 'percent1rm' in weight) {
+        targetWeight = { type: WeightTargetType.percentage_1rm, percentage: weight.percent1rm };
+      } else if (weight === 'bodyweight') {
+        targetWeight = { type: WeightTargetType.bodyweight };
+      } else {
+        targetWeight = weightToExact(weight as number);
+      }
+
+      let targetRest: RestTarget;
+      if (Array.isArray(rest)) {
+        targetRest = { type: RestTargetType.range, minSeconds: rest[0], maxSeconds: rest[1] };
+      } else {
+        targetRest = restToExact(rest as number);
+      }
+
+      return {
+        id: uuidv4(),
+        fieldOrder: [METRIC.weight, METRIC.reps, METRIC.rest],
+        targetReps,
+        targetWeight,
+        targetRest,
+        type: 'standard'
+      };
+    };
+
+    // Helper to create a routine
+    const createRoutine = (routineName: string, exerciseDefs: { idOrName: string, sets: ExerciseTargetSetParams[] }[]): Routine => {
+      const exercises: WorkoutExercise[] = exerciseDefs.map(def => {
+        const ex = findExercise(def.idOrName);
+        return {
+          id: uuidv4(),
+          exerciseId: ex.id,
+          exerciseName: ex.name,
+          sets: def.sets,
+          type: 'standard',
+          supersetId: null,
+          supersetOrder: null,
+        };
+      });
+      return {
+        id: 'custom-' + uuidv4(),
+        name: routineName,
+        exercises,
+        isHidden: false
+      };
+    };
+
+    // --- Template logic ---
+    switch (template) {
+      case '3x3':
+        return [
+          createRoutine('3x3', [
+            { idOrName: 'barbell-squat', sets: [createSet(3, 100), createSet(3, 100), createSet(3, 100)] },
+            { idOrName: 'barbell-bench-press', sets: [createSet(3, 80), createSet(3, 80), createSet(3, 80)] },
+            { idOrName: 'bent-over-row-barbell', sets: [createSet(3, 70), createSet(3, 70), createSet(3, 70)] }
+          ])
+        ];
+      case '5x5':
+        return [
+          createRoutine('5x5', [
+            { idOrName: 'barbell-squat', sets: Array(5).fill(null).map(() => createSet(5, 90)) },
+            { idOrName: 'barbell-bench-press', sets: Array(5).fill(null).map(() => createSet(5, 70)) },
+            { idOrName: 'bent-over-row-barbell', sets: Array(5).fill(null).map(() => createSet(5, 60)) }
+          ])
+        ];
+      case 'ppl':
+        return [
+          createRoutine('Push', [
+            { idOrName: 'barbell-bench-press', sets: [createSet(8, 60), createSet(8, 60), createSet(8, 60)] },
+            { idOrName: 'barbell-military-press', sets: [createSet(10, 40), createSet(10, 40)] },
+            { idOrName: 'bench-dips', sets: [createSet(12, 'bodyweight'), createSet(12, 'bodyweight')] }
+          ]),
+          createRoutine('Pull', [
+            { idOrName: 'bent-over-row-barbell', sets: [createSet(8, 50), createSet(8, 50), createSet(8, 50)] },
+            { idOrName: 'pull-up', sets: [createSet(8, 'bodyweight'), createSet(8, 'bodyweight')] },
+            { idOrName: 'barbell-bicep-curl', sets: [createSet(12, 20), createSet(12, 20)] }
+          ]),
+          createRoutine('Legs', [
+            { idOrName: 'barbell-squat', sets: [createSet(10, 70), createSet(10, 70), createSet(10, 70)] },
+            { idOrName: 'barbell-deadlift', sets: [createSet(6, 100), createSet(6, 100)] },
+            { idOrName: 'leg-curl-machine', sets: [createSet(12, 30), createSet(12, 30)] }
+          ])
+        ];
+      case '531':
+        return [
+          createRoutine('5/3/1 Overhead Press', [
+            { idOrName: 'barbell-military-press', sets: [createSet(5, { percent1rm: 75 }), createSet([3, 3], { percent1rm: 85 }), createSet('amrap', { percent1rm: 95 })] },
+            { idOrName: 'pull-up', sets: [createSet(10, 'bodyweight'), createSet(10, 'bodyweight')] },
+            { idOrName: 'bench-dips', sets: [createSet(12, 'bodyweight'), createSet(12, 'bodyweight')] }
+          ]),
+          createRoutine('5/3/1 Deadlift', [
+            { idOrName: 'barbell-deadlift', sets: [createSet(5, { percent1rm: 75 }), createSet([3, 3], { percent1rm: 85 }), createSet('amrap', { percent1rm: 95 })] },
+            { idOrName: 'leg-curl-machine', sets: [createSet(12, 30), createSet(12, 30)] },
+            { idOrName: 'Plank', sets: [createSet('amrap', 'bodyweight')] }
+          ]),
+          createRoutine('5/3/1 Bench Press', [
+            { idOrName: 'barbell-bench-press', sets: [createSet(5, { percent1rm: 75 }), createSet([3, 3], { percent1rm: 85 }), createSet('amrap', { percent1rm: 95 })] },
+            { idOrName: 'bent-over-row-barbell', sets: [createSet(10, 50), createSet(10, 50)] },
+            { idOrName: 'barbell-bicep-curl', sets: [createSet(12, 20), createSet(12, 20)] }
+          ]),
+          createRoutine('5/3/1 Squat', [
+            { idOrName: 'barbell-squat', sets: [createSet(5, { percent1rm: 75 }), createSet([3, 3], { percent1rm: 85 }), createSet('amrap', { percent1rm: 95 })] },
+            { idOrName: 'Leg Extension', sets: [createSet(12, 30), createSet(12, 30)] },
+            { idOrName: 'Calf Raise', sets: [createSet(15, 40), createSet(15, 40)] }
+          ])
+        ];
+      default:
+        return [];
+    }
+  }
+
+
 }

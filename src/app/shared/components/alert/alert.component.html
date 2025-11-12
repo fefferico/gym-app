@@ -44,15 +44,32 @@
                 </label>
               </div>
 
-              <!-- Radio Input Type -->
-              <div *ngSwitchCase="'radio'" class="flex items-center">
-                <input type="radio" [id]="input.id || ('alert-input-' + i)" [name]="input.name" [value]="input.value"
-                  [(ngModel)]="inputValues[input.name]"
-                  class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:ring-offset-gray-800">
-                <label *ngIf="input.label" [for]="input.id || ('alert-input-' + i)"
-                  class="ml-2 block text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-                  {{ input.label }}
-                </label>
+              <!-- Radio Input Type (Radio Group Support) -->
+              <div *ngSwitchCase="'radio'">
+                <ng-container *ngIf="input.options && input.options.length > 0; else singleRadio">
+                  <div class="flex flex-col gap-y-2">
+                    <div *ngFor="let opt of input.options; let j = index" class="flex items-center">
+                      <input type="radio" [id]="(input.id || 'alert-input-' + i) + '-' + j" [name]="input.name"
+                        [value]="opt.value" [(ngModel)]="inputValues[input.name]"
+                        class="radio-primary h-4 w-4 border-gray-300 text-primary focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:focus:ring-offset-gray-800" />
+                      <label [for]="(input.id || 'alert-input-' + i) + '-' + j"
+                        class="ml-2 block text-sm text-gray-700 dark:text-gray-300 cursor-pointer flex w-full">
+                        {{ opt.label }}
+                      </label>
+                    </div>
+                  </div>
+                </ng-container>
+                <ng-template #singleRadio>
+                  <div class="flex items-center">
+                    <input type="radio" [id]="input.id || ('alert-input-' + i)" [name]="input.name"
+                      [value]="input.value" [(ngModel)]="inputValues[input.name]"
+                      class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:ring-offset-gray-800" />
+                    <label *ngIf="input.label" [for]="input.id || ('alert-input-' + i)"
+                      class="ml-2 block text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                      {{ input.label }}
+                    </label>
+                  </div>
+                </ng-template>
               </div>
 
               <!-- Textarea Input Type -->
@@ -66,6 +83,19 @@
                   [required]="input.required ? true : false" rows="3"
                   class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-m dark:bg-gray-800 dark:text-gray-200">
                 </textarea>
+              </div>
+
+              <!-- Select/Dropdown Input Type -->
+              <div *ngSwitchCase="'select'">
+                <label *ngIf="input.label" [for]="input.id || ('alert-input-' + i)"
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  {{ input.label }}
+                </label>
+                <select [id]="input.id || ('alert-input-' + i)" [name]="input.name"
+                  [(ngModel)]="inputValues[input.name]" [required]="input.required ? true : false"
+                  class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-m dark:bg-gray-800 dark:text-gray-200">
+                  <option *ngFor="let opt of input.options" [value]="opt.value">{{ opt.label }}</option>
+                </select>
               </div>
 
               <!-- Default Input Type (text, number, etc.) -->

@@ -32,6 +32,10 @@
       "name": "Dip (am Barren)",
       "description": "Eine Verbundübung mit Eigengewicht, die hauptsächlich den Trizeps und die Brust trainiert und an Parallelbarren ausgeführt wird."
     },
+    "barbell-squat": {
+      "name": "Langhantel-Kniebeuge",
+      "description": "Eine grundlegende Kraftübung, die Quadrizeps, Gesäßmuskeln, Oberschenkelrückseiten und den unteren Rücken durch Kniebeugen mit einer Langhantel auf dem oberen Rücken trainiert."
+    },
     "barbell-bench-press": {
       "name": "Langhantel-Bankdrücken",
       "description": "Eine grundlegende Verbundübung für die Oberkörperkraft, die hauptsächlich Brust, Schultern und Trizeps anspricht."

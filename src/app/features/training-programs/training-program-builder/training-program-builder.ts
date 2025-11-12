@@ -1,5 +1,5 @@
-import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
-import { CommonModule, DatePipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
+import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectorRef, PLATFORM_ID, ViewChildren, QueryList } from '@angular/core';
+import { CommonModule, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormsModule, AbstractControl } from '@angular/forms';
 import { Subscription, of, firstValueFrom } from 'rxjs';
@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
 import { TrainingProgram, ScheduledRoutineDay, TrainingProgramHistoryEntry, ProgramWeek } from '../../../core/models/training-program.model';
-import { AnyScheme, DISTANCE_TARGET_SCHEMES, DURATION_TARGET_SCHEMES, ExerciseTargetSetParams, METRIC, REPS_TARGET_SCHEMES, RepsTarget, RepsTargetType, REST_TARGET_SCHEMES, Routine, WEIGHT_TARGET_SCHEMES, WorkoutExercise } from '../../../core/models/workout.model';
+import { ExerciseTargetSetParams, METRIC, RepsTarget, RepsTargetType, RestTarget, RestTargetType, Routine, WeightTarget, WeightTargetType, WorkoutExercise } from '../../../core/models/workout.model';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { WorkoutService } from '../../../core/services/workout.service';
 import { SpinnerService } from '../../../core/services/spinner.service';
@@ -21,7 +21,7 @@ import { ActionMenuComponent } from '../../../shared/components/action-menu/acti
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { IconComponent } from "../../../shared/components/icon/icon.component";
-import { addDays, differenceInDays, format, getDay, isThisWeek, parseISO } from 'date-fns';
+import { addDays, differenceInDays, format, getDay, parseISO } from 'date-fns';
 import { TrackingService } from '../../../core/services/tracking.service';
 import { WorkoutLog } from '../../../core/models/workout-log.model';
 import { MenuMode } from '../../../core/models/app-settings.model';
@@ -34,11 +34,9 @@ import { distanceToExact, durationToExact, genRepsTypeFromRepsNumber, repsToExac
 import { WorkoutFormService } from '../../../core/services/workout-form.service';
 import { AlertInput } from '../../../core/models/alert.model';
 import { WorkoutUtilsService } from '../../../core/services/workout-utils.service';
-import { SetMetricInputComponent } from '../../../shared/set-metric-input/set-metric-input.component';
 import { UnitsService } from '../../../core/services/units.service';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
 import { ShatterableDirective } from '../../../animations/shatterable.directive';
-import { ShatterTriggerDirective } from '../../../animations/shatter-trigger.directive';
 
 interface DayOption {
     value: number;
@@ -65,12 +63,13 @@ interface ProgramGoal { value: Routine['goal'], label: string }
         TranslateModule,
         ExerciseSelectionModalComponent,
         WorkoutBuilderComponent,
-        ShatterableDirective, ShatterTriggerDirective
+        ShatterableDirective
     ],
     templateUrl: './training-program-builder.html',
     styleUrls: ['./training-program-builder.scss']
 })
 export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
+    @ViewChildren(ShatterableDirective) shatterables!: QueryList<ShatterableDirective>;
 
     metricEnum = METRIC;
     private fb = inject(FormBuilder);
@@ -116,10 +115,19 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
     // Day options for dropdown
     dayOfWeekOptions: DayOption[] = [
-        { value: 1, label: this.translate.instant('dates.days.monday') }, { value: 2, label: this.translate.instant('dates.days.tuesday') }, { value: 3, label: this.translate.instant('dates.days.wednesday') },
-        { value: 4, label: this.translate.instant('dates.days.thursday') }, { value: 5, label: this.translate.instant('dates.days.friday') }, { value: 6, label: this.translate.instant('dates.days.saturday') },
+        { value: 1, label: this.translate.instant('dates.days.monday') },
+        { value: 2, label: this.translate.instant('dates.days.tuesday') },
+        { value: 3, label: this.translate.instant('dates.days.wednesday') },
+        { value: 4, label: this.translate.instant('dates.days.thursday') },
+        { value: 5, label: this.translate.instant('dates.days.friday') },
+        { value: 6, label: this.translate.instant('dates.days.saturday') },
         { value: 0, label: this.translate.instant('dates.days.sunday') }
-    ];
+    ].sort((a, b) => {
+        // Place Sunday (0) at the end
+        if (a.value === 0) return 1;
+        if (b.value === 0) return -1;
+        return a.value - b.value;
+    });
 
     // --- FIX 1: Create a signal to bridge RxJS valueChanges to the signal world ---
     cycleLengthSignal = signal<number | null>(null);
@@ -132,6 +140,50 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         }
         return [];
     });
+
+    dayOptionsPerIndex: { [index: number]: DayOption[] } = {};
+    private setupDayOptionsWatcher() {
+        // Watch for changes in schedule or cycleLength
+        this.programForm.get('cycleLength')?.valueChanges.subscribe(() => this.updateDayOptionsPerIndex());
+        this.scheduleFormArray.valueChanges.subscribe(() => this.updateDayOptionsPerIndex());
+        // Call once initially
+        this.updateDayOptionsPerIndex();
+    }
+
+    private updateDayOptionsPerIndex() {
+        this.dayOptionsPerIndex = {};
+        this.scheduleFormArray.controls.forEach((ctrl, idx) => {
+            this.dayOptionsPerIndex[idx] = this.getCurrentDayOptions(ctrl.get('dayOfWeek')?.value);
+        });
+    }
+    getCurrentDayOptions(currentValue?: number): DayOption[] {
+        const programType = this.programForm.get('programType')?.value;
+        const cycleLength = Number(this.programForm.get('cycleLength')?.value);
+
+        if (programType === 'cycled' && cycleLength && cycleLength > 0) {
+            // Generate options for the current cycle length
+            const usedDays = new Set(this.scheduleFormArray.controls.map(ctrl => ctrl.get('dayOfWeek')?.value));
+            if (currentValue !== undefined && currentValue !== null) {
+                usedDays.delete(currentValue);
+            }
+            // If cycleLength is 7, use standard week day labels
+            if (cycleLength === 7) {
+                return this.dayOfWeekOptions.filter(opt => !usedDays.has(opt.value));
+            }
+            // Otherwise, use generic "Day X" labels
+            return Array.from({ length: cycleLength }, (_, i) => ({
+                value: i + 1,
+                label: `Day ${i + 1}`
+            })).filter(opt => !usedDays.has(opt.value));
+        }
+
+        // Default: weekly schedule, filter out used days
+        const usedDays = new Set(this.scheduleFormArray.controls.map(ctrl => ctrl.get('dayOfWeek')?.value));
+        if (currentValue !== undefined && currentValue !== null) {
+            usedDays.delete(currentValue);
+        }
+        return this.dayOfWeekOptions.filter(opt => !usedDays.has(opt.value));
+    }
 
     getCurrentDayOptionsForWeek(weekIndex: number, currentValue?: number): DayOption[] {
         const weekSchedule = this.getWeekScheduleGroups(weekIndex);
@@ -385,6 +437,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         }
         this.loadAvailableRoutines();
         this.loadAvailableExercises();
+        this.setupDayOptionsWatcher();
 
         this.workoutLogsSubscription = this.trackingService.workoutLogs$.subscribe(logs => this.allWorkoutLogs.set(logs));
 
@@ -399,9 +452,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 this.isEditMode = mode === 'edit' && !!this.currentProgramId;
 
                 if (this.isNewMode) {
-                    this.programForm.reset({ programType: null, cycleLength: null, schedule: [] });
-                    this.updateFormEnabledState();
-                    return of(null);
+                    this.showCreationWizard();
                 } else if (this.currentProgramId) {
                     return this.trainingProgramService.getProgramById(this.currentProgramId);
                 }
@@ -443,20 +494,21 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         });
     }
 
+    private skipAutoAddWeek = false;
     handleProgramTypeChange(type: 'cycled' | 'linear'): void {
         const isRepeatingControl = this.programForm.get('isRepeating');
         if (type === 'linear') {
             this.scheduleFormArray.clear();
             this.programForm.get('cycleLength')?.setValue(null);
             this.programForm.get('cycleLength')?.disable();
-            isRepeatingControl?.enable(); // Enable repeat toggle for linear programs
-            if (this.weeksFormArray.length === 0 && !this.isViewMode) {
-                this.addWeek(); // Add the first week automatically in edit/new modes
+            isRepeatingControl?.enable();
+            if (this.weeksFormArray.length === 0 && !this.isViewMode && !this.skipAutoAddWeek) {
+                this.addWeek();
             }
-        } else { // 'cycled'
+        } else {
             this.weeksFormArray.clear();
             this.programForm.get('cycleLength')?.enable();
-            isRepeatingControl?.setValue(false); // Reset and disable for cycled programs
+            isRepeatingControl?.setValue(false);
             isRepeatingControl?.disable();
         }
     }
@@ -503,13 +555,42 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             newSet.add(newWeekGroup.get('id')?.value);
             return newSet;
         });
-        this.cdr.detectChanges();
-        setTimeout(() => { /* scroll to new week logic */ }, 50);
+        setTimeout(() => {
+            const weekIndex = this.weeksFormArray.controls.findIndex(week => week.get('id')?.value === newWeekGroup.get('id')?.value);
+            if (weekIndex !== null && weekIndex !== undefined) {
+                this.scrollToWeek(weekIndex);
+            }
+        }, 50);
     }
 
     // --- NEW: Remove a week from the form ---
-    removeWeek(weekIndex: number): void {
-        this.weeksFormArray.removeAt(weekIndex);
+    async removeWeek(weekIndex: number, event: Event): Promise<void> {
+        event.stopPropagation();
+        const confirm = await this.alertService.showConfirmationDialog(
+            this.translate.instant('programBuilder.weeks.confirmRemoveTitle'),
+            this.translate.instant('programBuilder.weeks.confirmRemoveMsg'),
+            [
+                { text: this.translate.instant('common.cancel'), role: 'cancel', cssClass: 'bg-gray-400 hover:bg-gray-600', icon: 'cancel' },
+                { text: this.translate.instant('common.delete'), role: 'confirm', cssClass: 'bg-red-600 hover:bg-red-700', icon: 'trash' }
+            ]
+        );
+        if (!confirm || confirm.role !== 'confirm') return;
+
+        // Find the shatterable directive for this week
+        const weekId = this.weeksFormArray.at(weekIndex).get('id')?.value;
+        // Try to match the id used in your template (adjust if needed)
+        const shatterable = this.shatterables.find(dir =>
+            dir.el.nativeElement.id === 'week-header-' + weekIndex ||
+            dir.el.nativeElement.id === 'week-header-' + weekId
+        );
+        if (shatterable) {
+            shatterable.shatter();
+            setTimeout(() => {
+                this.weeksFormArray.removeAt(weekIndex);
+            }, 150); // match the shatter animation duration
+        } else {
+            this.weeksFormArray.removeAt(weekIndex);
+        }
     }
 
     private loadAvailableRoutines(): void {
@@ -556,9 +637,6 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             });
         }
 
-        this.expandedWeekIds.set(initialWeekIds);
-        this.expandedDayIds.set(initialDayIds);
-
         this.handleProgramTypeChange(programType);
         this.updateFormEnabledState();
 
@@ -575,6 +653,9 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                     this.toggleGoal(foundGoal);
                 });
         }
+
+        this.expandedWeekIds.set(new Set()); // Collapse all weeks
+        this.expandedDayIds.set(new Set());  // (Optional) Collapse all days too
     }
 
     createScheduledDayGroup(day?: Partial<ScheduledRoutineDay>): FormGroup {
@@ -701,23 +782,83 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             });
         }
 
-        this.cdr.detectChanges();
         const dayId = newDayGroup?.get('id')?.value;
         setTimeout(() => {
             this.scrollToDayHeader(dayId);
         }, 50);
     }
 
-    // --- MODIFIED: Remove a day from the correct schedule ---
-    removeScheduledDay(index: number, weekIndex?: number): void {
+    async removeScheduledDay(dayIndex: number, weekIndex?: number | undefined, event?: Event): Promise<void> {
         if (this.isViewMode) return;
+        if (event) {
+            event.stopPropagation();
+        }
+
+        const confirm = await this.alertService.showConfirmationDialog(
+            this.translate.instant('trainingPrograms.weeks.confirmRemoveDayTitle'),
+            this.translate.instant('trainingPrograms.weeks.confirmRemoveDayMsg'),
+            [
+                { text: this.translate.instant('common.cancel'), role: 'cancel', cssClass: 'bg-gray-400 hover:bg-gray-600', icon: 'cancel' },
+                { text: this.translate.instant('common.delete'), role: 'confirm', cssClass: 'bg-red-600 hover:bg-red-700', icon: 'trash' }
+            ]
+        );
+        if (!confirm || confirm.role !== 'confirm') return;
+
         const programType = this.programForm.get('programType')?.value;
+
+        // Find the dayId of the previous or next day (for scrolling)
+        let dayIdToScroll: string | undefined;
 
         if (programType === 'linear' && weekIndex !== undefined) {
             const weekSchedule = this.weeksFormArray.at(weekIndex).get('schedule') as FormArray;
-            weekSchedule.removeAt(index);
+            if (weekSchedule.length > 1) {
+                if (dayIndex > 0) {
+                    dayIdToScroll = weekSchedule.at(dayIndex - 1).get('id')?.value;
+                } else if (weekSchedule.length > 1) {
+                    dayIdToScroll = weekSchedule.at(1).get('id')?.value;
+                }
+            }
+            // Find the shatterable directive for this day
+            const dayId = weekSchedule.at(dayIndex).get('id')?.value;
+            const shatterable = this.shatterables.find(dir =>
+                dir.el.nativeElement.id === 'day-expanded-' + dayId
+            );
+            if (shatterable) {
+                shatterable.shatter();
+                setTimeout(() => {
+                    weekSchedule.removeAt(dayIndex);
+                }, 150); // match the shatter animation duration
+            } else {
+                weekSchedule.removeAt(dayIndex);
+            }
         } else {
-            this.scheduleFormArray.removeAt(index);
+            if (this.scheduleFormArray.length > 1) {
+                if (dayIndex > 0) {
+                    dayIdToScroll = this.scheduleFormArray.at(dayIndex - 1).get('id')?.value;
+                } else if (this.scheduleFormArray.length > 1) {
+                    dayIdToScroll = this.scheduleFormArray.at(1).get('id')?.value;
+                }
+            }
+            // Find the shatterable directive for this day
+            const dayId = this.scheduleFormArray.at(dayIndex).get('id')?.value;
+            const shatterable = this.shatterables.find(dir =>
+                dir.el.nativeElement.id === 'day-expanded-' + dayId
+            );
+            if (shatterable) {
+                shatterable.shatter();
+                setTimeout(() => {
+                    this.scheduleFormArray.removeAt(dayIndex);
+                }, 150);
+            } else {
+                this.scheduleFormArray.removeAt(dayIndex);
+            }
+        }
+
+        // Scroll to the appropriate day header after removal
+        if (dayIdToScroll) {
+            setTimeout(() => {
+                this.scrollToDayHeader(dayIdToScroll!);
+            }, 100);
         }
     }
 
@@ -763,6 +904,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 routineId: routine.id,
                 routineName: routine.name
             });
+            this.triggerBounceOnExerciseList(dayControl.get('id')?.value);
         }
         this.closeRoutineSelectionModal();
     }
@@ -786,6 +928,37 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         if (this.isViewMode) return;
 
         const formValue = this.programForm.getRawValue();
+        const programName = formValue.name;
+
+        // --- NEW: Update custom routine names and references before persisting ---
+        for (const [key, routine] of this.temporaryCustomRoutines.entries()) {
+            // Only update if not already suffixed
+            if (!routine.name.includes('[Program:')) {
+                routine.name = `${routine.name} [Program: ${programName}]`;
+            }
+            // Update all references in schedule and weeks
+            // Cycled
+            this.scheduleFormArray.controls.forEach((dayCtrl: AbstractControl) => {
+                if (dayCtrl.get('routineId')?.value === routine.id) {
+                    dayCtrl.patchValue({
+                        routineName: routine.name,
+                        dayName: routine.name
+                    });
+                }
+            });
+            // Linear
+            this.weeksFormArray.controls.forEach((weekCtrl: AbstractControl) => {
+                const scheduleArray = (weekCtrl.get('schedule') as FormArray);
+                scheduleArray.controls.forEach((dayCtrl: AbstractControl) => {
+                    if (dayCtrl.get('routineId')?.value === routine.id) {
+                        dayCtrl.patchValue({
+                            routineName: routine.name,
+                            dayName: routine.name
+                        });
+                    }
+                });
+            });
+        }
 
         // --- NEW: Persist temporary custom routines to the database ---
         const persistencePromises: Promise<any>[] = [];
@@ -1254,13 +1427,30 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         this.historyEditForm.get('endDate')?.enable();
     }
 
-    // --- NEW ---
     onWeekDrop(event: CdkDragDrop<FormGroup[]>): void {
         if (this.isViewMode) return;
         moveItemInArray(this.weeksFormArray.controls, event.previousIndex, event.currentIndex);
-        // Update weekNumber property after reordering
+
         this.weeksFormArray.controls.forEach((group, index) => {
             group.get('weekNumber')?.setValue(index + 1);
+
+            const nameControl = group.get('name');
+            const currentName = nameControl?.value;
+            if (currentName) {
+                // Find the first number in the week name
+                const match = currentName.match(/(\d+)/);
+                if (match) {
+                    const foundNumber = parseInt(match[1], 10);
+                    // Only update if the found number matches the previous (1-based) index
+                    // Find the previous index of this group in the array before move
+                    const previousIndex = event.previousIndex === index ? event.currentIndex : event.previousIndex;
+                    if (foundNumber === previousIndex + 1) {
+                        // Replace only the first occurrence of the number with the new (index+1)
+                        const newName = currentName.replace(/(\d+)/, `${index + 1}`);
+                        nameControl?.setValue(newName);
+                    }
+                }
+            }
         });
         this.weeksFormArray.updateValueAndValidity();
     }
@@ -1274,23 +1464,52 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     }
 
     // --- NEW: Methods to manage expand/collapse state ---
-    toggleWeek(weekId: string): void {
+    toggleWeek(weekId: string, event?: Event): void {
+        if (event) {
+            const target = event.target as HTMLElement;
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) {
+                return;
+            }
+        }
         this.expandedWeekIds.update(currentSet => {
             const newSet = new Set(currentSet);
+            const weekIndex = this.weeksFormArray.controls.findIndex(w => w.get('id')?.value === weekId);
+            const weekDays = weekIndex !== -1 ? this.getWeekScheduleGroups(weekIndex) : [];
+
             if (newSet.has(weekId)) {
+                // Collapsing: also collapse all days in this week
+                this.expandedDayIds.update(daySet => {
+                    const newDaySet = new Set(daySet);
+                    weekDays.forEach(dayCtrl => {
+                        newDaySet.delete(dayCtrl.get('id')?.value);
+                    });
+                    return newDaySet;
+                });
                 newSet.delete(weekId);
             } else {
+                // Expanding: also expand all days in this week
+                this.expandedDayIds.update(daySet => {
+                    const newDaySet = new Set(daySet);
+                    weekDays.forEach(dayCtrl => {
+                        newDaySet.add(dayCtrl.get('id')?.value);
+                    });
+                    return newDaySet;
+                });
                 newSet.add(weekId);
             }
             return newSet;
         });
+        const weekIndex = this.weeksFormArray.controls.findIndex(week => week.get('id')?.value === weekId);
+        if (weekIndex !== null && weekIndex !== undefined) {
+            this.scrollToWeek(weekIndex);
+        }
     }
 
     isWeekExpanded(weekId: string): boolean {
         return this.expandedWeekIds().has(weekId);
     }
 
-    toggleDay(dayId: string): void {
+    toggleDayExpansion(dayId: string): void {
         this.expandedDayIds.update(currentSet => {
             const newSet = new Set(currentSet);
             if (newSet.has(dayId)) {
@@ -1300,6 +1519,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             }
             return newSet;
         });
+        this.scrollToDayHeader(dayId);
     }
 
     isDayExpanded(dayId: string): boolean {
@@ -1363,6 +1583,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 routineId: routine.id,
                 routineName: routine.name
             });
+            this.triggerBounceOnExerciseList(dayControl.get('id')?.value);
         }
 
         // Add to custom routines list for reference
@@ -1636,6 +1857,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         ).subscribe(translatedExercises => {
             // The component's master list of exercises is now translated
             this.availableExercises = translatedExercises;
+            this.updateRoutineExerciseNames();
         });
     }
 
@@ -1664,10 +1886,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         setTimeout(() => {
             if (this.expandedExerciseLists[dayId]) {
                 // Just expanded: scroll to the exercise list
-                const element = document.getElementById(`exercise-list-${dayId}`);
-                if (element) {
-                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
+                this.scrollToExerciseList(dayId);
             } else {
                 // Just collapsed: scroll to the day header/card
                 this.scrollToDayHeader(dayId);
@@ -1675,12 +1894,364 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         }, 100);
     }
 
+    scrollToWeek(weekIndex: number): void {
+        const header = document.getElementById(`week-header-${weekIndex}`);
+        if (header) {
+            const y = header.getBoundingClientRect().top + window.scrollY - 40; // 40px above
+            window.scrollTo({ top: y, behavior: 'smooth' });
+        }
+    }
+
     // generate snippet for scrolling into day-expanded-${dayId} when expandedExerciseLists[dayId] is toggled
     scrollToDayHeader(dayId: string) {
         const header = document.getElementById(`day-expanded-${dayId}`);
         if (header) {
-            header.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const y = header.getBoundingClientRect().top + window.scrollY - 60; // 40px above
+            window.scrollTo({ top: y, behavior: 'smooth' });
         }
+    }
+
+    scrollToExerciseList(dayId: string): void {
+        const element = document.getElementById(`exercise-list-${dayId}`);
+        if (element) {
+            const y = element.getBoundingClientRect().top + window.scrollY - 40; // 40px above
+            window.scrollTo({ top: y, behavior: 'smooth' });
+        }
+    }
+
+    private updateRoutineExerciseNames(): void {
+        // Update availableRoutines
+        this.availableRoutines.forEach(routine => {
+            routine.exercises.forEach(ex => {
+                const translated = this.availableExercises.find(e => e.id === ex.exerciseId);
+                if (translated) {
+                    ex.exerciseName = translated.name;
+                }
+            });
+        });
+
+        // Update temporaryCustomRoutines
+        Array.from(this.temporaryCustomRoutines.values()).forEach(routine => {
+            routine.exercises.forEach(ex => {
+                const translated = this.availableExercises.find(e => e.id === ex.exerciseId);
+                if (translated) {
+                    ex.exerciseName = translated.name;
+                }
+            });
+        });
+    }
+
+    protected targetExists(target: any) {
+        return target !== undefined && target !== null;
+    }
+
+    async showCreationWizard(): Promise<void> {
+        // Step 0: Template or Blank
+        const templateResult = await this.alertService.showPromptDialog(
+            this.translate.instant('programBuilder.wizard.templateOrBlankTitle'),
+            this.translate.instant('programBuilder.wizard.templateOrBlankMsg'),
+            [
+                {
+                    name: 'routineTemplate',
+                    type: 'radio',
+                    label: this.translate.instant('programBuilder.wizard.templateOrBlankLabel'),
+                    value: 'blank',
+                    options: [
+                        { label: 'Blank (Custom)', value: 'blank' },
+                        { label: '3x3', value: '3x3' },
+                        { label: '5x5', value: '5x5' },
+                        { label: 'Push/Pull/Legs', value: 'ppl' },
+                        { label: '5/3/1', value: '531' }
+                    ],
+                    required: true
+                }
+            ],
+            this.translate.instant('alertService.buttons.ok')
+        );
+        if (!templateResult || !templateResult['routineTemplate']) return;
+
+        const routineTemplate = String(templateResult['routineTemplate']);
+        // If a template is chosen, generate the program and return
+        if (routineTemplate !== 'blank') {
+            await this.createProgramFromTemplate(routineTemplate);
+            return;
+        }
+
+        // Step 1: Program Name
+        const nameResult = await this.alertService.showPromptDialog(
+            this.translate.instant('programBuilder.form.nameLabel'),
+            this.translate.instant('programBuilder.form.nameWizardMsg'),
+            [
+                {
+                    name: 'programName',
+                    type: 'text',
+                    label: this.translate.instant('programBuilder.form.nameLabel'),
+                    placeholder: this.translate.instant('programBuilder.form.namePlaceholder'),
+                    required: true,
+                    autofocus: true
+                }
+            ],
+            this.translate.instant('alertService.buttons.ok')
+        );
+        if (!nameResult || !nameResult['programName']) return;
+
+        // Step 2: Program Type
+        const typeResult = await this.alertService.showPromptDialog(
+            this.translate.instant('programBuilder.form.structureLabel'),
+            this.translate.instant('programBuilder.form.structureWizardMsg'),
+            [
+                {
+                    name: 'programType',
+                    type: 'radio',
+                    label: this.translate.instant('programBuilder.form.structureLabel'),
+                    value: 'cycled', // default
+                    options: [
+                        { label: this.translate.instant('programBuilder.form.repeatingCycle'), value: 'cycled' },
+                        { label: this.translate.instant('programBuilder.form.weekByWeek'), value: 'linear' }
+                    ],
+                    required: true
+                }
+            ],
+            this.translate.instant('alertService.buttons.ok')
+        );
+        if (!typeResult || !typeResult['programType']) return;
+
+        const programType = typeResult['programType'];
+
+        let cycleLength = 7;
+        let numWeeks = 1;
+        let daysPerWeek: number[][] = [];
+
+        if (programType === 'cycled') {
+            // Step 3a: Cycle Length
+            const cycleResult = await this.alertService.showPromptDialog(
+                this.translate.instant('programBuilder.form.cycleLengthLabel'),
+                this.translate.instant('programBuilder.form.cycleLengthWizardMsg'),
+                [
+                    {
+                        name: 'cycleLength',
+                        type: 'number',
+                        label: this.translate.instant('programBuilder.form.cycleLengthLabel'),
+                        placeholder: '7',
+                        value: 7,
+                        min: 1,
+                        required: true,
+                        attributes: { min: 1 }
+                    }
+                ],
+                this.translate.instant('alertService.buttons.ok')
+            );
+            if (!cycleResult || !cycleResult['cycleLength']) return;
+            cycleLength = Number(cycleResult['cycleLength']);
+        } else {
+            // Step 3b: Number of Weeks
+            const weekResult = await this.alertService.showPromptDialog(
+                this.translate.instant('programBuilder.weeks.numWeeksLabel'),
+                this.translate.instant('programBuilder.weeks.numWeeksWizardMsg'),
+                [
+                    {
+                        name: 'numWeeks',
+                        type: 'number',
+                        label: this.translate.instant('programBuilder.weeks.numWeeksLabel'),
+                        placeholder: '4',
+                        value: 4,
+                        min: 1,
+                        required: true,
+                        attributes: { min: 1 }
+                    }
+                ],
+                this.translate.instant('alertService.buttons.ok')
+            );
+            if (!weekResult || !weekResult['numWeeks']) return;
+            numWeeks = Number(weekResult['numWeeks']);
+
+            // Step 3c: Days per week (checkboxes)
+            // Weekday values: 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat, 0=Sun
+            const weekDayOptions = [
+                { label: this.translate.instant('dates.days.monday'), value: 1 },
+                { label: this.translate.instant('dates.days.tuesday'), value: 2 },
+                { label: this.translate.instant('dates.days.wednesday'), value: 3 },
+                { label: this.translate.instant('dates.days.thursday'), value: 4 },
+                { label: this.translate.instant('dates.days.friday'), value: 5 },
+                { label: this.translate.instant('dates.days.saturday'), value: 6 },
+                { label: this.translate.instant('dates.days.sunday'), value: 0 }
+            ];
+            const defaultDays = [1, 3, 5]; // Mon, Wed, Fri
+
+            for (let i = 0; i < numWeeks; i++) {
+
+                const weekDaysInputs: AlertInput[] = weekDayOptions.map(day => ({
+                    label: day.label,
+                    name: 'day-' + day.value,
+                    type: 'checkbox',
+                    value: defaultDays.includes(day.value) ? 1 : 0,
+                }));
+
+                const daysResult = await this.alertService.showPromptDialog(
+                    this.translate.instant('programBuilder.weeks.daysInWeekLabel', { week: i + 1 }),
+                    this.translate.instant('programBuilder.weeks.daysInWeekWizardMsg', { week: i + 1 }),
+                    weekDaysInputs,
+                    this.translate.instant('alertService.buttons.ok')
+                );
+                if (!daysResult || this.areAllPropertiesFalsy(daysResult)) {
+                    return; // User cancelled
+                }
+
+                // Convert daysResult object to an array of selected day values (numbers)
+                const selectedDays: number[] = Object.entries(daysResult)
+                    .filter(([key, value]) => key.startsWith('day-') && value)
+                    .map(([key]) => Number(key.replace('day-', '')));
+
+                if (selectedDays.length === 0) return; // Require at least one day
+                daysPerWeek.push(selectedDays);
+
+
+
+            }
+        }
+
+        // Patch the form and create controls
+        this.programForm.patchValue({
+            name: nameResult['programName'],
+            programType,
+            cycleLength: programType === 'cycled' ? cycleLength : null
+        });
+
+        if (programType === 'cycled') {
+            this.scheduleFormArray.clear();
+            for (let i = 1; i <= cycleLength; i++) {
+                this.scheduleFormArray.push(this.createScheduledDayGroup({ dayOfWeek: i }));
+            }
+        } else {
+            this.weeksFormArray.clear();
+            for (let w = 0; w < numWeeks; w++) {
+                const weekGroup = this.createWeekGroup({ weekNumber: w + 1 });
+                const scheduleArray = weekGroup.get('schedule') as FormArray;
+                // Use the selected days for this week, sorted Mon-Sun
+                const weekDayOrder = [1, 2, 3, 4, 5, 6, 0];
+                daysPerWeek[w]
+                    .slice()
+                    .sort((a, b) => weekDayOrder.indexOf(a) - weekDayOrder.indexOf(b))
+                    .forEach(dayOfWeek => {
+                        scheduleArray.push(this.createScheduledDayGroup({ dayOfWeek }));
+                    });
+                this.weeksFormArray.push(weekGroup);
+            }
+        }
+    }
+
+    private async createProgramFromTemplate(template: string) {
+        this.skipAutoAddWeek = true;
+        this.weeksFormArray.clear();
+
+        // Use the shared service method
+        const routines = this.workoutService.generateRoutineFromTemplate(template, this.availableExercises);
+
+
+        // Patch the form
+        this.programForm.patchValue({
+            name: this.getTemplateProgramName(template),
+            programType: 'linear',
+            cycleLength: null
+        });
+
+        // For a training program, assign routines to days as usual
+        const week = this.createWeekGroup({ weekNumber: 1 });
+        const schedule = week.get('schedule') as FormArray;
+
+        // Example: assign routines to days (adjust as needed for your template logic)
+        if (template === 'ppl') {
+            // Push, Pull, Legs: Mon, Wed, Fri
+            [1, 3, 5].forEach((dayOfWeek, i) => {
+                this.assignRoutineToDay(schedule, routines, dayOfWeek, i, template);
+            });
+        } else if (template === '531') {
+            // 5/3/1: 4 days/week
+            [1, 3, 5, 0].forEach((dayOfWeek, i) => {
+                this.assignRoutineToDay(schedule, routines, dayOfWeek, i, template);
+
+            });
+        } else {
+            // Default: assign each routine to a day (Mon, Wed, Fri)
+            [1, 3, 5].forEach((dayOfWeek, i) => {
+                this.assignRoutineToDay(schedule, routines, dayOfWeek, i, template);
+
+            });
+        }
+
+        this.weeksFormArray.push(week);
+
+        setTimeout(() => this.scrollToWeek(0), 200);
+        this.toastService.success(this.translate.instant('programBuilder.wizard.templateCreated'), 3000);
+        this.skipAutoAddWeek = false;
+    }
+
+    // Helper to get a display name for the template
+    private getTemplateProgramName(template: string): string {
+        switch (template) {
+            case '3x3': return '3x3 Strength';
+            case '5x5': return '5x5 Strength';
+            case 'ppl': return 'Push/Pull/Legs';
+            case '531': return '5/3/1';
+            default: return 'Custom Program';
+        }
+    }
+
+    protected getProgramType(): string {
+        return this.programForm?.get('programType')?.value;
+    }
+
+    protected getProgramName(): string {
+        return this.programForm?.get('name')?.value;
+    }
+
+    public bouncedExerciseListId: string | null = null;
+
+    triggerBounceOnExerciseList(dayId: string) {
+        this.bouncedExerciseListId = dayId;
+        setTimeout(() => {
+            if (this.bouncedExerciseListId === dayId) {
+                this.bouncedExerciseListId = null;
+            }
+        }, 700); // slightly longer than animation
+    }
+
+    areAllPropertiesFalsy(obj: any): boolean {
+        return Object.values(obj).every(value => !value);
+    }
+
+    /**
+ * Assigns a routine to a day in the schedule FormArray.
+ * If the routine is missing, logs a warning and optionally shows a toast.
+ */
+    private assignRoutineToDay(
+        schedule: FormArray,
+        routines: Routine[],
+        dayOfWeek: number,
+        routineIndex: number,
+        template: string
+    ): void {
+        const routine = routines[routineIndex % routines.length];
+        if (!routine) {
+            const msg = `No routine found for index ${routineIndex} in template ${template}`;
+            console.warn(msg);
+            this.toastService.warning(msg, 4000, 'Template Warning');
+            // Optionally, you could assign a placeholder routine or skip
+            return;
+        }
+        const dayGroup = this.createScheduledDayGroup({ dayOfWeek });
+        // use the weekDay name from dayOfWeekOptions instead of the number
+        const dayName = this.dayOfWeekOptions.find(option => option.value === dayOfWeek)?.label || '';
+        const routineName = routine.name + ' ' + this.translate.instant('trainingPrograms.calendar.day') + ' ' + (dayName);
+        dayGroup.patchValue({
+            routineId: routine.id,
+            routineName: routineName,
+            dayName: routineName
+        });
+        schedule.push(dayGroup);
+        // Add to temporaryCustomRoutines for editing/persistence
+        const cacheKey = `0-${routineIndex}`;
+        this.temporaryCustomRoutines.set(cacheKey, routines[routineIndex % routines.length]);
     }
 }
 

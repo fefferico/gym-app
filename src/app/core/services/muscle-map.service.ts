@@ -168,7 +168,7 @@ export class MuscleMapService {
     }
 
     private hydratedMuscles = signal<HydratedMuscle[]>([]);
-  hydratedMuscles$ = toObservable(this.hydratedMuscles);
+    hydratedMuscles$ = toObservable(this.hydratedMuscles);
 
     // Loads translations for all muscles
     private loadTranslations() {
@@ -196,30 +196,69 @@ export class MuscleMapService {
     getMuscleById(id: string): HydratedMuscle | undefined {
         return this.hydratedMuscles().find(muscle => muscle.id === id);
     }
+
+    public normalizeMuscleName(name: string): string {
+        return name.trim().toLowerCase().replace(/[\s_]+/g, '-');
+    }
+
+    public getCanonicalMuscleId(name: string): string {
+        const normalized = this.normalizeMuscleName(name);
+        return MUSCLE_NORMALIZATION_MAP[normalized] || normalized;
+    }
 }
 
 export const MUSCLE_NORMALIZATION_MAP: Record<string, string> = (() => {
-  const map: Record<string, string> = {};
-  for (const muscle of MUSCLES_DATA) {
-    // Map canonical id to itself
-    map[muscle.id.toLowerCase().trim()] = muscle.id;
-    // Map display name to id
-    if (muscle.name) {
-      map[muscle.name.toLowerCase().trim()] = muscle.id;
+    const map: Record<string, string> = {};
+    for (const muscle of MUSCLES_DATA) {
+        const id = muscle.id.toLowerCase().trim();
+        const name = muscle.name?.toLowerCase().trim();
+
+        // Canonical id
+        map[id] = muscle.id;
+
+        // Display name
+        if (name) {
+            map[name] = muscle.id;
+        }
+
+        // Variants: replace dashes/underscores with spaces, and vice versa
+        if (id.includes('-')) {
+            map[id.replace(/-/g, ' ')] = muscle.id;
+            map[id.replace(/-/g, '')] = muscle.id;
+        }
+        if (id.includes(' ')) {
+            map[id.replace(/\s+/g, '-')] = muscle.id;
+            map[id.replace(/\s+/g, '')] = muscle.id;
+        }
+        if (id.endsWith('s')) {
+            // Singular
+            map[id.slice(0, -1)] = muscle.id;
+        } else {
+            // Plural
+            map[id + 's'] = muscle.id;
+        }
+        // Repeat for display name if different
+        if (name && name !== id) {
+            if (name.includes('-')) {
+                map[name.replace(/-/g, ' ')] = muscle.id;
+                map[name.replace(/-/g, '')] = muscle.id;
+            }
+            if (name.includes(' ')) {
+                map[name.replace(/\s+/g, '-')] = muscle.id;
+                map[name.replace(/\s+/g, '')] = muscle.id;
+            }
+            if (name.endsWith('s')) {
+                map[name.slice(0, -1)] = muscle.id;
+            } else {
+                map[name + 's'] = muscle.id;
+            }
+        }
     }
-    // Optionally, add aliases if present
-    // if (muscle.aliases) {
-    //   for (const alias of muscle.aliases) {
-    //     map[alias.toLowerCase().trim()] = muscle.id;
-    //   }
-    // }
-  }
-  // Add custom/legacy mappings if needed
-  map['upper chest'] = 'chest-upper';
-  map['traps (upper)'] = 'traps-upper';
-  map['lower back'] = 'lowerBack';
-  map['lower back (erector spinae)'] = 'lowerBack';
-  map['abs (rectus abdominis)'] = 'abs';
-  // ...etc.
-  return map;
+    // Add custom/legacy mappings if needed
+    map['upper chest'] = 'chest-upper';
+    map['traps (upper)'] = 'traps-upper';
+    map['lower back'] = 'lowerBack';
+    map['lower back (erector spinae)'] = 'lowerBack';
+    map['abs (rectus abdominis)'] = 'abs';
+    return map;
 })();

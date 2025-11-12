@@ -133,9 +133,9 @@ export class TrainingProgramService {
     );
   }
 
-  async addProgram(programData: Omit<TrainingProgram, 'id' | 'isActive' | 'schedule'> & { schedule: Omit<ScheduledRoutineDay, 'id'>[] }): Promise<TrainingProgram> {
+  async addProgram(programData: Omit<TrainingProgram, 'id' | 'isActive' | 'schedule'> & { schedule: Omit<ScheduledRoutineDay, 'id'>[] } & { id?: string }): Promise<TrainingProgram> {
     const currentPrograms = this.programsSubject.getValue();
-    const programId = uuidv4();
+    const programId = programData.id || uuidv4();
     const newProgram: TrainingProgram = {
       ...programData,
       id: programId,

@@ -530,8 +530,12 @@ uniqueRoutineEquipments = computed<{ key: string, label: string }[]>(() => {
         if (associatedLogs.length > 0) {
           await this.trackingService.clearWorkoutLogsByRoutineId(routineId);
         }
-        await this.workoutService.deleteRoutine(routineId); // Assuming this is async now
-        this.toastService.success(this.translate.instant('routineList.toasts.routineDeleted', { name: routineToDelete.name }), 4000, this.translate.instant('routineList.alerts.deleteTitle'));
+        const deletionSuccess = await this.workoutService.deleteRoutine(routineId);
+        if (deletionSuccess) {
+          this.toastService.success(this.translate.instant('routineList.toasts.routineDeleted', { name: routineToDelete.name }), 4000, this.translate.instant('routineList.alerts.deleteTitle'));
+        } else {
+          this.toastService.error(this.translate.instant('routineList.toasts.routineNotFound'), 0, "Deletion Failed");
+        }
       } catch (error) {
         console.error("Error during deletion:", error);
         this.toastService.error(this.translate.instant('routineList.toasts.routineNotFound'), 0, "Deletion Failed");

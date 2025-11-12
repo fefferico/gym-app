@@ -157,6 +157,17 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
   };
 
   ngOnInit(): void {
+    // Check premium status first
+    const isPremium = this.subscriptionsService.isPremium();
+    this.isPremiumInfoAvailable.set(isPremium);
+
+    if (!isPremium) {
+      // If not premium, skip loading active programs and just set loading to false
+      this.isTrainingProgramsAvailable.set(false);
+      this.isLoading.set(false);
+      return;
+    }
+
     this.currentDate$.pipe(
       tap(() => this.isLoading.set(true)),
       switchMap(date =>
@@ -265,6 +276,7 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
                 const routineData = this.trainingProgramService.findRoutineForDayInProgram(date, prog);
                 if (routineData && prog.startDate && parseISO(prog.startDate) <= date) {
                   routineData.scheduledDayInfo.iterationId = prog.iterationId;
+                  routineData.scheduledDayInfo.programId = prog.id;
                   routineData.scheduledDayInfo.programName = prog.name;
                   workoutObservables$.push(of(routineData));
                 }

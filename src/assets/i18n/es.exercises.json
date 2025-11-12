@@ -32,6 +32,10 @@
       "name": "Fondos (en paralelas)",
       "description": "Un ejercicio compuesto con peso corporal que se enfoca principalmente en los tríceps y el pecho, realizado en barras paralelas."
     },
+    "barbell-squat": {
+      "name": "Sentadilla con barra",
+      "description": "Un ejercicio fundamental para la fuerza que se enfoca en los cuádriceps, glúteos, isquiotibiales y la parte baja de la espalda al hacer una sentadilla con una barra en la parte superior de la espalda."
+    },
     "barbell-bench-press": {
       "name": "Press de banca con barra",
       "description": "Un ejercicio compuesto fundamental para la fuerza del tren superior, que se enfoca principalmente en el pecho, los hombros y los tríceps."

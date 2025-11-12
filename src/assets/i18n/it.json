@@ -543,6 +543,7 @@
       "createFirstButton": "CREA IL TUO PRIMO PROGRAMMA"
     },
     "calendar": {
+      "day": "Giorno",
       "noActiveProgramTitle": "Nessun Programma Attivo",
       "selectProgramTitle": "Seleziona un Programma",
       "noActiveProgramMessage": "Attiva un programma per vederne la pianificazione.",
@@ -602,6 +603,10 @@
       "deactivate": "DISATTIVA",
       "finish": "COMPLETA",
       "history": "REGISTRO"
+    },
+    "weeks": {
+      "confirmRemoveDayTitle": "Rimuovi Giorno",
+      "confirmRemoveDayMsg": "Sei sicuro di voler rimuovere questo giorno?"
     }
   },
   "statsDashboard": {
@@ -1014,6 +1019,15 @@
     "addSelected": "Aggiungi selezionato/i"
   },
   "workoutBuilder": {
+    "wizard": {
+      "templateOrBlankTitle": "Scegli un Modello",
+      "templateOrBlankMsg": "Vuoi iniziare da un modello o creare una scheda personalizzata?",
+      "templateOrBlankLabel": "Tipo di Scheda",
+      "pickRoutineTitle": "Seleziona una Scheda",
+      "pickRoutineMsg": "Seleziona quale scheda utilizzare dal modello.",
+      "pickRoutineLabel": "Scheda",
+      "templateCreated": "Modello caricato! Ora puoi personalizzare la tua scheda."
+    },
     "exerciseInfoTooltip": "Dettagli esercizio e progressione",
     "setTypes": {
       "standard": "Standard",
@@ -1310,7 +1324,8 @@
       }
     },
     "buttons": {
-      "regenButton": "RIGENERA SCHEDA"
+      "regenButton": "RIGENERA SCHEDA",
+      "resetTemplateButton": "REIMPOSTA DA MODELLO"
     }
   },
   "fab": {
@@ -1480,6 +1495,12 @@
     }
   },
   "programBuilder": {
+    "wizard": {
+      "templateOrBlankTitle": "Scegli un Modello",
+      "templateOrBlankMsg": "Vuoi iniziare da un modello o creare un programma personalizzato?",
+      "templateOrBlankLabel": "Tipo di Scheda",
+      "templateCreated": "Modello caricato! Ora puoi personalizzare il tuo programma."
+    },
     "title": "Programmi",
     "toggleFilters": "Mostra/Nascondi Filtri",
     "active": "Attivo",
@@ -1493,6 +1514,9 @@
       "workouts": "Allenamenti"
     },
     "form": {
+      "nameWizardMsg": "Inserisci un nome per il tuo nuovo programma.",
+      "structureWizardMsg": "Scegli la struttura del tuo programma.",
+      "cycleLengthWizardMsg": "Quanti giorni ci sono in ogni ciclo? (giorni di riposo inclusi)",
       "nameLabel": "Nome Programma",
       "namePlaceholder": "Nome programma",
       "nameRequired": "Il nome del programma è obbligatorio",
@@ -1514,7 +1538,7 @@
     },
     "schedule": {
       "title": "Programmazione",
-      "addDay": "AGGIUNGI GIORNO ALLA PROGRAMMAZIONE",
+      "addDay": "AGGIUNGI GIORNO",
       "dayNamePlaceholder": "es., Giorno di Spinta",
       "dayOfWeekLabel": "Giorno della Settimana",
       "cycleDayLabel": "Numero Giorno del Ciclo",
@@ -1539,7 +1563,11 @@
       "addDayToWeek": "AGGIUNGI GIORNO ALLA SETTIMANA",
       "emptyWeek": "Questa settimana è vuota.",
       "noWeeks": "Nessuna settimana ancora creata per questo programma.",
-      "addFirstWeek": "Aggiungi la prima settimana"
+      "addFirstWeek": "Aggiungi la prima settimana",
+      "numWeeksLabel": "Numero di Settimane",
+      "numWeeksWizardMsg": "Quante settimane dovrebbe avere il tuo programma?",
+      "daysInWeekLabel": "Giorni nella Settimana {{week}}",
+      "daysInWeekWizardMsg": "Quanti giorni dovrebbe avere la settimana {{week}}?"
     },
     "actions": {
       "cancel": "ANNULLA",

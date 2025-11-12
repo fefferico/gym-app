@@ -591,6 +591,7 @@
       "createFirstButton": "CREATE YOUR FIRST PROGRAM"
     },
     "calendar": {
+      "day": "Day",
       "noActiveProgramTitle": "No Active Program",
       "selectProgramTitle": "Select a Program",
       "noActiveProgramMessage": "Please activate a program to see its schedule.",
@@ -650,6 +651,10 @@
       "deactivate": "DEACTIVATE",
       "finish": "FINISH",
       "history": "LOGS"
+    },
+    "weeks": {
+      "confirmRemoveDayTitle": "Remove Day",
+      "confirmRemoveDayMsg": "Are you sure you want to remove this day?"
     }
   },
   "statsDashboard": {
@@ -1015,6 +1020,15 @@
     "addSelected": "Add selected"
   },
   "workoutBuilder": {
+    "wizard": {
+      "templateOrBlankTitle": "Choose a Template",
+      "templateOrBlankMsg": "Would you like to start from a template or create a custom routine?",
+      "templateOrBlankLabel": "Routine Type",
+      "pickRoutineTitle": "Pick a Routine",
+      "pickRoutineMsg": "Select which routine to use from the template.",
+      "pickRoutineLabel": "Routine",
+      "templateCreated": "Template loaded! You can now customize your routine."
+    },
     "exerciseInfoTooltip": "Exercise details and progression",
     "setTypes": {
       "standard": "Standard",
@@ -1311,7 +1325,8 @@
       }
     },
     "buttons": {
-      "regenButton": "REGENERATE WORKOUT"
+      "regenButton": "REGENERATE WORKOUT",
+      "resetTemplateButton": "RESET FROM TEMPLATE"
     }
   },
   "fab": {
@@ -1479,6 +1494,12 @@
     }
   },
   "programBuilder": {
+    "wizard": {
+      "templateOrBlankTitle": "Choose a Template",
+      "templateOrBlankMsg": "Would you like to start from a template or create a custom program?",
+      "templateOrBlankLabel": "Routine Type",
+      "templateCreated": "Template loaded! You can now customize your program."
+    },
     "title": "Programs",
     "toggleFilters": "Toggle Filters",
     "active": "Active",
@@ -1492,6 +1513,9 @@
       "workouts": "Workouts"
     },
     "form": {
+      "nameWizardMsg": "Enter a name for your new program.",
+      "structureWizardMsg": "Choose the structure of your program.",
+      "cycleLengthWizardMsg": "How many days are in each cycle? (Rest days included)",
       "nameLabel": "Program Name",
       "namePlaceholder": "Program name",
       "nameRequired": "Program name is required",
@@ -1513,7 +1537,7 @@
     },
     "schedule": {
       "title": "Schedule",
-      "addDay": "ADD DAY TO SCHEDULE",
+      "addDay": "ADD DAY",
       "dayNamePlaceholder": "e.g., Push Day",
       "dayOfWeekLabel": "Day of Week",
       "cycleDayLabel": "Cycle Day Number",
@@ -1539,7 +1563,11 @@
       "addDayToWeek": "ADD DAY TO WEEK",
       "emptyWeek": "This week is empty.",
       "noWeeks": "No weeks created for this program yet.",
-      "addFirstWeek": "Add the first week"
+      "addFirstWeek": "Add the first week",
+      "numWeeksLabel": "Number of Weeks",
+      "numWeeksWizardMsg": "How many weeks should your program have?",
+      "daysInWeekLabel": "Days in Week {{week}}",
+      "daysInWeekWizardMsg": "How many days should week {{week}} have?"
     },
     "actions": {
       "cancel": "CANCEL",

@@ -9,7 +9,8 @@ export enum AUDIO_TYPES {
   "tada" = 'tada',
   "tatatada" = 'tatatada',
   "untoggle" = 'untoggle',
-  "magic" = "magic"
+  "magic" = "magic",
+  "pop" = "pop",
 };
 
 @Injectable({
@@ -259,6 +260,10 @@ export class AudioService {
         this.playMagicRestoreSound();
         break;
       }
+      case AUDIO_TYPES.pop: {
+        this.playPopSound();
+        break;
+      }
     }
   }
 
@@ -320,6 +325,66 @@ export class AudioService {
       oscillator.start(startTime);
       oscillator.stop(startTime + 1.5);
     });
+  }
+
+  // You can place this in a shared audio utility file or directly in your component/service
+
+    playPopSound() {
+    this.initializeAudioContext();
+    if (!this.audioCtx) return;
+  
+    const ctx = this.audioCtx;
+    const now = ctx.currentTime;
+  
+    // --- 1. Short burst of white noise (the "pfft") ---
+    const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.08, ctx.sampleRate); // 80ms
+    const output = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < noiseBuffer.length; i++) {
+      // Exponential fade out for a quick "pfft"
+      output[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / noiseBuffer.length, 2.5);
+    }
+    const noiseSource = ctx.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
+  
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.7, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+  
+    // Optional: bandpass filter to make it airy
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1800, now);
+    filter.Q.value = 2;
+  
+    noiseSource.connect(filter).connect(noiseGain).connect(ctx.destination);
+  
+    // --- 2. Very short, high-pitched oscillator "pop" (the cork) ---
+    const osc = ctx.createOscillator();
+    const oscGain = ctx.createGain();
+  
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(600, now);
+    osc.frequency.exponentialRampToValueAtTime(180, now + 0.09);
+  
+    oscGain.gain.setValueAtTime(0.18, now);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
+  
+    osc.connect(oscGain).connect(ctx.destination);
+  
+    // --- Start and stop everything ---
+    noiseSource.start(now);
+    noiseSource.stop(now + 0.08);
+  
+    osc.start(now);
+    osc.stop(now + 0.11);
+  
+    osc.onended = () => {
+      osc.disconnect();
+      oscGain.disconnect();
+      noiseSource.disconnect();
+      noiseGain.disconnect();
+      filter.disconnect();
+    };
   }
 
 }

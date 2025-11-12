@@ -679,7 +679,12 @@ export class WorkoutUtilsService {
             return null; // User cancelled the second prompt
         }
 
-        const targetValue = valueResult['targetValue'];
+        let targetValue = valueResult['targetValue'];
+
+        // Handle case where the value is an array (e.g., from multi-select input)
+        if (Array.isArray(targetValue)) {
+            targetValue = targetValue[0] ?? 0;
+        }
 
         // --- Step 3: Call the private method to apply the change ---
         const updatedRoutine = this.addFieldToSet(routine, exIndex, setIndex, fieldToAdd, targetValue);

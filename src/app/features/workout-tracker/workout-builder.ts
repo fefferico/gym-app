@@ -106,6 +106,12 @@ export enum SET_TYPE {
         animate('200ms ease-out', style({ transform: 'translateY(0)', opacity: 1 })),
       ]),
     ]),
+    trigger('exerciseExit', [
+      transition(':leave', [
+        style({ opacity: 1, transform: 'translateX(0) scale(1)' }),
+        animate('350ms cubic-bezier(.36,1.01,.32,1)', style({ opacity: 0, transform: 'translateX(80px) scale(0.8)' }))
+      ])
+    ]),
   ],
 })
 export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit {
@@ -277,13 +283,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       name: [''], // Validated based on mode
       description: [''], // Only for routineBuilder
       goal: [''], // Only for routineBuilder
-
-      // --- START: ADD NEW FORM CONTROLS ---
       primaryCategory: [''],
       secondaryCategory: [''],
       tags: [''],
-      // --- END: ADD NEW FORM CONTROLS ---
-
       workoutDate: [''], // Only for manualLogEntry
       startTime: [''],   // Only for manualLogEntry
       endTime: [''],   // Only for manualLogEntry
@@ -387,6 +389,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           setTimeout(() => {
             this.openWorkoutGenerator();
           }, 150);
+        }
+
+        if (this.isRoutineMode && this.isNewMode) {
+          this.showCreationWizard();
         }
 
         this.currentRoutineId = this.route.snapshot.paramMap.get('routineId'); // For editing/viewing a Routine, or prefilling a Log
@@ -774,31 +780,39 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.sanitizedDescription = this.sanitizer.bypassSecurityTrustHtml(value);
   }
 
-  private getDefaultFormValuesForMode(): any { /* ... (as previously defined) ... */
+    private getDefaultFormValuesForMode(): any {
+    // Common fields for all modes
+    const base = {
+      name: '',
+      description: '',
+      goal: '',
+      primaryCategory: '',
+      secondaryCategory: '',
+      tags: '',
+      workoutDate: '',
+      startTime: '',
+      endTime: '',
+      overallNotesLog: '',
+      routineIdForLog: '',
+      programIdForLog: '',
+      iterationIdForLog: '',
+      scheduledDayIdForLog: '',
+      exercises: []
+    };
+  
     if (this.mode === BuilderMode.manualLogEntry) {
       const today = new Date();
       return {
-        name: '', description: '', goal: 'custom',
+        ...base,
+        goal: 'custom',
         workoutDate: format(today, 'yyyy-MM-dd'),
         startTime: format(today, 'HH:mm'),
         endTime: format(today, 'HH:mm'),
-        // durationMinutes: 60,
-        overallNotesLog: '',
-        routineIdForLog: '',
-        programIdForLog: '',
-        iterationIdForLog: '',
-        scheduledDayIdForLog: '',
-        exercises: []
-      };
-    } else { // routineBuilder
-      return {
-        name: '', description: '', goal: '',
-        workoutDate: '', startTime: '', endTime: '',
-        // durationMinutes: 60,
-        overallNotesLog: '', routineIdForLog: '', programIdForLog: '', iterationIdForLog: '', scheduledDayIdForLog: '',
-        exercises: []
       };
     }
+  
+    // For routineBuilder and customProgramEntryBuilder
+    return { ...base };
   }
 
   private configureFormValidatorsAndFieldsForMode(): void {
@@ -1039,9 +1053,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
       // As a safeguard, update any exercises that might have been rendered
       // before this async operation completed.
-      if (this.exercisesFormArray && this.exercisesFormArray.length > 0) {
-        this.updateExerciseNamesInForm();
-      }
+      // if (this.exercisesFormArray && this.exercisesFormArray.length > 0) {
+      //   this.updateExerciseNamesInForm();
+      // }
     });
   }
 
@@ -1072,9 +1086,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.builderForm.patchValue({
       name: routine.name,
       description: routine.description,
-      goal: routine.goal,
-      primaryCategory: routine.primaryCategory,
-      secondaryCategory: routine.secondaryCategory,
+      goal: routine.goal ?? '',
+      primaryCategory: routine.primaryCategory ?? '',
+      secondaryCategory: routine.secondaryCategory ?? '',
       tags: routine.tags?.join(', ') || '', // Convert array to comma-separated string
     });
     this.updateSanitizedDescription(routine.description || '');
@@ -1085,6 +1099,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.addRepsListener(newExerciseFormGroup);
       this.addDurationListener(newExerciseFormGroup);
     });
+    this.updateExerciseNamesInForm();
     this.builderForm.markAsPristine();
   }
 
@@ -1394,6 +1409,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     });
 
     this.closeExerciseSelectionModal();
+    // this.audioService.playSound(AUDIO_TYPES.pop);
   }
 
   ngAfterViewInit(): void {
@@ -1729,6 +1745,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.selectedExerciseIndicesForSuperset.set([]); // Also clear the superset selection for consistency.
     this.recalculateSupersetOrders();
     this.expandedSetPath.set(null);
+    this.audioService.playSound(AUDIO_TYPES.whoosh);
   }
 
   toggleExerciseSelectionForSuperset(index: number, event: Event): void {
@@ -4001,8 +4018,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
 
-
-
+  protected resetTemplateAndStardWizard(): void {
+    this.showCreationWizard();
+  }
 
 
   isSwitchExerciseModalOpen = signal(false);
@@ -5583,6 +5601,118 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return this.isNewMode
       ? this.translate.instant('workoutBuilder.logEntry.logButton')
       : this.translate.instant('workoutBuilder.logEntry.saveLogButton');
+  }
+
+
+  async showCreationWizard(): Promise<void> {
+    // Step 0: Template or Blank
+    const templateResult = await this.alertService.showPromptDialog(
+      this.translate.instant('workoutBuilder.wizard.templateOrBlankTitle'),
+      this.translate.instant('workoutBuilder.wizard.templateOrBlankMsg'),
+      [
+        {
+          name: 'routineTemplate',
+          type: 'radio',
+          label: this.translate.instant('workoutBuilder.wizard.templateOrBlankLabel'),
+          value: 'blank',
+          options: [
+            { label: 'Blank (Custom)', value: 'blank' },
+            { label: '3x3', value: '3x3' },
+            { label: '5x5', value: '5x5' },
+            { label: 'Push/Pull/Legs', value: 'ppl' },
+            { label: '5/3/1', value: '531' }
+          ],
+          required: true
+        }
+      ],
+      this.translate.instant('alertService.buttons.ok')
+    );
+    if (!templateResult || !templateResult['routineTemplate']) return;
+
+    const routineTemplate = String(templateResult['routineTemplate']);
+    if (routineTemplate !== 'blank') {
+      await this.createRoutineFromTemplate(routineTemplate);
+      return;
+    }
+
+    // rest arrays only if an option has been selected
+    this.exercisesFormArray.clear();
+
+    // Step 1: Routine Name
+    const nameResult = await this.alertService.showPromptDialog(
+      this.translate.instant('workoutBuilder.routineBuilder.nameLabel'),
+      this.translate.instant('workoutBuilder.routineBuilder.nameWizardMsg'),
+      [
+        {
+          name: 'routineName',
+          type: 'text',
+          label: this.translate.instant('workoutBuilder.routineBuilder.nameLabel'),
+          placeholder: this.translate.instant('workoutBuilder.routineBuilder.namePlaceholder'),
+          required: true,
+          autofocus: true
+        }
+      ],
+      this.translate.instant('alertService.buttons.ok')
+    );
+    if (!nameResult || !nameResult['routineName']) return;
+
+    // Step 2: Routine Goal
+    const goalResult = await this.alertService.showPromptDialog(
+      this.translate.instant('workoutBuilder.routineBuilder.goalLabel'),
+      this.translate.instant('workoutBuilder.routineBuilder.goalWizardMsg'),
+      [
+        {
+          name: 'routineGoal',
+          type: 'select',
+          label: this.translate.instant('workoutBuilder.routineBuilder.goalLabel'),
+          value: 'hypertrophy',
+          options: this.routineGoals.map(g => ({ label: this.translate.instant(g.label), value: g.value })),
+          required: true
+        }
+      ],
+      this.translate.instant('alertService.buttons.ok')
+    );
+    if (!goalResult || !goalResult['routineGoal']) return;
+
+    // Patch the form with the wizard results
+    this.builderForm.patchValue({
+      name: nameResult['routineName'],
+      goal: goalResult['routineGoal']
+    });
+  }
+
+  private async createRoutineFromTemplate(template: string) {
+    // Use your WorkoutService's shared method
+    const routines = this.workoutService.generateRoutineFromTemplate(template, this.availableExercises);
+
+    // For PPL/5/3/1, let user pick which routine to use, or just pick the first
+    let routine: Routine;
+    if (routines.length === 1) {
+      routine = routines[0];
+    } else {
+      // Prompt user to pick which routine (e.g. Push, Pull, Legs)
+      const pickResult = await this.alertService.showPromptDialog(
+        this.translate.instant('workoutBuilder.wizard.pickRoutineTitle'),
+        this.translate.instant('workoutBuilder.wizard.pickRoutineMsg'),
+        [
+          {
+            name: 'routinePick',
+            type: 'select',
+            label: this.translate.instant('workoutBuilder.wizard.pickRoutineLabel'),
+            value: routines[0].id,
+            options: routines.map(r => ({ label: r.name, value: r.id })),
+            required: true
+          }
+        ],
+        this.translate.instant('alertService.buttons.ok')
+      );
+      if (!pickResult || !pickResult['routinePick']) return;
+      routine = routines.find(r => r.id === pickResult['routinePick']) || routines[0];
+    }
+
+    // Patch the form with the routine data
+    this.patchFormWithRoutineData(routine);
+    this.toastService.success(this.translate.instant('workoutBuilder.wizard.templateCreated'), 3000);
   }
 
 }

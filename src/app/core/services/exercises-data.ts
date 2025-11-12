@@ -1973,6 +1973,19 @@ export const EXERCISES_DATA: Exercise[] = [
     "imageUrls": []
   },
   {
+    "id": "barbell-squat",
+    "name": "Barbell Squat",
+    "description": "A fundamental lower-body compound exercise that targets the quadriceps, glutes, hamstrings, and core by squatting with a barbell on the shoulders.",
+    "category": "barbells",
+    "primaryMuscleGroup": "quadriceps",
+    "muscleGroups": ["quadriceps", "glutes", "hamstrings", "adductors", "core", "lower-back"],
+    "equipmentNeeded": ["barbell", "power-rack-squat-rack"],
+    "imageUrls": ["assets/images/exercises/barbell-squat_1.jpg", "assets/images/exercises/barbell-squat_2.jpg"],
+    "videoUrl": "https://www.youtube.com/watch?v=ultWZbUMPL8",
+    "notes": "Keep your chest up and back straight. Squat down until your thighs are at least parallel to the floor. Drive through your heels to stand back up."
+  },
+
+  {
     "id": "barbell-skull-crusher",
     "name": "Barbell Skull Crusher",
     "description": "A tricep isolation exercise performed lying on a bench, lowering a barbell towards the forehead. Also known as a lying tricep extension.",

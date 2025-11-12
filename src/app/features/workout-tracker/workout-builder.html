@@ -312,6 +312,7 @@
                 <ng-container *ngFor="let exerciseControl of exercisesFormArray.controls; let exIndex = index;">
                     <div class="relative group exercise-card-wrapper" #expandedExerciseCard appClickOutside
                         (clickOutside)="closeExerciseActionMenu()"
+                        [@exerciseExit]
                         [style.zIndex]="isExerciseActionMenuVisible(exIndex) ? 50 : 'auto'"
                         [ngClass]="getExerciseCardClass(exerciseControl, exIndex)">
                         <div *ngIf="(isEditableMode()) && selectedExerciseIndicesForSuperset().length >= 2 && exIndex === firstSelectedExerciseIndexForSuperset"
@@ -1203,9 +1204,19 @@
                 {{ getSubmitButtonLabel() | translate }}
             </button>
 
+            <!-- RESET TEMPLATE FOR SHOWING WIZARD -->
+            <div *ngIf="isNewMode && isEditableMode() && mode !== BuilderMode.manualLogEntry">
+                <button appBumpClick type="button" (click)="resetTemplateAndStardWizard()"
+                    class="flex items-center justify-center px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 min-w-[220px]">
+                    <app-icon name="restore" class="h-6 w-6 mr-1"></app-icon>
+                    {{'workoutBuilder.buttons.resetTemplateButton' | translate }}
+                </button>
+            </div>
+
+
             <!-- WORKOUT GENERATOR -->
             <div *ngIf="isGeneratedRoutine()">
-                <button appBumpClick *ngIf="isGeneratedRoutine()" type="button" (click)="regenerateWorkout()"
+                <button appBumpClick type="button" (click)="regenerateWorkout()"
                     class="flex items-center justify-center px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 min-w-[220px]">
                     <app-icon name="random" class="h-6 w-6 mr-1"></app-icon>
                     {{'workoutBuilder.buttons.regenButton' | translate }}

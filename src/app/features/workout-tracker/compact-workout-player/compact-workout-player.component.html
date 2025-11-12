@@ -528,9 +528,9 @@
                       <div class="flex items-start gap-2">
                         <!-- <app-icon name="chevron-down" class="h-5 w-5 transition-transform duration-200 flex-shrink-0"
                           [class.rotate-180]="isRoundExpanded(exIndex, roundIndex)"></app-icon> -->
-                        <div class="flex-shrink-0 px-1 text-center" [ngClass]="{
-                              'bg-primary rounded-lg': isRoundExpanded(exIndex, roundIndex) && isStandardSuperSet(exIndex),
-                              'bg-teal-500 rounded-lg': isRoundExpanded(exIndex, roundIndex) && isEmom(exIndex),
+                        <div class="flex-shrink-0 px-1 text-center rounded-lg" [ngClass]="{
+                              'bg-primary': isRoundExpanded(exIndex, roundIndex) && isStandardSuperSet(exIndex),
+                              'bg-teal-500': isRoundExpanded(exIndex, roundIndex) && isEmom(exIndex),
                             }">
                           <span class="font-bold text-lg text-gray-700 dark:text-gray-200">#{{
                             'compactPlayer.roundHeader' |
