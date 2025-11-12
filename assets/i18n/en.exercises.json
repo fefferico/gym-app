@@ -32,6 +32,10 @@
       "name": "Dip (Bar)",
       "description": "A compound bodyweight exercise primarily targeting the triceps and chest, performed on parallel bars."
     },
+    "barbell-squat": {
+      "name": "Barbell Squat",
+      "description": "A fundamental strength exercise targeting the quads, glutes, hamstrings, and lower back by squatting with a barbell on the upper back."
+    },
     "barbell-bench-press": {
       "name": "Barbell Bench Press",
       "description": "A fundamental compound exercise for upper body strength, primarily targeting the chest, shoulders, and triceps."

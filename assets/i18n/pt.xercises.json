@@ -32,6 +32,10 @@
       "name": "Mergulho (Barras Paralelas)",
       "description": "Um exercício composto com peso corporal que visa principalmente os tríceps e o peito, realizado em barras paralelas."
     },
+    "barbell-squat": {
+      "name": "Agachamento com Barra",
+      "description": "Um exercício fundamental para a força que visa quadríceps, glúteos, isquiotibiais e a região lombar, realizado ao agachar com uma barra apoiada na parte superior das costas."
+    },
     "barbell-bench-press": {
       "name": "Supino Reto com Barra",
       "description": "Um exercício composto fundamental para a força da parte superior do corpo, visando principalmente o peito, ombros e tríceps."

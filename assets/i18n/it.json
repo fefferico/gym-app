@@ -11,7 +11,11 @@
     "welcomeBack": "Bentornato, {{name}}!",
     "readyMessage": "Pronto a superare i tuoi obiettivi oggi?",
     "quickActionsTitle": "Azioni Rapide",
-    "appVersion": "Versione App:"
+    "appVersion": "Versione App:",
+    "pausedWorkout":{
+      "discardPromptTitle": "Discard Current Workout?",
+      "discardPromptMessage": "You have a paused workout session. Do you want to discard it and start a new one?"
+    }
   },
   "user": {
     "defaultName": "Appassionato di Fitness"
@@ -21,7 +25,7 @@
     "routineLabel": "Routine",
     "programLabel": "Programma",
     "loggedOn": "Registrato il",
-    "pausedAt": "In pausa alle",
+    "pausedAt": "In pausa dopo",
     "defaultRoutineName": "Nuova sessione",
     "fallbackRoutineName": "il tuo allenamento",
     "adHocWorkout": "Allenamento Ad-hoc",
@@ -45,14 +49,16 @@
     "myRoutinesDescription": "Visualizza, crea o modifica le tue schede di allenamento",
     "trainingProgramsTitle": "Programmi di Allenamento",
     "trainingProgramsDescription": "Gestisci le tue schede di allenamento a lungo termine",
-    "workoutHistoryTitle": "Storico Allenamenti",
+    "workoutHistoryTitle": "Diario Allenamenti",
     "workoutHistoryDescription": "Rivedi i tuoi allenamenti passati e i tuoi progressi",
     "profileAndSettingsTitle": "Profilo e Impostazioni",
     "profileAndSettingsDescription": "Gestisci i tuoi dati e le preferenze dell'app",
     "personalGymTitle": "La Mia Attrezzatura",
     "personalGymDescription": "Gestisci gli attrezzi e gli accessori disponibili per i tuoi allenamenti",
     "weightToolkitTitle": "Toolkit Pesi",
-    "weightToolkitDescription": "Un toolkit completo per il sollevamento. Calcola dischi, percentuali, 1RM, RPE e punteggi ufficiali."
+    "weightToolkitDescription": "Un toolkit completo per il sollevamento. Calcola dischi, percentuali, 1RM, RPE e punteggi ufficiali.",
+    "exerciseLibraryTitle": "Biblioteca Esercizi",
+    "exerciseLibraryDescription": "Sfoglia e cerca una biblioteca completa di esercizi"
   },
   "settings": {
     "title": "Profilo & Impostazioni",
@@ -166,7 +172,7 @@
       "exportButton": "ESPORTA DATI",
       "importTitle": "Ripristino dei tuoi dati",
       "importDescription": "Importa da un file di backup JSON.",
-      "syncTitle": "Dati e Storico",
+      "syncTitle": "Dati e Diario",
       "syncDescription": "Ricalcola statistiche e record.",
       "syncButton": "SINCRONIZZA CRONOLOGIA",
       "resetTitle": "Azzera Tutti i Dati",
@@ -231,7 +237,12 @@
     "cancelled": "Annullato",
     "discard": "Scarta",
     "undo": "Ripristina",
-    "actionCompleted": "Operazione completata"
+    "edit": "Modifica",
+    "atLeast": "Almeno",
+    "min": "Min",
+    "max": "Max",
+    "actionCompleted": "Operazione completata",
+    "invalidData": "Dati errati"
   },
   "toasts": {
     "statusUpdated": "Stato Aggiornato",
@@ -282,7 +293,7 @@
     "previousDay": "Giorno Precedente",
     "nextDay": "Giorno Successivo",
     "started": "Iniziato",
-    "jumpToToday": "Vai a Oggi",
+    "jumpToToday": "Torna a Oggi",
     "checkingSchedule": "Controllo il tuo programma...",
     "scheduled": "Previsto",
     "loggedUnscheduled": "Registrato (Non previsto)",
@@ -412,14 +423,14 @@
     }
   },
   "historyList": {
-    "title": "Storico",
+    "title": "Diario",
     "toggleFilters": "Mostra/Nascondi Filtri",
     "view": {
       "list": "ELENCO",
       "calendar": "CALENDARIO"
     },
     "filters": {
-      "title": "Filtra Storico",
+      "title": "Filtra Diario",
       "fromDate": "Dal",
       "toDate": "Al",
       "routineName": "Nome Scheda",
@@ -488,6 +499,8 @@
   },
   "trainingPrograms": {
     "title": "Programmi",
+    "addCustomRoutine": "Scheda ad-hoc per programma",
+    "adHocRoutine": "Scheda ad-hoc",
     "toggleFilters": "Mostra/Nascondi Filtri",
     "view": {
       "myPrograms": "I MIEI PROGRAMMI",
@@ -523,7 +536,8 @@
       "lastScheduling": "Ultima programmazione",
       "goals": "Obiettivi",
       "iteration": "Iterazione",
-      "currentWeek": "Settimana Corrente:"
+      "currentWeek": "Settimana Corrente:",
+      "exercises": "Esercizi"
     },
     "noPrograms": {
       "noMatchTitle": "Nessun Programma Corrisponde ai Filtri",
@@ -533,6 +547,7 @@
       "createFirstButton": "CREA IL TUO PRIMO PROGRAMMA"
     },
     "calendar": {
+      "day": "Giorno",
       "noActiveProgramTitle": "Nessun Programma Attivo",
       "selectProgramTitle": "Seleziona un Programma",
       "noActiveProgramMessage": "Attiva un programma per vederne la pianificazione.",
@@ -592,6 +607,10 @@
       "deactivate": "DISATTIVA",
       "finish": "COMPLETA",
       "history": "REGISTRO"
+    },
+    "weeks": {
+      "confirmRemoveDayTitle": "Rimuovi Giorno",
+      "confirmRemoveDayMsg": "Sei sicuro di voler rimuovere questo giorno?"
     }
   },
   "statsDashboard": {
@@ -749,6 +768,8 @@
     }
   },
   "compactPlayer": {
+    "allMetricMustBeValid": "Tutte le metriche devono essere valide per poter completare la serie",
+    "restTitle": "Recupero serie",
     "warmupSet": "Serie di riscaldamento",
     "completedSet": "SERIE COMPLETATA",
     "completeSet": "COMPLETA SERIE",
@@ -806,9 +827,11 @@
       "personalBests": "Record Personali",
       "noPBs": "Nessun record personale ancora registrato per questo esercizio.",
       "onDate": "il {{date}}",
-      "done": "FATTO"
+      "done": "FATTO",
+      "ok": "OK"
     },
     "toasts": {
+      "noFurtherSchemes": "Non sono stati trovati ulteriori schemi disponibili per la metrica: {{metric}}. Tieni presente che durante un allenamento sono consentiti solo i tipi di metrica di tipo 'esatto'.",
       "intensityAdjusted": "L'intensità della scheda sarà modificata del {{percent}}%",
       "intensityAdjustedTitle": "Intensità Modificata",
       "workoutPaused": "Allenamento in Pausa",
@@ -840,7 +863,9 @@
       "noFieldsToRemove": "Nessun campo può essere rimosso da questa serie.",
       "fieldAdded": "Campo {{field}} aggiunto alla serie.",
       "invalidValue": "Valore non valido inserito.",
-      "fieldRemoved": "Campo '{{field}}' rimosso dalla serie #{{number}}."
+      "fieldRemoved": "Campo '{{field}}' rimosso dalla serie #{{number}}.",
+      "enterNumericRepsError": "Devi impostare il numero effettuato di ripetizioni prima di poter completare la serie",
+      "enterNumericWeightError": "Devi modificare il valore effettivo del peso prima di impostare la serie come completata"
     },
     "alerts": {
       "toughWorkoutTitle": "L'ultimo Allenamento è Stato Duro",
@@ -913,6 +938,11 @@
       "quit": "ABBANDONA ALLENAMENTO",
       "countdown": "CONTO ALLA ROVESCIA",
       "stopwatch": "CRONOMETRO"
+    },
+    "set": {
+      "atLeastOneMetric": "È richiesto almeno un parametro",
+      "metricsUpdated": "Aggiornato: {{summary}}",
+      "none": "Nessuno"
     }
   },
   "actionButtons": {
@@ -943,7 +973,7 @@
     "unhide": "MOSTRA",
     "markFavourite": "PREFERITO",
     "unmarkFavourite": "RIMUOVI",
-    "logs": "STORICO",
+    "logs": "DIARIO",
     "view": "VEDI",
     "start": "INIZIA",
     "edit": "MODIFICA",
@@ -994,6 +1024,15 @@
     "addSelected": "Aggiungi selezionato/i"
   },
   "workoutBuilder": {
+    "wizard": {
+      "templateOrBlankTitle": "Scegli un Modello",
+      "templateOrBlankMsg": "Vuoi iniziare da un modello o creare una scheda personalizzata?",
+      "templateOrBlankLabel": "Tipo di Scheda",
+      "pickRoutineTitle": "Seleziona una Scheda",
+      "pickRoutineMsg": "Seleziona quale scheda utilizzare dal modello.",
+      "pickRoutineLabel": "Scheda",
+      "templateCreated": "Modello caricato! Ora puoi personalizzare la tua scheda."
+    },
     "exerciseInfoTooltip": "Dettagli esercizio e progressione",
     "setTypes": {
       "standard": "Standard",
@@ -1045,7 +1084,8 @@
       "estimatedDuration": "Durata stimata",
       "totExercises": "Tot. esercizi",
       "lastDuration": "Ultima durata",
-      "saveButton": "SALVA SCHEDA"
+      "saveButton": "SALVA SCHEDA",
+      "saveCustomRoutineButton": "SALVA MODIFICHE SCHEDA"
     },
     "logEntry": {
       "logForProgramTitle": "Log per Programma: {{programName}} - Scheda: {{routineName}}",
@@ -1114,6 +1154,9 @@
       "newCustomExerciseDescription": "Descrizione"
     },
     "set": {
+      "metricAdded": "{{metric}} aggiunto a tutte le serie.",
+      "metricRemoved": "{{metric}} rimosso da tutte le serie.",
+      "negativeNotAllowed": "I valori negativi non sono consentiti. I valori sono stati impostati su zero.",
       "set": "Serie",
       "totalSets": "Serie totali",
       "round": "Turno",
@@ -1205,7 +1248,9 @@
       "noPerformanceData": "Nessun dato di performance recente trovato per questo esercizio.",
       "prefilledSuccess": "Serie pre-compilate con i dati della tua ultima performance.",
       "prefilledError": "Impossibile caricare i dati della performance.",
-      "colorUpdated": "Colore aggiornato per \"{{name}}\""
+      "colorUpdated": "Colore aggiornato per \"{{name}}\"",
+      "undoSuccessful": "Undo successful.",
+      "redoSuccessful": "Redo successful."
     },
     "alerts": {
       "tabataConvertTitle": "Convertire in Tabata?",
@@ -1286,7 +1331,8 @@
       }
     },
     "buttons": {
-      "regenButton": "RIGENERA SCHEDA"
+      "regenButton": "RIGENERA SCHEDA",
+      "resetTemplateButton": "REIMPOSTA DA MODELLO"
     }
   },
   "fab": {
@@ -1305,7 +1351,8 @@
     "redo": "RIPRISTINA",
     "restore": "RIPRISTINA ORIGINALE",
     "start_new_session": "INIZIA NUOVA SESSIONE (SCHEDA VUOTA)",
-    "generate": "GENERA SCHEDA"
+    "generate": "GENERA SCHEDA",
+    "edit": "MODIFICA"
   },
   "logDetail": {
     "title": "Dettaglio Allenamento",
@@ -1367,7 +1414,7 @@
       "reps": "Rep",
       "weight": "Peso",
       "distance": "Distanza",
-      "time": "Tempo (s)",
+      "time": "Tempo",
       "rest": "Recupero",
       "notes": "Note",
       "noSetData": "-",
@@ -1444,7 +1491,7 @@
     "notFound": {
       "title": "Registrazione Allenamento Non Trovata",
       "message": "La registrazione dell'allenamento che stai cercando non esiste",
-      "backToHistory": "Torna allo Storico"
+      "backToHistory": "Torna al Diario"
     },
     "toasts": {
       "effortSaved": "Sforzo percepito salvato con successo!",
@@ -1456,6 +1503,12 @@
     }
   },
   "programBuilder": {
+    "wizard": {
+      "templateOrBlankTitle": "Scegli un Modello",
+      "templateOrBlankMsg": "Vuoi iniziare da un modello o creare un programma personalizzato?",
+      "templateOrBlankLabel": "Tipo di Scheda",
+      "templateCreated": "Modello caricato! Ora puoi personalizzare il tuo programma."
+    },
     "title": "Programmi",
     "toggleFilters": "Mostra/Nascondi Filtri",
     "active": "Attivo",
@@ -1469,6 +1522,9 @@
       "workouts": "Allenamenti"
     },
     "form": {
+      "nameWizardMsg": "Inserisci un nome per il tuo nuovo programma.",
+      "structureWizardMsg": "Scegli la struttura del tuo programma.",
+      "cycleLengthWizardMsg": "Quanti giorni ci sono in ogni ciclo? (giorni di riposo inclusi)",
       "nameLabel": "Nome Programma",
       "namePlaceholder": "Nome programma",
       "nameRequired": "Il nome del programma è obbligatorio",
@@ -1490,7 +1546,7 @@
     },
     "schedule": {
       "title": "Programmazione",
-      "addDay": "AGGIUNGI GIORNO ALLA PROGRAMMAZIONE",
+      "addDay": "AGGIUNGI GIORNO",
       "dayNamePlaceholder": "es., Giorno di Spinta",
       "dayOfWeekLabel": "Giorno della Settimana",
       "cycleDayLabel": "Numero Giorno del Ciclo",
@@ -1515,7 +1571,11 @@
       "addDayToWeek": "AGGIUNGI GIORNO ALLA SETTIMANA",
       "emptyWeek": "Questa settimana è vuota.",
       "noWeeks": "Nessuna settimana ancora creata per questo programma.",
-      "addFirstWeek": "Aggiungi la prima settimana"
+      "addFirstWeek": "Aggiungi la prima settimana",
+      "numWeeksLabel": "Numero di Settimane",
+      "numWeeksWizardMsg": "Quante settimane dovrebbe avere il tuo programma?",
+      "daysInWeekLabel": "Giorni nella Settimana {{week}}",
+      "daysInWeekWizardMsg": "Quanti giorni dovrebbe avere la settimana {{week}}?"
     },
     "actions": {
       "cancel": "ANNULLA",
@@ -1674,7 +1734,7 @@
   },
   "restTimer": {
     "nextUp": "Prossimo",
-    "lastTime": "Serie precedente",
+    "lastTime": "Volta precedente",
     "skip": "Salta",
     "switchToStopwatch": "Passa al cronometro",
     "switchToTimer": "Passa al timer",
@@ -2064,7 +2124,7 @@
       "freeWeights": "Pesi Liberi",
       "barbells": "Bilancieri",
       "dumbbells": "Manubri",
-      "bodyweight/calisthenics": "Corpo Libero / Calistenia",
+      "bodyweight-calisthenics": "Corpo Libero / Calistenia",
       "cables": "Cavi",
       "kettlebells": "Kettlebell",
       "bands": "Bande Elastiche",
@@ -2356,7 +2416,7 @@
   "navigation": {
     "home": "HOME",
     "routines": "SCHEDE",
-    "history": "STORICO",
+    "history": "DIARIO",
     "programs": "PROGRAMMI",
     "stats": "STATISTICHE",
     "profile": "PROFILO"
@@ -2596,7 +2656,7 @@
     }
   },
   "metrics": {
-    "rest": "Riposo",
+    "rest": "Recupero",
     "weight": "Peso",
     "tempo": "Tempo",
     "duration": "Durata",
@@ -2605,54 +2665,6 @@
   },
   "setValueForAllSets": "Imposta i valori per tutte le Serie/Turni",
   "applyToAllSets": "Applica",
-  "muscles": {
-    "core": "Core",
-    "rectusAbdominis": "Addominali (Retto dell'Addome)",
-    "obliques": "Obliqui",
-    "transverseAbdominis": "Addominale Trasverso",
-    "back": "Schiena",
-    "lats": "Dorsali",
-    "traps": "Trapezi",
-    "trapsUpper": "Trapezi Superiori",
-    "trapsMiddle": "Trapezi Medi",
-    "trapsLower": "Trapezi Inferiori",
-    "rhomboids": "Romboidi",
-    "lowerBack": "Zona Lombare",
-    "erectorSpinae": "Erettori Spinali",
-    "upperBack": "Parte Alta della Schiena",
-    "legs": "Gambe",
-    "quadriceps": "Quadricipiti",
-    "hamstrings": "Femorali",
-    "glutes": "Glutei",
-    "gluteusMedius": "Medio Gluteo",
-    "gluteusMinimus": "Piccolo Gluteo",
-    "calves": "Polpacci",
-    "adductors": "Adduttori",
-    "abductors": "Abduttori",
-    "hipFlexors": "Flessori dell'Anca",
-    "hips": "Fianchi",
-    "piriformis": "Piriforme",
-    "tfl": "Tensore della Fascia Lata",
-    "chest": "Petto",
-    "chestUpper": "Petto Alto",
-    "chestLower": "Petto Basso",
-    "serratusAnterior": "Gran Dentato",
-    "arms": "Braccia",
-    "biceps": "Bicipiti",
-    "triceps": "Tricipiti",
-    "forearms": "Avambracci",
-    "brachialis": "Brachiale",
-    "wrists": "Polsi",
-    "shoulders": "Spalle",
-    "anteriorDeltoid": "Deltoide Anteriore",
-    "lateralDeltoid": "Deltoide Laterale",
-    "posteriorDeltoid": "Deltoide Posteriore",
-    "rotatorCuff": "Cuffia dei Rotatori",
-    "fullBody": "Corpo Intero",
-    "posteriorChain": "Catena Cinetica Posteriore",
-    "cardio": "Sistema Cardiovascolare",
-    "neck": "Collo"
-  },
   "exerciseForm": {
     "addTitle": "Aggiungi Nuovo Esercizio",
     "editTitle": "Modifica Esercizio",
@@ -2678,16 +2690,109 @@
     }
   },
   "categories": {
-    "strengthTraining": "Allenamento di Forza",
-    "cardioEndurance": "Cardio e Resistenza",
-    "flexibilityMobility": "Flessibilità e Mobilità",
-    "mindBodyRecovery": "Mente-Corpo e Recupero",
-    "sportSpecific": "Allenamento Sport-Specifico",
-    "quickWorkouts": "Allenamenti Veloci",
-    "specialty": "Corsi Speciali/Unici",
-    "targetedWorkouts": "Allenamenti Mirati",
-    "guidedPrograms": "Programmi Guidati/Sfide",
-    "equipmentSpecific": "Specifico per Attrezzatura",
-    "custom": "Personalizzato"
+    "bodyweight-calisthenics": "Corpo Libero / Calistenia",
+    "rehabilitation-mobility": "Riabilitazione / Mobilità",
+    "yoga-pilates": "Yoga / Pilates",
+    "powerlifting": "Powerlifting",
+    "olympic-weightlifting": "Sollevamento Pesi Olimpico",
+    "crossfit": "CrossFit",
+    "dumbbells": "Manubri",
+    "kettlebells": "Kettlebell",
+    "strength": "Forza",
+    "barbells": "Bilancieri",
+    "machines": "Macchine",
+    "cables": "Cavi",
+    "bands": "Bande Elastiche",
+    "cardio": "Cardio",
+    "stretching": "Stretching",
+    "plyometrics": "Pliometria",
+    "strongman": "Strongman",
+    "custom": "Personalizzato",
+    "other": "Altro"
+  },
+  "schemes": {
+    "selectType": "Seleziona tipo",
+    "titles": {
+      "selectType": "Seleziona tipo",
+      "setExact": "Tipo ESATTO",
+      "setRange": "Tipo INTERVALLO"
+    }
+  },
+  "repsSchemes": {
+    "exact": "Esatto",
+    "range": "Intervallo",
+    "max": "Massimale",
+    "maxFraction": "Frazione del massimale",
+    "amrap": "AMRAP",
+    "minPlus": "Più di X",
+    "divisor": "Divisore",
+    "titles": {
+      "selectType": "Seleziona il tipo",
+      "setExact": "Tipo ESATTO",
+      "setRange": "Tipo INTERVALLO",
+      "setMax": "Tipo MASSIMALE",
+      "setMaxFraction": "Tipo MASSIMALE/N",
+      "setAmrap": "Tipo AMRAP",
+      "setMinPlus": "Tipo PIÙ DI X"
+    }
+  },
+  "weightSchemes": {
+    "exact": "Esatto",
+    "range": "Intervallo",
+    "bodyweight": "Peso Corporeo",
+    "percentage": "Percentuale",
+    "percentage1rm": "Percentuale del 1RM",
+    "titles": {
+      "selectType": "Seleziona il tipo",
+      "setExact": "Tipo ESATTO",
+      "setBodyweight": "Tipo PESO CORPOREO",
+      "setAddedWeight": "Tipo PESO AGGIUNTO",
+      "setPercentage": "Tipo PERCENTUALE"
+    }
+  },
+  "restSchemes": {
+    "exact": "Esatto",
+    "range": "Intervallo",
+    "untilReady": "Fino a Pronto",
+    "titles": {
+      "selectType": "Seleziona il tipo",
+      "setExact": "Tipo ESATTO",
+      "setRange": "Tipo INTERVALLO",
+      "setUntilReady": "Tipo FINO A PRONTO"
+    }
+  },
+  "durationSchemes": {
+    "exact": "Esatto",
+    "range": "Intervallo",
+    "toFailure": "Fino a Fallimento",
+    "titles": {
+      "selectType": "Seleziona il tipo",
+      "setExact": "Tipo ESATTO",
+      "setRange": "Tipo INTERVALLO",
+      "setToFailure": "Tipo FINO A FALLIMENTO"
+    }
+  },
+  "distanceSchemes": {
+    "exact": "Esatto",
+    "range": "Intervallo",
+    "titles": {
+      "selectType": "Seleziona il tipo",
+      "setExact": "Tipo ESATTO",
+      "setRange": "Tipo INTERVALLO"
+    }
+  },
+  "workoutLogDetail": {
+    "targetComparison": "Confronto obiettivo"
+  },
+  "perceivedEffortModal": {
+    "title": "Valuta la tua sessione",
+    "effortQuestion": "Quanto è stata impegnativa questa sessione di allenamento?",
+    "effortMin": "Facile",
+    "effortMax": "Massimo sforzo",
+    "feelingQuestion": "Come ti senti dopo questa sessione di allenamento?",
+    "feelingMin": "Non produttivo",
+    "feelingMax": "Più forte che mai",
+    "skip": "SALTA",
+    "save": "SALVA VALUTAZIONE"
   }
 }

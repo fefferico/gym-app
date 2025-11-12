@@ -32,6 +32,10 @@
       "name": "Dips (barres parallèles)",
       "description": "Un exercice composé au poids du corps ciblant principalement les triceps et la poitrine, effectué sur des barres parallèles."
     },
+    "barbell-squat": {
+      "name": "Squat avec barre",
+      "description": "Un exercice fondamental pour la force qui cible les quadriceps, les fessiers, les ischio-jambiers et le bas du dos en s'accroupissant avec une barre sur le haut du dos."
+    },
     "barbell-bench-press": {
       "name": "Développé couché à la barre",
       "description": "Un exercice composé fondamental pour la force du haut du corps, ciblant principalement la poitrine, les épaules et les triceps."

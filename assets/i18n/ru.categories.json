@@ -1,0 +1,23 @@
+{
+  "categories": {
+    "bodyweight-calisthenics": "Собственный вес и калистеника",
+    "rehabilitation-mobility": "Реабилитация и мобильность",
+    "yoga-pilates": "Йога и пилатес",
+    "powerlifting": "Пауэрлифтинг",
+    "olympic-weightlifting": "Олимпийская тяжёлая атлетика",
+    "crossfit": "Кроссфит",
+    "dumbbells": "Гантели",
+    "kettlebells": "Гири",
+    "strength": "Сила",
+    "barbells": "Штанги",
+    "machines": "Тренажёры",
+    "cables": "Канаты",
+    "bands": "Резинки",
+    "cardio": "Кардио",
+    "stretching": "Растяжка",
+    "plyometrics": "Плиометрика",
+    "strongman": "Стронгмен",
+    "custom": "Пользовательское",
+    "other": "Другое"
+  }
+}

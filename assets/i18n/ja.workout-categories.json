@@ -1,0 +1,15 @@
+{
+  "workout-categories": {
+    "strengthTraining": "筋力トレーニング",
+    "cardioEndurance": "有酸素運動＆持久力",
+    "flexibilityMobility": "柔軟性＆可動性",
+    "mindBodyRecovery": "心・体・リカバリー",
+    "sportSpecific": "スポーツ特化",
+    "quickWorkouts": "クイックワークアウト",
+    "specialty": "専門",
+    "targetedWorkouts": "ターゲットワークアウト",
+    "guidedPrograms": "ガイド付きプログラム",
+    "equipmentSpecific": "器具特化",
+    "custom": "カスタム"
+  }
+}

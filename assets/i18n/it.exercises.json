@@ -32,6 +32,10 @@
       "name": "Dip (parallele)",
       "description": "Un esercizio composto a corpo libero che mira principalmente ai tricipiti e al petto, eseguito su barre parallele."
     },
+    "barbell-squat": {
+      "name": "Squat con bilanciere",
+      "description": "Un esercizio fondamentale per la forza che mira a quadricipiti, glutei, muscoli posteriori della coscia e parte bassa della schiena accovacciandosi con un bilanciere sulla parte superiore della schiena."
+    },
     "barbell-bench-press": {
       "name": "Panca piana con bilanciere",
       "description": "Un esercizio composto fondamentale per la forza della parte superiore del corpo, che mira principalmente a petto, spalle e tricipiti."

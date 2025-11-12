@@ -1,0 +1,15 @@
+{
+  "workout-categories": {
+    "strengthTraining": "تدريب القوة",
+    "cardioEndurance": "تمارين القلب والتحمل",
+    "flexibilityMobility": "المرونة والحركة",
+    "mindBodyRecovery": "العقل والجسم والتعافي",
+    "sportSpecific": "تمارين رياضية محددة",
+    "quickWorkouts": "تمارين سريعة",
+    "specialty": "تخصص",
+    "targetedWorkouts": "تمارين مستهدفة",
+    "guidedPrograms": "برامج موجهة",
+    "equipmentSpecific": "تمارين حسب المعدات",
+    "custom": "مخصص"
+  }
+}
