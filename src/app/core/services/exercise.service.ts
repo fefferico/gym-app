@@ -368,13 +368,28 @@ export class ExerciseService {
     );
   }
 
-  getUniqueCategories(): Observable<string[]> {
-    return this.exercises$.pipe(
-      map(exercises => {
-        const normalizedCategories = exercises
-          .map(ex => EXERCISE_CATEGORY_NORMALIZATION_MAP[ex.category?.toLowerCase().trim() || ''] || ex.category?.toLowerCase().trim())
-          .filter((cat): cat is string => !!cat);
-        return [...new Set(normalizedCategories)].sort();
+  getUniqueCategories(): Observable<HydratedCategory[]> {
+    return combineLatest([
+      this.exercises$,
+      this.exerciseCategoryService.hydratedCategories$
+    ]).pipe(
+      map(([exercises, hydratedCategories]) => {
+        // 1. Collect unique, normalized category IDs from exercises
+        const uniqueCategoryIds = [
+          ...new Set(
+            exercises
+              .map(ex =>
+                EXERCISE_CATEGORY_NORMALIZATION_MAP[ex.category?.toLowerCase().trim() || ''] ||
+                ex.category?.toLowerCase().trim()
+              )
+              .filter((cat): cat is string => !!cat)
+          )
+        ].sort();
+  
+        // 2. Map those IDs to hydrated categories with translated labels
+        return uniqueCategoryIds
+          .map(id => hydratedCategories.find(cat => cat.id === id))
+          .filter((cat): cat is HydratedCategory => !!cat);
       })
     );
   }
@@ -382,9 +397,9 @@ export class ExerciseService {
   getUniquePrimaryMuscleGroups(): Observable<Muscle[]> {
     return combineLatest([
       this.exercises$,
-      this.muscleMapService.musclesMap$
+      this.muscleMapService.translatedMuscles$
     ]).pipe(
-      map(([exercises, musclesMap]) => {
+      map(([exercises, translatedMuscles]) => {
         // 1. Collect unique, normalized MuscleValue IDs from exercises
         const uniqueIds = [
           ...new Set(
@@ -402,7 +417,7 @@ export class ExerciseService {
 
         // 2. Map those IDs to Muscle objects, filtering out any missing ones
         return uniqueIds
-          .map(id => musclesMap.get(id))
+          .map(id => translatedMuscles.find(m => m.id === id))
           .filter((m): m is Muscle => !!m);
       })
     );

@@ -3943,7 +3943,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     if (weight !== undefined && weight !== null && getWeightValue(weight) > 0) {
       parts.push(`${this.weightUnitPipe.transform(getWeightValue(weight))}`);
-    } else if (getWeightValue(weight) === 0) {
+    }
+    if (weight && getWeightValue(weight) === 0) {
       parts.push('Bodyweight');
     }
 
@@ -3957,7 +3958,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     if (distance !== undefined && distance !== null && getDistanceValue(distance) > 0) {
-      parts.push(`${distance} ${this.unitsService.getDistanceMeasureUnitSuffix()}`);
+      parts.push(`${getDistanceValue(distance)} ${this.unitsService.getDistanceMeasureUnitSuffix()}`);
     }
 
     if (duration !== undefined && duration !== null && getDurationValue(duration) > 0) {

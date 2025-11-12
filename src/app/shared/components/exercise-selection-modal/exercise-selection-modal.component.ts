@@ -13,6 +13,7 @@ import { BumpClickDirective } from '../../directives/bump-click.directive';
 import { Muscle } from '../../../core/models/muscle.model';
 import { MuscleMapService } from '../../../core/services/muscle-map.service';
 import { MuscleValue } from '../../../core/services/muscles-data';
+import { HydratedCategory } from '../../../core/services/exercise-category.service';
 
 type ListItem = Exercise | { isHeader: true; label: string };
 
@@ -150,14 +151,12 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     // --- Search Term Model: (Unchanged) ---
     searchTerm = model<string>('');
 
-    // +++ NEW: State management signals for filters and sorting +++
     isFilterAccordionOpen = signal(false);
     selectedCategory = signal<string | null>(null);
     selectedMuscleGroup = signal<MuscleValue | null>(null);
     sortMode = signal<'alpha' | 'lastUsed' | 'frequency'>('alpha');
 
-    // +++ NEW: Observables to populate filter dropdowns +++
-    categories$: Observable<string[]> = this.exerciseService.getUniqueCategories();
+    categories$: Observable<HydratedCategory[]> = this.exerciseService.getUniqueCategories();
     primaryMuscleGroups$: Observable<Muscle[]> = this.exerciseService.getUniquePrimaryMuscleGroups();
 
     // --- CORE LOGIC: Replaced with a powerful computed signal for processing ---

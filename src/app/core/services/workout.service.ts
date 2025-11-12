@@ -802,7 +802,7 @@ export class WorkoutService {
       newExerciseSets.push({
         id: `custom-set-${uuidv4()}`,
         targetReps: isCardioOnly ? undefined : genRepsTypeFromRepsNumber(numReps),
-        fieldOrder: isCardioOnly ? [METRIC.duration] : [METRIC.reps, METRIC.weight],
+        fieldOrder: isCardioOnly ? [METRIC.duration, METRIC.distance, METRIC.rest] : [METRIC.reps, METRIC.weight, METRIC.rest],
         targetWeight: isCardioOnly ? undefined : weight,
         targetDistance: isCardioOnly ? distance : undefined,
         targetDuration: isCardioOnly ? duration : undefined,

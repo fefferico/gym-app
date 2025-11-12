@@ -38,7 +38,7 @@
                         <select (change)="onCategoryChange($event)" [value]="selectedCategory() || ''"
                             class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200">
                             <option value="">{{ 'exerciseSelectionModal.allCategories' | translate }}</option>
-                            <option *ngFor="let cat of categories$ | async" [value]="cat">{{ cat | titlecase }}</option>
+                            <option *ngFor="let cat of categories$ | async" [value]="cat.id">{{ cat.label | titlecase }}</option>
                         </select>
                     </div>
                     <!-- Muscle Group -->
