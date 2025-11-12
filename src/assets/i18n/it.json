@@ -11,7 +11,11 @@
     "welcomeBack": "Bentornato, {{name}}!",
     "readyMessage": "Pronto a superare i tuoi obiettivi oggi?",
     "quickActionsTitle": "Azioni Rapide",
-    "appVersion": "Versione App:"
+    "appVersion": "Versione App:",
+    "pausedWorkout":{
+      "discardPromptTitle": "Discard Current Workout?",
+      "discardPromptMessage": "You have a paused workout session. Do you want to discard it and start a new one?"
+    }
   },
   "user": {
     "defaultName": "Appassionato di Fitness"
@@ -860,7 +864,8 @@
       "fieldAdded": "Campo {{field}} aggiunto alla serie.",
       "invalidValue": "Valore non valido inserito.",
       "fieldRemoved": "Campo '{{field}}' rimosso dalla serie #{{number}}.",
-      "enterNumericRepsError": "Devi impostare il numero effettuato di ripetizioni prima di poter completare la serie"
+      "enterNumericRepsError": "Devi impostare il numero effettuato di ripetizioni prima di poter completare la serie",
+      "enterNumericWeightError": "Devi modificare il valore effettivo del peso prima di impostare la serie come completata"
     },
     "alerts": {
       "toughWorkoutTitle": "L'ultimo Allenamento è Stato Duro",
@@ -1243,7 +1248,9 @@
       "noPerformanceData": "Nessun dato di performance recente trovato per questo esercizio.",
       "prefilledSuccess": "Serie pre-compilate con i dati della tua ultima performance.",
       "prefilledError": "Impossibile caricare i dati della performance.",
-      "colorUpdated": "Colore aggiornato per \"{{name}}\""
+      "colorUpdated": "Colore aggiornato per \"{{name}}\"",
+      "undoSuccessful": "Undo successful.",
+      "redoSuccessful": "Redo successful."
     },
     "alerts": {
       "tabataConvertTitle": "Convertire in Tabata?",
@@ -1344,7 +1351,8 @@
     "redo": "RIPRISTINA",
     "restore": "RIPRISTINA ORIGINALE",
     "start_new_session": "INIZIA NUOVA SESSIONE (SCHEDA VUOTA)",
-    "generate": "GENERA SCHEDA"
+    "generate": "GENERA SCHEDA",
+    "edit": "MODIFICA"
   },
   "logDetail": {
     "title": "Dettaglio Allenamento",

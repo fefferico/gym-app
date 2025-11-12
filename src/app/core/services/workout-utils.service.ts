@@ -1212,6 +1212,8 @@ export class WorkoutUtilsService {
                 return `${target.min}-${target.max}`;
             case RepsTargetType.amrap:
                 return `AMRAP`;
+            case RepsTargetType.min_plus:
+                return `${target.value}+`;
             default:
                 return '';
         }

@@ -1024,7 +1024,7 @@
         <!-- Input Field -->
         <div class="flex items-center justify-center bg-gray-300 dark:bg-gray-700">
           <input [id]="field + '-' + 'input'  + '-' + exIndex + '-' + setIndex"
-            [type]="(field === metricEnum.duration || field === metricEnum.rest || field === metricEnum.reps) ? 'text' : 'number'"
+            [type]="(field === metricEnum.duration || field === metricEnum.rest || field === metricEnum.reps || field === metricEnum.weight) ? 'text' : 'number'"
             [ngModel]="getInitialInputValue(exIndex, setIndex, field)"
             (input)="updateSetData(exIndex, setIndex, 0, field, $event)"
             class="w-full p-1 mt-1 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-50 dark:border-gray-800 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none focus:z-10 relative rounded-md h-16"

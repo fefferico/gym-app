@@ -123,8 +123,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     ];
 
     const confirm = await this.alertService.showConfirmationDialog(
-      this.translate.instant('pausedWorkout.discardPromptTitle'),
-      this.translate.instant('pausedWorkout.discardPromptMessage'),
+      this.translate.instant('home.pausedWorkout.discardPromptTitle'),
+      this.translate.instant('home.pausedWorkout.discardPromptMessage'),
       buttons
     );
     if (confirm && confirm.data) {

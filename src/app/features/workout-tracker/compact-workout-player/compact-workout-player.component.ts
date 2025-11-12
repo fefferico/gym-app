@@ -3395,7 +3395,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (userInputs) {
       switch (field) {
         case METRIC.reps: if (userInputs.actualReps !== undefined) return this.workoutUtilsService.repsTargetAsString(userInputs.actualReps); break;
-        case METRIC.weight: if (userInputs.actualWeight !== undefined) return getWeightValue(userInputs.actualWeight).toString(); break;
+        case METRIC.weight: if (userInputs.actualWeight !== undefined) return this.workoutUtilsService.weightTargetAsString(userInputs.actualWeight); break;
         case METRIC.distance: if (userInputs.actualDistance !== undefined) return getDistanceValue(userInputs.actualDistance).toString(); break;
         case METRIC.duration: if (userInputs.actualDuration !== undefined) return this.formatSecondsToTime(getDurationValue(userInputs.actualDuration)); break;
         case METRIC.rest: if (userInputs.actualRest !== undefined) return this.formatSecondsToTime(getRestValue(userInputs.actualRest)); break;
@@ -3493,7 +3493,30 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
             this.invalidInputs.update(s => { s.add(inputKey); return s; });
           }
           break;
-        case METRIC.weight: newInputs[key].actualWeight = value === '' ? undefined : weightToExact(parseFloat(value)); break;
+        case METRIC.weight:
+          const rawWeight = value.trim();
+          // Accepts numbers, "MAX", "RM", "BW" (bodyweight), or "AMRAP"
+          const validWeightPattern = /^(\d+(\.\d+)?|MAX|RM|BW|AMRAP)$/i;
+
+          if (rawWeight === '' || validWeightPattern.test(rawWeight)) {
+            this.invalidInputs.update(s => { s.delete(inputKey); return s; });
+
+            if (rawWeight.toUpperCase().includes('%')) {
+              newInputs[key].actualWeight = { type: WeightTargetType.percentage_1rm, percentage: 100 };
+            } else if (rawWeight.toUpperCase() === 'BW') {
+              newInputs[key].actualWeight = { type: WeightTargetType.bodyweight };
+            }else {
+              const numericValue = parseFloat(rawWeight);
+              if (!isNaN(numericValue)) {
+                newInputs[key].actualWeight = { type: WeightTargetType.exact, value: numericValue };
+              } else {
+                newInputs[key].actualWeight = undefined;
+              }
+            }
+          } else {
+            this.invalidInputs.update(s => { s.add(inputKey); return s; });
+          }
+          break;
         case METRIC.distance: newInputs[key].actualDistance = distanceToExact(parseFloat(value)) || undefined; break;
         case METRIC.duration: newInputs[key].actualDuration = durationToExact(this.parseTimeToSeconds(value)); break;
         case METRIC.rest: newInputs[key].actualRest = restToExact(this.parseTimeToSeconds(value)); break;
@@ -3575,6 +3598,22 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           this.toastService.error(
             this.translate.instant('compactPlayer.toasts.enterNumericRepsError', {
               repType: repsTargetAsString(plannedSet.targetReps)
+            }),
+            4000, // Duration 0 makes it sticky until dismissed
+            this.translate.instant('common.error')
+          );
+          // Vibrate to give haptic feedback for the error
+          this.workoutService.vibrate();
+          return; // Abort the completion
+        }
+      }
+
+      // check if is text weight as well
+      if (this.isTextWeight(exIndex, setIndex)) {
+        if (!userInputs.actualWeight || userInputs.actualWeight.type !== WeightTargetType.exact) {
+          this.toastService.error(
+            this.translate.instant('compactPlayer.toasts.enterNumericWeightError', {
+              weightType: this.workoutUtilsService.weightTargetAsString(plannedSet.targetWeight)
             }),
             4000, // Duration 0 makes it sticky until dismissed
             this.translate.instant('common.error')
@@ -4792,6 +4831,18 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     // The input should be 'text' for ANY scheme that isn't a simple, exact number.
     // This correctly includes 'range', 'min_plus', 'amrap', and 'max'.
     return repType !== RepsTargetType.exact;
+  }
+
+  isTextWeight(exIndex: number, setIndex: number): boolean {
+    const routine = this.routine();
+    if (!routine) return false;
+    const set = routine.exercises[exIndex]?.sets[setIndex];
+    const weightType = set?.targetWeight?.type;
+
+    if (!weightType) {
+      return false;
+    }
+    return weightType !== WeightTargetType.exact;
   }
 
   /**

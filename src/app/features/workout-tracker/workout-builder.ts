@@ -1,11 +1,11 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef, PLATFORM_ID, Input, Output, EventEmitter, HostListener, ViewChild, effect, AfterViewChecked, Signal, NgZone } from '@angular/core';
-import { CommonModule, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@angular/common'; // Added TitleCasePipe
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { CommonModule, DecimalPipe, TitleCasePipe } from '@angular/common'; // Added TitleCasePipe
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl, FormsModule, FormControl, ValidatorFn, ValidationErrors } from '@angular/forms';
 import { Subscription, of, firstValueFrom, Observable, from } from 'rxjs';
 import { switchMap, tap, take, distinctUntilChanged, map, mergeMap, startWith, debounceTime, filter, mergeAll, pairwise } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
-import { format, parseISO, isValid as isValidDate, set } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
@@ -83,7 +83,7 @@ export enum SET_TYPE {
 @Component({
   selector: 'app-workout-builder',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink,
+  imports: [CommonModule, ReactiveFormsModule,
     FormsModule, DragDropModule, TitleCasePipe,
     LongPressDragDirective, AutoGrowDirective, ActionMenuComponent,
     ModalComponent, ClickOutsideDirective,
@@ -316,6 +316,16 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       startWith(this.builderForm.getRawValue()), // Emit initial value to start the stream
       pairwise()
     ).subscribe(([previousValue, currentValue]) => {
+      // Set the snapshot only once, on the first change
+      if (!this.originalStateSnapshot) {
+        this.originalStateSnapshot = JSON.parse(JSON.stringify(previousValue));
+      }
+
+      // Only set canRestore if this is not the initial valueChanges (i.e., not the first emission)
+      if (this.history.length > 0 && JSON.stringify(previousValue) !== JSON.stringify(currentValue)) {
+        this.canRestore.set(true);
+      }
+
       if (this.isUndoingOrRedoing) {
         this.isUndoingOrRedoing = false; // Reset flag
         return;
@@ -327,7 +337,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       }
 
       // Add the new state to the history
-      this.history.push(JSON.parse(JSON.stringify(currentValue)));
+      const actionDescription = this.getActionDescription(previousValue, currentValue);
+      this.history.push({ state: JSON.parse(JSON.stringify(currentValue)), action: actionDescription });
       this.historyIndex++;
 
       // Enforce the maximum history size
@@ -447,7 +458,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           if (this.isEditMode) {
             // For both routine and log editing, capture the initial state
             this.originalStateSnapshot = JSON.parse(JSON.stringify(loadedData));
-            this.canRestore.set(true);
           }
 
           if (this.mode === BuilderMode.routineBuilder && this.currentLogId && this.isNewMode) {
@@ -780,7 +790,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.sanitizedDescription = this.sanitizer.bypassSecurityTrustHtml(value);
   }
 
-    private getDefaultFormValuesForMode(): any {
+  private getDefaultFormValuesForMode(): any {
     // Common fields for all modes
     const base = {
       name: '',
@@ -799,7 +809,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       scheduledDayIdForLog: '',
       exercises: []
     };
-  
+
     if (this.mode === BuilderMode.manualLogEntry) {
       const today = new Date();
       return {
@@ -810,7 +820,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         endTime: format(today, 'HH:mm'),
       };
     }
-  
+
     // For routineBuilder and customProgramEntryBuilder
     return { ...base };
   }
@@ -3927,16 +3937,18 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         });
       }
       if (this.canRedo()) {
+        const redoString = this.nextRedoAction;
         this.fabMenuItems.unshift({
-          label: 'fab.redo',
+          label: this.translate.instant('fab.redo') + (redoString ? ` (${redoString})` : ''),
           actionKey: 'redo',
           iconName: 'redo',
           cssClass: 'bg-blue-500 focus:ring-blue-400',
         });
       }
       if (this.canUndo()) {
+        const undoString = this.nextUndoAction;
         this.fabMenuItems.unshift({
-          label: 'fab.undo',
+          label: this.translate.instant('fab.undo') + (undoString ? ` (${undoString})` : ''),
           actionKey: 'undo',
           iconName: 'undo',
           cssClass: 'bg-yellow-500 focus:ring-yellow-400',
@@ -3973,6 +3985,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           iconName: 'play',
           cssClass: 'bg-blue-400 focus:ring-blue-600',
           isPremium: false
+        },
+        {
+          label: 'fab.edit',
+          actionKey: 'edit',
+          iconName: 'edit',
+          cssClass: 'bg-primary focus:ring-primary-light',
+          isPremium: false
         }
       ];
     }
@@ -3988,6 +4007,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         break;
       case 'start':
         this.startCurrentWorkout();
+        break;
+      case 'edit':
+        const routineId = this.liveFormAsRoutine()?.id;
+        if (!routineId) return;
+        this.checkEditRoutine(routineId);
         break;
       case 'undo': this.undoLastChange(); break;
       case 'redo': this.redoLastChange(); break;
@@ -4676,8 +4700,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.isUndoingOrRedoing = true; // Set flag to prevent subscription from firing
     this.historyIndex--;
     const stateToRestore = this.history[this.historyIndex];
-    this.restoreFormState(stateToRestore);
-    this.toastService.info("Undo successful.");
+    this.restoreFormState(stateToRestore.state);
+    this.toastService.info(this.translate.instant('workoutBuilder.toasts.undoSuccessful'));
     this.updateHistorySignals();
     this.refreshFabMenuItems(); // Update FAB menu items
     this.audioService.playSound(AUDIO_TYPES.magic);
@@ -4690,8 +4714,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.isUndoingOrRedoing = true; // Set flag
     this.historyIndex++;
     const stateToRestore = this.history[this.historyIndex];
-    this.restoreFormState(stateToRestore);
-    this.toastService.info("Redo successful.");
+    this.restoreFormState(stateToRestore.state);
+    this.toastService.info(this.translate.instant('workoutBuilder.toasts.redoSuccessful'));
     this.updateHistorySignals();
     this.refreshFabMenuItems(); // Update FAB menu items
   }
@@ -4716,6 +4740,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
       this.toastService.success("Routine has been restored to its original state.");
       this.updateHistorySignals();
+      this.canRestore.set(false); // Disable restore button
     }
     this.refreshFabMenuItems(); // Update FAB menu items
   }
@@ -4736,7 +4761,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.builderForm.patchValue(state);
   }
 
-  private history: any[] = [];
+  private history: { state: any, action: string }[] = [];
   private historyIndex = -1;
   private readonly MAX_HISTORY_SIZE = 20;
   private isUndoingOrRedoing = false; // Flag to prevent feedback loops
@@ -5713,6 +5738,33 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // Patch the form with the routine data
     this.patchFormWithRoutineData(routine);
     this.toastService.success(this.translate.instant('workoutBuilder.wizard.templateCreated'), 3000);
+  }
+
+  private getActionDescription(prev: Routine, curr: Routine): string {
+    // Example logic, expand as needed
+    if (curr.exercises.length > prev.exercises.length) return 'Added Exercise';
+    if (curr.exercises.length < prev.exercises.length) return 'Removed Exercise';
+    // superset created, add case (it's under exercises)
+    const prevHasSupersets = prev.exercises.some(ex => ex.supersetId);
+    const currHasSupersets = curr.exercises.some(ex => ex.supersetId);
+    if (currHasSupersets && !prevHasSupersets) return 'Created Superset';
+
+    // ...add more checks for sets, fields, etc.
+    return 'Edited Routine';
+  }
+
+  get nextUndoAction(): string | null {
+    if (this.historyIndex > 0) {
+      return this.history[this.historyIndex]?.action || null;
+    }
+    return null;
+  }
+
+  get nextRedoAction(): string | null {
+    if (this.historyIndex < this.history.length - 1) {
+      return this.history[this.historyIndex + 1]?.action || null;
+    }
+    return null;
   }
 
 }

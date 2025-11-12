@@ -59,7 +59,11 @@
     "welcomeBack": "Welcome Back, {{name}}!",
     "readyMessage": "Ready to crush your goals today?",
     "quickActionsTitle": "Quick Actions",
-    "appVersion": "AppVersion:"
+    "appVersion": "AppVersion:",
+    "pausedWorkout":{
+      "discardPromptTitle": "Discard Current Workout?",
+      "discardPromptMessage": "You have a paused workout session. Do you want to discard it and start a new one?"
+    }
   },
   "user": {
     "defaultName": "Fitness Enthusiast"
@@ -860,7 +864,8 @@
       "fieldAdded": "{{field}} field added to the set.",
       "invalidValue": "Invalid value provided.",
       "fieldRemoved": "'{{field}}' field removed from set #{{number}}.",
-      "enterNumericRepsError": "You must change the actual reps value before setting the set as completed"
+      "enterNumericRepsError": "You must change the actual reps value before setting the set as completed",
+      "enterNumericWeightError": "You must change the actual weight value before setting the set as completed"
     },
     "alerts": {
       "toughWorkoutTitle": "Last Workout Was Tough",
@@ -1244,7 +1249,9 @@
       "noPerformanceData": "No recent performance data found for this exercise.",
       "prefilledSuccess": "Sets pre-filled with your last performance data.",
       "prefilledError": "Could not load performance data.",
-      "colorUpdated": "Color updated for \"{{name}}\""
+      "colorUpdated": "Color updated for \"{{name}}\"",
+      "undoSuccessful": "Undo successful.",
+      "redoSuccessful": "Redo successful."
     },
     "alerts": {
       "tabataConvertTitle": "Convert to Tabata?",
@@ -1343,7 +1350,8 @@
     "log": "LOG",
     "undo": "UNDO",
     "redo": "REVERT",
-    "restore": "RESTORE ORIGINAL"
+    "restore": "RESTORE ORIGINAL",
+    "edit": "EDIT"
   },
   "logDetail": {
     "title": "Personal Bests",

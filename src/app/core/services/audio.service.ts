@@ -316,7 +316,7 @@ export class AudioService {
 
       // 1. Attack: Quickly fade in to avoid a "click"
       gainNode.gain.setValueAtTime(0, startTime);
-      gainNode.gain.linearRampToValueAtTime(0.8, startTime + 0.05); // Quick rise to 80% volume
+      gainNode.gain.linearRampToValueAtTime(0.4, startTime + 0.05); // Quick rise to 80% volume
 
       // 2. Decay & Release: Fade out over a longer period
       gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + 1.5);
