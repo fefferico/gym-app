@@ -3406,47 +3406,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       }
     }
 
-    // =================== START OF SNIPPET ===================
-    // PRIORITY 3 & 4: Fall back to the original planned target value, now with range handling.
-    switch (field) {
-      case METRIC.reps:
-        // For AMRAP/MAX sets, default to an empty input to allow logging achieved reps.
-        const repType = plannedSet.targetReps?.type;
-        if (repType === RepsTargetType.amrap || repType === RepsTargetType.max || repType === RepsTargetType.max_fraction) {
-          return ''; // Return empty string to prompt user for their achieved number.
-        }
-        // For 'exact' or 'range' types, get the numeric value.
-        return (repsTypeToReps(plannedSet.targetReps) ?? '').toString();
-      case METRIC.weight:
-        return (getWeightValue(plannedSet.targetWeight) ?? '').toString();
-      case METRIC.distance:
-        return (getDistanceValue(plannedSet.targetDistance) ?? '').toString();
-      case METRIC.duration:
-        return this.formatSecondsToTime(getDurationValue(plannedSet.targetDuration) ?? 0);
-      case METRIC.rest:
-        return this.formatSecondsToTime(getRestValue(plannedSet.targetRest) ?? 0);
-      case METRIC.tempo:
-        // Tempo does not have a range
-        return plannedSet.targetTempo ?? '';
+    return '';
 
-
-      default:
-        // Add a default case for safety
-        return plannedSet.notes ?? '';
-    }
-
-    // =================== END OF SNIPPET ===================
   }
 
-  /**
-   * --- THIS IS THE FIX ---
-   * This method now ONLY updates the temporary `performanceInputValues` signal.
-   * It DOES NOT touch the routine or the workout log. It is purely for capturing UI input.
-   *
-   * --- ENHANCEMENT ---
-   * If the 'duration' field is changed for a set with an active timer, it now
-   * automatically stops the old timer and starts a new one with the new value.
-   */
   updateSetData(exIndex: number, setIndex: number, roundIndex: number, field: 'notes' | METRIC, event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     const key = `${exIndex}-${setIndex}`;
@@ -3487,6 +3450,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
                 newInputs[key].actualReps = { type: RepsTargetType.exact, value: numericValue };
               } else {
                 newInputs[key].actualReps = undefined;
+                this.invalidInputs.update(s => { s.add(inputKey); return s; });
               }
             }
           } else {
@@ -3511,6 +3475,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
                 newInputs[key].actualWeight = { type: WeightTargetType.exact, value: numericValue };
               } else {
                 newInputs[key].actualWeight = undefined;
+                this.invalidInputs.update(s => { s.add(inputKey); return s; });
               }
             }
           } else {
@@ -4919,10 +4884,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     // remove from the availableSchemes the current one
     availableSchemes = availableSchemes.filter(s => s.type !== currentTarget?.type);
     if (availableSchemes.length === 0) {
-      this.toastService.error(
+      this.toastService.info(
         this.translate.instant('compactPlayer.toasts.noFurtherSchemes', { metric: this.translate.instant('metrics.' + metric).toUpperCase() }),
         8000,
-        this.translate.instant('common.error')
+        this.translate.instant('common.info')
       );
       return;
     }

@@ -34,7 +34,7 @@
           </div>
           <p class="text-sm text-yellow-500 dark:text-yellow-400 mt-0.5"> {{ 'pausedWorkout.loggedOn' | translate }} {{
             pausedInfo.workoutDate |
-            date:'dd-MM-yyyy':'UTC' }} </p>
+            date:'dd-MM-yyyy' }} </p>
           <p class="text-sm text-yellow-500 dark:text-yellow-400 mt-0.5"> {{ 'pausedWorkout.pausedAt' | translate }} {{
             ((pausedInfo?.sessionTimerElapsedSecondsBeforePause || pausedInfo?.tabataTimeRemainingOnPause || 0) * 1000)
             | date:'HH:mm:ss':'UTC' }} </p>

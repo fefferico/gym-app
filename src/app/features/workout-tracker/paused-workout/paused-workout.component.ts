@@ -25,7 +25,7 @@ export class PausedWorkoutComponent implements OnInit {
   pausedRoutineName = signal<string>('');
 
   ngOnInit(): void {
-    this.pausedRoutineName.set(this.translate.instant('pausedWorkout.newSession'));
+    this.pausedRoutineName.set(this.translate.instant('pausedWorkout.defaultRoutineName'));
     // When the component loads, check for a paused session and get its name
     this.getPausedRoutineInfo();
   }

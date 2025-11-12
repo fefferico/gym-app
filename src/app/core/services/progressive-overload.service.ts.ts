@@ -124,25 +124,25 @@ export class ProgressiveOverloadService {
       settings.strategies.forEach(strategy => {
         switch (strategy) {
           case ProgressiveOverloadStrategy.WEIGHT:
-            if (settings.weightIncrement && (set.targetWeight)) {
+            if (settings.weightIncrement && set.targetWeight && getWeightValue(set.targetWeight) > 0) {
               const originalSetWeight = getWeightValue(set.targetWeight);
               set.targetWeight = weightToExact((originalSetWeight ?? 0) + settings.weightIncrement);
             }
             break;
           case ProgressiveOverloadStrategy.REPS:
-            if (settings.repsIncrement && (set.targetReps)) {
+            if (settings.repsIncrement && set.targetReps && repsTypeToReps(set.targetReps) > 0) {
               const originalSetReps = repsTypeToReps(set.targetReps);
               set.targetReps = repsNumberToExactRepsTarget((originalSetReps ?? 0) + settings.repsIncrement);
             }
             break;
           case ProgressiveOverloadStrategy.DISTANCE:
-            if (settings.distanceIncrement && (set.targetDistance)) {
+            if (settings.distanceIncrement && set.targetDistance && getDistanceValue(set.targetDistance) > 0) {
               const originalSetDistance = getDistanceValue(set.targetDistance);
               set.targetDistance = distanceToExact((originalSetDistance ?? 0) + settings.distanceIncrement);
             }
             break;
           case ProgressiveOverloadStrategy.DURATION:
-            if (settings.durationIncrement && (set.targetDuration)) {
+            if (settings.durationIncrement && set.targetDuration && getDurationValue(set.targetDuration) > 0) {
               const originalSetDuration = getDurationValue(set.targetDuration);
               set.targetDuration = durationToExact((originalSetDuration ?? 0) + settings.durationIncrement);
             }
