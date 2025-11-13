@@ -48,12 +48,12 @@ import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ExerciseSelectionModalComponent } from '../../../shared/components/exercise-selection-modal/exercise-selection-modal.component';
-import { AbstractControl, FormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { StorageService } from '../../../core/services/storage.service';
-import { MenuMode, PlayerMode } from '../../../core/models/app-settings.model';
+import { MenuMode } from '../../../core/models/app-settings.model';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
 import { TrainingProgram } from '../../../core/models/training-program.model';
 import { AlertButton, AlertInput } from '../../../core/models/alert.model';
@@ -67,12 +67,10 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { SessionOverviewModalComponent } from '../session-overview-modal/session-overview-modal.component';
 import { FullScreenRestTimerComponent, TIMER_MODES } from '../../../shared/components/full-screen-rest-timer/full-screen-rest-timer';
 import { AUDIO_TYPES, AudioService } from '../../../core/services/audio.service';
-import { se } from 'date-fns/locale';
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { SET_TYPE } from '../workout-builder';
 import { BumpClickDirective } from '../../../shared/directives/bump-click.directive';
 import { repsTargetAsString, repsTypeToReps, genRepsTypeFromRepsNumber, getDurationValue, durationToExact, getWeightValue, weightToExact, getDistanceValue, distanceToExact, restToExact, getRestValue, getRepsValue, repsToExact, weightTargetAsString, distanceTargetAsString, durationTargetAsString, restTargetAsString } from '../../../core/services/workout-helper.service';
-import { NumericDataType } from '@tensorflow/tfjs-core';
 import { WorkoutUtilsService } from '../../../core/services/workout-utils.service';
 
 // Interface for saving the paused state
@@ -564,6 +562,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     // Track which exercises had overload applied
     const overloadAppliedForExercise: boolean[] = [];
+    const overloadedExercisesDetails: string[] = [];
 
     // Track if we need to prompt for historical/original (only if at least one exercise has historical data and no overload)
     let hasAnyHistorical = false;
@@ -658,10 +657,47 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
             }
           }
 
+          // ...inside the for loop after overload is applied...
           if (allSessionsSuccessful) {
+            // Save old main values before overload
+            const mainSet = exercise.sets.find(s => s.type !== 'warmup');
+            const oldWeight = mainSet?.targetWeight ? getWeightValue(mainSet.targetWeight) : undefined;
+            const oldReps = mainSet?.targetReps ? repsTypeToReps(mainSet.targetReps) : undefined;
+            const oldDuration = mainSet?.targetDuration ? getDurationValue(mainSet.targetDuration) : undefined;
+            const oldDistance = mainSet?.targetDistance ? getDistanceValue(mainSet.targetDistance) : undefined;
+
             this.progressiveOverloadService.applyOverloadToExercise(exercise, poSettings);
+
+            // Get new main values after overload
+            const newMainSet = exercise.sets.find(s => s.type !== 'warmup');
+            const newWeight = newMainSet?.targetWeight ? getWeightValue(newMainSet.targetWeight) : undefined;
+            const newReps = newMainSet?.targetReps ? repsTypeToReps(newMainSet.targetReps) : undefined;
+            const newDuration = newMainSet?.targetDuration ? getDurationValue(newMainSet.targetDuration) : undefined;
+            const newDistance = newMainSet?.targetDistance ? getDistanceValue(newMainSet.targetDistance) : undefined;
+
+            // Build a bullet list for each metric
+            const metricLines: string[] = [];
+            if (oldWeight !== undefined && newWeight !== undefined && newWeight > oldWeight) {
+              const diff = newWeight - oldWeight;
+              metricLines.push(`${this.translate.instant('metrics.weight')}: ${newWeight} ${this.unitsService.getWeightUnitSuffix()} (${diff > 0 ? '+' : ''}${diff} ${this.unitsService.getWeightUnitSuffix()})`);
+            }
+            if (oldReps !== undefined && newReps !== undefined && newReps > oldReps) {
+              const diff = newReps - oldReps;
+              metricLines.push(`${this.translate.instant('metrics.reps')}: ${newReps} (${diff > 0 ? '+' : ''}${diff} rep${Math.abs(diff) === 1 ? '' : 's'})`);
+            }
+            if (oldDuration !== undefined && newDuration !== undefined && newDuration > oldDuration) {
+              const diff = newDuration - oldDuration;
+              metricLines.push(`${this.translate.instant('metrics.duration')}: ${newDuration} sec (${diff > 0 ? '+' : ''}${diff} sec)`);
+            }
+            if (oldDistance !== undefined && newDistance !== undefined && newDistance > oldDistance) {
+              const diff = newDistance - oldDistance;
+              metricLines.push(`${this.translate.instant('metrics.distance')}: ${newDistance} m (${diff > 0 ? '+' : ''}${diff} m)`);
+            }
+            if (metricLines.length > 0) {
+              overloadedExercisesDetails.push(exercise.exerciseName ?? exercise.id);
+              metricLines.forEach(line => overloadedExercisesDetails.push(' • ' + line));
+            }
             overloadApplied = true;
-            overloadedExercises.push(exercise.exerciseName || exercise.id);
           }
         }
       }
@@ -683,7 +719,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     // Show feedback to the user after all overloads are applied
-    if (overloadedExercises.length > 0) {
+    if (overloadedExercisesDetails.length > 0) {
       await this.alertService.showConfirmationDialog(
         this.translate.instant('compactPlayer.toasts.progressiveOverloadAppliedMultipleTitle'),
         this.translate.instant('compactPlayer.toasts.progressiveOverloadAppliedMultipleMessage'),
@@ -696,7 +732,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           }
         ],
         {
-          listItems: overloadedExercises
+          listItems: overloadedExercisesDetails
         }
       );
     }
@@ -1502,7 +1538,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       } else {
         triggerExercise.sets.push(newSet);
       }
-      this.toastService.success(`${type === 'warmup' ? 'Warm-up set' : 'Set'} added to ${triggerExercise.exerciseName}`);
+      // this.toastService.success(`${type === 'warmup' ? 'Warm-up set' : 'Set'} added to ${triggerExercise.exerciseName}`);
     }
 
     this.routine.set({ ...routine });
@@ -1921,11 +1957,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   formatPbValue(pb: PersonalBestSet): string {
     if (pb.weightLogged != null && getWeightValue(pb.weightLogged) > 0) {
       let value = this.weightUnitPipe.transform(getWeightValue(pb.weightLogged));
-      if (pb.repsLogged && repsTypeToReps(pb.repsLogged) > 1) value += ` x ${pb.repsLogged}`;
+      if (pb.repsLogged && repsTypeToReps(pb.repsLogged) > 1) value += ` x ${this.getRepsValue(pb.repsLogged)}`;
       return value || 'N/A';
     }
-    if (pb.repsLogged) return `${pb.repsLogged} reps`;
-    if (pb.durationLogged) return `${pb.durationLogged}s`;
+    if (pb.repsLogged) return `${this.getRepsValue(pb.repsLogged)} reps`;
+    if (pb.durationLogged) return `${this.getDurationValue(pb.durationLogged)}s`;
     return 'N/A';
   }
 
@@ -2990,8 +3026,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       return {
         'rounded-xl shadow-md transition-all duration-300': true,
         'relative ring-2 ring-yellow-400 dark:ring-yellow-500 z-10': true, // Focus style
-        'bg-white dark:bg-gray-800': true, // Default background when focused
-        'relative ring-2 ring-blue-400 dark:ring-blue-500 z-10': set.type === 'warmup'
+        'bg-white dark:bg-gray-800': set.type !== 'warmup', // Default background when focused
+        'relative ring-2 ring-blue-400 dark:ring-blue-500 z-10 bg-blue-100 dark:bg-blue-700/80': set.type === 'warmup'
       };
     }
 
@@ -3005,8 +3041,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     // Default style for a standard, non-focused, non-completed set
     return {
       'rounded-xl shadow-sm transition-all duration-300': true,
-      'bg-white dark:bg-gray-800': true,
-      'border-2 border-blue-400 dark:border-blue-500': set.type === 'warmup', // Subtle warmup style
+      'bg-white dark:bg-gray-800': set.type !== 'warmup',
+      'border-2 border-blue-400 dark:border-blue-500 bg-blue-100 dark:bg-blue-700/80': set.type === 'warmup', // Subtle warmup style
     };
   }
 
@@ -3543,9 +3579,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       }
 
       // check if is text weight as well
+      const isBodyweightTarget = plannedSet.targetWeight && plannedSet.targetWeight.type === WeightTargetType.bodyweight;
       if (this.isTextWeight(exIndex, setIndex)) {
         // Allow 0 if the planned target was bodyweight
-        const isBodyweightTarget = plannedSet.targetWeight && plannedSet.targetWeight.type === WeightTargetType.bodyweight;
         if (!isBodyweightTarget) {
           this.toastService.info(
             this.translate.instant('compactPlayer.toasts.enterNumericWeightError', {
@@ -3560,6 +3596,17 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         if (isBodyweightTarget && (!userInputs.actualWeight || getWeightValue(userInputs.actualWeight) === 0)) {
           userInputs.actualWeight = { type: WeightTargetType.bodyweight } as WeightTarget;
         }
+      }
+      if (!isBodyweightTarget && (!userInputs.actualWeight || getWeightValue(userInputs.actualWeight) === 0)) {
+        this.toastService.info(
+          this.translate.instant('compactPlayer.toasts.enterNumericWeightError', {
+            weightType: this.workoutUtilsService.weightTargetAsString(plannedSet.targetWeight)
+          }),
+          4000,
+          this.translate.instant('common.error')
+        );
+        this.workoutService.vibrate();
+        return;
       }
 
       this.audioService.playSound(AUDIO_TYPES.correct);
@@ -4861,12 +4908,16 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return getDurationValue(duration);
   }
 
-  getWeightValue(duration: WeightTarget | undefined): number {
-    return getWeightValue(duration);
+  getWeightValue(weight: WeightTarget | undefined): number {
+    return getWeightValue(weight);
   }
 
   getDistanceValue(distance: DistanceTarget | undefined): number {
     return getDistanceValue(distance);
+  }
+
+  getRepsValue(reps: RepsTarget | undefined): number {
+    return repsTypeToReps(reps);
   }
 
 

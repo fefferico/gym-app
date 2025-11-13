@@ -31,7 +31,7 @@ export class ExerciseOverviewItemComponent {
         private translate: TranslateService,
         private workoutUtilsService: WorkoutUtilsService,
         private unitsService: UnitsService,
-    ) {}
+    ) { }
 
     isCurrent = computed<boolean>(() => {
         return this.exercise.id === this.activeExerciseId;
@@ -44,7 +44,7 @@ export class ExerciseOverviewItemComponent {
         const roundIndices = Array.from({ length: totalRounds }, (_, i) => i);
         return { totalRounds, roundIndices };
     });
-    
+
     totalPlannedSets = computed<number>(() => {
         return this.exercise.sets.length;
     });
@@ -61,7 +61,7 @@ export class ExerciseOverviewItemComponent {
     status = computed(() => {
         const loggedCount = this.getNumberOfLoggedSets(this.exercise.id);
         const totalPlanned = this.totalPlannedSets();
-        
+
         if (this.exercise.sessionStatus === 'skipped') return { text: this.translate.instant('exerciseItem.status.skipped'), class: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' };
         if (this.exercise.sessionStatus === 'do_later') return { text: this.translate.instant('exerciseItem.status.doLater'), class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' };
         if (totalPlanned > 0 && loggedCount >= totalPlanned) return { text: this.translate.instant('exerciseItem.status.completed'), class: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' };
@@ -78,30 +78,30 @@ export class ExerciseOverviewItemComponent {
 
         return exerciseLog.sets.find(ls => ls.plannedSetId === targetId);
     }
-    
+
     getNumberOfLoggedSets(exerciseId: string): number {
         return this.loggedExercises.find(le => le.id === exerciseId)?.sets.length ?? 0;
     }
-    
+
     getLoggedSetsForDisplay(exerciseId: string): LoggedSet[] {
         return this.loggedExercises.find(le => le.id === exerciseId)?.sets ?? [];
     }
 
     getSetStatusIndicatorClass(plannedSetId: string, roundIndex: number, setIndex: number): { class: string, title: string } {
         const isSetLogged = !!this.getLoggedSetFor(plannedSetId, roundIndex);
-    
+
         if (isSetLogged) {
             return { class: 'bg-green-500', title: this.translate.instant('exerciseItem.indicator.title.completed') };
         }
-    
+
         const isTheCurrentSet = this.isCurrent() &&
-                                this.activeSetIndex === setIndex &&
-                                (!!this.activeBlockRound  && this.activeBlockRound > 0 ? this.activeBlockRound - 1 : 0) === roundIndex;
-    
+            this.activeSetIndex === setIndex &&
+            (!!this.activeBlockRound && this.activeBlockRound > 0 ? this.activeBlockRound - 1 : 0) === roundIndex;
+
         if (isTheCurrentSet) {
             return { class: 'bg-blue-400 animate-pulse', title: this.translate.instant('exerciseItem.indicator.title.current') };
         }
-    
+
         switch (this.exercise.sessionStatus) {
             case 'skipped':
                 return { class: 'bg-yellow-500', title: this.translate.instant('exerciseItem.indicator.title.skipped') };
@@ -114,9 +114,11 @@ export class ExerciseOverviewItemComponent {
 
     formatSet(set: ExerciseTargetSetParams | LoggedSet | undefined, isPerformed = false): string {
         if (!set) return isPerformed ? '—' : 'N/A';
-    
+
         let weight: string | null | undefined;
         let reps: string | undefined;
+        let distance: string | undefined;
+        let duration: string | undefined;
 
         const weightReal = this.workoutUtilsService.getSetFieldValue(set, METRIC.weight);
         const repsReal = this.workoutUtilsService.getSetFieldValue(set, METRIC.reps);
@@ -126,15 +128,34 @@ export class ExerciseOverviewItemComponent {
 
         weight = weightReal;
         reps = repsReal;
-        
+        distance = distanceReal;
+        duration = durationReal;
+
         let parts = [];
         const repsText = this.translate.instant('exerciseItem.reps');
-        if (weight != null && reps != null) {
-            parts.push(`${weight}${this.unitsService.getWeightUnitSuffix()} x ${reps} ${repsText}`);
-        } else if (reps != null) {
+        const distanceText = this.translate.instant('exerciseItem.distance');
+        const durationText = this.translate.instant('exerciseItem.duration');
+
+        if (reps != null && weight != null && weight !== '-' && reps !== '-' && reps != '0') {
+            parts.push(`${reps} ${repsText} @ ${weight}${this.unitsService.getWeightUnitSuffix()}`);
+        } else if (reps != null && reps !== '-' && reps != '0') {
             parts.push(`${reps} ${repsText}`);
+        } else if (weight != null && weight !== '-') {
+            parts.push(`${weight}${this.unitsService.getWeightUnitSuffix()}`);
         }
-        
+
+        if (distance != null && distance !== '-') {
+            parts.push(`${distance} ${distanceText}`);
+        }
+        if (duration != null && duration !== '-') {
+            parts.push(`${duration} ${durationText}`);
+        }
+
+        // Optionally add tempo if you want
+        // if (tempoReal != null) {
+        //     parts.push(`T: ${tempoReal}`);
+        // }
+
         return parts.length > 0 ? parts.join(', ') : (isPerformed ? '—' : 'N/A');
     }
 }

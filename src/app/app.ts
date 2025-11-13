@@ -1,10 +1,8 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, ChildrenOutletContexts, NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router, RouterOutlet } from '@angular/router';
-import { ThemeService } from './core/services/theme.service';
 import { NavigationComponent } from './shared/components/navigation/navigation';
 import { CommonModule } from '@angular/common';
 
-import { TrackingService } from './core/services/tracking.service';
 import { SpinnerComponent } from './shared/components/spinner/spinner.component';
 import { ToastContainerComponent } from './shared/components/toast/toast.component';
 import { PausedWorkoutComponent } from './features/workout-tracker/paused-workout/paused-workout.component';
@@ -12,6 +10,7 @@ import { filter, map } from 'rxjs';
 import { LanguageService } from './core/services/language.service';
 import { SpinnerService } from './core/services/spinner.service';
 import { animate, group, query, style, transition, trigger } from '@angular/animations';
+import { TranslateService } from '@ngx-translate/core';
 
 export const routeAnimation =
   trigger('routeAnimations', [
@@ -83,14 +82,13 @@ export const routeAnimation =
 })
 export class AppComponent implements OnInit {
   private languageService = inject(LanguageService);
-  private themeService = inject(ThemeService); // Keep for early initialization via constructor
-  private trackingService = inject(TrackingService); // Inject for testing
   // Signal to control the visibility of the paused workout banner
   shouldShowPausedBanner = signal(false);
   shouldShowNavigationBanner = signal(true);
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
   private spinnerService = inject(SpinnerService);
+  private translateService = inject(TranslateService);
 
   isFullScreenPlayerActive = false;
 
@@ -119,7 +117,7 @@ export class AppComponent implements OnInit {
       
       if (event instanceof NavigationStart) {
         // Show the spinner as soon as navigation starts
-        this.spinnerService.show('Loading...');
+        this.spinnerService.show(this.translateService.instant('common.loading'));
         return;
       }
 

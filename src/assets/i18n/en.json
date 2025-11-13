@@ -275,6 +275,7 @@
     }
   },
   "common": {
+    "loading": "Loading...",
     "on": "On",
     "off": "Off",
     "premium": "PREMIUM",
@@ -1963,6 +1964,8 @@
     "rounds": "rounds",
     "round": "Round",
     "reps": "reps",
+    "distance": "distance",
+    "duration": "duration",
     "table": {
       "set": "Set",
       "planned": "Planned",

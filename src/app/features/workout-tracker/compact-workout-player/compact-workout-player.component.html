@@ -279,6 +279,7 @@
                           </span>
                         </ng-container>
                         <p *ngIf="isSetWarmup(exIndex, setIndex)" class="font-bold">
+                          <app-icon name="flame" class="h-4 w-4 inline-block mr-1"></app-icon> 
                           {{ 'compactPlayer.warmupSet' | translate }}
                         </p>
                       </div>
@@ -291,6 +292,7 @@
                         <p *ngIf="isSetCompleted(exIndex, setIndex)" class="italic font-bold">{{
                           'compactPlayer.markAsUndone' | translate }}</p>
                         <p *ngIf="isSetWarmup(exIndex, setIndex)" class="font-bold">
+                          <app-icon name="flame" class="h-4 w-4 inline-block mr-1"></app-icon> 
                           {{ 'compactPlayer.warmupSet' | translate }}
                         </p>
                       </div>
@@ -824,12 +826,10 @@
               </p>
               <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
                 <span *ngIf="setLog.repsLogged">{{ 'compactPlayer.repsLabel' | translate }}: <strong
-                    class="dark:text-gray-100">{{ setLog.repsLogged
+                    class="dark:text-gray-100">{{ getRepsValue(setLog.repsLogged)
                     }}</strong></span>
                 <span *ngIf="setLog.weightLogged != null">{{ 'compactPlayer.weightLabel' | translate:{unit: ''} }}:
-                  <strong class="dark:text-gray-100">{{ getWeightValue(setLog.weightLogged)
-                    |
-                    weightUnit }}</strong></span>
+                  <strong class="dark:text-gray-100">{{ getWeightValue(setLog.weightLogged)}}</strong></span>
                 <span *ngIf="setLog.distanceLogged">{{ 'compactPlayer.distanceLabel' | translate }}: <strong
                     class="dark:text-gray-100">{{
                     setLog.distanceLogged }} km</strong></span>
@@ -861,12 +861,10 @@
                 #{{ i + 1 }}:</p>
               <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
                 <span *ngIf="setLog.repsLogged">{{ 'compactPlayer.repsLabel' | translate }}: <strong
-                    class="dark:text-gray-100">{{ setLog.repsLogged
+                    class="dark:text-gray-100">{{ getRepsValue(setLog.repsLogged)
                     }}</strong></span>
-                <span *ngIf="setLog.weightLogged != null">{{ 'compactPlayer.weightLabel' | translate:{unit: ''} }}:
-                  <strong class="dark:text-gray-100">{{ getWeightValue(setLog.weightLogged)
-                    |
-                    weightUnit }}</strong></span>
+                <span *ngIf="setLog.weightLogged != null">{{ 'compactPlayer.weightLabel' | translate:{unit: 'kg'} }}:
+                  <strong class="dark:text-gray-100">{{ getWeightValue(setLog.weightLogged)}}</strong></span>
                 <span *ngIf="setLog.distanceLogged">{{ 'compactPlayer.distanceLabel' | translate }}: <strong
                     class="dark:text-gray-100">{{
                     setLog.distanceLogged }} km</strong></span>

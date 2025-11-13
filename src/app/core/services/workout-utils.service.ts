@@ -1043,11 +1043,17 @@ export class WorkoutUtilsService {
         // CASE 1: The set is a LOGGED set, so we display the actual performance values.
         if (this.isLoggedSet(exSet)) {
             switch (field) {
-                case METRIC.reps: return (exSet.repsLogged ?? '-').toString();
-                case METRIC.weight: return exSet.weightLogged != null ? exSet.weightLogged.toString() : '-';
-                case METRIC.distance: return (exSet.distanceLogged ?? '-').toString();
-                case METRIC.duration: return exSet.durationLogged != null ? this.formatSecondsToTime(exSet.durationLogged.toString()) : '-';
-                case METRIC.duration: return exSet.restLogged != null ? this.formatSecondsToTime(exSet.restLogged.toString()) : '-';
+                case METRIC.reps: return (this.getRepsValue(exSet.repsLogged) ?? '-').toString();
+                case METRIC.weight: return exSet.weightLogged != null ? (this.getWeightValue(exSet.weightLogged) ?? '-').toString() : '-';
+                case METRIC.distance: return (this.getDistanceValue(exSet.distanceLogged) ?? '-').toString();
+                case METRIC.duration: 
+                    return (exSet.durationLogged !== undefined && exSet.durationLogged !== null && this.getDurationValue(exSet.durationLogged) !== undefined)
+                        ? this.formatSecondsToTime(this.getDurationValue(exSet.durationLogged)!.toString())
+                        : '-';
+                case METRIC.rest: 
+                    return (exSet.restLogged !== undefined && exSet.restLogged !== null && this.getRestValue(exSet.restLogged) !== undefined)
+                        ? this.formatSecondsToTime(this.getRestValue(exSet.restLogged)!.toString())
+                        : '-';
                 case METRIC.tempo: return exSet.tempoLogged || '-';
                 default: return '-';
             }
@@ -1061,34 +1067,34 @@ export class WorkoutUtilsService {
                         const midValue = Math.floor((plannedSet.targetReps.min + plannedSet.targetReps.max) / 2);
                         return midValue.toString();
                     }
-                    return (plannedSet.targetReps ?? '-').toString();
+                    return (this.getRepsValue(plannedSet.targetReps) ?? '-').toString();
 
                 case METRIC.weight:
                     if (plannedSet.targetWeight && plannedSet.targetWeight.type === WeightTargetType.range) {
                         const midValue = Math.floor((plannedSet.targetWeight.min + plannedSet.targetWeight.max) / 2);
                         return midValue.toString();
                     }
-                    return (plannedSet.targetWeight ?? '-').toString();
+                    return (this.getWeightValue(plannedSet.targetWeight) ?? '-').toString();
 
                 case METRIC.distance:
                     if (plannedSet.targetDistance && plannedSet.targetDistance.type === DistanceTargetType.range) {
                         const midValue = Math.floor((plannedSet.targetDistance.min + plannedSet.targetDistance.max) / 2);
                         return midValue.toString();
                     }
-                    return (plannedSet.targetDistance ?? '-').toString();
+                    return (this.getDistanceValue(plannedSet.targetDistance) ?? '-').toString();
 
                 case METRIC.duration:
                     if (plannedSet.targetDuration && plannedSet.targetDuration.type === DurationTargetType.range) {
                         const midValue = Math.floor((plannedSet.targetDuration.minSeconds + plannedSet.targetDuration.maxSeconds) / 2);
                         return midValue.toString();
                     }
-                    return (plannedSet.targetDuration ?? '-').toString();
+                    return (this.getDurationValue(plannedSet.targetDuration) ?? '-').toString();
                 case METRIC.rest:
                     if (plannedSet.targetRest && plannedSet.targetRest.type === RestTargetType.range) {
                         const midValue = Math.floor((plannedSet.targetRest.minSeconds + plannedSet.targetRest.maxSeconds) / 2);
                         return midValue.toString();
                     }
-                    return (plannedSet.targetRest ?? '-').toString();
+                    return (this.getRestValue(plannedSet.targetRest) ?? '-').toString();
                 case METRIC.tempo:
                     return plannedSet.targetTempo || '-';
 
