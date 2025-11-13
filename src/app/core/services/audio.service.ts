@@ -21,7 +21,7 @@ export class AudioService {
 
   constructor() { }
 
-  playSound(type: AUDIO_TYPES): void {
+  async playSound(type: AUDIO_TYPES): Promise<void> {
     this.initializeAudioContext();
     if (!this.audioCtx) return;
 
@@ -329,62 +329,44 @@ export class AudioService {
 
   // You can place this in a shared audio utility file or directly in your component/service
 
-    playPopSound() {
+  /**
+   * Plays a "pop" or "bloop" sound that matches the provided audio sample.
+   * This sound is characterized by a single, pure tone with a very rapid
+   * drop in pitch and a quick decay.
+   */
+  playPopSound(): void {
     this.initializeAudioContext();
     if (!this.audioCtx) return;
-  
-    const ctx = this.audioCtx;
-    const now = ctx.currentTime;
-  
-    // --- 1. Short burst of white noise (the "pfft") ---
-    const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.08, ctx.sampleRate); // 80ms
-    const output = noiseBuffer.getChannelData(0);
-    for (let i = 0; i < noiseBuffer.length; i++) {
-      // Exponential fade out for a quick "pfft"
-      output[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / noiseBuffer.length, 2.5);
-    }
-    const noiseSource = ctx.createBufferSource();
-    noiseSource.buffer = noiseBuffer;
-  
-    const noiseGain = ctx.createGain();
-    noiseGain.gain.setValueAtTime(0.7, now);
-    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-  
-    // Optional: bandpass filter to make it airy
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(1800, now);
-    filter.Q.value = 2;
-  
-    noiseSource.connect(filter).connect(noiseGain).connect(ctx.destination);
-  
-    // --- 2. Very short, high-pitched oscillator "pop" (the cork) ---
-    const osc = ctx.createOscillator();
-    const oscGain = ctx.createGain();
-  
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(600, now);
-    osc.frequency.exponentialRampToValueAtTime(180, now + 0.09);
-  
-    oscGain.gain.setValueAtTime(0.18, now);
-    oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
-  
-    osc.connect(oscGain).connect(ctx.destination);
-  
-    // --- Start and stop everything ---
-    noiseSource.start(now);
-    noiseSource.stop(now + 0.08);
-  
-    osc.start(now);
-    osc.stop(now + 0.11);
-  
-    osc.onended = () => {
-      osc.disconnect();
-      oscGain.disconnect();
-      noiseSource.disconnect();
-      noiseGain.disconnect();
-      filter.disconnect();
-    };
+
+    const now = this.audioCtx.currentTime;
+
+    const oscillator = this.audioCtx.createOscillator();
+    const gainNode = this.audioCtx.createGain();
+
+    // A sine wave produces a pure, clean tone perfect for this "bloop" sound.
+    oscillator.type = 'sine';
+
+    // --- Pitch (Frequency) Envelope ---
+    // This is the most critical part for matching the sound.
+    // Start at a high-mid frequency and drop it very quickly.
+    const startFrequency = 880; // A5 note
+    const endFrequency = 150;
+    const rampDownTime = 0.1; // The pitch drops over 100ms
+
+    oscillator.frequency.setValueAtTime(startFrequency, now);
+    oscillator.frequency.exponentialRampToValueAtTime(endFrequency, now + rampDownTime);
+
+    // --- Volume (Gain) Envelope ---
+    // A fast attack and a slightly longer decay to let the sound ring out a little.
+    gainNode.gain.setValueAtTime(0.7, now); // Start at a decent volume
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.2); // Fade out over 200ms
+
+    // --- Connect Audio Graph and Play ---
+    oscillator.connect(gainNode);
+    gainNode.connect(this.audioCtx.destination);
+
+    oscillator.start(now);
+    oscillator.stop(now + 0.25); // Stop the oscillator after the sound has faded
   }
 
 }

@@ -18,6 +18,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BumpClickDirective } from '../../../shared/directives/bump-click.directive';
 import { ShatterableDirective } from '../../../animations/shatterable.directive';
 import { animate, style, transition, trigger } from '@angular/animations';
+import { AUDIO_TYPES, AudioService } from '../../../core/services/audio.service';
 
 
 @Component({
@@ -45,6 +46,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private userProfileService = inject(UserProfileService); // Inject UserProfileService
   protected subscriptionService = inject(SubscriptionService);
   private translate = inject(TranslateService);
+  protected audioService = inject(AudioService);
 
   userName = computed(() => this.userProfileService.username() || this.translate.instant('user.defaultName'));
 

@@ -341,8 +341,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (!hasPausedSession) {
       this.loadNewWorkoutFromRoute();
     }
-
-    await this.lockScreenToPortrait();
   }
 
   private isDestroyed = false;
@@ -549,28 +547,28 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
 
-    private async prefillRoutineWithLastPerformance(): Promise<void> {
+  private async prefillRoutineWithLastPerformance(): Promise<void> {
     const currentRoutine = this.routine();
     if (!currentRoutine) return;
-  
+
     const poSettings = this.progressiveOverloadService.getSettings();
     const isPoEnabled = poSettings.enabled && poSettings.strategies && poSettings.sessionsToIncrement && poSettings.sessionsToIncrement > 0;
-  
+
     // Fetch all logs for this routine only if PO is enabled
     const allLogsForRoutine = isPoEnabled
       ? await firstValueFrom(this.trackingService.getLogsForRoutine(currentRoutine.id))
       : [];
-  
+
     // Deep copy to avoid mutating the original
     const routineCopy = JSON.parse(JSON.stringify(currentRoutine)) as Routine;
-  
+
     // Track which exercises had overload applied
     const overloadAppliedForExercise: boolean[] = [];
-  
+
     // Track if we need to prompt for historical/original (only if at least one exercise has historical data and no overload)
     let hasAnyHistorical = false;
     let lastPerformances: (LastPerformanceSummary | null)[] = [];
-  
+
     // Gather last performances for all exercises
     for (const exercise of routineCopy.exercises) {
       try {
@@ -585,38 +583,38 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         lastPerformances.push(null as any);
       }
     }
-  
+
     // --- 1. Progressive Overload Pass ---
-      const overloadedExercises: string[] = [];
+    const overloadedExercises: string[] = [];
 
     for (const [exIndex, exercise] of routineCopy.exercises.entries()) {
       let overloadApplied = false;
       const lastPerformance = lastPerformances[exIndex];
-  
+
       if (isPoEnabled && lastPerformance && lastPerformance.sets && lastPerformance.sets.length > 0) {
         // Filter logs that actually contain the current exercise
         const relevantLogs = allLogsForRoutine.filter(log =>
           log.exercises.some(le => le.exerciseId === exercise.exerciseId)
         );
-  
+
         if (relevantLogs.length >= poSettings.sessionsToIncrement!) {
           const recentLogsToCheck = relevantLogs.slice(-poSettings.sessionsToIncrement!);
           let allSessionsSuccessful = true;
-  
+
           for (const log of recentLogsToCheck) {
             const loggedEx = log.exercises.find(le => le.exerciseId === exercise.exerciseId);
             const originalEx = this.originalRoutineSnapshot()?.exercises.find(oe => oe.exerciseId === exercise.exerciseId);
-  
+
             if (!loggedEx || !originalEx || loggedEx.sets.length < originalEx.sets.length) {
               allSessionsSuccessful = false;
               break;
             }
-  
-                        const wasSuccess = originalEx.sets.every((originalSet, setIndex) => {
+
+            const wasSuccess = originalEx.sets.every((originalSet, setIndex) => {
               if (originalSet.type === 'warmup') return true;
               const loggedSet = loggedEx.sets[setIndex];
               if (!loggedSet) return false;
-            
+
               // List of metrics to check
               const metrics: Array<{ target: any, logged: any, compare: (a: any, b: any) => boolean }> = [
                 {
@@ -641,7 +639,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
                 }
                 // Add more metrics if needed
               ];
-            
+
               // For each metric, if there's a target, there must be a logged value that meets/exceeds it
               for (const { target, logged, compare } of metrics) {
                 if (target !== undefined && target !== null) {
@@ -650,26 +648,26 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
                 }
                 // If there's a logged value but no target, consider it succeeded (do nothing)
               }
-            
+
               return true;
             });
-  
+
             if (!wasSuccess) {
               allSessionsSuccessful = false;
               break;
             }
           }
-  
+
           if (allSessionsSuccessful) {
-      this.progressiveOverloadService.applyOverloadToExercise(exercise, poSettings);
-      overloadApplied = true;
-      overloadedExercises.push(exercise.exerciseName || exercise.id);
-    }
+            this.progressiveOverloadService.applyOverloadToExercise(exercise, poSettings);
+            overloadApplied = true;
+            overloadedExercises.push(exercise.exerciseName || exercise.id);
+          }
         }
       }
       overloadAppliedForExercise[exIndex] = overloadApplied;
     }
-  
+
     // --- 2. Prompt for historical/original if needed (only if at least one exercise has historical and no overload) ---
     let useHistorical = false;
     if (hasAnyHistorical && overloadAppliedForExercise.some(applied => !applied)) {
@@ -678,31 +676,31 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         this.translate.instant('compactPlayer.alerts.prefillMessage'),
         [
           { text: this.translate.instant('compactPlayer.alerts.useHistorical'), role: 'confirm', data: 'historical', icon: 'clock' },
-          { text: this.translate.instant('compactPlayer.alerts.useOriginal'), role: 'cancel', data: 'original', icon: 'restore' }
+          { text: this.translate.instant('compactPlayer.alerts.useOriginal'), role: 'cancel', data: 'original', icon: 'schedule' }
         ]
       );
       useHistorical = userChoice?.data === 'historical';
     }
 
     // Show feedback to the user after all overloads are applied
-  if (overloadedExercises.length > 0) {
-    await this.alertService.showConfirmationDialog(
-      this.translate.instant('compactPlayer.toasts.progressiveOverloadAppliedMultipleTitle'),
-      this.translate.instant('compactPlayer.toasts.progressiveOverloadAppliedMultipleMessage'),
-      [
+    if (overloadedExercises.length > 0) {
+      await this.alertService.showConfirmationDialog(
+        this.translate.instant('compactPlayer.toasts.progressiveOverloadAppliedMultipleTitle'),
+        this.translate.instant('compactPlayer.toasts.progressiveOverloadAppliedMultipleMessage'),
+        [
+          {
+            text: this.translate.instant('common.ok'),
+            role: 'confirm',
+            data: true,
+            icon: 'check'
+          }
+        ],
         {
-          text: this.translate.instant('common.ok'),
-          role: 'confirm',
-          data: true,
-          icon: 'check'
+          listItems: overloadedExercises
         }
-      ],
-      {
-        listItems: overloadedExercises
-      }
-    );
-  }
-  
+      );
+    }
+
     // --- 3. Apply historical values if chosen and not overloaded ---
     for (const [exIndex, exercise] of routineCopy.exercises.entries()) {
       if (!overloadAppliedForExercise[exIndex] && useHistorical) {
@@ -721,12 +719,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       }
       // else: stick to original routine (do nothing)
     }
-  
+
     // --- 4. Apply session-wide intensity adjustment (if any) ---
     if (this.intensityAdjustment) {
       const { direction, percentage } = this.intensityAdjustment;
       const multiplier = direction === 'increase' ? 1 + (percentage / 100) : 1 - (percentage / 100);
-  
+
       routineCopy.exercises.forEach(exercise => {
         exercise.sets.forEach(set => {
           if (set.targetWeight != null) {
@@ -748,7 +746,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         });
       });
     }
-  
+
     // --- 5. Update the routine and trigger change detection ---
     this.routine.set(routineCopy);
     this.cdr.detectChanges();
@@ -1041,7 +1039,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           if (firstIncompleteSetIndex > -1) {
             newExpandedSets.add(`${index}-${firstIncompleteSetIndex}`);
           }
-          this.expandedSets.set(newExpandedSets);
+          // EXPAND FIRST SET
+          // this.expandedSets.set(newExpandedSets);
         }
       }
 
@@ -1396,31 +1395,31 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-    addSet(exIndex: number, type: 'standard' | 'warmup' = 'standard') {
+  addSet(exIndex: number, type: 'standard' | 'warmup' = 'standard') {
     const routine = this.routine();
     if (!routine) return;
-  
+
     const triggerExercise = routine.exercises[exIndex];
-  
+
     // --- CASE 1: Exercise is part of a Superset (Add a new ROUND) ---
     if (triggerExercise.supersetId) {
       if (type === 'warmup') {
         this.toastService.info("Cannot add a warm-up round to a superset.", 3000);
         return;
       }
-  
+
       const exercisesInGroup = this.getSupersetExercises(triggerExercise.supersetId);
-  
+
       exercisesInGroup.forEach(groupEx => {
         const originalGroupExIndex = this.getOriginalExIndex(groupEx.id);
         if (originalGroupExIndex === -1) return;
-  
+
         const lastSetIndex = groupEx.sets.length > 0 ? groupEx.sets.length - 1 : -1;
         const lastSet = lastSetIndex !== -1 ? groupEx.sets[lastSetIndex] : null;
-  
+
         // Copy fieldOrder or use default
         const fieldOrder = lastSet?.fieldOrder ? [...lastSet.fieldOrder] : this.workoutUtilsService.getRepsAndWeightFields();
-  
+
         // Build new set with targets for all metrics in fieldOrder
         const newSet: ExerciseTargetSetParams = {
           id: uuidv4(),
@@ -1428,7 +1427,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           fieldOrder,
           targetRest: lastSet?.targetRest ?? restToExact(60),
         };
-  
+
         fieldOrder.forEach(metric => {
           switch (metric) {
             case METRIC.weight:
@@ -1451,24 +1450,24 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
               break;
           }
         });
-  
+
         groupEx.sets.push(newSet);
       });
-  
+
       this.toastService.success(`Round added to ${this.isEmom(exIndex) ? 'EMOM' : 'Superset'}`);
-  
+
     } else {
       // --- CASE 2: Standard Exercise ---
       const lastSet = triggerExercise.sets.length > 0 ? triggerExercise.sets[triggerExercise.sets.length - 1] : null;
       const fieldOrder = lastSet?.fieldOrder ? [...lastSet.fieldOrder] : this.workoutUtilsService.getRepsAndWeightFields();
-  
+
       const newSet: ExerciseTargetSetParams = {
         id: uuidv4(),
         type: type,
         fieldOrder,
         targetRest: lastSet?.targetRest ?? restToExact(60),
       };
-  
+
       fieldOrder.forEach(metric => {
         switch (metric) {
           case METRIC.weight:
@@ -1491,7 +1490,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
             break;
         }
       });
-  
+
       if (type === 'warmup') {
         newSet.targetReps = repsToExact(12);
         if (lastSet && lastSet.targetWeight !== undefined && lastSet.targetWeight !== null) {
@@ -1505,7 +1504,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       }
       this.toastService.success(`${type === 'warmup' ? 'Warm-up set' : 'Set'} added to ${triggerExercise.exerciseName}`);
     }
-  
+
     this.routine.set({ ...routine });
     if (this.expandedExerciseIndex() !== exIndex) {
       this.expandedExerciseIndex.set(exIndex);
@@ -3162,25 +3161,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return this.workoutUtilsService.getSetTargetDisplay(setForDisplay, field);
   }
 
-
-  /**
-   * Attempts to lock the screen orientation to portrait mode.
-   * This method should be called when the workout player is initialized.
-   */
-  private async lockScreenToPortrait(): Promise<void> {
-    // Check if the Screen Orientation API is available and we're in a browser context
-    if (isPlatformBrowser(this.platformId) && screen.orientation) {
-      try {
-        await (screen.orientation as any).lock('portrait-primary');
-        console.log('Screen orientation locked to portrait.');
-      } catch (error) {
-        console.error('Failed to lock screen orientation:', error);
-        // Handle cases where the browser might not allow locking,
-        // e.g., on desktop or if the user has disabled it.
-      }
-    }
-  }
-
   /**
    * Unlocks the screen orientation, allowing it to change freely again.
    * This should be called when the user navigates away from the workout player.
@@ -3564,17 +3544,21 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
       // check if is text weight as well
       if (this.isTextWeight(exIndex, setIndex)) {
-        if (!userInputs.actualWeight || userInputs.actualWeight.type !== WeightTargetType.exact) {
+        // Allow 0 if the planned target was bodyweight
+        const isBodyweightTarget = plannedSet.targetWeight && plannedSet.targetWeight.type === WeightTargetType.bodyweight;
+        if (!isBodyweightTarget) {
           this.toastService.info(
             this.translate.instant('compactPlayer.toasts.enterNumericWeightError', {
               weightType: this.workoutUtilsService.weightTargetAsString(plannedSet.targetWeight)
             }),
-            4000, // Duration 0 makes it sticky until dismissed
+            4000,
             this.translate.instant('common.error')
           );
-          // Vibrate to give haptic feedback for the error
           this.workoutService.vibrate();
-          return; // Abort the completion
+          return;
+        }
+        if (isBodyweightTarget && (!userInputs.actualWeight || getWeightValue(userInputs.actualWeight) === 0)) {
+          userInputs.actualWeight = { type: WeightTargetType.bodyweight } as WeightTarget;
         }
       }
 
@@ -3739,16 +3723,16 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return fields.visible.length > 1;
   }
 
-    public async promptRemoveField(exIndex: number, setIndex: number): Promise<void> {
+  public async promptRemoveField(exIndex: number, setIndex: number): Promise<void> {
     const currentRoutine = this.routine();
     if (!currentRoutine) return;
-  
+
     const oldFields = this.getFieldsForSet(exIndex, setIndex).visible.filter(field => Object.values(METRIC).includes(field as METRIC));
     const updatedRoutine = await this.workoutUtilsService.promptRemoveField(currentRoutine, exIndex, setIndex, true);
-  
+
     if (updatedRoutine) {
       this.routine.set({ ...updatedRoutine });
-  
+
       // Find the removed metric
       const newFields = this.workoutUtilsService.getFieldsForSet(updatedRoutine, exIndex, setIndex).visible;
       const removedField = oldFields.find(f => f as METRIC && !newFields.includes(f as METRIC));
@@ -3765,21 +3749,21 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         // Remove from performanceInputValues
         this.setPerformanceInputValue(exIndex, setIndex, removedField as METRIC, undefined);
       }
-  
+
       this._prefillPerformanceInputs();
     }
   }
 
 
-    public async promptAddField(exIndex: number, setIndex: number): Promise<void> {
+  public async promptAddField(exIndex: number, setIndex: number): Promise<void> {
     const currentRoutine = this.routine();
     if (!currentRoutine) return;
-  
+
     const updatedRoutine = await this.workoutUtilsService.promptAddField(currentRoutine, exIndex, setIndex, true);
-  
+
     if (updatedRoutine) {
       this.routine.set(updatedRoutine);
-  
+
       // Find the added metric
       const oldFields = this.getFieldsForSet(exIndex, setIndex).visible;
       const newFields = this.workoutUtilsService.getFieldsForSet(updatedRoutine, exIndex, setIndex).visible;
@@ -3798,7 +3782,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         // Update performanceInputValues
         this.setPerformanceInputValue(exIndex, setIndex, addedField as METRIC, defaultValue);
       }
-  
+
       this._prefillPerformanceInputs();
       this.scrollToSet(exIndex, setIndex);
     }
@@ -3899,45 +3883,73 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     // Prioritize logged data for the summary, fall back to planned data
     const data = loggedSet || plannedSet;
 
-    let parts: string[] = [];
-
     const weight = loggedSet?.weightLogged ?? plannedSet.targetWeight;
     const reps = loggedSet?.repsLogged ?? plannedSet.targetReps;
     const distance = loggedSet?.distanceLogged ?? plannedSet.targetDistance;
     const duration = loggedSet?.durationLogged ?? plannedSet.targetDuration;
     const tempo = loggedSet?.targetTempo ?? plannedSet.targetTempo;
 
-    if (weight !== undefined && weight !== null && getWeightValue(weight) > 0) {
-      parts.push(`${this.weightUnitPipe.transform(getWeightValue(weight))}`);
-    }
-    if (weight && getWeightValue(weight) === 0) {
-      parts.push('Bodyweight');
-    }
+    let summary = '';
 
-    if (reps !== undefined && reps !== null) {
+    // Compose "10 reps @ 20kg" if both reps and weight are present
+    if (
+      reps !== undefined && reps !== null &&
+      weight !== undefined && weight !== null
+    ) {
       const repsType: RepsTargetType = reps.type;
+      let repsStr = '';
       if (repsType === RepsTargetType.exact || repsType === RepsTargetType.range) {
-        parts.push(`${repsTypeToReps(reps)} reps`);
+        repsStr = `${repsTargetAsString(reps)} reps`;
       } else if (repsType === RepsTargetType.max || repsType === RepsTargetType.amrap) {
-        parts.push(`${repsType.toUpperCase()} reps`);
+        repsStr = `${repsType.toUpperCase()} reps`;
       }
+      let weightStr = '';
+      if (getWeightValue(weight) > 0) {
+        weightStr = this.weightUnitPipe.transform(getWeightValue(weight)) ?? '';
+      } else if (
+        weight &&
+        weight.type === WeightTargetType.bodyweight
+      ) {
+        weightStr = 'BW';
+      }
+      if (repsStr && weightStr) {
+        summary = `${repsStr} @ ${weightStr}`;
+      } else if (repsStr) {
+        summary = repsStr;
+      } else if (weightStr) {
+        summary = weightStr;
+      }
+    } else {
+      // Fallback to previous logic for other metrics
+      let parts: string[] = [];
+      if (weight !== undefined && weight !== null && getWeightValue(weight) > 0) {
+        parts.push(`${this.weightUnitPipe.transform(getWeightValue(weight))}`);
+      }
+      if (weight && getWeightValue(weight) === 0) {
+        parts.push('BW');
+      }
+      if (reps !== undefined && reps !== null) {
+        const repsType: RepsTargetType = reps.type;
+        if (repsType === RepsTargetType.exact || repsType === RepsTargetType.range) {
+          parts.push(`${repsTypeToReps(reps)} reps`);
+        } else if (repsType === RepsTargetType.max || repsType === RepsTargetType.amrap) {
+          parts.push(`${repsType.toUpperCase()} reps`);
+        }
+      }
+      if (distance !== undefined && distance !== null && getDistanceValue(distance) > 0) {
+        parts.push(`${getDistanceValue(distance)} ${this.unitsService.getDistanceMeasureUnitSuffix()}`);
+      }
+      if (duration !== undefined && duration !== null && getDurationValue(duration) > 0) {
+        parts.push(this.formatSecondsToTime(getDurationValue(duration)));
+      }
+      if (tempo) {
+        parts.push(`T: ${tempo}`);
+      }
+      summary = parts.join(' x ');
     }
 
-    if (distance !== undefined && distance !== null && getDistanceValue(distance) > 0) {
-      parts.push(`${getDistanceValue(distance)} ${this.unitsService.getDistanceMeasureUnitSuffix()}`);
-    }
-
-    if (duration !== undefined && duration !== null && getDurationValue(duration) > 0) {
-      parts.push(this.formatSecondsToTime(getDurationValue(duration)));
-    }
-
-    if (tempo) {
-      parts.push(`T: ${tempo}`);
-    }
-
-    if (parts.length === 0) return 'Tap to log...';
-
-    return parts.join(' x ');
+    if (!summary) return 'Tap to log...';
+    return summary;
   }
 
 
@@ -4882,20 +4894,20 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   // Add this property to your component
   activeSetAllMetrics: { [exIndex: number]: METRIC[] } = {};
-    toggleMetricForAllSets(exIndex: number, metric: METRIC): void {
+  toggleMetricForAllSets(exIndex: number, metric: METRIC): void {
     const routine = this.routine();
     if (!routine) return;
-  
+
     const exercise = routine.exercises[exIndex];
     if (!exercise) return;
-  
+
     // Only consider metrics except rest for blocking logic
     const metricsToCheck = this.availableMetricsForSetAll.filter(m => m !== METRIC.rest);
-  
+
     // Determine if we are adding or removing the metric
     const allSetsHaveMetric = exercise.sets.every(set => set.fieldOrder?.includes(metric));
     const shouldAdd = !allSetsHaveMetric;
-  
+
     // If removing, check if this would remove all non-rest metrics
     if (!shouldAdd && metricsToCheck.some(m => m === metric)) {
       const currentActive = metricsToCheck.filter(m =>
@@ -4909,7 +4921,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         return;
       }
     }
-  
+
     exercise.sets.forEach((set, setIndex) => {
       if (!set.fieldOrder) set.fieldOrder = [];
       const key = `${exIndex}-${setIndex}`;
@@ -4961,10 +4973,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         }
       }
     });
-  
+
     // Update the routine signal to trigger UI update
     this.routine.set({ ...routine });
-  
+
     // Show feedback toast
     if (shouldAdd) {
       this.toastService.success(
@@ -4993,12 +5005,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
 
-getPerformanceInputValue(exIndex: number, setIndex: number, field: METRIC | 'notes'): any {
-  const key = `${exIndex}-${setIndex}`;
-  const set = this.getSet(exIndex, setIndex);
-  if (!set?.fieldOrder?.includes(field as METRIC) && field !== 'notes') return undefined;
-  return this.performanceInputValues()[key]?.[this.getFieldKey(field)];
-}
+  getPerformanceInputValue(exIndex: number, setIndex: number, field: METRIC | 'notes'): any {
+    const key = `${exIndex}-${setIndex}`;
+    const set = this.getSet(exIndex, setIndex);
+    if (!set?.fieldOrder?.includes(field as METRIC) && field !== 'notes') return undefined;
+    return this.performanceInputValues()[key]?.[this.getFieldKey(field)];
+  }
 
   onInputChange(value: any, exIndex: number, setIndex: number, field: METRIC | 'notes') {
     this.setPerformanceInputValue(exIndex, setIndex, field, value);

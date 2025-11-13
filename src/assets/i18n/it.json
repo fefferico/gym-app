@@ -263,7 +263,8 @@
     "routinesDisabledOnImport": "L'importazione ha rilevato {{count}} routine abilitate. Gli utenti gratuiti possono avere solo 4 routine abilitate. Tutte le routine importate sono state disabilitate. Puoi abilitarle dopo l'aggiornamento a Premium.",
     "routinesDisabledTitle": "Routine Disabilitate",
     "trueGymModeNoMetrics": "Non possono essere aggiunte altre metriche nella modalità 'PALESTRA'.",
-    "allMetricsAdded": "Tutte le metriche disponibili sono già state aggiunte a questa serie"
+    "allMetricsAdded": "Tutte le metriche disponibili sono già state aggiunte a questa serie",
+    "fieldRemovedFromSet": "Il campo '{{fieldToRemove}}' è stato rimosso dalla serie n. {{setIndex}}."
   },
   "alerts": {
     "playerModeChangeDisabledTitle": "Azione Disabilitata",
@@ -935,9 +936,9 @@
       "chooseTimerMessage": "Scegli il tipo di timer",
       "chooseTimerTitle": "Tipo di timer",
       "prefillTitle": "Precompila con la performance precedente?",
-    "prefillMessage": "Vuoi usare i valori registrati più recenti per gli esercizi di questa scheda o mantenere gli obiettivi originali?",
-    "useHistorical": "Usa valori precedenti",
-    "useOriginal": "Usa obiettivi della scheda"
+    "prefillMessage": "Sono stati trovati dei dati storici per alcuni degli esercizi presenti in questa scheda. Vuoi usare i valori registrati più recenti o mantenere gli obiettivi originali?",
+    "useHistorical": "Valori precedenti",
+    "useOriginal": "Obiettivi della scheda"
     },
     "actions": {
       "pause": "PAUSA SESSIONE",
@@ -1076,6 +1077,8 @@
       "custom": "Personalizzato"
     },
     "routineBuilder": {
+      "nameWizardMsg":"Inserisci un nome per la tua nuova scheda.",
+        "goalWizardMsg": "Seleziona l'obiettivo principale per questa scheda",
       "nameLabel": "Nome Scheda",
       "namePlaceholder": "Nome scheda",
       "nameRequired": "Il nome della scheda è obbligatorio",
@@ -2814,5 +2817,11 @@
     "feelingMax": "Più forte che mai",
     "skip": "SALTA",
     "save": "SALVA VALUTAZIONE"
+  },
+  "alertComponent": {
+    "fillField": "Per favore, compila il campo '{{field}}'.",
+    "invalidNumber": "Per favore, inserisci un numero valido per '{{field}}'.",
+    "minNumber": "Il valore per '{{field}}' deve essere almeno {{min}}.",
+    "maxNumber": "Il valore per '{{field}}' non deve superare {{max}}."
   }
 }

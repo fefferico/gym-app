@@ -7,6 +7,7 @@ import { PressDirective } from '../../directives/press.directive';
 import { IconComponent } from '../icon/icon.component';
 import { ToastService } from '../../../core/services/toast.service';
 import { trigger, style, animate, transition } from '@angular/animations';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-alert',
@@ -53,6 +54,7 @@ export class AlertComponent implements OnInit {
 
   private toastService = inject(ToastService);
   private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
+  protected translate = inject(TranslateService);
 
   // =================== START OF CORRECTION ===================
   /**
@@ -226,7 +228,7 @@ export class AlertComponent implements OnInit {
 
           // 1. Check for required fields (existing logic)
           if (input.type !== 'checkbox' && input.required && (this.inputValues[input.name] === undefined || String(this.inputValues[input.name]).trim() === '')) {
-            this.toastService.info(`Please fill in the '${input.label || input.name}' field.`);
+            this.toastService.info(this.translate.instant('alertComponent.fillField', { field: input.label || input.name }));
             return; // Stop dismissal
           }
 
@@ -236,19 +238,19 @@ export class AlertComponent implements OnInit {
 
             // Check if the input is a valid number (especially if required)
             if (isNaN(numericValue) && String(this.inputValues[input.name]).trim() !== '') {
-              this.toastService.info(`Please enter a valid number for '${input.label || input.name}'.`);
+              this.toastService.info(this.translate.instant('alertComponent.invalidNumber', { field: input.label || input.name }));
               return; // Stop dismissal
             }
 
             // Check against the minimum value, if defined
             if (input.attributes !== undefined && input.attributes.min !== undefined && numericValue < parseFloat(String(input.attributes.min))) {
-              this.toastService.info(`The value for '${input.label || input.name}' must be at least ${input.attributes.min}.`);
+                this.toastService.info(this.translate.instant('alertComponent.minNumber', { field: input.label || input.name, min: input.attributes.min }));
               return; // Stop dismissal
             }
 
             // Check against the maximum value, if defined
             if (input.attributes !== undefined && input.attributes.max !== undefined && numericValue > parseFloat(String(input.attributes.max))) {
-              this.toastService.info(`The value for '${input.label || input.name}' must not exceed ${input.attributes.max}.`);
+                this.toastService.info(this.translate.instant('alertComponent.maxNumber', { field: input.label || input.name, max: input.attributes.max }));
               return; // Stop dismissal
             }
           }

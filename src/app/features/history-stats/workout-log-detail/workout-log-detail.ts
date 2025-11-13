@@ -617,8 +617,8 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
         const performedWeightStr = weightTargetAsString(set.weightLogged);
         modalData = {
           metric: type,
-          targetValue: targetWeightStr ? `${targetWeightStr}${unitLabel}` : '-',
-          performedValue: performedWeightStr ? `${performedWeightStr}${unitLabel}` : '-'
+          targetValue: targetWeightStr ? `${targetWeightStr} ${unitLabel}` : '-',
+          performedValue: performedWeightStr ? `${performedWeightStr} ${unitLabel}` : '-'
         };
         break;
   
@@ -637,8 +637,8 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
         const performedDistanceStr = distanceTargetAsString(set.distanceLogged);
         modalData = {
           metric: type,
-          targetValue: targetDistanceStr ? `${targetDistanceStr}${distUnitLabel}` : '-',
-          performedValue: performedDistanceStr ? `${performedDistanceStr}${distUnitLabel}` : '-'
+          targetValue: targetDistanceStr ? `${targetDistanceStr} ${distUnitLabel}` : '-',
+          performedValue: performedDistanceStr ? `${performedDistanceStr} ${distUnitLabel}` : '-'
         };
         break;
   

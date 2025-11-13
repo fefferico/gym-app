@@ -207,11 +207,11 @@ export interface ExerciseCurrentExecutionSetParams {
   tempoLogged?: string;
   notes?: string;
   type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | 'tabata' | string; // More flexible
-  actualRest: RestTarget | undefined; // For the set *within* an exercise. For supersets, this might be 0 for intermediate exercises.
-  actualReps: RepsTarget | undefined;
-  actualWeight: WeightTarget | undefined;
-  actualDuration: DurationTarget | undefined;
-  actualDistance: DistanceTarget | undefined;
+  actualRest?: RestTarget;
+  actualReps?: RepsTarget;
+  actualWeight?: WeightTarget;
+  actualDuration?: DurationTarget;
+  actualDistance: DistanceTarget;
 }
 
 export interface ExerciseTargetExecutionSetParams {

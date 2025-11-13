@@ -1,5 +1,5 @@
 // src/app/app.config.ts
-import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom, inject, LOCALE_ID, PLATFORM_ID, provideZoneChangeDetection } from '@angular/core';
+import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom, inject, Injectable, LOCALE_ID, PLATFORM_ID, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withFetch, HttpClient } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -52,6 +52,7 @@ registerLocaleData(localeZh);
 registerLocaleData(localePt);
 registerLocaleData(localeAr);
 
+@Injectable()
 export class CustomHammerConfig extends HammerGestureConfig {
   override overrides = {
     swipe: { direction: Hammer.DIRECTION_HORIZONTAL },

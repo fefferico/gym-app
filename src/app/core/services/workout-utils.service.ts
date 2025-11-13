@@ -536,12 +536,18 @@ export class WorkoutUtilsService {
         if (this.isLoggedSet(set)) {
             // It's a LoggedSet, so we check the performance fields.
             visibleSetFieldsObj = {
-                [METRIC.weight]: !!((this.getWeightValue(set.weightLogged) ?? 0) > 0 || set.fieldOrder?.includes(METRIC.weight)),
-                [METRIC.reps]: !!((this.getRepsValue(set.repsLogged) ?? 0) > 0 || set.fieldOrder?.includes(METRIC.reps)),
-                [METRIC.distance]: !!((this.getDistanceValue(set.distanceLogged) ?? 0) > 0 || set.fieldOrder?.includes(METRIC.distance)),
-                [METRIC.duration]: !!((this.getDurationValue(set.durationLogged) ?? 0) > 0 || set.fieldOrder?.includes(METRIC.duration)),
+                [METRIC.weight]: !!set.fieldOrder?.includes(METRIC.weight),
+                [METRIC.reps]: !!set.fieldOrder?.includes(METRIC.reps),
+                [METRIC.distance]: !!(set.fieldOrder?.includes(METRIC.distance)),
+                [METRIC.duration]: !!(set.fieldOrder?.includes(METRIC.duration)),
                 [METRIC.tempo]: !!(set.targetTempo?.trim() || set.fieldOrder?.includes(METRIC.tempo)),
-                [METRIC.rest]: !!((this.getRestValue(set.restLogged) ?? 0) > 0 || set.fieldOrder?.includes(METRIC.rest)),
+                [METRIC.rest]: !!set.fieldOrder?.includes(METRIC.rest),
+                // [METRIC.weight]: !!((this.getWeightValue(set.weightLogged) ?? 0) > 0 || set.fieldOrder?.includes(METRIC.weight)),
+                // [METRIC.reps]: !!((this.getRepsValue(set.repsLogged) ?? 0) > 0 || set.fieldOrder?.includes(METRIC.reps)),
+                // [METRIC.distance]: !!((this.getDistanceValue(set.distanceLogged) ?? 0) > 0 || set.fieldOrder?.includes(METRIC.distance)),
+                // [METRIC.duration]: !!((this.getDurationValue(set.durationLogged) ?? 0) > 0 || set.fieldOrder?.includes(METRIC.duration)),
+                // [METRIC.tempo]: !!(set.targetTempo?.trim() || set.fieldOrder?.includes(METRIC.tempo)),
+                // [METRIC.rest]: !!((this.getRestValue(set.restLogged) ?? 0) > 0 || set.fieldOrder?.includes(METRIC.rest)),
             };
         } else {
             // It's an ExerciseTargetSetParams, so we check the target fields.
@@ -597,7 +603,7 @@ export class WorkoutUtilsService {
             const isCardio = baseExercise?.category === 'cardio';
 
             const allowedFields = isCardio
-                ? [METRIC.duration] // Rest is handled by its own modal now
+                ? [METRIC.duration, METRIC.distance] // Rest is handled by its own modal now
                 : [METRIC.weight, METRIC.reps];
 
             availableMetrics = availableMetrics.filter(field => allowedFields.includes(field as METRIC));
@@ -874,7 +880,7 @@ export class WorkoutUtilsService {
                 const isCardio = baseExercise?.category === 'cardio';
 
                 const allowedFields = isCardio
-                    ? [METRIC.duration]
+                    ? [METRIC.duration, METRIC.distance] // Rest is handled by its own modal now
                     : [METRIC.weight, METRIC.reps];
 
                 removableFields = removableFields.filter(field => allowedFields.includes(field as METRIC));
@@ -967,14 +973,14 @@ export class WorkoutUtilsService {
             setToUpdate[`${fieldToRemove}Logged`] = undefined;
         }
 
-        
+
 
         // 2. Also remove the field from the order array
         if (setToUpdate.fieldOrder) {
             setToUpdate.fieldOrder = setToUpdate.fieldOrder.filter((field: string) => field !== fieldToRemove);
         }
 
-        this.toastService.info(`'${fieldToRemove.toUpperCase()}' field removed from set #${setIndex + 1}.`);
+        this.toastService.info(this.translate.instant("toasts.fieldRemovedFromSet", { fieldToRemove: this.translate.instant(`metrics.${fieldToRemove}`).toUpperCase(), setIndex: setIndex + 1 }));
 
         // 3. Return the fully modified new routine object
         return newRoutine;

@@ -311,7 +311,8 @@
     "routinesDisabledOnImport": "Import detected {{count}} enabled routines. Free users can only have 4 enabled routines. All imported routines have been disabled. You can enable them after upgrading to Premium.",
     "routinesDisabledTitle": "Routines Disabled",
     "trueGymModeNoMetrics": "No more metrics can be added in True GYM mode.",
-    "allMetricsAdded": "All available metrics are already added to this set"
+    "allMetricsAdded": "All available metrics are already added to this set",
+    "fieldRemovedFromSet": "'{{fieldToRemove}}' field removed from set #{{setIndex}}."
   },
   "alerts": {
     "playerModeChangeDisabledTitle": "Action Disabled",
@@ -936,9 +937,9 @@
       "chooseTimerMessage": "Choose the timer type",
       "chooseTimerTitle": "Timer type",
       "prefillTitle": "Prefill with Previous Performance?",
-      "prefillMessage": "Do you want to use your most recent logged values for the exercises of this routine, or stick to the original targets?",
-      "useHistorical": "Use Previous Values",
-      "useOriginal": "Use Routine Targets"
+    "prefillMessage": "Historical data was found for some of the exercises in this routine. Do you want to use the most recently logged values or keep the original targets?",
+      "useHistorical": "Previous Values",
+      "useOriginal": "Routine Targets"
     },
     "actions": {
       "pause": "PAUSE SESSION",
@@ -1077,6 +1078,8 @@
       "custom": "Custom"
     },
     "routineBuilder": {
+      "nameWizardMsg":"Enter a name for your new routine.",
+      "goalWizardMsg": "Select the main goal for this routine",
       "nameLabel": "Routine Name",
       "namePlaceholder": "Routine name",
       "nameRequired": "Routine name is required",
@@ -2786,5 +2789,11 @@
     "feelingMax": "Stronger than ever",
     "skip": "SKIP",
     "save": "SAVE RATING"
+  },
+  "alertComponent": {
+    "fillField": "Please fill in the '{{field}}' field.",
+    "invalidNumber": "Please enter a valid number for '{{field}}'.",
+    "minNumber": "The value for '{{field}}' must be at least {{min}}.",
+    "maxNumber": "The value for '{{field}}' must not exceed {{max}}."
   }
 }

@@ -1419,7 +1419,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     });
 
     this.closeExerciseSelectionModal();
-    // this.audioService.playSound(AUDIO_TYPES.pop);
+    this.audioService.playSound(AUDIO_TYPES.pop);
   }
 
   ngAfterViewInit(): void {
