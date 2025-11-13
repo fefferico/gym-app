@@ -1,0 +1,29 @@
+.paused-section {
+  transition: height 0.4s cubic-bezier(0.4,0,0.2,1), margin 0.4s cubic-bezier(0.4,0,0.2,1);
+  overflow: hidden;
+  height: auto;
+}
+
+.paused-section > div[style] {
+  transition: height 0.4s cubic-bezier(0.4,0,0.2,1);
+  background: transparent;
+  padding: 0;
+  margin: 0;
+}
+
+.paused-section.shrinking {
+  height: 0 !important;
+  margin-bottom: 0 !important;
+  padding: 0 !important;
+}
+
+.paused-placeholder {
+  transition: height 0.4s cubic-bezier(0.4,0,0.2,1);
+  background: transparent;
+  padding: 0;
+  margin: 0;
+}
+
+section {
+  overflow: hidden;
+}

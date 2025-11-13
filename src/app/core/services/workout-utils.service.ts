@@ -567,7 +567,7 @@ export class WorkoutUtilsService {
         const { hidden } = this.getFieldsForSet(routine, exIndex, setIndex);
 
         if (hidden.length === 0) {
-            this.toastService.info("All available metrics are already added to this set.");
+            this.toastService.info(this.translate.instant('toasts.allMetricsAdded'));
             return null;
         }
 
@@ -605,7 +605,7 @@ export class WorkoutUtilsService {
 
         // If after all filtering there are no metrics left to add, inform the user and exit.
         if (availableMetrics.length === 0) {
-            this.toastService.info("No more metrics can be added to this set.");
+            this.toastService.info(this.translate.instant('toasts.trueGymModeNoMetrics'));
             return null;
         }
 
@@ -888,6 +888,14 @@ export class WorkoutUtilsService {
             return routine;
         };
 
+        // even if length it's equal to 1 do nothing
+        if (removableFields.length === 1) {
+            // Get translated toast message
+            const toastMessage = await firstValueFrom(this.translate.get("workoutService.alerts.removeField.atLeastOneMetric"));
+            this.toastService.info(toastMessage);
+            return routine;
+        };
+
         // --- START OF TRANSLATION IMPLEMENTATION ---
 
         // 1. Prepare all the translation keys we will need.
@@ -944,7 +952,7 @@ export class WorkoutUtilsService {
 
         const setToUpdate: any = newRoutine.exercises[exIndex].sets[setIndex];
 
-        if (!this.isLoggedRoutine) {
+        if (!this.isLoggedRoutine(newRoutine)) {
             // 1. Remove the field's value
             setToUpdate[`target${fieldToRemove.charAt(0).toUpperCase() + fieldToRemove.slice(1)}`] = undefined;
             setToUpdate[`target${fieldToRemove.charAt(0).toUpperCase() + fieldToRemove.slice(1)}Min`] = undefined;

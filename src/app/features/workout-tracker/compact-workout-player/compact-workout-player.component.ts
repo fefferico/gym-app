@@ -71,7 +71,7 @@ import { se } from 'date-fns/locale';
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { SET_TYPE } from '../workout-builder';
 import { BumpClickDirective } from '../../../shared/directives/bump-click.directive';
-import { repsTargetAsString, repsTypeToReps, genRepsTypeFromRepsNumber, getDurationValue, durationToExact, getWeightValue, weightToExact, getDistanceValue, distanceToExact, restToExact, getRestValue, getRepsValue, repsToExact } from '../../../core/services/workout-helper.service';
+import { repsTargetAsString, repsTypeToReps, genRepsTypeFromRepsNumber, getDurationValue, durationToExact, getWeightValue, weightToExact, getDistanceValue, distanceToExact, restToExact, getRestValue, getRepsValue, repsToExact, weightTargetAsString, distanceTargetAsString, durationTargetAsString, restTargetAsString } from '../../../core/services/workout-helper.service';
 import { NumericDataType } from '@tensorflow/tfjs-core';
 import { WorkoutUtilsService } from '../../../core/services/workout-utils.service';
 
@@ -549,116 +549,207 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
 
-  private async prefillRoutineWithLastPerformance(): Promise<void> {
+    private async prefillRoutineWithLastPerformance(): Promise<void> {
     const currentRoutine = this.routine();
     if (!currentRoutine) return;
-
+  
     const poSettings = this.progressiveOverloadService.getSettings();
     const isPoEnabled = poSettings.enabled && poSettings.strategies && poSettings.sessionsToIncrement && poSettings.sessionsToIncrement > 0;
-
-    // Fetch all logs for this routine only if PO is enabled, to avoid unnecessary calls
+  
+    // Fetch all logs for this routine only if PO is enabled
     const allLogsForRoutine = isPoEnabled
       ? await firstValueFrom(this.trackingService.getLogsForRoutine(currentRoutine.id))
       : [];
-
+  
+    // Deep copy to avoid mutating the original
     const routineCopy = JSON.parse(JSON.stringify(currentRoutine)) as Routine;
-
+  
+    // Track which exercises had overload applied
+    const overloadAppliedForExercise: boolean[] = [];
+  
+    // Track if we need to prompt for historical/original (only if at least one exercise has historical data and no overload)
+    let hasAnyHistorical = false;
+    let lastPerformances: (LastPerformanceSummary | null)[] = [];
+  
+    // Gather last performances for all exercises
     for (const exercise of routineCopy.exercises) {
       try {
         const lastPerformance = await firstValueFrom(
           this.trackingService.getLastPerformanceForExercise(exercise.exerciseId)
         );
-
-        if (lastPerformance && lastPerformance.sets.length > 0) {
-          // --- START: PROGRESSIVE OVERLOAD LOGIC ---
-          let overloadApplied = false;
-          if (isPoEnabled) {
-            // Filter logs that actually contain the current exercise
-            const relevantLogs = allLogsForRoutine.filter(log =>
-              log.exercises.some(le => le.exerciseId === exercise.exerciseId)
-            );
-
-            if (relevantLogs.length >= poSettings.sessionsToIncrement!) {
-              const recentLogsToCheck = relevantLogs.slice(-poSettings.sessionsToIncrement!);
-              let allSessionsSuccessful = true;
-
-              for (const log of recentLogsToCheck) {
-                const loggedEx = log.exercises.find(le => le.exerciseId === exercise.exerciseId);
-                // Compare against the original routine structure from the time of the log, or snapshot if available
-                const originalEx = this.originalRoutineSnapshot()?.exercises.find(oe => oe.exerciseId === exercise.exerciseId);
-
-                // If the exercise structure is missing or doesn't match, it's not a successful session in this context
-                if (!loggedEx || !originalEx || loggedEx.sets.length < originalEx.sets.length) {
-                  allSessionsSuccessful = false;
-                  break;
-                }
-
-                // Check if user met or exceeded targets for all non-warmup sets
-                const wasSuccess = originalEx.sets.every((originalSet, setIndex) => {
-                  if (originalSet.type === 'warmup') return true;
-                  const loggedSet = loggedEx.sets[setIndex];
-                  return loggedSet && (repsTypeToReps(loggedSet.repsLogged) ?? 0) >= (repsTypeToReps(originalSet.targetReps) ?? 0);
-                });
-
-                if (!wasSuccess) {
-                  allSessionsSuccessful = false;
-                  break;
-                }
-              }
-
-              if (allSessionsSuccessful) {
-                this.progressiveOverloadService.applyOverloadToExercise(exercise, poSettings);
-                this.toastService.success(`Progressive Overload applied to ${exercise.exerciseName}!`, 2500, "Auto-Increment");
-                overloadApplied = true;
-              }
-            }
-          }
-          // --- END: PROGRESSIVE OVERLOAD LOGIC ---
-
-          // Prefill from last performance ONLY if overload was NOT applied
-          if (!overloadApplied) {
-            exercise.sets.forEach((set, setIndex) => {
-              const historicalSet = lastPerformance.sets[setIndex];
-              if (historicalSet) {
-                set.targetReps = historicalSet.repsLogged ?? set.targetReps;
-                set.targetWeight = historicalSet.weightLogged ?? set.targetWeight;
-                set.targetDuration = historicalSet.durationLogged ?? set.targetDuration;
-                set.targetDistance = historicalSet.distanceLogged ?? set.targetDistance;
-              }
-            });
-          }
+        lastPerformances.push(lastPerformance);
+        if (lastPerformance && lastPerformance.sets && lastPerformance.sets.length > 0) {
+          hasAnyHistorical = true;
         }
+      } catch (error) {
+        lastPerformances.push(null as any);
+      }
+    }
+  
+    // --- 1. Progressive Overload Pass ---
+      const overloadedExercises: string[] = [];
 
-        // --- APPLY SESSION-WIDE INTENSITY ADJUSTMENT (runs after overload/prefill) ---
-        if (this.intensityAdjustment) {
-          const { direction, percentage } = this.intensityAdjustment;
-          const multiplier = direction === 'increase' ? 1 + (percentage / 100) : 1 - (percentage / 100);
+    for (const [exIndex, exercise] of routineCopy.exercises.entries()) {
+      let overloadApplied = false;
+      const lastPerformance = lastPerformances[exIndex];
+  
+      if (isPoEnabled && lastPerformance && lastPerformance.sets && lastPerformance.sets.length > 0) {
+        // Filter logs that actually contain the current exercise
+        const relevantLogs = allLogsForRoutine.filter(log =>
+          log.exercises.some(le => le.exerciseId === exercise.exerciseId)
+        );
+  
+        if (relevantLogs.length >= poSettings.sessionsToIncrement!) {
+          const recentLogsToCheck = relevantLogs.slice(-poSettings.sessionsToIncrement!);
+          let allSessionsSuccessful = true;
+  
+          for (const log of recentLogsToCheck) {
+            const loggedEx = log.exercises.find(le => le.exerciseId === exercise.exerciseId);
+            const originalEx = this.originalRoutineSnapshot()?.exercises.find(oe => oe.exerciseId === exercise.exerciseId);
+  
+            if (!loggedEx || !originalEx || loggedEx.sets.length < originalEx.sets.length) {
+              allSessionsSuccessful = false;
+              break;
+            }
+  
+                        const wasSuccess = originalEx.sets.every((originalSet, setIndex) => {
+              if (originalSet.type === 'warmup') return true;
+              const loggedSet = loggedEx.sets[setIndex];
+              if (!loggedSet) return false;
+            
+              // List of metrics to check
+              const metrics: Array<{ target: any, logged: any, compare: (a: any, b: any) => boolean }> = [
+                {
+                  target: originalSet.targetReps,
+                  logged: loggedSet.repsLogged,
+                  compare: (logged, target) => repsTypeToReps(logged) >= repsTypeToReps(target)
+                },
+                {
+                  target: originalSet.targetWeight,
+                  logged: loggedSet.weightLogged,
+                  compare: (logged, target) => getWeightValue(logged) >= getWeightValue(target)
+                },
+                {
+                  target: originalSet.targetDuration,
+                  logged: loggedSet.durationLogged,
+                  compare: (logged, target) => getDurationValue(logged) >= getDurationValue(target)
+                },
+                {
+                  target: originalSet.targetDistance,
+                  logged: loggedSet.distanceLogged,
+                  compare: (logged, target) => getDistanceValue(logged) >= getDistanceValue(target)
+                }
+                // Add more metrics if needed
+              ];
+            
+              // For each metric, if there's a target, there must be a logged value that meets/exceeds it
+              for (const { target, logged, compare } of metrics) {
+                if (target !== undefined && target !== null) {
+                  if (logged === undefined || logged === null) return false;
+                  if (!compare(logged, target)) return false;
+                }
+                // If there's a logged value but no target, consider it succeeded (do nothing)
+              }
+            
+              return true;
+            });
+  
+            if (!wasSuccess) {
+              allSessionsSuccessful = false;
+              break;
+            }
+          }
+  
+          if (allSessionsSuccessful) {
+      this.progressiveOverloadService.applyOverloadToExercise(exercise, poSettings);
+      overloadApplied = true;
+      overloadedExercises.push(exercise.exerciseName || exercise.id);
+    }
+        }
+      }
+      overloadAppliedForExercise[exIndex] = overloadApplied;
+    }
+  
+    // --- 2. Prompt for historical/original if needed (only if at least one exercise has historical and no overload) ---
+    let useHistorical = false;
+    if (hasAnyHistorical && overloadAppliedForExercise.some(applied => !applied)) {
+      const userChoice = await this.alertService.showConfirmationDialog(
+        this.translate.instant('compactPlayer.alerts.prefillTitle'),
+        this.translate.instant('compactPlayer.alerts.prefillMessage'),
+        [
+          { text: this.translate.instant('compactPlayer.alerts.useHistorical'), role: 'confirm', data: 'historical', icon: 'clock' },
+          { text: this.translate.instant('compactPlayer.alerts.useOriginal'), role: 'cancel', data: 'original', icon: 'restore' }
+        ]
+      );
+      useHistorical = userChoice?.data === 'historical';
+    }
 
-          exercise.sets.forEach(set => {
-            if (set.targetWeight != null) {
-              const adjustedWeight = Math.round((getWeightValue(set.targetWeight) * multiplier) * 4) / 4;
-              set.targetWeight = weightToExact(adjustedWeight >= 0 ? adjustedWeight : 0);
-            }
-            if (set.targetReps != null) {
-              const adjustedReps = Math.round(repsTypeToReps(set.targetReps) * multiplier);
-              set.targetReps = adjustedReps >= 0 ? genRepsTypeFromRepsNumber(adjustedReps) : genRepsTypeFromRepsNumber(0);
-            }
-            if (set.targetDuration != null) {
-              const adjustedDuration = Math.round(getDurationValue(set.targetDuration) * multiplier);
-              set.targetDuration = durationToExact(adjustedDuration >= 0 ? adjustedDuration : 0);
-            }
-            if (set.targetDistance != null) {
-              const adjustedDistance = Math.round(getDistanceValue(set.targetDistance) * multiplier);
-              set.targetDistance = distanceToExact(adjustedDistance >= 0 ? adjustedDistance : 0);
+    // Show feedback to the user after all overloads are applied
+  if (overloadedExercises.length > 0) {
+    await this.alertService.showConfirmationDialog(
+      this.translate.instant('compactPlayer.toasts.progressiveOverloadAppliedMultipleTitle'),
+      this.translate.instant('compactPlayer.toasts.progressiveOverloadAppliedMultipleMessage'),
+      [
+        {
+          text: this.translate.instant('common.ok'),
+          role: 'confirm',
+          data: true,
+          icon: 'check'
+        }
+      ],
+      {
+        listItems: overloadedExercises
+      }
+    );
+  }
+  
+    // --- 3. Apply historical values if chosen and not overloaded ---
+    for (const [exIndex, exercise] of routineCopy.exercises.entries()) {
+      if (!overloadAppliedForExercise[exIndex] && useHistorical) {
+        const lastPerformance = lastPerformances[exIndex];
+        if (lastPerformance && lastPerformance.sets && lastPerformance.sets.length > 0) {
+          exercise.sets.forEach((set, setIndex) => {
+            const historicalSet = lastPerformance.sets[setIndex];
+            if (historicalSet) {
+              set.targetReps = historicalSet.repsLogged ?? set.targetReps;
+              set.targetWeight = historicalSet.weightLogged ?? set.targetWeight;
+              set.targetDuration = historicalSet.durationLogged ?? set.targetDuration;
+              set.targetDistance = historicalSet.distanceLogged ?? set.targetDistance;
             }
           });
         }
-
-      } catch (error) {
-        console.error(`Failed to prefill data for exercise ${exercise.exerciseName}:`, error);
       }
+      // else: stick to original routine (do nothing)
     }
-
+  
+    // --- 4. Apply session-wide intensity adjustment (if any) ---
+    if (this.intensityAdjustment) {
+      const { direction, percentage } = this.intensityAdjustment;
+      const multiplier = direction === 'increase' ? 1 + (percentage / 100) : 1 - (percentage / 100);
+  
+      routineCopy.exercises.forEach(exercise => {
+        exercise.sets.forEach(set => {
+          if (set.targetWeight != null) {
+            const adjustedWeight = Math.round((getWeightValue(set.targetWeight) * multiplier) * 4) / 4;
+            set.targetWeight = weightToExact(adjustedWeight >= 0 ? adjustedWeight : 0);
+          }
+          if (set.targetReps != null) {
+            const adjustedReps = Math.round(repsTypeToReps(set.targetReps) * multiplier);
+            set.targetReps = adjustedReps >= 0 ? genRepsTypeFromRepsNumber(adjustedReps) : genRepsTypeFromRepsNumber(0);
+          }
+          if (set.targetDuration != null) {
+            const adjustedDuration = Math.round(getDurationValue(set.targetDuration) * multiplier);
+            set.targetDuration = durationToExact(adjustedDuration >= 0 ? adjustedDuration : 0);
+          }
+          if (set.targetDistance != null) {
+            const adjustedDistance = Math.round(getDistanceValue(set.targetDistance) * multiplier);
+            set.targetDistance = distanceToExact(adjustedDistance >= 0 ? adjustedDistance : 0);
+          }
+        });
+      });
+    }
+  
+    // --- 5. Update the routine and trigger change detection ---
     this.routine.set(routineCopy);
     this.cdr.detectChanges();
   }
@@ -685,7 +776,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.startSessionTimer();
 
     if (this.routine()) {
-      this.toggleExerciseExpansion(0);
+      //this.toggleExerciseExpansion(0);
       this.scrollToSet(0, 0);
     }
   }
@@ -1305,127 +1396,121 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  addSet(exIndex: number, type: 'standard' | 'warmup' = 'standard') {
+    addSet(exIndex: number, type: 'standard' | 'warmup' = 'standard') {
     const routine = this.routine();
     if (!routine) return;
-
+  
     const triggerExercise = routine.exercises[exIndex];
-
+  
     // --- CASE 1: Exercise is part of a Superset (Add a new ROUND) ---
     if (triggerExercise.supersetId) {
       if (type === 'warmup') {
         this.toastService.info("Cannot add a warm-up round to a superset.", 3000);
         return;
       }
-
+  
       const exercisesInGroup = this.getSupersetExercises(triggerExercise.supersetId);
-
-      // =================== START OF FIX ===================
+  
       exercisesInGroup.forEach(groupEx => {
         const originalGroupExIndex = this.getOriginalExIndex(groupEx.id);
-        if (originalGroupExIndex === -1) return; // Safety check
-
+        if (originalGroupExIndex === -1) return;
+  
         const lastSetIndex = groupEx.sets.length > 0 ? groupEx.sets.length - 1 : -1;
         const lastSet = lastSetIndex !== -1 ? groupEx.sets[lastSetIndex] : null;
-
+  
+        // Copy fieldOrder or use default
+        const fieldOrder = lastSet?.fieldOrder ? [...lastSet.fieldOrder] : this.workoutUtilsService.getRepsAndWeightFields();
+  
+        // Build new set with targets for all metrics in fieldOrder
         const newSet: ExerciseTargetSetParams = {
           id: uuidv4(),
           type: 'standard',
+          fieldOrder,
           targetRest: lastSet?.targetRest ?? restToExact(60),
-          fieldOrder: lastSet?.fieldOrder ?? this.workoutUtilsService.getRepsAndWeightFields()
         };
-
-        if (lastSet) {
-          // The key must point to the LAST EXISTING set to copy its values
-          const key = `${originalGroupExIndex}-${lastSetIndex}`;
-
-          // Ensure performance inputs for the last set are pre-filled if needed
-          if (!this.performanceInputValues()[key]) {
-            this.fillPerformanceInputIfUndefined(originalGroupExIndex, lastSetIndex);
+  
+        fieldOrder.forEach(metric => {
+          switch (metric) {
+            case METRIC.weight:
+              newSet.targetWeight = lastSet?.targetWeight ?? weightToExact(10);
+              break;
+            case METRIC.reps:
+              newSet.targetReps = lastSet?.targetReps ?? repsToExact(8);
+              break;
+            case METRIC.distance:
+              newSet.targetDistance = lastSet?.targetDistance ?? distanceToExact(1);
+              break;
+            case METRIC.duration:
+              newSet.targetDuration = lastSet?.targetDuration ?? durationToExact(60);
+              break;
+            case METRIC.rest:
+              newSet.targetRest = lastSet?.targetRest ?? restToExact(60);
+              break;
+            case METRIC.tempo:
+              newSet.targetTempo = lastSet?.targetTempo ?? '';
+              break;
           }
-
-          const userInputs = this.performanceInputValues()[key] || {};
-
-          // Copy properties from user inputs or the last planned set to the NEW set
-          newSet.targetWeight = userInputs.actualWeight ?? lastSet.targetWeight;
-          newSet.targetReps = userInputs.actualReps ?? lastSet.targetReps;
-          newSet.targetDistance = userInputs.actualDistance ?? lastSet.targetDistance;
-          newSet.targetDuration = userInputs.actualDuration ?? lastSet.targetDuration;
-          newSet.targetRest = userInputs.actualRest ?? lastSet.targetRest;
-          newSet.targetTempo = userInputs.tempoLogged ?? lastSet.targetTempo;
-
-          // Also carry over the fieldOrder to the new set
-          if (lastSet.fieldOrder) {
-            newSet.fieldOrder = [...lastSet.fieldOrder];
-          }
-
-        } else {
-          // This is the very first round being added, give it a default structure
-          newSet.targetReps = genRepsTypeFromRepsNumber(8);
-          newSet.targetWeight = weightToExact(10);
-          newSet.fieldOrder = [METRIC.weight, METRIC.reps];
-        }
-
+        });
+  
         groupEx.sets.push(newSet);
       });
-      // =================== END OF FIX ===================
-
+  
       this.toastService.success(`Round added to ${this.isEmom(exIndex) ? 'EMOM' : 'Superset'}`);
-
+  
     } else {
-      // --- CASE 2: Standard Exercise (Logic remains the same) ---
+      // --- CASE 2: Standard Exercise ---
       const lastSet = triggerExercise.sets.length > 0 ? triggerExercise.sets[triggerExercise.sets.length - 1] : null;
-
+      const fieldOrder = lastSet?.fieldOrder ? [...lastSet.fieldOrder] : this.workoutUtilsService.getRepsAndWeightFields();
+  
       const newSet: ExerciseTargetSetParams = {
         id: uuidv4(),
         type: type,
+        fieldOrder,
         targetRest: lastSet?.targetRest ?? restToExact(60),
-        fieldOrder: lastSet?.fieldOrder ?? this.workoutUtilsService.getRepsAndWeightFields()
       };
-
+  
+      fieldOrder.forEach(metric => {
+        switch (metric) {
+          case METRIC.weight:
+            newSet.targetWeight = lastSet?.targetWeight ?? weightToExact(10);
+            break;
+          case METRIC.reps:
+            newSet.targetReps = lastSet?.targetReps ?? repsToExact(8);
+            break;
+          case METRIC.distance:
+            newSet.targetDistance = lastSet?.targetDistance ?? distanceToExact(1);
+            break;
+          case METRIC.duration:
+            newSet.targetDuration = lastSet?.targetDuration ?? durationToExact(60);
+            break;
+          case METRIC.rest:
+            newSet.targetRest = lastSet?.targetRest ?? restToExact(60);
+            break;
+          case METRIC.tempo:
+            newSet.targetTempo = lastSet?.targetTempo ?? '';
+            break;
+        }
+      });
+  
       if (type === 'warmup') {
-        newSet.targetReps = genRepsTypeFromRepsNumber(12);
+        newSet.targetReps = repsToExact(12);
         if (lastSet && lastSet.targetWeight !== undefined && lastSet.targetWeight !== null) {
           newSet.targetWeight = weightToExact(parseFloat((getWeightValue(lastSet.targetWeight) / 2).toFixed(1)));
         } else {
           newSet.targetWeight = weightToExact(0);
         }
-      } else {
-        if (lastSet) {
-          const setIndex = triggerExercise.sets.length - 1;
-          const key = `${exIndex}-${setIndex}`;
-
-          if (!this.performanceInputValues()[key]) {
-            this.fillPerformanceInputIfUndefined(exIndex, setIndex);
-          }
-
-          const userInputs = this.performanceInputValues()[key] || {};
-
-          newSet.targetWeight = userInputs.actualWeight ?? lastSet.targetWeight;
-          newSet.targetReps = userInputs.actualReps ?? lastSet.targetReps;
-          newSet.targetDistance = userInputs.actualDistance ?? lastSet.targetDistance;
-          newSet.targetDuration = userInputs.actualDuration ?? lastSet.targetDuration;
-          newSet.targetRest = userInputs.actualRest ?? lastSet.targetRest;
-          newSet.targetTempo = userInputs.tempoLogged ?? lastSet.targetTempo;
-
-        } else {
-          newSet.targetWeight = weightToExact(10);
-          newSet.targetReps = genRepsTypeFromRepsNumber(8);
-        }
-      }
-
-      if (type === 'warmup') {
         triggerExercise.sets.unshift(newSet);
       } else {
         triggerExercise.sets.push(newSet);
       }
       this.toastService.success(`${type === 'warmup' ? 'Warm-up set' : 'Set'} added to ${triggerExercise.exerciseName}`);
     }
-
+  
     this.routine.set({ ...routine });
     if (this.expandedExerciseIndex() !== exIndex) {
       this.expandedExerciseIndex.set(exIndex);
     }
+    this._prefillPerformanceInputs();
   }
 
   async removeSet(exIndex: number, setIndex: number): Promise<void> {
@@ -1529,6 +1614,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         this.audioService.playSound(AUDIO_TYPES.whoosh);
       }
     }
+    this._prefillPerformanceInputs();
   }
 
   private removeSuperset(exIndex: number): void {
@@ -1574,10 +1660,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       return { ...log };
     });
 
+    this._prefillPerformanceInputs();
     this.toastService.info(`${exerciseToRemove.exerciseName} removed`);
     this.audioService.playSound(AUDIO_TYPES.whoosh);
   }
-
 
   async removeExercise(exIndex: number, confirmRequest: boolean = false): Promise<void> {
     const routine = this.routine();
@@ -1791,6 +1877,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }, 0);
 
     this.closeAddExerciseModal();
+    this._prefillPerformanceInputs();
   }
 
   handleExerciseSwitch(newExercise: Exercise) {
@@ -3342,7 +3429,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return this.expandedRounds().has(key);
   }
 
-  // +++ ADD THIS METHOD +++
   /** Toggles the expanded/collapsed state of a specific round. */
   toggleRoundExpansion(exIndex: number, roundIndex: number, event: Event): void {
     event.stopPropagation(); // Prevent the main card from toggling
@@ -3368,145 +3454,48 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
    * 3. If a range is defined (e.g., 8-12 reps), it shows the middle value.
    * 4. Otherwise, it shows the planned single target value as the default.
    */
-  getInitialInputValue(exIndex: number, setIndex: number, field: 'notes' | METRIC): string {
+  getInitialInputValue(exIndex: number, setIndex: number, field: 'notes'): string {
     const routine = this.routine();
     if (!routine) return '';
 
     const key = `${exIndex}-${setIndex}`;
 
     const userInputs = this.performanceInputValues()[key] || {};
-    const plannedSet = routine.exercises[exIndex].sets[setIndex];
     const loggedSet = this.getLoggedSet(exIndex, setIndex);
 
     // PRIORITY 1: Show already logged data if it exists. (COMPLETED SET)
     if (loggedSet) {
       switch (field) {
-        case METRIC.reps: return (this.workoutUtilsService.repsTargetAsString(loggedSet.repsLogged) ?? 0).toString();
-        case METRIC.weight: return (this.workoutUtilsService.weightTargetAsString(loggedSet.weightLogged) ?? '').toString();
-        case METRIC.distance: return (this.workoutUtilsService.distanceTargetAsString(loggedSet.distanceLogged) ?? '').toString();
-        case METRIC.duration: return this.formatSecondsToTime(getDurationValue(loggedSet.durationLogged));
-        case METRIC.tempo: return (loggedSet.tempoLogged ?? '-').toString();
-        case METRIC.rest: return this.formatSecondsToTime(getRestValue(loggedSet.restLogged));
         case 'notes': return loggedSet.notes ?? '';
       }
     }
 
     // PRIORITY 2: Show what the user has typed for this specific field if it exists.
     if (userInputs) {
-      switch (field) {
-        case METRIC.reps: if (userInputs.actualReps !== undefined) return this.workoutUtilsService.repsTargetAsString(userInputs.actualReps); break;
-        case METRIC.weight: if (userInputs.actualWeight !== undefined) return this.workoutUtilsService.weightTargetAsString(userInputs.actualWeight); break;
-        case METRIC.distance: if (userInputs.actualDistance !== undefined) return getDistanceValue(userInputs.actualDistance).toString(); break;
-        case METRIC.duration: if (userInputs.actualDuration !== undefined) return this.formatSecondsToTime(getDurationValue(userInputs.actualDuration)); break;
-        case METRIC.rest: if (userInputs.actualRest !== undefined) return this.formatSecondsToTime(getRestValue(userInputs.actualRest)); break;
-        case METRIC.tempo: if (userInputs.tempoLogged !== undefined) return userInputs.tempoLogged; break;
-      }
       if (userInputs.notes) {
         return userInputs.notes ?? '';
       }
     }
-
     return '';
 
   }
 
-  updateSetData(exIndex: number, setIndex: number, roundIndex: number, field: 'notes' | METRIC, event: Event): void {
+  updateSetData(exIndex: number, setIndex: number, roundIndex: number, field: 'notes' | METRIC.tempo, event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     const key = `${exIndex}-${setIndex}`;
-    const inputKey = `${key}-${field}`; // Unique key for this specific input field
 
-
-    // 1. Update the temporary input state object as before.
     this.performanceInputValues.update(currentInputs => {
       const newInputs = { ...currentInputs };
       if (!newInputs[key]) {
         newInputs[key] = {};
       }
-
       if (field === 'notes') {
         newInputs[key].notes = value;
-        return newInputs;
-
-      }
-      switch (field) {
-        case METRIC.reps:
-          const rawValue = value.trim();
-          // Updated Pattern: Allows integers, "5+", "AMRAP", or "MAX"
-          const validRepsPattern = /^(\d+(\+)?|AMRAP|MAX)$/i;
-
-          if (rawValue === '' || validRepsPattern.test(rawValue)) {
-            this.invalidInputs.update(s => { s.delete(inputKey); return s; });
-
-            if (rawValue.endsWith('+')) {
-              const numericValue = parseInt(rawValue.slice(0, -1), 10);
-              newInputs[key].actualReps = { type: RepsTargetType.min_plus, value: numericValue };
-            } else if (rawValue.toUpperCase() === 'AMRAP') {
-              newInputs[key].actualReps = { type: RepsTargetType.amrap };
-            } else if (rawValue.toUpperCase() === 'MAX') {
-              newInputs[key].actualReps = { type: RepsTargetType.max };
-            } else {
-              const numericValue = parseInt(rawValue, 10);
-              if (!isNaN(numericValue)) {
-                newInputs[key].actualReps = { type: RepsTargetType.exact, value: numericValue };
-              } else {
-                newInputs[key].actualReps = undefined;
-                this.invalidInputs.update(s => { s.add(inputKey); return s; });
-              }
-            }
-          } else {
-            this.invalidInputs.update(s => { s.add(inputKey); return s; });
-          }
-          break;
-        case METRIC.weight:
-          const rawWeight = value.trim();
-          // Accepts numbers, "MAX", "RM", "BW" (bodyweight), or "AMRAP"
-          const validWeightPattern = /^(\d+(\.\d+)?|MAX|RM|BW|AMRAP)$/i;
-
-          if (rawWeight === '' || validWeightPattern.test(rawWeight)) {
-            this.invalidInputs.update(s => { s.delete(inputKey); return s; });
-
-            if (rawWeight.toUpperCase().includes('%')) {
-              newInputs[key].actualWeight = { type: WeightTargetType.percentage_1rm, percentage: 100 };
-            } else if (rawWeight.toUpperCase() === 'BW') {
-              newInputs[key].actualWeight = { type: WeightTargetType.bodyweight };
-            }else {
-              const numericValue = parseFloat(rawWeight);
-              if (!isNaN(numericValue)) {
-                newInputs[key].actualWeight = { type: WeightTargetType.exact, value: numericValue };
-              } else {
-                newInputs[key].actualWeight = undefined;
-                this.invalidInputs.update(s => { s.add(inputKey); return s; });
-              }
-            }
-          } else {
-            this.invalidInputs.update(s => { s.add(inputKey); return s; });
-          }
-          break;
-        case METRIC.distance: newInputs[key].actualDistance = distanceToExact(parseFloat(value)) || undefined; break;
-        case METRIC.duration: newInputs[key].actualDuration = durationToExact(this.parseTimeToSeconds(value)); break;
-        case METRIC.rest: newInputs[key].actualRest = restToExact(this.parseTimeToSeconds(value)); break;
-        case METRIC.tempo: newInputs[key].tempoLogged = value === '' ? undefined : value; break;
+      } else if (field === METRIC.tempo) {
+        newInputs[key].tempoLogged = value === '' ? undefined : value;
       }
       return newInputs;
     });
-
-    // 2. Check if we need to reset an active timer because the duration was changed.
-    if (field === METRIC.duration) {
-      const state = this.setTimerState()[key]; // Check the current timer state directly
-
-      // Only act if a timer was already running or paused for this specific set.
-      if (state && (state.status === 'running' || state.status === 'paused')) {
-        // Stop the currently active global timer subscription.
-        this.setTimerSub?.unsubscribe();
-
-        // Immediately start a new timer for this set. The `startSetTimer` function
-        // is smart enough to read the new value we just set in `performanceInputValues`.
-        this.startSetTimer(exIndex, setIndex, key);
-
-        // Give user feedback that the timer was reset
-        this.toastService.info("Timer reset with new duration.", 1500);
-      }
-    }
   }
 
   /**
@@ -3560,7 +3549,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         // If it is, the user's *actual* logged value must be an exact number.
         // It cannot still be AMRAP/MAX when they try to complete the set.
         if (!userInputs.actualReps || userInputs.actualReps.type !== RepsTargetType.exact) {
-          this.toastService.error(
+          this.toastService.info(
             this.translate.instant('compactPlayer.toasts.enterNumericRepsError', {
               repType: repsTargetAsString(plannedSet.targetReps)
             }),
@@ -3576,7 +3565,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       // check if is text weight as well
       if (this.isTextWeight(exIndex, setIndex)) {
         if (!userInputs.actualWeight || userInputs.actualWeight.type !== WeightTargetType.exact) {
-          this.toastService.error(
+          this.toastService.info(
             this.translate.instant('compactPlayer.toasts.enterNumericWeightError', {
               weightType: this.workoutUtilsService.weightTargetAsString(plannedSet.targetWeight)
             }),
@@ -3666,11 +3655,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       };
       exerciseLog.sets.push(newLoggedSet);
 
-      // Clean up the temporary input state for this set after logging
-      this.performanceInputValues.update(inputs => {
-        delete inputs[key];
-        return { ...inputs };
-      });
+      // // Clean up the temporary input state for this set after logging
+      // this.performanceInputValues.update(inputs => {
+      //   delete inputs[key];
+      //   return { ...inputs };
+      // });
     }
 
     // --- (The rest of the method for state updates, saving, and timers remains the same) ---
@@ -3691,49 +3680,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         setTimeout(() => { this.handleAutoExpandNextExercise(); }, 800);
         // this.autoCollapsePreviousSets();
       }
-    }
-  }
-
-  fillPerformanceInputIfUndefined(exIndex: number, setIndex: number): void {
-    const key = `${exIndex}-${setIndex}`;
-    const userInputs = this.performanceInputValues()[key];
-    if (userInputs) { return };
-
-    const weight: WeightTarget | undefined = this.getInitialInputValue(exIndex, setIndex, METRIC.weight) ? weightToExact(Number(this.getInitialInputValue(exIndex, setIndex, METRIC.weight))) : undefined;
-
-    const repsValueStr = this.getInitialInputValue(exIndex, setIndex, METRIC.reps);
-    let reps: RepsTarget | undefined;
-    const numericReps = parseFloat(repsValueStr);
-
-    if (repsValueStr.endsWith('+')) {
-      const numericValue = parseInt(repsValueStr.slice(0, -1), 10);
-      if (!isNaN(numericValue)) {
-        reps = { type: RepsTargetType.min_plus, value: numericValue };
-      }
-    } else if (repsValueStr.toUpperCase() === 'AMRAP') {
-      reps = { type: RepsTargetType.amrap };
-    } else if (repsValueStr.toUpperCase() === 'MAX') {
-      reps = { type: RepsTargetType.max };
-    } else {
-      const numericValue = parseInt(repsValueStr, 10);
-      if (!isNaN(numericValue) && isFinite(numericValue)) {
-        reps = { type: RepsTargetType.exact, value: numericValue };
-      } else {
-        reps = undefined;
-      }
-    }
-    const distance: DistanceTarget | undefined = this.getInitialInputValue(exIndex, setIndex, METRIC.distance) ? distanceToExact(Number(this.getInitialInputValue(exIndex, setIndex, METRIC.distance))) : undefined;
-    const duration: DurationTarget | undefined = this.getInitialInputValue(exIndex, setIndex, METRIC.duration) ? durationToExact(Number(this.getInitialInputValue(exIndex, setIndex, METRIC.duration))) : undefined;
-    const tempo = this.getInitialInputValue(exIndex, setIndex, METRIC.tempo) ? String(this.getInitialInputValue(exIndex, setIndex, METRIC.tempo)) : undefined;
-    const rest: RestTarget | undefined = this.getInitialInputValue(exIndex, setIndex, METRIC.rest) ? restToExact(Number(this.getInitialInputValue(exIndex, setIndex, METRIC.rest))) : undefined;
-
-    this.performanceInputValues()[key] = {
-      'actualWeight': weight,
-      'actualReps': reps,
-      'actualDistance': distance,
-      'actualDuration': duration,
-      'tempoLogged': tempo,
-      'actualRest': rest,
     }
   }
 
@@ -3793,44 +3739,67 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return fields.visible.length > 1;
   }
 
-  public async promptRemoveField(exIndex: number, setIndex: number): Promise<void> {
+    public async promptRemoveField(exIndex: number, setIndex: number): Promise<void> {
     const currentRoutine = this.routine();
     if (!currentRoutine) return;
-
-    // The service handles the UI and returns the updated routine state
+  
+    const oldFields = this.getFieldsForSet(exIndex, setIndex).visible.filter(field => Object.values(METRIC).includes(field as METRIC));
     const updatedRoutine = await this.workoutUtilsService.promptRemoveField(currentRoutine, exIndex, setIndex, true);
-
+  
     if (updatedRoutine) {
-      // =================== START OF SNIPPET (Part 1) ===================
-      // 1. Update the main routine signal to trigger a re-render
       this.routine.set({ ...updatedRoutine });
-
-      // 2. THE FIX: Immediately re-synchronize the input values signal
-      //    with the new state of the routine.
+  
+      // Find the removed metric
+      const newFields = this.workoutUtilsService.getFieldsForSet(updatedRoutine, exIndex, setIndex).visible;
+      const removedField = oldFields.find(f => f as METRIC && !newFields.includes(f as METRIC));
+      if (removedField) {
+        // Remove target and actual
+        const set = updatedRoutine.exercises[exIndex].sets[setIndex];
+        switch (removedField) {
+          case METRIC.reps: set.targetReps = undefined; break;
+          case METRIC.weight: set.targetWeight = undefined; break;
+          case METRIC.duration: set.targetDuration = undefined; break;
+          case METRIC.distance: set.targetDistance = undefined; break;
+          case METRIC.rest: set.targetRest = undefined; break;
+        }
+        // Remove from performanceInputValues
+        this.setPerformanceInputValue(exIndex, setIndex, removedField as METRIC, undefined);
+      }
+  
       this._prefillPerformanceInputs();
-      // =================== END OF SNIPPET (Part 1) ===================
     }
   }
 
 
-  public async promptAddField(exIndex: number, setIndex: number): Promise<void> {
+    public async promptAddField(exIndex: number, setIndex: number): Promise<void> {
     const currentRoutine = this.routine();
     if (!currentRoutine) return;
-
-    // The service handles the UI and returns the updated routine state
+  
     const updatedRoutine = await this.workoutUtilsService.promptAddField(currentRoutine, exIndex, setIndex, true);
-
+  
     if (updatedRoutine) {
-      // =================== START OF SNIPPET (Part 2) ===================
-      // 1. Update the main routine signal to trigger a re-render
       this.routine.set(updatedRoutine);
-
-      // 2. THE FIX: Immediately re-synchronize the input values signal
-      //    with the new state of the routine.
+  
+      // Find the added metric
+      const oldFields = this.getFieldsForSet(exIndex, setIndex).visible;
+      const newFields = this.workoutUtilsService.getFieldsForSet(updatedRoutine, exIndex, setIndex).visible;
+      const addedField = newFields.find(f => !oldFields.includes(f));
+      if (addedField) {
+        // Set default value for target and actual
+        const set = updatedRoutine.exercises[exIndex].sets[setIndex];
+        let defaultValue: any;
+        switch (addedField) {
+          case METRIC.reps: defaultValue = repsToExact(8); set.targetReps = defaultValue; break;
+          case METRIC.weight: defaultValue = weightToExact(10); set.targetWeight = defaultValue; break;
+          case METRIC.duration: defaultValue = durationToExact(60); set.targetDuration = defaultValue; break;
+          case METRIC.distance: defaultValue = distanceToExact(1); set.targetDistance = defaultValue; break;
+          case METRIC.rest: defaultValue = restToExact(60); set.targetRest = defaultValue; break;
+        }
+        // Update performanceInputValues
+        this.setPerformanceInputValue(exIndex, setIndex, addedField as METRIC, defaultValue);
+      }
+  
       this._prefillPerformanceInputs();
-      // =================== END OF SNIPPET (Part 2) ===================
-
-      // this.toastService.success("Field added to set.");
       this.scrollToSet(exIndex, setIndex);
     }
   }
@@ -3872,10 +3841,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         if (loggedSet) {
           switch (fieldToRemove) {
             case METRIC.weight: loggedSet.weightLogged = undefined; break;
-            case METRIC.reps:
-              // Assign a new RepsTarget object that represents an exact value of 0.
-              loggedSet.repsLogged = { type: RepsTargetType.exact, value: 0 };
-              break;
+            case METRIC.reps: loggedSet.repsLogged = undefined; break;
             case METRIC.distance: loggedSet.distanceLogged = undefined; break;
             case METRIC.duration: loggedSet.durationLogged = undefined; break;
             case METRIC.rest: loggedSet.restLogged = undefined; break;
@@ -4322,11 +4288,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private incrementValue(exIndex: number, setIndex: number, field: METRIC): void {
     const settings = this.appSettingsService.getSettings();
     const key = `${exIndex}-${setIndex}`;
-
     const inputKey = `${key}-${field}`;
     this.invalidInputs.update(s => { s.delete(inputKey); return s; });
 
-    // START: REFACTORED STEP LOGIC
+    // Determine step size
     let step: number;
     switch (field) {
       case METRIC.weight: step = settings.weightStep || 1; break;
@@ -4335,46 +4300,40 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       case METRIC.distance: step = settings.distanceStep || 0.1; break;
       default: step = 1; // Default for reps
     }
-    // END: REFACTORED STEP LOGIC
 
-    this.performanceInputValues.update(currentInputs => {
-      const newInputs = { ...currentInputs };
-      if (!newInputs[key]) {
-        newInputs[key] = {};
-      }
+    // Get the current value using the new getter
+    let currentValue = this.getPerformanceInputValue(exIndex, setIndex, field);
+    let newValue: AnyTarget | string;
 
-      const initialValueStr = this.getInitialInputValue(exIndex, setIndex, field);
-      let currentNumberValue = 0;
+    // Handle different metric types
+    if (field === METRIC.duration || field === METRIC.rest) {
+      // Parse time string or object to seconds
+      currentValue = typeof currentValue === 'string' ? this.parseTimeToSeconds(currentValue) : getDurationValue(currentValue) || 0;
+      newValue = durationToExact(Math.max(0, parseFloat((currentValue + step).toFixed(2))));
+    } else if (field === METRIC.weight) {
+      currentValue = getWeightValue(currentValue) || 0;
+      newValue = weightToExact(Math.max(0, parseFloat((currentValue + step).toFixed(2))));
+    } else if (field === METRIC.distance) {
+      currentValue = getDistanceValue(currentValue) || 0;
+      newValue = distanceToExact(Math.max(0, parseFloat((currentValue + step).toFixed(2))));
+    } else if (field === METRIC.reps) {
+      currentValue = repsTypeToReps(currentValue) || 0;
+      newValue = repsToExact(Math.max(0, parseInt((currentValue + step).toFixed(0), 10)));
+    } else {
+      newValue = '';
+    }
 
-      const isTime = field === METRIC.duration || field === METRIC.rest;
-      if (isTime) {
-        currentNumberValue = this.parseTimeToSeconds(initialValueStr) || 0;
-      } else {
-        currentNumberValue = parseFloat(initialValueStr) || 0;
-      }
-
-      const newNumberValue = parseFloat((currentNumberValue + step).toFixed(2));
-
-      switch (field) {
-        case METRIC.weight: newInputs[key]!.actualWeight = weightToExact(newNumberValue); break;
-        case METRIC.reps: newInputs[key]!.actualReps = genRepsTypeFromRepsNumber(newNumberValue); break;
-        case METRIC.distance: newInputs[key]!.actualDistance = distanceToExact(newNumberValue); break;
-        case METRIC.duration: newInputs[key]!.actualDuration = durationToExact(newNumberValue); break;
-        case METRIC.rest: newInputs[key]!.actualRest = restToExact(newNumberValue); break;
-      }
-
-      return newInputs;
-    });
+    // Use your setter to update and validate
+    this.setPerformanceInputValue(exIndex, setIndex, field, newValue);
   }
 
   private decrementValue(exIndex: number, setIndex: number, field: METRIC): void {
     const settings = this.appSettingsService.getSettings();
     const key = `${exIndex}-${setIndex}`;
-
     const inputKey = `${key}-${field}`;
     this.invalidInputs.update(s => { s.delete(inputKey); return s; });
 
-    // START: REFACTORED STEP LOGIC
+    // Determine step size
     let step: number;
     switch (field) {
       case METRIC.weight: step = settings.weightStep || 1; break;
@@ -4383,40 +4342,30 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       case METRIC.distance: step = settings.distanceStep || 0.1; break;
       default: step = 1; // Default for reps
     }
-    // END: REFACTORED STEP LOGIC
 
-    this.performanceInputValues.update(currentInputs => {
-      const newInputs = { ...currentInputs };
-      if (!newInputs[key]) {
-        newInputs[key] = {};
-      }
+    // Get the current value using the new getter
+    let currentValue = this.getPerformanceInputValue(exIndex, setIndex, field);
+    let newValue: number;
 
-      let currentValue = 0;
-      const isTime = field === METRIC.duration || field === METRIC.rest;
+    // Handle different metric types
+    if (field === METRIC.duration || field === METRIC.rest) {
+      currentValue = typeof currentValue === 'string' ? this.parseTimeToSeconds(currentValue) : getDurationValue(currentValue) || 0;
+      newValue = Math.max(0, parseFloat((currentValue - step).toFixed(2)));
+    } else if (field === METRIC.weight) {
+      currentValue = getWeightValue(currentValue) || 0;
+      newValue = Math.max(0, parseFloat((currentValue - step).toFixed(2)));
+    } else if (field === METRIC.distance) {
+      currentValue = getDistanceValue(currentValue) || 0;
+      newValue = Math.max(0, parseFloat((currentValue - step).toFixed(2)));
+    } else if (field === METRIC.reps) {
+      currentValue = repsTypeToReps(currentValue) || 0;
+      newValue = Math.max(0, parseInt((currentValue - step).toFixed(0), 10));
+    } else {
+      newValue = 0;
+    }
 
-      if (isTime) {
-        const timeValue: any = newInputs[key]!.actualDuration ?? newInputs[key]!.actualRest ?? this.parseTimeToSeconds(this.getInitialInputValue(exIndex, setIndex, field));
-        currentValue = timeValue.seconds ?? timeValue ?? 0;
-      } else {
-        switch (field) {
-          case METRIC.weight: currentValue = getWeightValue(newInputs[key]!.actualWeight) ?? (parseFloat(this.getInitialInputValue(exIndex, setIndex, METRIC.weight)) || 0); break;
-          case METRIC.reps: currentValue = repsTypeToReps(newInputs[key]!.actualReps) ?? (parseInt(this.getInitialInputValue(exIndex, setIndex, METRIC.reps)) || 0); break;
-          case METRIC.distance: currentValue = getDistanceValue(newInputs[key]!.actualDistance) ?? (parseFloat(this.getInitialInputValue(exIndex, setIndex, METRIC.distance)) || 0); break;
-        }
-      }
-
-      const newValue = Math.max(0, parseFloat((currentValue - step).toFixed(2)));
-
-      switch (field) {
-        case METRIC.weight: newInputs[key]!.actualWeight = weightToExact(newValue); break;
-        case METRIC.reps: newInputs[key]!.actualReps = genRepsTypeFromRepsNumber(newValue); break;
-        case METRIC.distance: newInputs[key]!.actualDistance = distanceToExact(newValue); break;
-        case METRIC.duration: newInputs[key]!.actualDuration = durationToExact(newValue); break;
-        case METRIC.rest: newInputs[key]!.actualRest = restToExact(newValue); break;
-      }
-
-      return newInputs;
-    });
+    // Use your setter to update and validate
+    this.setPerformanceInputValue(exIndex, setIndex, field, newValue);
   }
 
 
@@ -4617,10 +4566,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const routine = this.routine();
     if (!routine) return;
 
-    const metricsToApply: METRIC[] = [];
-    const targetPatch: { [key: string]: any } = {};
-    const performancePatch: { [key: string]: any } = {};
-
     // Helper to sanitize and validate numbers (no negatives, no NaN)
     function sanitizeNumber(val: any, step: number, allowDecimals: boolean = false): number | null {
       if (val === null || val === undefined) return null;
@@ -4628,122 +4573,82 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       if (isNaN(num)) return null;
       num = Math.abs(num); // Always positive
 
-      // For weight, allow up to 2 decimals, otherwise round to nearest step
       if (allowDecimals) {
-        // Round to 2 decimal digits
         return Math.round(num * 100) / 100;
       } else {
-        // Round to nearest step (integer or step size)
         return Math.round(num / step) * step;
       }
     }
 
-    // 1. Build patch objects (this part is unchanged)
+    // 1. Gather values to apply
     const reps = sanitizeNumber(this.repsToSetForAll(), this.repsStep);
-    if (reps !== null) {
-      targetPatch['targetReps'] = repsToExact(reps);
-      performancePatch['actualReps'] = repsToExact(reps);
-      metricsToApply.push(METRIC.reps);
-    }
     const weight = sanitizeNumber(this.weightToSetForAll(), this.weightStep, true);
-    if (weight !== null) {
-      targetPatch['targetWeight'] = weightToExact(weight);
-      performancePatch['actualWeight'] = weightToExact(weight);
-      metricsToApply.push(METRIC.weight);
-    }
     const duration = sanitizeNumber(this.durationToSetForAll(), this.durationStep);
-    if (duration !== null) {
-      targetPatch['targetDuration'] = durationToExact(duration);
-      performancePatch['actualDuration'] = durationToExact(duration);
-      metricsToApply.push(METRIC.duration);
-    }
     const distance = this.distanceToSetForAll();
-    if (distance !== null) {
-      targetPatch['targetDistance'] = distanceToExact(distance);
-      performancePatch['actualDistance'] = distanceToExact(distance);
-      metricsToApply.push(METRIC.distance);
-    }
     const rest = sanitizeNumber(this.restToSetForAll(), this.restStep);
-    if (rest !== null) {
-      targetPatch['targetRest'] = restToExact(rest);
-      performancePatch['actualRest'] = restToExact(rest);
-      metricsToApply.push(METRIC.rest);
-    }
-    if (this.tempoToSetForAll() !== null && this.tempoToSetForAll()!.trim() !== '') {
-      targetPatch['targetTempo'] = this.tempoToSetForAll()!.trim();
-      performancePatch['tempoLogged'] = this.tempoToSetForAll();
-      metricsToApply.push(METRIC.tempo);
-    }
+    const tempo = this.tempoToSetForAll() !== null && this.tempoToSetForAll()!.trim() !== '' ? this.tempoToSetForAll()!.trim() : null;
+
+    // 2. Build a list of metrics to apply
+    const metricsToApply: { metric: METRIC, value: any }[] = [];
+    if (reps !== null) metricsToApply.push({ metric: METRIC.reps, value: repsToExact(reps) });
+    if (weight !== null) metricsToApply.push({ metric: METRIC.weight, value: weightToExact(weight) });
+    if (duration !== null) metricsToApply.push({ metric: METRIC.duration, value: durationToExact(duration) });
+    if (distance !== null) metricsToApply.push({ metric: METRIC.distance, value: distanceToExact(distance) });
+    if (rest !== null) metricsToApply.push({ metric: METRIC.rest, value: restToExact(rest) });
+    if (tempo !== null) metricsToApply.push({ metric: METRIC.tempo, value: tempo });
 
     if (metricsToApply.length === 0) {
       this.toastService.info("No values entered to apply.");
       return;
     }
 
-    // 2. Identify all target exercises (either a single exercise or all in a superset)
+    // 3. Identify all target exercises (either a single exercise or all in a superset)
     const clickedExercise = routine.exercises[exIndex];
     const targetExercises = clickedExercise.supersetId
       ? this.getSupersetExercises(clickedExercise.supersetId)
       : [clickedExercise];
 
-    // 3. Update the main routine signal immutably
+    // 4. Update the routine and performanceInputValues using your setters
     this.routine.update(r => {
       if (!r) return r;
-
       const targetExerciseIds = new Set(targetExercises.map(ex => ex.id));
-
       const newExercises = r.exercises.map(exercise => {
-        if (!targetExerciseIds.has(exercise.id)) {
-          return exercise; // Not a target, return as-is
-        }
-
-        // This is a target exercise, so update all its sets
+        if (!targetExerciseIds.has(exercise.id)) return exercise;
         const newSets = exercise.sets.map(set => {
           const newSet = { ...set };
-          Object.assign(newSet, targetPatch); // Apply new target values
-
-          // Ensure all applied metrics are in the fieldOrder
-          const currentFieldOrder = newSet.fieldOrder ? [...newSet.fieldOrder] : [];
-          let orderChanged = false;
-          metricsToApply.forEach(metric => {
-            if (!currentFieldOrder.includes(metric)) {
-              currentFieldOrder.push(metric);
-              orderChanged = true;
+          metricsToApply.forEach(({ metric, value }) => {
+            // Patch the target value
+            switch (metric) {
+              case METRIC.reps: newSet.targetReps = value; break;
+              case METRIC.weight: newSet.targetWeight = value; break;
+              case METRIC.duration: newSet.targetDuration = value; break;
+              case METRIC.distance: newSet.targetDistance = value; break;
+              case METRIC.rest: newSet.targetRest = value; break;
+              case METRIC.tempo: newSet.targetTempo = value; break;
             }
+            // Ensure metric is in fieldOrder
+            if (!newSet.fieldOrder) newSet.fieldOrder = [];
+            if (!newSet.fieldOrder.includes(metric)) newSet.fieldOrder.push(metric);
           });
-          if (orderChanged) {
-            newSet.fieldOrder = currentFieldOrder;
-          }
           return newSet;
         });
-
         return { ...exercise, sets: newSets };
       });
-
       return { ...r, exercises: newExercises };
     });
 
-    // 4. Update the performance input values signal for all affected exercises
-    this.performanceInputValues.update(currentInputs => {
-      const newInputs = { ...currentInputs };
-
-      targetExercises.forEach(exercise => {
-        const originalExIndex = this.getOriginalExIndex(exercise.id);
-        if (originalExIndex === -1) return; // Failsafe
-
-        exercise.sets.forEach((set, setIndex) => {
-          const key = `${originalExIndex}-${setIndex}`;
-          if (!newInputs[key]) {
-            newInputs[key] = {};
-          }
-          Object.assign(newInputs[key], performancePatch);
+    // 5. Update performanceInputValues using your setter for each set/metric
+    targetExercises.forEach(exercise => {
+      const originalExIndex = this.getOriginalExIndex(exercise.id);
+      if (originalExIndex === -1) return;
+      exercise.sets.forEach((set, setIndex) => {
+        metricsToApply.forEach(({ metric, value }) => {
+          this.setPerformanceInputValue(originalExIndex, setIndex, metric, value);
         });
       });
-
-      return newInputs;
     });
 
-    // 5. Reset UI and provide feedback
+    // 6. Reset UI and provide feedback
     this.repsToSetForAll.set(null);
     this.weightToSetForAll.set(null);
     this.durationToSetForAll.set(null);
@@ -4754,24 +4659,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     // Build a summary of what was set
     const summaryParts: string[] = [];
-    if (reps !== null) {
-      summaryParts.push(`${this.translate.instant('metrics.reps')}: ${reps}`);
-    }
-    if (weight !== null) {
-      summaryParts.push(`${this.translate.instant('metrics.weight')}: ${weight} (${this.unitsService.getWeightUnitSuffix()})`);
-    }
-    if (duration !== null) {
-      summaryParts.push(`${this.translate.instant('metrics.duration')}: ${duration} (s)`);
-    }
-    if (distance !== null) {
-      summaryParts.push(`${this.translate.instant('metrics.distance')}: ${distance} (${this.unitsService.getDistanceMeasureUnitSuffix()})`);
-    }
-    if (rest !== null) {
-      summaryParts.push(`${this.translate.instant('metrics.rest')}: ${rest} (s)`);
-    }
-    if (this.tempoToSetForAll() !== null && this.tempoToSetForAll()!.trim() !== '') {
-      summaryParts.push(`${this.translate.instant('metrics.tempo')}: ${this.tempoToSetForAll()}`);
-    }
+    if (reps !== null) summaryParts.push(`${this.translate.instant('metrics.reps')}: ${reps}`);
+    if (weight !== null) summaryParts.push(`${this.translate.instant('metrics.weight')}: ${weight} (${this.unitsService.getWeightUnitSuffix()})`);
+    if (duration !== null) summaryParts.push(`${this.translate.instant('metrics.duration')}: ${duration} (s)`);
+    if (distance !== null) summaryParts.push(`${this.translate.instant('metrics.distance')}: ${distance} (${this.unitsService.getDistanceMeasureUnitSuffix()})`);
+    if (rest !== null) summaryParts.push(`${this.translate.instant('metrics.rest')}: ${rest} (s)`);
+    if (tempo !== null) summaryParts.push(`${this.translate.instant('metrics.tempo')}: ${tempo}`);
 
     const summary = summaryParts.length > 0
       ? summaryParts.join(', ')
@@ -4809,16 +4702,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       return false;
     }
     return weightType !== WeightTargetType.exact;
-  }
-
-  /**
-   * New helper method to determine if the current value for a reps input is numeric.
-   * This is used to enable/disable the increment/decrement buttons.
-   */
-  public isRepsValueNumeric(exIndex: number, setIndex: number): boolean {
-    const currentValue = this.getInitialInputValue(exIndex, setIndex, METRIC.reps);
-    // Check if the string can be parsed as a finite number.
-    return isFinite(parseFloat(currentValue));
   }
 
   /**
@@ -4999,23 +4882,22 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   // Add this property to your component
   activeSetAllMetrics: { [exIndex: number]: METRIC[] } = {};
-  toggleMetricForAllSets(exIndex: number, metric: METRIC): void {
+    toggleMetricForAllSets(exIndex: number, metric: METRIC): void {
     const routine = this.routine();
     if (!routine) return;
-
+  
     const exercise = routine.exercises[exIndex];
     if (!exercise) return;
-
+  
     // Only consider metrics except rest for blocking logic
     const metricsToCheck = this.availableMetricsForSetAll.filter(m => m !== METRIC.rest);
-
+  
     // Determine if we are adding or removing the metric
     const allSetsHaveMetric = exercise.sets.every(set => set.fieldOrder?.includes(metric));
     const shouldAdd = !allSetsHaveMetric;
-
+  
     // If removing, check if this would remove all non-rest metrics
     if (!shouldAdd && metricsToCheck.some(m => m === metric)) {
-      // Count how many non-rest metrics would remain after removal
       const currentActive = metricsToCheck.filter(m =>
         m !== metric && exercise.sets.some(set => set.fieldOrder?.includes(m))
       );
@@ -5027,34 +4909,43 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         return;
       }
     }
-
-    exercise.sets.forEach(set => {
+  
+    exercise.sets.forEach((set, setIndex) => {
       if (!set.fieldOrder) set.fieldOrder = [];
+      const key = `${exIndex}-${setIndex}`;
       if (shouldAdd) {
-        // Add metric if not present
         if (!set.fieldOrder.includes(metric)) {
           set.fieldOrder.push(metric);
           // Set default value if not present
+          let defaultValue: any;
           switch (metric) {
             case METRIC.rest:
               if (!set.targetRest) set.targetRest = restToExact(60);
+              defaultValue = restToExact(60);
               break;
             case METRIC.weight:
               if (!set.targetWeight) set.targetWeight = weightToExact(10);
+              defaultValue = weightToExact(10);
               break;
             case METRIC.reps:
               if (!set.targetReps) set.targetReps = repsToExact(8);
+              defaultValue = repsToExact(8);
               break;
             case METRIC.distance:
               if (!set.targetDistance) set.targetDistance = distanceToExact(2);
+              defaultValue = distanceToExact(2);
               break;
             case METRIC.duration:
               if (!set.targetDuration) set.targetDuration = durationToExact(45);
+              defaultValue = durationToExact(45);
               break;
+          }
+          // Use your setter to update performanceInputValues
+          if (defaultValue !== undefined) {
+            this.setPerformanceInputValue(exIndex, setIndex, metric, defaultValue);
           }
         }
       } else {
-        // Remove metric if present
         if (set.fieldOrder.includes(metric)) {
           set.fieldOrder = set.fieldOrder.filter(m => m !== metric);
           // Remove the related target property
@@ -5065,13 +4956,15 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
             case METRIC.distance: set.targetDistance = undefined; break;
             case METRIC.duration: set.targetDuration = undefined; break;
           }
+          // Remove from performanceInputValues
+          this.setPerformanceInputValue(exIndex, setIndex, metric, undefined);
         }
       }
     });
-
+  
     // Update the routine signal to trigger UI update
     this.routine.set({ ...routine });
-
+  
     // Show feedback toast
     if (shouldAdd) {
       this.toastService.success(
@@ -5085,6 +4978,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       );
     }
   }
+
   isMetricActiveForAllSets(exIndex: number, metric: METRIC): boolean {
     const routine = this.routine();
     if (!routine) return false;
@@ -5092,5 +4986,168 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (!exercise) return false;
     // The chip is active only if ALL sets have the metric in their fieldOrder
     return exercise.sets.every(set => set.fieldOrder?.includes(metric));
+  }
+
+  protected getSet(exIndex: number, setIndex: number) {
+    return this.routine()?.exercises?.[exIndex]?.sets?.[setIndex];
+  }
+
+
+getPerformanceInputValue(exIndex: number, setIndex: number, field: METRIC | 'notes'): any {
+  const key = `${exIndex}-${setIndex}`;
+  const set = this.getSet(exIndex, setIndex);
+  if (!set?.fieldOrder?.includes(field as METRIC) && field !== 'notes') return undefined;
+  return this.performanceInputValues()[key]?.[this.getFieldKey(field)];
+}
+
+  onInputChange(value: any, exIndex: number, setIndex: number, field: METRIC | 'notes') {
+    this.setPerformanceInputValue(exIndex, setIndex, field, value);
+    // Optionally: run validation or other logic here
+  }
+
+  setPerformanceInputValue(exIndex: number, setIndex: number, field: METRIC | 'notes', value: any): void {
+    const key = `${exIndex}-${setIndex}`;
+    const set = this.getSet(exIndex, setIndex);
+    if (!set?.fieldOrder?.includes(field as METRIC) && field !== 'notes') return;
+
+    this.performanceInputValues.update(inputs => {
+      const updated = { ...inputs };
+      if (!updated[key]) updated[key] = {};
+      updated[key][this.getFieldKey(field)] = value;
+      return updated;
+    });
+  }
+
+
+
+  getFieldKey(field: METRIC | 'notes'): keyof ExerciseCurrentExecutionSetParams {
+    switch (field) {
+      case METRIC.reps: return 'actualReps';
+      case METRIC.weight: return 'actualWeight';
+      case METRIC.distance: return 'actualDistance';
+      case METRIC.duration: return 'actualDuration';
+      case METRIC.rest: return 'actualRest';
+      case METRIC.tempo: return 'tempoLogged';
+      case 'notes': return 'notes';
+    }
+  }
+
+  getMetricInputValue(): any {
+    return (exIndex: number, setIndex: number, field: METRIC | 'notes') => {
+      const key = `${exIndex}-${setIndex}`;
+      const value = this.performanceInputValues()[key]?.[this.getFieldKey(field)];
+      switch (field) {
+        case METRIC.reps:
+          return value && typeof value === 'object' && 'type' in value
+            ? repsTargetAsString(value as RepsTarget)
+            : value ?? '';
+        case METRIC.weight:
+          return value && typeof value === 'object' && 'type' in value
+            ? weightTargetAsString(value as WeightTarget)
+            : value ?? '';
+        case METRIC.distance:
+          return value && typeof value === 'object' && 'type' in value
+            ? distanceTargetAsString(value as DistanceTarget)
+            : value ?? '';
+        case METRIC.duration:
+          return value && typeof value === 'object' && 'type' in value
+            ? durationTargetAsString(value as DurationTarget)
+            : value ?? '';
+        case METRIC.rest:
+          return value && typeof value === 'object' && 'type' in value
+            ? restTargetAsString(value as RestTarget)
+            : value ?? '';
+        case METRIC.tempo:
+          return value ?? '';
+        case 'notes':
+          return value ?? '';
+      }
+      return '';
+    };
+  }
+
+  setMetricInputValue(exIndex: number, setIndex: number, field: METRIC | 'notes', value: any): void {
+    const key = `${exIndex}-${setIndex}`;
+    const inputKey = `${key}-${field}`;
+    const set = this.getSet(exIndex, setIndex);
+    if (!set?.fieldOrder?.includes(field as METRIC) && field !== 'notes') return;
+
+    this.performanceInputValues.update(inputs => {
+      const updated = { ...inputs };
+      if (!updated[key]) updated[key] = {};
+
+      // Validation logic (adapted from updateSetData)
+      switch (field) {
+        case METRIC.reps: {
+          const rawValue = String(value).trim();
+          const validRepsPattern = /^(\d+(\+)?|AMRAP|MAX)$/i;
+
+          if (rawValue === '' || validRepsPattern.test(rawValue)) {
+            this.invalidInputs.update(s => { s.delete(inputKey); return s; });
+
+            if (rawValue.endsWith('+')) {
+              const numericValue = parseInt(rawValue.slice(0, -1), 10);
+              updated[key].actualReps = { type: RepsTargetType.min_plus, value: numericValue };
+            } else if (rawValue.toUpperCase() === 'AMRAP') {
+              updated[key].actualReps = { type: RepsTargetType.amrap };
+            } else if (rawValue.toUpperCase() === 'MAX') {
+              updated[key].actualReps = { type: RepsTargetType.max };
+            } else {
+              const numericValue = parseInt(rawValue, 10);
+              if (!isNaN(numericValue)) {
+                updated[key].actualReps = { type: RepsTargetType.exact, value: numericValue };
+              } else {
+                updated[key].actualReps = undefined;
+                this.invalidInputs.update(s => { s.add(inputKey); return s; });
+              }
+            }
+          } else {
+            this.invalidInputs.update(s => { s.add(inputKey); return s; });
+          }
+          break;
+        }
+        case METRIC.weight: {
+          const rawWeight = String(value).trim();
+          const validWeightPattern = /^(\d+(\.\d+)?|MAX|RM|BW|AMRAP)$/i;
+
+          if (rawWeight === '' || validWeightPattern.test(rawWeight)) {
+            this.invalidInputs.update(s => { s.delete(inputKey); return s; });
+
+            if (rawWeight.toUpperCase().includes('%')) {
+              updated[key].actualWeight = { type: WeightTargetType.percentage_1rm, percentage: 100 };
+            } else if (rawWeight.toUpperCase() === 'BW') {
+              updated[key].actualWeight = { type: WeightTargetType.bodyweight };
+            } else {
+              const numericValue = parseFloat(rawWeight);
+              if (!isNaN(numericValue)) {
+                updated[key].actualWeight = { type: WeightTargetType.exact, value: numericValue };
+              } else {
+                updated[key].actualWeight = undefined;
+                this.invalidInputs.update(s => { s.add(inputKey); return s; });
+              }
+            }
+          } else {
+            this.invalidInputs.update(s => { s.add(inputKey); return s; });
+          }
+          break;
+        }
+        case METRIC.distance:
+          updated[key].actualDistance = distanceToExact(parseFloat(value)) || undefined;
+          break;
+        case METRIC.duration:
+          updated[key].actualDuration = durationToExact(this.parseTimeToSeconds(value));
+          break;
+        case METRIC.rest:
+          updated[key].actualRest = restToExact(this.parseTimeToSeconds(value));
+          break;
+        case METRIC.tempo:
+          updated[key].tempoLogged = value === '' ? undefined : value;
+          break;
+        case 'notes':
+          updated[key].notes = value;
+          break;
+      }
+      return updated;
+    });
   }
 }

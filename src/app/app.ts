@@ -71,7 +71,7 @@ export const routeAnimation =
 
   <!-- The bottom navigation is now a sibling to <main> and can be fixed to the bottom -->
   <footer class="fixed bottom-0 left-0 right-0 z-50">
-    <app-paused-workout *ngIf="shouldShowPausedBanner()"></app-paused-workout>
+    <app-paused-workout appShatterable id="pausedWorkoutFooter" *ngIf="shouldShowPausedBanner()"></app-paused-workout>
     <app-navigation *ngIf="shouldShowNavigationBanner()"></app-navigation>
   </footer>
 

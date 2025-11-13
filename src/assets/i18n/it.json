@@ -12,7 +12,7 @@
     "readyMessage": "Pronto a superare i tuoi obiettivi oggi?",
     "quickActionsTitle": "Azioni Rapide",
     "appVersion": "Versione App:",
-    "pausedWorkout":{
+    "pausedWorkout": {
       "discardPromptTitle": "Discard Current Workout?",
       "discardPromptMessage": "You have a paused workout session. Do you want to discard it and start a new one?"
     }
@@ -242,7 +242,8 @@
     "min": "Min",
     "max": "Max",
     "actionCompleted": "Operazione completata",
-    "invalidData": "Dati errati"
+    "invalidData": "Dati errati",
+    "ok": "OK"
   },
   "toasts": {
     "statusUpdated": "Stato Aggiornato",
@@ -261,7 +262,8 @@
     "languageSet": "Lingua impostata su {{language}}",
     "routinesDisabledOnImport": "L'importazione ha rilevato {{count}} routine abilitate. Gli utenti gratuiti possono avere solo 4 routine abilitate. Tutte le routine importate sono state disabilitate. Puoi abilitarle dopo l'aggiornamento a Premium.",
     "routinesDisabledTitle": "Routine Disabilitate",
-    "trueGymModeNoMetrics": "Non possono essere aggiunte altre metriche nella modalità 'PALESTRA'."
+    "trueGymModeNoMetrics": "Non possono essere aggiunte altre metriche nella modalità 'PALESTRA'.",
+    "allMetricsAdded": "Tutte le metriche disponibili sono già state aggiunte a questa serie"
   },
   "alerts": {
     "playerModeChangeDisabledTitle": "Azione Disabilitata",
@@ -865,7 +867,11 @@
       "invalidValue": "Valore non valido inserito.",
       "fieldRemoved": "Campo '{{field}}' rimosso dalla serie #{{number}}.",
       "enterNumericRepsError": "Devi impostare il numero effettuato di ripetizioni prima di poter completare la serie",
-      "enterNumericWeightError": "Devi modificare il valore effettivo del peso prima di impostare la serie come completata"
+      "enterNumericWeightError": "Devi modificare il valore effettivo del peso prima di impostare la serie come completata",
+      "progressiveOverloadApplied": "Progressive Overload applicato a {{name}}!",
+    "progressiveOverloadAppliedMultiple": "Progressive Overload applicato a: {{names}}",
+    "progressiveOverloadAppliedMultipleTitle": "Progressive Overload Applicato",
+    "progressiveOverloadAppliedMultipleMessage": "I seguenti esercizi sono stati incrementati automaticamente:"
     },
     "alerts": {
       "toughWorkoutTitle": "L'ultimo Allenamento è Stato Duro",
@@ -927,7 +933,11 @@
       "manualRestMessage": "Imposta i secondi di pausa",
       "manualRestTitle": "Timer pausa personalizzato",
       "chooseTimerMessage": "Scegli il tipo di timer",
-      "chooseTimerTitle": "Tipo di timer"
+      "chooseTimerTitle": "Tipo di timer",
+      "prefillTitle": "Precompila con la performance precedente?",
+    "prefillMessage": "Vuoi usare i valori registrati più recenti per gli esercizi di questa scheda o mantenere gli obiettivi originali?",
+    "useHistorical": "Usa valori precedenti",
+    "useOriginal": "Usa obiettivi della scheda"
     },
     "actions": {
       "pause": "PAUSA SESSIONE",
@@ -2371,11 +2381,16 @@
       "removeField": {
         "title": "Rimuovi campo dall'esercizio dalla serie",
         "message": "Quale campo vuoi rimuovere da questa serie?",
-        "noFieldsToast": "Non può essere rimosso alcun campo da questa serie"
+        "noFieldsToast": "Non può essere rimosso alcun campo da questa serie",
+        "atLeastOneMetric": "Almeno una metrica è richiesta"
       }
     },
     "prompts": {
       "addExerciseTitle": "Aggiungi {{exerciseName}}",
+      "addCancelled": "Aggiunta esercizio annullata.",
+      "selectMetricsTitle": "Seleziona Metriche",
+      "selectMetricsMessage": "Quali metriche vuoi tracciare per questo esercizio?",
+      "metricsSelectionCancelled": "Nessuna metrica selezionata.",
       "labels": {
         "exerciseName": "Nome Esercizio",
         "numSets": "Numero di Serie",
@@ -2383,7 +2398,12 @@
         "targetDistance": "Distanza Obiettivo ({{unit}})",
         "targetDuration": "Durata Obiettivo (secondi)",
         "numReps": "Numero di Ripetizioni",
-        "targetWeight": "Peso Obiettivo ({{unit}})"
+        "targetWeight": "Peso Obiettivo ({{unit}})",
+        "includeReps": "Traccia Ripetizioni",
+        "includeWeight": "Traccia Peso",
+        "includeDistance": "Traccia Distanza",
+        "includeDuration": "Traccia Durata",
+        "includeRest": "Traccia Recupero"
       },
       "createSuperset": {
         "title": "Crea Superserie",

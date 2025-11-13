@@ -45,6 +45,10 @@
           <!-- <span *ngIf="isToday(currentDate())" class="font-bold text-primary dark:text-primary-light">(Today)</span> -->
         </h2>
 
+        <button *ngIf="!isToday(currentDate())" (click)="goToToday()"
+      class="text-m text-primary dark:text-primary-light hover:underline disabled:opacity-50 pt-2"
+      [disabled]="isAnimating()">{{ 'todaysWorkout.jumpToToday' | translate }}</button>
+
       </div>
 
       <!-- Next Day Button -->
@@ -55,10 +59,6 @@
       </button>
 
     </div>
-    <!-- [END] NEW AND IMPROVED BANNER -->
-    <button *ngIf="!isToday(currentDate())" (click)="goToToday()"
-      class="text-m text-primary dark:text-primary-light hover:underline disabled:opacity-50 pt-2"
-      [disabled]="isAnimating()">{{ 'todaysWorkout.jumpToToday' | translate }}</button>
   </div>
 
   <!-- This content area will still grow to fill space and will be the part that animates. -->
@@ -100,8 +100,10 @@
                     }}</span>
                 </ng-template>
 
-                <div class="my-2 text-xs font-semibold text-white bg-primary rounded-md p-1 flex-shrink w-fit"> {{
-                  'todaysWorkout.program' | translate }}
+                <div class="my-2 text-xs font-semibold text-white bg-primary rounded-md p-1 flex-shrink w-fit flex items-center"> 
+                  <app-icon name="calendar"></app-icon>
+                  {{
+                  'todaysWorkout.program' | translate }}: 
                   <strong class="font-medium"> {{ workoutInfo.scheduledDayInfo.programName }} {{
                     workoutInfo.scheduledDayInfo.iterationId }}</strong>
                   <div *ngIf="getCurrentWeekInfo(workoutInfo.scheduledDayInfo.programId) as weekInfo"

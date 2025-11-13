@@ -270,11 +270,11 @@ export function mapExerciseTargetSetParamsToExerciseExecutedSetParams(exerciseTa
     return {
         id: exerciseTargetSetParams.id,
         type: exerciseTargetSetParams.type,
-        targetReps: repsTypeToReps(exerciseTargetSetParams.targetReps) || { type: RepsTargetType.exact, value: 0 },
-        targetWeight: exerciseTargetSetParams.targetWeight || weightToExact(0),
-        targetDistance: exerciseTargetSetParams.targetDistance || distanceToExact(0),
-        targetDuration: exerciseTargetSetParams.targetDuration || durationToExact(0),
-        targetRest: exerciseTargetSetParams.targetRest || restToExact(0),
+        targetReps: exerciseTargetSetParams.targetReps,
+        targetWeight: exerciseTargetSetParams.targetWeight,
+        targetDistance: exerciseTargetSetParams.targetDistance,
+        targetDuration: exerciseTargetSetParams.targetDuration,
+        targetRest: exerciseTargetSetParams.targetRest,
         notes: exerciseTargetSetParams.notes || '',
         tempo: exerciseTargetSetParams.targetTempo
     } as ExerciseTargetExecutionSetParams;

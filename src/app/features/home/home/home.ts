@@ -1,5 +1,5 @@
 // src/app/features/home/home.component.ts
-import { Component, OnInit, PLATFORM_ID, inject, signal, effect, computed, OnDestroy } from '@angular/core'; // Added effect
+import { Component, OnInit, PLATFORM_ID, inject, signal, effect, computed, OnDestroy, ViewChildren, QueryList, ElementRef, ViewChild } from '@angular/core'; // Added effect
 import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common'; // Added DatePipe
 import { Router } from '@angular/router';
 import { TodaysWorkoutComponent } from '../../dashboard/todays-workout/todays-workout';
@@ -16,14 +16,24 @@ import { SubscriptionService } from '../../../core/services/subscription.service
 import { BarbellCalculatorModalComponent } from '../../../shared/components/barbell-calculator-modal/barbell-calculator-modal.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BumpClickDirective } from '../../../shared/directives/bump-click.directive';
+import { ShatterableDirective } from '../../../animations/shatterable.directive';
+import { animate, style, transition, trigger } from '@angular/animations';
 
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, TodaysWorkoutComponent, IconComponent, BarbellCalculatorModalComponent, TranslateModule, BumpClickDirective], // Added DatePipe
+  imports: [CommonModule, TodaysWorkoutComponent, IconComponent, BarbellCalculatorModalComponent, TranslateModule, BumpClickDirective, ShatterableDirective], // Added DatePipe
   templateUrl: './home.html',
-  styleUrls: ['./home.scss']
+  styleUrls: ['./home.scss'],
+  animations: [
+    trigger('collapse', [
+      transition(':leave', [
+        style({ height: '*', opacity: 1 }),
+        animate('400ms cubic-bezier(0.4,0,0.2,1)', style({ height: 0, opacity: 0 }))
+      ])
+    ])
+  ]
 })
 export class HomeComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
@@ -51,6 +61,22 @@ export class HomeComponent implements OnInit, OnDestroy {
     // Effect to update pausedRoutineName when pausedWorkoutInfo changes
     effect(() => {
       const pausedInfo = this.pausedWorkoutInfo();
+
+      if (this.pausedProgramName() && !pausedInfo) {
+        const shatterable = this.shatterables && this.shatterables.find(dir =>
+          dir.el.nativeElement.id === 'pausedWorkout'
+        );
+        if (shatterable) {
+          shatterable.shatter();
+          setTimeout(() => {
+            this.pausedWorkoutInfo.set(pausedInfo);
+          }, 150); // match the shatter animation duration
+        } else {
+          this.pausedWorkoutInfo.set(pausedInfo);
+        }
+      }
+
+
       this.pausedProgramName.set(pausedInfo?.programName || '');
       if (pausedInfo && pausedInfo.sessionRoutine && pausedInfo.sessionRoutine.name) {
         this.pausedRoutineName.set(pausedInfo.sessionRoutine.name);
@@ -129,9 +155,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     );
     if (confirm && confirm.data) {
       if (isPlatformBrowser(this.platformId)) {
-        this.workoutService.removePausedWorkout();
-        // The subscription above will now handle setting pausedWorkoutInfo.set(null);
-        // this.toastService.info(this.translate.instant('pausedWorkout.sessionDiscarded'), 3000);
+        const shatterableHome = this.shatterables.find(dir => dir.el.nativeElement.id === 'pausedWorkout');
+        if (shatterableHome) shatterableHome.shatter();
+
+        setTimeout(() => {
+          this.pausedWorkoutInfo.set(null);
+          this.workoutService.removePausedWorkout();
+        }, 150); // After shatter animation
       }
     }
   }
@@ -253,6 +283,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.router.navigate(['/library']);
     }, this.bumpTimeOut);
   }
+
+  @ViewChildren(ShatterableDirective) shatterables!: QueryList<ShatterableDirective>;
+  shrinkingPausedCard = signal(false);
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe(); // Unsubscribe to prevent memory leaks

@@ -1,17 +1,18 @@
 // src/app/layout/paused-workout/paused-workout.component.ts
 
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { WorkoutService } from '../../../core/services/workout.service';
 import { AlertService } from '../../../core/services/alert.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ShatterableDirective } from '../../../animations/shatterable.directive';
 
 @Component({
   selector: 'app-paused-workout',
   standalone: true,
-  imports: [CommonModule, IconComponent, PressDirective, TranslateModule],
+  imports: [CommonModule, IconComponent, PressDirective, TranslateModule, ShatterableDirective],
   templateUrl: './paused-workout.component.html',
   styleUrls: ['./paused-workout.component.scss']
 })
@@ -20,6 +21,9 @@ export class PausedWorkoutComponent implements OnInit {
   public workoutService = inject(WorkoutService);
   private alertService = inject(AlertService);
   protected translate = inject(TranslateService);
+
+  @ViewChild(ShatterableDirective) shatterable?: ShatterableDirective;
+
 
   // Signal to hold the name of the paused routine for display
   pausedRoutineName = signal<string>('');
@@ -64,7 +68,12 @@ export class PausedWorkoutComponent implements OnInit {
     );
 
     if (confirmation && confirmation.data) {
-      this.workoutService.removePausedWorkout();
+      // Trigger the shatter animation
+      this.shatterable?.shatter();
+      // Optionally wait for animation, then remove paused workout
+      setTimeout(() => {
+        this.workoutService.removePausedWorkout();
+      }, 150); // Match the animation duration
     }
   }
 }
