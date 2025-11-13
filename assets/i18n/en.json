@@ -60,7 +60,7 @@
     "readyMessage": "Ready to crush your goals today?",
     "quickActionsTitle": "Quick Actions",
     "appVersion": "AppVersion:",
-    "pausedWorkout":{
+    "pausedWorkout": {
       "discardPromptTitle": "Discard Current Workout?",
       "discardPromptMessage": "You have a paused workout session. Do you want to discard it and start a new one?"
     }
@@ -275,6 +275,7 @@
     }
   },
   "common": {
+    "loading": "Loading...",
     "on": "On",
     "off": "Off",
     "premium": "PREMIUM",
@@ -290,7 +291,8 @@
     "min": "Min",
     "max": "Max",
     "actionCompleted": "Action completed",
-    "invalidData": "Invalid data"
+    "invalidData": "Invalid data",
+    "ok": "OK"
   },
   "toasts": {
     "statusUpdated": "Status Updated",
@@ -309,7 +311,9 @@
     "languageSet": "Language set to {{language}}",
     "routinesDisabledOnImport": "Import detected {{count}} enabled routines. Free users can only have 4 enabled routines. All imported routines have been disabled. You can enable them after upgrading to Premium.",
     "routinesDisabledTitle": "Routines Disabled",
-    "trueGymModeNoMetrics": "No more metrics can be added in True GYM mode."
+    "trueGymModeNoMetrics": "No more metrics can be added in True GYM mode.",
+    "allMetricsAdded": "All available metrics are already added to this set",
+    "fieldRemovedFromSet": "'{{fieldToRemove}}' field removed from set #{{setIndex}}."
   },
   "alerts": {
     "playerModeChangeDisabledTitle": "Action Disabled",
@@ -865,7 +869,11 @@
       "invalidValue": "Invalid value provided.",
       "fieldRemoved": "'{{field}}' field removed from set #{{number}}.",
       "enterNumericRepsError": "You must change the actual reps value before setting the set as completed",
-      "enterNumericWeightError": "You must change the actual weight value before setting the set as completed"
+      "enterNumericWeightError": "You must change the actual weight value before setting the set as completed",
+      "progressiveOverloadApplied": "Progressive Overload applied to {{name}}!",
+    "progressiveOverloadAppliedMultiple": "Progressive Overload applied to: {{names}}",
+    "progressiveOverloadAppliedMultipleTitle": "Progressive Overload Applied",
+    "progressiveOverloadAppliedMultipleMessage": "The following exercises have been auto-incremented:"
     },
     "alerts": {
       "toughWorkoutTitle": "Last Workout Was Tough",
@@ -928,7 +936,11 @@
       "manualRestMessage": "Set rest seconds",
       "manualRestTitle": "Custom rest timer",
       "chooseTimerMessage": "Choose the timer type",
-      "chooseTimerTitle": "Timer type"
+      "chooseTimerTitle": "Timer type",
+      "prefillTitle": "Prefill with Previous Performance?",
+    "prefillMessage": "Historical data was found for some of the exercises in this routine. Do you want to use the most recently logged values or keep the original targets?",
+      "useHistorical": "Previous Values",
+      "useOriginal": "Routine Targets"
     },
     "actions": {
       "pause": "PAUSE SESSION",
@@ -1067,6 +1079,8 @@
       "custom": "Custom"
     },
     "routineBuilder": {
+      "nameWizardMsg":"Enter a name for your new routine.",
+      "goalWizardMsg": "Select the main goal for this routine",
       "nameLabel": "Routine Name",
       "namePlaceholder": "Routine name",
       "nameRequired": "Routine name is required",
@@ -1950,6 +1964,8 @@
     "rounds": "rounds",
     "round": "Round",
     "reps": "reps",
+    "distance": "distance",
+    "duration": "duration",
     "table": {
       "set": "Set",
       "planned": "Planned",
@@ -2345,11 +2361,16 @@
       "removeField": {
         "title": "Remove Field from Exercise",
         "message": "Which metric would you like to remove from this set of this exercise?",
-        "noFieldsToast": "No fields can be removed from this set."
+        "noFieldsToast": "No fields can be removed from this set.",
+        "atLeastOneMetric": "At least one metric is required"
       }
     },
     "prompts": {
       "addExerciseTitle": "Add {{exerciseName}}",
+      "addCancelled": "Exercise addition cancelled.",
+      "selectMetricsTitle": "Select Metrics",
+      "selectMetricsMessage": "Which metrics do you want to track for this exercise?",
+      "metricsSelectionCancelled": "No metrics selected.",
       "labels": {
         "exerciseName": "Exercise name",
         "numSets": "Number of Sets",
@@ -2357,7 +2378,12 @@
         "targetDistance": "Target Distance ({{unit}})",
         "targetDuration": "Target Duration (seconds)",
         "numReps": "Number of Reps",
-        "targetWeight": "Target Weight ({{unit}})"
+        "targetWeight": "Target Weight ({{unit}})",
+        "includeReps": "Track Reps",
+        "includeWeight": "Track Weight",
+        "includeDistance": "Track Distance",
+        "includeDuration": "Track Duration",
+        "includeRest": "Track Rest"
       },
       "createSuperset": {
         "title": "Create Superset",
@@ -2766,5 +2792,11 @@
     "feelingMax": "Stronger than ever",
     "skip": "SKIP",
     "save": "SAVE RATING"
+  },
+  "alertComponent": {
+    "fillField": "Please fill in the '{{field}}' field.",
+    "invalidNumber": "Please enter a valid number for '{{field}}'.",
+    "minNumber": "The value for '{{field}}' must be at least {{min}}.",
+    "maxNumber": "The value for '{{field}}' must not exceed {{max}}."
   }
 }
