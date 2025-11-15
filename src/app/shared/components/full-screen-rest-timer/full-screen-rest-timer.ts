@@ -105,7 +105,7 @@ export class FullScreenRestTimerComponent implements OnDestroy, AfterViewInit {
     return `.${tenths}`;
   });
 
- constructor(@Inject(DOCUMENT) private document: Document) {
+  constructor(@Inject(DOCUMENT) private document: Document) {
     // This single, clean effect manages everything.
     effect((onCleanup) => {
       // It correctly reads isVisible() and mode() as dependencies.
@@ -155,12 +155,14 @@ export class FullScreenRestTimerComponent implements OnDestroy, AfterViewInit {
       const now = Date.now();
       const remainingMilliseconds = Math.max(0, this.targetEndTime - now);
       this.remainingTime.set(remainingMilliseconds / 1000);
-      
+
       // Manually trigger change detection. This is the safest way with OnPush and external timers.
       this.cdr.detectChanges();
 
       if (this.remainingTime() <= 0) {
         this.finishAndHideTimer();
+      } else {
+        this.playCountdownSound(this.remainingTime());
       }
     });
   }
@@ -173,7 +175,7 @@ export class FullScreenRestTimerComponent implements OnDestroy, AfterViewInit {
       const now = Date.now();
       const elapsedMilliseconds = now - this.timerStartTime;
       this.elapsedTime.set(elapsedMilliseconds / 1000);
-      
+
       // Manually trigger change detection.
       this.cdr.detectChanges();
     });
@@ -227,6 +229,19 @@ export class FullScreenRestTimerComponent implements OnDestroy, AfterViewInit {
   private skipTimer(): void {
     this.stopAllTimers();
     this.timerSkipped.emit(this.remainingTime());
+  }
+
+  private playCountdownSound(currentRemaining: number): void {
+    if (
+      this.appSettingsService.enableTimerCountdownSound() &&
+      currentRemaining <= this.appSettingsService.countdownSoundSeconds()
+    ) {
+      const wholeSeconds = Math.ceil(currentRemaining);
+      if (this.lastBeepSecond !== wholeSeconds && wholeSeconds > 0) {
+        this.audioService.playSound(AUDIO_TYPES.countdown);
+        this.lastBeepSecond = wholeSeconds;
+      }
+    }
   }
 
   ngOnDestroy(): void {

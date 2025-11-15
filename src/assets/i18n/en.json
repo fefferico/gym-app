@@ -292,7 +292,8 @@
     "max": "Max",
     "actionCompleted": "Action completed",
     "invalidData": "Invalid data",
-    "ok": "OK"
+    "ok": "OK",
+    "removed": "removed"
   },
   "toasts": {
     "statusUpdated": "Status Updated",

@@ -759,7 +759,7 @@ export class WorkoutService {
     ];
   
     const selectedMetrics = await this.alertService.showPromptDialog(
-      this.translate.instant('workoutService.prompts.selectMetricsTitle'),
+      this.translate.instant('workoutService.prompts.selectMetricsTitle') + ' - ' + selectedExercise.name,
       this.translate.instant('workoutService.prompts.selectMetricsMessage'),
       metricChoices
     );

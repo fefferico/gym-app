@@ -1103,6 +1103,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
             // --- SCROLL LOGIC ---
             // If sets HAVE been logged, find the first uncompleted one to scroll to.
+            if (false){
+              
+            }
             if (hasLoggedSetsForThisExercise) {
               if (this.isSupersetStart(index)) {
                 const targetRoundIndex = exercise.sets.findIndex((set, roundIdx) => !this.isRoundCompleted(index, roundIdx));
@@ -1696,7 +1699,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     });
 
     this._prefillPerformanceInputs();
-    this.toastService.info(`${exerciseToRemove.exerciseName} removed`);
+    this.toastService.info(`${exerciseToRemove.exerciseName} ${this.translate.instant('common.removed')}`);
     this.audioService.playSound(AUDIO_TYPES.whoosh);
   }
 
@@ -3597,7 +3600,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           userInputs.actualWeight = { type: WeightTargetType.bodyweight } as WeightTarget;
         }
       }
-      if (!isBodyweightTarget && (!userInputs.actualWeight || getWeightValue(userInputs.actualWeight) === 0)) {
+      if (plannedSet.targetWeight && !isBodyweightTarget && (!userInputs.actualWeight || getWeightValue(userInputs.actualWeight) === 0)) {
         this.toastService.info(
           this.translate.instant('compactPlayer.toasts.enterNumericWeightError', {
             weightType: this.workoutUtilsService.weightTargetAsString(plannedSet.targetWeight)
@@ -3736,12 +3739,17 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return this.workoutUtilsService.getVisibleSetColumns(routine, exIndex, setIndex);
   }
 
-  public getFieldsForSet(exIndex: number, setIndex: number): { visible: string[], hidden: string[] } {
+  public getFieldsForSet(exIndex: number, setIndex: number, restExcluded?: boolean): { visible: string[], hidden: string[] } {
     const routine = this.routine();
     if (!routine) return this.workoutUtilsService.defaultHiddenFields();
     // Delegate to the existing service method
-    return this.workoutUtilsService.getFieldsForSet(routine, exIndex, setIndex);
+    const result = this.workoutUtilsService.getFieldsForSet(routine, exIndex, setIndex);
+    if (restExcluded){
+      result.visible = result.visible.filter(field => field !== METRIC.rest )
+    }
+    return result;
   }
+  
 
   public canAddField(exIndex: number, setIndex: number): boolean {
     const fields = this.getFieldsForSet(exIndex, setIndex);
@@ -5213,4 +5221,39 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       return updated;
     });
   }
+
+  isExerciseCardioOnly(exerciseId: string): boolean {
+    // This method should be async or use a callback to handle the Observable.
+    // Here's a synchronous fallback using availableExercises if possible:
+    if (!exerciseId) return false;
+    const exerciseDetails = this.availableExercises.find(e => e.id === exerciseId);
+    if (exerciseDetails && exerciseDetails.category) {
+      return exerciseDetails.category === 'cardio';
+    }
+    return false;
+  }
+
+  showExerciseSelectionModal = signal(false);
+        async onAddExercisesSelected(exercises: Exercise[]) {
+      this.showExerciseSelectionModal.set(false);
+    
+      for (const exercise of exercises) {
+        // Use the same logic as selectExerciseToAddFromModal
+        const log = this.currentWorkoutLog();
+        const allLoggedExercises = log.exercises || [];
+        const lastLoggedExercise = allLoggedExercises.length > 0 ? allLoggedExercises[allLoggedExercises.length - 1] : null;
+        const lastLoggedSet = lastLoggedExercise && lastLoggedExercise.sets.length > 0 ? lastLoggedExercise.sets[lastLoggedExercise.sets.length - 1] : null;
+    
+        const newWorkoutExercise = await this.workoutService.promptAndCreateWorkoutExercise(exercise, lastLoggedSet);
+    
+        if (newWorkoutExercise) {
+          if (exercise.id.startsWith('custom-adhoc-ex-')) {
+            const newExerciseToBeSaved = this.exerciseService.mapWorkoutExerciseToExercise(newWorkoutExercise, exercise);
+            this.exerciseService.addExercise(newExerciseToBeSaved);
+          }
+          this.addExerciseToRoutine(newWorkoutExercise);
+        }
+      }
+    }
+
 }

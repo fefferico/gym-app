@@ -279,7 +279,7 @@
                           </span>
                         </ng-container>
                         <p *ngIf="isSetWarmup(exIndex, setIndex)" class="font-bold">
-                          <app-icon name="flame" class="h-4 w-4 inline-block mr-1"></app-icon> 
+                          <app-icon name="flame" class="h-4 w-4 inline-block mr-1"></app-icon>
                           {{ 'compactPlayer.warmupSet' | translate }}
                         </p>
                       </div>
@@ -292,7 +292,7 @@
                         <p *ngIf="isSetCompleted(exIndex, setIndex)" class="italic font-bold">{{
                           'compactPlayer.markAsUndone' | translate }}</p>
                         <p *ngIf="isSetWarmup(exIndex, setIndex)" class="font-bold">
-                          <app-icon name="flame" class="h-4 w-4 inline-block mr-1"></app-icon> 
+                          <app-icon name="flame" class="h-4 w-4 inline-block mr-1"></app-icon>
                           {{ 'compactPlayer.warmupSet' | translate }}
                         </p>
                       </div>
@@ -414,8 +414,8 @@
                       </div>
 
                       <!-- Inputs Grid -->
-                      <div [class]="(getTrueGymMode() && isCardioByIndex(exIndex))
-    ? 'grid gap-x-4 gap-y-2 p-3 grid-cols-1'
+                      <div [class]="getFieldsForSet(exIndex, setIndex, true).visible.length === 1 ?
+    'flex justify-center'
     : 'grid gap-x-4 gap-y-2 p-1 grid-cols-2'" [class.disabled-div-lower-opacity]="isSetCompleted(exIndex, setIndex)">
                         <ng-container *ngIf="getFieldsForSet(exIndex, setIndex).visible as visibleFields">
                           <!-- Loop through the visible fields in their defined order -->
@@ -497,10 +497,10 @@
 
                 </ng-container>
                 <!-- Col 2: Set +/- Buttons STANDAR SET -->
-                <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
+                <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10 pt-3">
                   <div
-                    class="flex w-fit items-center justify-center gap-2 bg-gray-800 dark:bg-gray-800 backdrop-blur-sm border-4 border-gray-700 py-1 px-3 rounded-full">
-                    <label class="text-sm font-medium text-gray-300">{{'compactPlayer.setLabel' | translate}}:</label>
+                    class="flex w-fit items-center justify-center gap-2 bg-gray-200 dark:bg-gray-800 backdrop-blur-sm border-4 border-gray-300 dark:border-gray-700 py-1 px-3 rounded-full">
+                    <label class="text-sm font-medium text-gray-800 dark:text-gray-300">{{'compactPlayer.setLabel' | translate}}:</label>
                     <button appBumpClick type="button" (click)="removeSet(exIndex, -1)"
                       class="p-1.5 rounded-full bg-red-500/80 dark:bg-red-500/80 hover:bg-red-500 text-white disabled:opacity-50 flex items-center"
                       [aria-label]="'compactPlayer.removeLastSet' | translate">
@@ -767,9 +767,9 @@
   </div>
 
   <app-exercise-selection-modal [isOpen]="isAddExerciseModalOpen()" [(searchTerm)]="modalSearchTerm"
-    [title]="'compactPlayer.addExerciseTitle' | translate" [exercises]="availableExercises"
+    [title]="'compactPlayer.addExerciseTitle' | translate" [isMultiSelect]="true" [exercises]="availableExercises"
     [showCreateCustomLink]="true" itemIconName="plus-circle" itemIconClass="text-green-500"
-    (exerciseSelected)="selectExerciseToAddFromModal($event)" (createCustomClicked)="handleTrulyCustomExerciseEntry()"
+    (exercisesSelected)="onAddExercisesSelected($event)" (createCustomClicked)="handleTrulyCustomExerciseEntry()"
     (close)="closeAddExerciseModal()">
   </app-exercise-selection-modal>
 
@@ -975,11 +975,9 @@
         {{ 'compactPlayer.tempoLabel' | translate }}
       </label>
     </div>
-    <input type="text"
-          [ngModel]="getMetricInputValue()(exIndex, setIndex, metricEnum.tempo)"
-          (ngModelChange)="setMetricInputValue(exIndex, setIndex, metricEnum.tempo, $event)"
-          placeholder="e.g. 4010"
-          class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
+    <input type="text" [ngModel]="getMetricInputValue()(exIndex, setIndex, metricEnum.tempo)"
+      (ngModelChange)="setMetricInputValue(exIndex, setIndex, metricEnum.tempo, $event)" placeholder="e.g. 4010"
+      class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
     <div *ngIf="getShowMetricTarget() && getSetTargetDisplay(exIndex, setIndex, metricEnum.tempo) as target"
       class="target-class text-xs">
       <span class="flex items-center justify-center">
