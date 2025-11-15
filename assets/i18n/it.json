@@ -244,7 +244,8 @@
     "max": "Max",
     "actionCompleted": "Operazione completata",
     "invalidData": "Dati errati",
-    "ok": "OK"
+    "ok": "OK",
+    "removed": "rimosso"
   },
   "toasts": {
     "statusUpdated": "Stato Aggiornato",
