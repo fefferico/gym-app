@@ -224,23 +224,23 @@
       "name": "Bûcheron à la poulie (de haut en bas ou de bas en haut)",
       "description": "Un exercice de rotation du tronc engageant les obliques et l'abdomen transverse."
     },
-    "resistance-band-bicep-curl": {
+    "resistanceBand-bicep-curl": {
       "name": "Curl biceps avec élastique",
       "description": "Curls pour les biceps effectués avec une bande de résistance, offrant une résistance variable."
     },
-    "resistance-band-tricep-pushdown": {
+    "resistanceBand-tricep-pushdown": {
       "name": "Extension triceps avec élastique",
       "description": "Extensions pour les triceps utilisant une bande de résistance ancrée en hauteur ou tenue."
     },
-    "resistance-band-pull-apart": {
+    "resistanceBand-pull-apart": {
       "name": "Écarté avec élastique (Pull-Apart)",
       "description": "Un excellent exercice pour la santé des épaules, ciblant les deltoïdes postérieurs et les muscles du haut du dos."
     },
-    "resistance-band-squat": {
+    "resistanceBand-squat": {
       "name": "Squat avec élastique",
       "description": "Squats effectués avec une bande de résistance sous les pieds et passée sur les épaules ou tenue, ajoutant une résistance."
     },
-    "resistance-band-glute-bridge": {
+    "resistanceBand-glute-bridge": {
       "name": "Pont fessier avec élastique",
       "description": "Ponts fessiers avec une bande de résistance autour des cuisses pour une activation accrue du moyen fessier."
     },
@@ -352,19 +352,19 @@
       "name": "Rotation du buste à la poulie (debout)",
       "description": "Un exercice pour le tronc ciblant les obliques par un mouvement de rotation contre la résistance d'un câble."
     },
-    "resistance-band-chest-press": {
+    "resistanceBand-chest-press": {
       "name": "Développé poitrine avec élastique",
       "description": "Une variante du développé poitrine utilisant des bandes de résistance, peut se faire debout ou allongé."
     },
-    "resistance-band-row": {
+    "resistanceBand-row": {
       "name": "Rowing avec élastique (assis ou debout)",
       "description": "Cible les muscles du dos en utilisant une bande de résistance, qui peut être ancrée ou tenue."
     },
-    "resistance-band-deadlift": {
+    "resistanceBand-deadlift": {
       "name": "Soulevé de terre avec élastique",
       "description": "Une variante du soulevé de terre utilisant des bandes de résistance, idéale pour apprendre la forme ou pour les jours plus légers."
     },
-    "resistance-band-lateral-walk": {
+    "resistanceBand-lateral-walk": {
       "name": "Marche latérale avec élastique (marche du crabe)",
       "description": "Cible le moyen fessier et les abducteurs de la hanche, effectuée en marchant de côté avec une bande autour des chevilles ou des genoux."
     },
@@ -685,7 +685,7 @@
       "name": "Curl concentré avec haltère",
       "description": "Un curl biceps assis où le coude est calé contre l'intérieur de la cuisse pour isoler le muscle biceps."
     },
-    "dumbbell-incline-bench-press": {
+    "dumbbell-inclineBench-press": {
       "name": "Développé incliné avec haltères",
       "description": "Cible le haut de la poitrine, les épaules et les triceps en poussant des haltères sur un banc incliné."
     },

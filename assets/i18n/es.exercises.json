@@ -224,23 +224,23 @@
       "name": "Leñador en polea (de alto a bajo o de bajo a alto)",
       "description": "Un ejercicio de rotación del core que involucra los oblicuos y el abdomen transverso."
     },
-    "resistance-band-bicep-curl": {
+    "resistanceBand-bicep-curl": {
       "name": "Curl de bíceps con banda de resistencia",
       "description": "Curls de bíceps realizados con una banda de resistencia, que proporciona resistencia variable."
     },
-    "resistance-band-tricep-pushdown": {
+    "resistanceBand-tricep-pushdown": {
       "name": "Pushdown de tríceps con banda de resistencia",
       "description": "Pushdowns de tríceps usando una banda de resistencia anclada por encima o sostenida."
     },
-    "resistance-band-pull-apart": {
+    "resistanceBand-pull-apart": {
       "name": "Pull-Apart con banda de resistencia",
       "description": "Un gran ejercicio para la salud de los hombros, que se enfoca en los deltoides posteriores y los músculos de la espalda alta."
     },
-    "resistance-band-squat": {
+    "resistanceBand-squat": {
       "name": "Sentadilla con banda de resistencia",
       "description": "Sentadillas realizadas con una banda de resistencia bajo los pies y sobre los hombros o sostenida, añadiendo resistencia."
     },
-    "resistance-band-glute-bridge": {
+    "resistanceBand-glute-bridge": {
       "name": "Puente de glúteos con banda de resistencia",
       "description": "Puentes de glúteos con una banda de resistencia alrededor de los muslos para una mayor activación del glúteo medio."
     },
@@ -352,19 +352,19 @@
       "name": "Giro de torso en polea (de pie)",
       "description": "Un ejercicio de core que se enfoca en los oblicuos a través del movimiento de rotación contra la resistencia de la polea."
     },
-    "resistance-band-chest-press": {
+    "resistanceBand-chest-press": {
       "name": "Press de pecho con banda de resistencia",
       "description": "Una variación del press de pecho usando bandas de resistencia, se puede hacer de pie o acostado."
     },
-    "resistance-band-row": {
+    "resistanceBand-row": {
       "name": "Remo con banda de resistencia (sentado o de pie)",
       "description": "Se enfoca en los músculos de la espalda usando una banda de resistencia, puede ser anclada o sostenida."
     },
-    "resistance-band-deadlift": {
+    "resistanceBand-deadlift": {
       "name": "Peso muerto con banda de resistencia",
       "description": "Una variación de peso muerto usando bandas de resistencia, buena para aprender la forma o para días más ligeros."
     },
-    "resistance-band-lateral-walk": {
+    "resistanceBand-lateral-walk": {
       "name": "Caminata lateral con banda de resistencia (Paso del cangrejo)",
       "description": "Se enfoca en el glúteo medio y los abductores de la cadera, realizado caminando de lado con una banda alrededor de los tobillos o las rodillas."
     },
@@ -686,7 +686,7 @@
       "name": "Curl de Concentración con Mancuerna",
       "description": "Un curl de bíceps sentado donde el codo se apoya contra la parte interna del muslo para aislar el músculo bíceps."
     },
-    "dumbbell-incline-bench-press": {
+    "dumbbell-inclineBench-press": {
       "name": "Press de Banca Inclinado con Mancuernas",
       "description": "Se enfoca en la parte superior del pecho, los hombros y los tríceps al presionar mancuernas en un banco inclinado."
     },

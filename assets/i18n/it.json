@@ -8,7 +8,7 @@
   "GENERATE_CUSTOM_WORKOUT": "GENERA SCHEDA",
   "SURPRISE_ME": "Sorprendimi!",
   "home": {
-    "welcomeBack": "Bentornato, {{name}}!",
+    "welcomeBack": "Bentornato, {{name}}",
     "readyMessage": "Pronto a superare i tuoi obiettivi oggi?",
     "quickActionsTitle": "Azioni Rapide",
     "appVersion": "Versione App:",
@@ -58,7 +58,7 @@
     "weightToolkitTitle": "Toolkit Pesi",
     "weightToolkitDescription": "Un toolkit completo per il sollevamento. Calcola dischi, percentuali, 1RM, RPE e punteggi ufficiali.",
     "exerciseLibraryTitle": "Biblioteca Esercizi",
-    "exerciseLibraryDescription": "Sfoglia e cerca una biblioteca completa di esercizi"
+    "exerciseLibraryDescription": "Sfoglia la libreria degli esercizi e dei complex"
   },
   "settings": {
     "title": "Profilo & Impostazioni",
@@ -871,7 +871,7 @@
       "fieldRemoved": "Campo '{{field}}' rimosso dalla serie #{{number}}.",
       "enterNumericRepsError": "Devi impostare il numero effettuato di ripetizioni prima di poter completare la serie",
       "enterNumericWeightError": "Devi modificare il valore effettivo del peso prima di impostare la serie come completata",
-      "progressiveOverloadApplied": "Progressive Overload applicato a {{name}}!",
+      "progressiveOverloadApplied": "Progressive Overload applicato a {{name}}",
     "progressiveOverloadAppliedMultiple": "Progressive Overload applicato a: {{names}}",
     "progressiveOverloadAppliedMultipleTitle": "Progressive Overload Applicato",
     "progressiveOverloadAppliedMultipleMessage": "I seguenti esercizi sono stati incrementati automaticamente:"
@@ -1143,7 +1143,21 @@
       "roundsLabel": "({{count}} TURNO)",
       "roundLabel": "({{count}} TURNO)",
       "emomInfo": "EMOM{{rounds}} - Ogni {{time}}s",
-      "supersetInfo": "SUPERSET{{rounds}}"
+      "supersetInfo": "SUPERSET{{rounds}}",
+      "selectGroupType": "Seleziona tipo di gruppo",
+      "howToGroup": "Come vuoi raggruppare questi esercizi?",
+      "groupingCancelled": "Raggruppamento annullato.",
+      "emomTimePerRound": "Tempo per round (s)",
+      "numRounds": "Numero di round (serie)",
+      "setEmomDetails": "Imposta dettagli EMOM",
+      "configureEmom": "Configura i parametri EMOM.",
+      "setSupersetRounds": "Imposta round del superset",
+      "howManyRounds": "Quanti round (serie) deve avere questo superset?",
+      "supersetCreationCancelled": "Creazione superset annullata.",
+      "setExerciseTargets": "Imposta obiettivi esercizio",
+      "enterTargets": "Inserisci le ripetizioni{{weight}} per \"{{exerciseName}}\".",
+      "emomCreated": "EMOM creato per {{rounds}} round!",
+      "supersetCreated": "Superset creato con {{rounds}} round!"
     },
     "exercise": {
       "selectPlaceholder": "Seleziona Esercizio",
@@ -1324,7 +1338,11 @@
       "addFieldMessage": "Quale metrica vuoi aggiungere a tutte le serie di questo esercizio?",
       "setTargetTitle": "Imposta Target {{field}}",
       "setTargetMessage": "Inserisci il valore target che vuoi applicare alla serie corrente per questo esercizio.",
-      "applyTarget": "Applica Target"
+      "applyTarget": "Applica Target",
+      "includeInSupersetTitle": "Includi nel Superset",
+      "includeInSupersetMessage": "Includere \"{{exerciseName}}\" nel nuovo superset?",
+      "yes": "Sì",
+      "no": "No"
     },
     "actions": {
       "edit": "MODIFICA",
@@ -2141,7 +2159,7 @@
       "freeWeights": "Pesi Liberi",
       "barbells": "Bilancieri",
       "dumbbells": "Manubri",
-      "bodyweight-calisthenics": "Corpo Libero / Calistenia",
+      "bodyweightCalisthenics": "Corpo Libero / Calistenia",
       "cables": "Cavi",
       "kettlebells": "Kettlebell",
       "bands": "Bande Elastiche",
@@ -2202,7 +2220,7 @@
     "bulgarianBag": "Bulgarian Bag",
     "steelMace": "Steel Mace / Macebell",
     "steelClubs": "Steel Clubs / Clubbell",
-    "indianClubs": "Indian Clubs",
+    "indianClub": "indianClub",
     "vipr": "ViPR",
     "doorway": "Stipite della Porta",
     "anchorPoint": "Punto di Ancoraggio",
@@ -2394,6 +2412,7 @@
     },
     "prompts": {
       "addExerciseTitle": "Aggiungi {{exerciseName}}",
+      "addExerciseSubtitle": "Potrai cambiare le metriche successivamente",
       "addCancelled": "Aggiunta esercizio annullata.",
       "selectMetricsTitle": "Seleziona Metriche",
       "selectMetricsMessage": "Quali metriche vuoi tracciare per questo esercizio?",
@@ -2630,7 +2649,7 @@
     }
   },
   "exerciseList": {
-    "title": "Esercizi",
+    "title": "Esercizi e Complex",
     "toggleFilters": "Mostra/Nascondi Filtri",
     "loading": "Caricamento esercizi...",
     "backToTop": "Torna su",
@@ -2717,11 +2736,11 @@
     }
   },
   "categories": {
-    "bodyweight-calisthenics": "Corpo Libero / Calistenia",
-    "rehabilitation-mobility": "Riabilitazione / Mobilità",
-    "yoga-pilates": "Yoga / Pilates",
+    "bodyweightCalisthenics": "Corpo Libero / Calistenia",
+    "rehabilitationMobility": "Riabilitazione / Mobilità",
+    "yogaPilates": "Yoga / Pilates",
     "powerlifting": "Powerlifting",
-    "olympic-weightlifting": "Sollevamento Pesi Olimpico",
+    "olympicWeightlifting": "Sollevamento Pesi Olimpico",
     "crossfit": "CrossFit",
     "dumbbells": "Manubri",
     "kettlebells": "Kettlebell",
@@ -2764,7 +2783,7 @@
     }
   },
   "weightSchemes": {
-    "exact": "Esatto",
+    "exact": "Peso esatto",
     "range": "Intervallo",
     "bodyweight": "Peso Corporeo",
     "percentage": "Percentuale",

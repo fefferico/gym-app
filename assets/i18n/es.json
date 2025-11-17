@@ -56,7 +56,7 @@
     }
   },
   "home": {
-    "welcomeBack": "¡Bienvenido de nuevo, {{name}}!",
+    "welcomeBack": "¡Bienvenido de nuevo, {{name}}",
     "readyMessage": "¿Listo para superar tus metas hoy?",
     "quickActionsTitle": "Acciones Rápidas",
     "appVersion": "Versión de la App:"

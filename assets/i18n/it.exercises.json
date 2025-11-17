@@ -224,23 +224,23 @@
       "name": "Woodchop ai cavi (dall'alto al basso o dal basso all'alto)",
       "description": "Un esercizio di rotazione del core che coinvolge gli obliqui e l'addominale trasverso."
     },
-    "resistance-band-bicep-curl": {
+    "resistanceBand-bicep-curl": {
       "name": "Curl per bicipiti con banda di resistenza",
       "description": "Curl per bicipiti eseguiti con una banda di resistenza, che fornisce una resistenza variabile."
     },
-    "resistance-band-tricep-pushdown": {
+    "resistanceBand-tricep-pushdown": {
       "name": "Pushdown per tricipiti con banda di resistenza",
       "description": "Pushdown per tricipiti utilizzando una banda di resistenza ancorata sopra la testa o tenuta in mano."
     },
-    "resistance-band-pull-apart": {
+    "resistanceBand-pull-apart": {
       "name": "Tirate con banda di resistenza",
       "description": "Un ottimo esercizio per la salute delle spalle, che mira ai deltoidi posteriori e ai muscoli della parte superiore della schiena."
     },
-    "resistance-band-squat": {
+    "resistanceBand-squat": {
       "name": "Squat con banda di resistenza",
       "description": "Squat eseguiti con una banda di resistenza sotto i piedi e avvolta sulle spalle o tenuta in mano, aggiungendo resistenza."
     },
-    "resistance-band-glute-bridge": {
+    "resistanceBand-glute-bridge": {
       "name": "Ponte per glutei con banda di resistenza",
       "description": "Ponti per glutei con una banda di resistenza intorno alle cosce per una maggiore attivazione del gluteo medio."
     },
@@ -352,19 +352,19 @@
       "name": "Torsione del busto ai cavi (in piedi)",
       "description": "Un esercizio per il core che mira agli obliqui attraverso il movimento rotatorio contro la resistenza dei cavi."
     },
-    "resistance-band-chest-press": {
+    "resistanceBand-chest-press": {
       "name": "Panca piana con banda di resistenza",
       "description": "Una variante della panca piana che utilizza bande di resistenza, può essere eseguita in piedi o sdraiati."
     },
-    "resistance-band-row": {
+    "resistanceBand-row": {
       "name": "Rematore con banda di resistenza (seduto o in piedi)",
       "description": "Mira ai muscoli della schiena utilizzando una banda di resistenza, può essere ancorata o tenuta in mano."
     },
-    "resistance-band-deadlift": {
+    "resistanceBand-deadlift": {
       "name": "Stacco da terra con banda di resistenza",
       "description": "Una variante dello stacco da terra che utilizza bande di resistenza, ottima per imparare la forma o per i giorni più leggeri."
     },
-    "resistance-band-lateral-walk": {
+    "resistanceBand-lateral-walk": {
       "name": "Camminata laterale con banda di resistenza (camminata del granchio)",
       "description": "Mira al gluteo medio e agli abduttori dell'anca, eseguita camminando lateralmente con una banda intorno alle caviglie o alle ginocchia."
     },
@@ -684,7 +684,7 @@
       "name": "Curl di Concentrazione con Manubrio",
       "description": "Un curl per bicipiti da seduti in cui il gomito è appoggiato contro l'interno coscia per isolare il muscolo bicipite."
     },
-    "dumbbell-incline-bench-press": {
+    "dumbbell-inclineBench-press": {
       "name": "Panca Inclinata con Manubri",
       "description": "Mira alla parte superiore del petto, alle spalle e ai tricipiti spingendo i manubri su una panca inclinata."
     },

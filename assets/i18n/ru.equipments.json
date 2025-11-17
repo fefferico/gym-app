@@ -43,7 +43,7 @@
         "flat-bench": "Горизонтальная скамья",
         "foam-roller": "Пенный ролик",
         "ghd": "Гиперэкстензия",
-        "gymnastic-rings": "Гимнастические кольца",
+        "gymnasticRing": "Гимнастические кольца",
         "hack-squat-machine": "Тренажер для гакк-приседаний",
         "harness-straps": "Ремни/Стропы",
         "head-harness": "Шлем для тренировки шеи",
@@ -51,7 +51,7 @@
         "hip-abduction-machine": "Тренажер для отведения бедра",
         "hip-adduction-machine": "Тренажер для приведения бедра",
         "hyperextension-bench": "Скамья для гиперэкстензии",
-        "incline-bench": "Скамья с наклоном вверх",
+        "inclineBench": "Скамья с наклоном вверх",
         "inversion-table": "Инверсионный стол",
         "jump-rope": "Скакалка",
         "keg": "Бочка",
@@ -141,7 +141,7 @@
         "medicineBall": "Медицинский мяч/слэмбол",
         "padding": "Подкладка",
         "bulgarianBag": "Болгарский мешок",
-        "indianClubs": "Индийские булавы",
+        "indianClub": "Индийские булавы",
         "vipr": "ViPR",
         "stairs": "Лестница"
     }

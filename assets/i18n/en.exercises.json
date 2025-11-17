@@ -224,23 +224,23 @@
       "name": "Cable Woodchop (High to Low or Low to High)",
       "description": "A core rotational exercise engaging the obliques and transverse abdominis."
     },
-    "resistance-band-bicep-curl": {
+    "resistanceBand-bicep-curl": {
       "name": "Resistance Band Bicep Curl",
       "description": "Bicep curls performed with a resistance band, providing variable resistance."
     },
-    "resistance-band-tricep-pushdown": {
+    "resistanceBand-tricep-pushdown": {
       "name": "Resistance Band Tricep Pushdown",
       "description": "Tricep pushdowns using a resistance band anchored overhead or held."
     },
-    "resistance-band-pull-apart": {
+    "resistanceBand-pull-apart": {
       "name": "Resistance Band Pull-Apart",
       "description": "A great exercise for shoulder health, targeting the rear deltoids and upper back muscles."
     },
-    "resistance-band-squat": {
+    "resistanceBand-squat": {
       "name": "Resistance Band Squat",
       "description": "Squats performed with a resistance band underfoot and looped over shoulders or held, adding resistance."
     },
-    "resistance-band-glute-bridge": {
+    "resistanceBand-glute-bridge": {
       "name": "Resistance Band Glute Bridge",
       "description": "Glute bridges with a resistance band around the thighs for added glute medius activation."
     },
@@ -352,19 +352,19 @@
       "name": "Cable Torso Twist (Standing)",
       "description": "A core exercise targeting the obliques through rotational movement against cable resistance."
     },
-    "resistance-band-chest-press": {
+    "resistanceBand-chest-press": {
       "name": "Resistance Band Chest Press",
       "description": "A chest press variation using resistance bands, can be done standing or lying down."
     },
-    "resistance-band-row": {
+    "resistanceBand-row": {
       "name": "Resistance Band Row (Seated or Standing)",
       "description": "Targets back muscles using a resistance band, can be anchored or held."
     },
-    "resistance-band-deadlift": {
+    "resistanceBand-deadlift": {
       "name": "Resistance Band Deadlift",
       "description": "A deadlift variation using resistance bands, good for learning form or lighter days."
     },
-    "resistance-band-lateral-walk": {
+    "resistanceBand-lateral-walk": {
       "name": "Resistance Band Lateral Walk (Crab Walk)",
       "description": "Targets the glute medius and hip abductors, performed by walking sideways with a band around ankles or knees."
     },
@@ -684,7 +684,7 @@
       "name": "Dumbbell Concentration Curl",
       "description": "A seated bicep curl where the elbow is braced against the inner thigh to isolate the bicep muscle."
     },
-    "dumbbell-incline-bench-press": {
+    "dumbbell-inclineBench-press": {
       "name": "Dumbbell Incline Bench Press",
       "description": "Targets the upper chest, shoulders, and triceps by pressing dumbbells on an incline bench."
     },

@@ -56,7 +56,7 @@
     }
   },
   "home": {
-    "welcomeBack": "Welcome Back, {{name}}!",
+    "welcomeBack": "Welcome Back, {{name}}",
     "readyMessage": "Ready to crush your goals today?",
     "quickActionsTitle": "Quick Actions",
     "appVersion": "AppVersion:",
@@ -106,7 +106,7 @@
     "weightToolkitTitle": "Weight toolkit",
     "weightToolkitDescription": "An all-in-one lifting toolkit. Instantly calculate plate math, percentages, 1RM, RPE, and official powerlifting scores",
     "exerciseLibraryTitle": "Exercise Library",
-    "exerciseLibraryDescription": "Browse and search a comprehensive library of exercises"
+    "exerciseLibraryDescription": "Browse and search a comprehensive library of exercises and complexes"
   },
   "settings": {
     "title": "Profile & Settings",
@@ -871,7 +871,7 @@
       "fieldRemoved": "'{{field}}' field removed from set #{{number}}.",
       "enterNumericRepsError": "You must change the actual reps value before setting the set as completed",
       "enterNumericWeightError": "You must change the actual weight value before setting the set as completed",
-      "progressiveOverloadApplied": "Progressive Overload applied to {{name}}!",
+      "progressiveOverloadApplied": "Progressive Overload applied to {{name}}",
     "progressiveOverloadAppliedMultiple": "Progressive Overload applied to: {{names}}",
     "progressiveOverloadAppliedMultipleTitle": "Progressive Overload Applied",
     "progressiveOverloadAppliedMultipleMessage": "The following exercises have been auto-incremented:"
@@ -1144,7 +1144,20 @@
       "roundsLabel": "({{count}} ROUNDS)",
       "roundLabel": "({{count}} ROUND)",
       "emomInfo": "EMOM{{rounds}} - Every {{time}}s",
-      "supersetInfo": "SUPERSET{{rounds}}"
+      "selectGroupType": "Select Group Type",
+      "howToGroup": "How would you like to group these exercises?",
+      "groupingCancelled": "Grouping cancelled.",
+      "emomTimePerRound": "Time per Round (s)",
+      "numRounds": "Number of Rounds (Sets)",
+      "setEmomDetails": "Set EMOM Details",
+      "configureEmom": "Configure the EMOM parameters.",
+      "setSupersetRounds": "Set Superset Rounds",
+      "howManyRounds": "How many rounds (sets) should this superset have?",
+      "supersetCreationCancelled": "Superset creation cancelled.",
+      "setExerciseTargets": "Set Exercise Targets",
+      "enterTargets": "Enter the target reps{{weight}} for \"{{exerciseName}}\".",
+      "emomCreated": "EMOM created for {{rounds}} rounds!",
+      "supersetCreated": "Superset created with {{rounds}} rounds!"
     },
     "exercise": {
       "selectPlaceholder": "Select Exercise",
@@ -1325,7 +1338,11 @@
       "addFieldMessage": "Which metric would you like to add to all sets of this exercise?",
       "setTargetTitle": "Set Target {{field}}",
       "setTargetMessage": "Enter the target value you want to apply to the current set for this exercise.",
-      "applyTarget": "Apply Target"
+      "applyTarget": "Apply Target",
+      "includeInSupersetTitle": "Include in Superset",
+      "includeInSupersetMessage": "Include \"{{exerciseName}}\" in the new superset?",
+      "yes": "Yes",
+      "no": "No"
     },
     "actions": {
       "edit": "EDIT",
@@ -2115,7 +2132,7 @@
       "freeWeights": "Free Weights",
       "barbells": "Barbells",
       "dumbbells": "Dumbbells",
-      "bodyweight-calisthenics": "Bodyweight / Calisthenics",
+      "bodyweightCalisthenics": "Bodyweight / Calisthenics",
       "cables": "Cables",
       "kettlebells": "Kettlebells",
       "bands": "Bands",
@@ -2176,7 +2193,7 @@
     "bulgarianBag": "Bulgarian Bag",
     "steelMace": "Steel Mace / Macebell",
     "steelClubs": "Steel Clubs / Clubbell",
-    "indianClubs": "Indian Clubs",
+    "indianClub": "indianClub",
     "vipr": "ViPR",
     "doorway": "Doorway",
     "anchorPoint": "Anchor Point",
@@ -2368,6 +2385,7 @@
     },
     "prompts": {
       "addExerciseTitle": "Add {{exerciseName}}",
+      "addExerciseSubtitle": "You can change the metrics later",
       "addCancelled": "Exercise addition cancelled.",
       "selectMetricsTitle": "Select Metrics",
       "selectMetricsMessage": "Which metrics do you want to track for this exercise?",
@@ -2604,7 +2622,7 @@
     }
   },
   "exerciseList": {
-    "title": "Exercises",
+    "title": "Exercises and Complexes",
     "toggleFilters": "Toggle Filters",
     "loading": "Loading exercises...",
     "backToTop": "Back to Top",
@@ -2689,11 +2707,11 @@
     }
   },
   "categories": {
-    "bodyweight-calisthenics": "Bodyweight / Calisthenics",
-    "rehabilitation-mobility": "Rehabilitation / Mobility",
-    "yoga-pilates": "Yoga / Pilates",
+    "bodyweightCalisthenics": "Bodyweight / Calisthenics",
+    "rehabilitationMobility": "Rehabilitation / Mobility",
+    "yogaPilates": "Yoga / Pilates",
     "powerlifting": "Powerlifting",
-    "olympic-weightlifting": "Olympic Weightlifting",
+    "olympicWeightlifting": "Olympic Weightlifting",
     "crossfit": "CrossFit",
     "dumbbells": "Dumbbells",
     "kettlebells": "Kettlebells",

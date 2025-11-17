@@ -224,23 +224,23 @@
             "name": "ケーブル・ウッドチョップ（ハイ・トゥ・ローまたはロー・トゥ・ハイ）",
             "description": "腹斜筋と腹横筋を鍛える体幹の回旋運動です。"
         },
-        "resistance-band-bicep-curl": {
+        "resistanceBand-bicep-curl": {
             "name": "レジスタンスバンド・バイセップスカール",
             "description": "可変抵抗を提供するレジスタンスバンドを使用して行うバイセップスカールです。"
         },
-        "resistance-band-tricep-pushdown": {
+        "resistanceBand-tricep-pushdown": {
             "name": "レジスタンスバンド・トライセプスプッシュダウン",
             "description": "頭上に固定されたまたは保持されたレジスタンスバンドを使用して行うトライセプスプッシュダウンです。"
         },
-        "resistance-band-pull-apart": {
+        "resistanceBand-pull-apart": {
             "name": "レジスタンスバンド・プルアパート",
             "description": "リアデルトイドと背中の上部の筋肉をターゲットにする、肩の健康に最適なエクササイズです。"
         },
-        "resistance-band-squat": {
+        "resistanceBand-squat": {
             "name": "レジスタンスバンド・スクワット",
             "description": "足元にレジスタンスバンドを置き、肩にかけるか保持して行うスクワットで、抵抗を加えます。"
         },
-        "resistance-band-glute-bridge": {
+        "resistanceBand-glute-bridge": {
             "name": "レジスタンスバンド・グルートブリッジ",
             "description": "中臀筋の活性化をさらに高めるために、太ももの周りにレジスタンスバンドを巻いて行うグルートブリッジです。"
         },
@@ -352,19 +352,19 @@
             "name": "ケーブル・トルソツイスト（スタンディング）",
             "description": "ケーブルの抵抗に抗して回転運動を行うことで、腹斜筋をターゲットにする体幹のエクササイズです。"
         },
-        "resistance-band-chest-press": {
+        "resistanceBand-chest-press": {
             "name": "レジスタンスバンド・チェストプレス",
             "description": "レジスタンスバンドを使用したチェストプレスのバリエーションで、立っていても横になっていても行うことができます。"
         },
-        "resistance-band-row": {
+        "resistanceBand-row": {
             "name": "レジスタンスバンド・ロウ（シーテッドまたはスタンディング）",
             "description": "レジスタンスバンドを使用して背中の筋肉をターゲットにし、固定または保持して行うことができます。"
         },
-        "resistance-band-deadlift": {
+        "resistanceBand-deadlift": {
             "name": "レジスタンスバンド・デッドリフト",
             "description": "レジスタンスバンドを使用したデッドリフトのバリエーションで、フォームの学習や軽い日に適しています。"
         },
-        "resistance-band-lateral-walk": {
+        "resistanceBand-lateral-walk": {
             "name": "レジスタンスバンド・ラテラルウォーク（クラブウォーク）",
             "description": "足首や膝の周りにバンドを巻いて横に歩くことで、中臀筋と股関節外転筋をターゲットにします。"
         },
@@ -684,7 +684,7 @@
             "name": "ダンベル・コンセントレーションカール",
             "description": "上腕二頭筋を分離するために、内腿に肘を当てて行う座った状態でのバイセップカールです。"
         },
-        "dumbbell-incline-bench-press": {
+        "dumbbell-inclineBench-press": {
             "name": "ダンベル・インクラインベンチプレス",
             "description": "インクラインベンチでダンベルをプレスすることで、胸の上部、肩、上腕三頭筋をターゲットにします。"
         },
