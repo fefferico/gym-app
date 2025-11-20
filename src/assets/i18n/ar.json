@@ -56,7 +56,7 @@
         }
     },
     "home": {
-        "welcomeBack": "مرحبًا بعودتك، {{name}}!",
+        "welcomeBack": "مرحبًا بعودتك، {{name}}",
         "readyMessage": "هل أنت مستعد لتحطيم أهدافك اليوم؟",
         "quickActionsTitle": "إجراءات سريعة",
         "appVersion": "إصدار التطبيق:"

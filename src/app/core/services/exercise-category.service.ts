@@ -61,11 +61,11 @@ const canonicalCategories = EXERCISE_CATEGORIES_DATA;
     map[cat.toLowerCase().trim()] = cat;
   });
   // Add legacy/display/alias mappings
-  map['bodyweight/calisthenics'] = 'bodyweight-calisthenics';
-  map['rehabilitation/mobility'] = 'rehabilitation-mobility';
-  map['bodyweight-calisthenics'] = 'bodyweight-calisthenics';
-  map['bodyweight'] = 'bodyweight-calisthenics';
-  map['weightlifting'] = 'olympic-weightlifting';
+  map['bodyweightCalisthenics'] = 'bodyweightCalisthenics';
+  map['rehabilitation/mobility'] = 'rehabilitationMobility';
+  map['bodyweightCalisthenics'] = 'bodyweightCalisthenics';
+  map['bodyweight'] = 'bodyweightCalisthenics';
+  map['weightlifting'] = 'olympicWeightlifting';
   map['endurance'] = 'cardio';
   // ...add more as needed
   return map;

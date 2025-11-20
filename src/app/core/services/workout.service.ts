@@ -20,7 +20,7 @@ import { SubscriptionService } from './subscription.service';
 import { TranslateService } from '@ngx-translate/core';
 import { mapLoggedSetToExerciseTargetSetParams, mapLoggedWorkoutExerciseToWorkoutExercise, mapWorkoutExerciseToLoggedWorkoutExercise } from '../models/workout-mapper';
 import { ExerciseService } from './exercise.service';
-import { compareRepsTargets, migrateSetRepsToRepsTarget, repsTypeToReps, repsTargetToExactRepsTarget, genRepsTypeFromRepsNumber, repsToExact, compareDurationTargets, compareDistanceTargets, compareWeightTargets, getDurationValue, genDurationTypeFromDurationNumber, getRestValue, weightToExact, restToExact, distanceToExact, durationToExact, getWeightValue, getDistanceValue, migrateSetWeightToWeightTarget, migrateSetDurationToDurationTarget, migrateSetDistanceToDistanceTarget, migrateSetRestToRestTarget } from './workout-helper.service';
+import { compareRepsTargets, migrateSetRepsToRepsTarget, repsTypeToReps, repsTargetToExactRepsTarget, genRepsTypeFromRepsNumber, repsToExact, compareDurationTargets, compareDistanceTargets, compareWeightTargets, getDurationValue, genDurationTypeFromDurationNumber, getRestValue, weightToExact, restToExact, distanceToExact, durationToExact, getWeightValue, getDistanceValue, migrateSetWeightToWeightTarget, migrateSetDurationToDurationTarget, migrateSetDistanceToDistanceTarget, migrateSetRestToRestTarget, getRepsValue } from './workout-helper.service';
 import { TrainingProgramService } from './training-program.service';
 
 @Injectable({
@@ -742,92 +742,127 @@ export class WorkoutService {
     return undefined;
   }
 
-    public async promptAndCreateWorkoutExercise(
+  public async promptAndCreateWorkoutExercise(
     selectedExercise: Exercise,
     lastLoggedSet: LoggedSet | null
   ): Promise<WorkoutExercise | null> {
-    const isCardioOnly = selectedExercise.category === 'cardio';
+    const isCardioKeyWords: string[] = ['run', 'jog', 'treadmill', 'walk', 'sprint'];
+    const isCardioOnly = selectedExercise.category === 'cardio' || isCardioKeyWords.some(keyword => selectedExercise.id.includes(keyword));
     const kbRelated = selectedExercise.category === 'kettlebells';
-  
+
+    let fieldOrder: METRIC[] = isCardioOnly ? [METRIC.duration, METRIC.rest] : [METRIC.reps, METRIC.weight, METRIC.rest];
+
     // 1. Ask the user which metrics to include
-    const metricChoices: AlertInput[] = [
-      { label: this.translate.instant('workoutService.prompts.labels.includeReps'), name: METRIC.reps, type: 'checkbox', value: !isCardioOnly },
-      { label: this.translate.instant('workoutService.prompts.labels.includeWeight'), name: METRIC.weight, type: 'checkbox', value: !isCardioOnly },
-      { label: this.translate.instant('workoutService.prompts.labels.includeDistance'), name: METRIC.distance, type: 'checkbox', value: isCardioOnly },
-      { label: this.translate.instant('workoutService.prompts.labels.includeDuration'), name: METRIC.duration, type: 'checkbox', value: isCardioOnly },
-      { label: this.translate.instant('workoutService.prompts.labels.includeRest'), name: METRIC.rest, type: 'checkbox', value: true }
-    ];
-  
-    const selectedMetrics = await this.alertService.showPromptDialog(
-      this.translate.instant('workoutService.prompts.selectMetricsTitle') + ' - ' + selectedExercise.name,
-      this.translate.instant('workoutService.prompts.selectMetricsMessage'),
-      metricChoices
-    );
-  
-    if (!selectedMetrics || Object.values(selectedMetrics).every(v => !v)) {
-      this.toastService.info(this.translate.instant('workoutService.prompts.metricsSelectionCancelled'), 2000);
-      return null;
-    }
-  
+    // const metricChoices: AlertInput[] = [
+    //   { label: this.translate.instant('workoutService.prompts.labels.includeReps'), name: METRIC.reps, type: 'checkbox', value: !isCardioOnly },
+    //   { label: this.translate.instant('workoutService.prompts.labels.includeWeight'), name: METRIC.weight, type: 'checkbox', value: !isCardioOnly },
+    //   { label: this.translate.instant('workoutService.prompts.labels.includeDistance'), name: METRIC.distance, type: 'checkbox', value: isCardioOnly },
+    //   { label: this.translate.instant('workoutService.prompts.labels.includeDuration'), name: METRIC.duration, type: 'checkbox', value: isCardioOnly },
+    //   { label: this.translate.instant('workoutService.prompts.labels.includeRest'), name: METRIC.rest, type: 'checkbox', value: true }
+    // ];
+
+    // const selectedMetrics = await this.alertService.showPromptDialog(
+    //   this.translate.instant('workoutService.prompts.selectMetricsTitle') + ' - ' + selectedExercise.name,
+    //   this.translate.instant('workoutService.prompts.selectMetricsMessage'),
+    //   metricChoices
+    // );
+
+    // if (!selectedMetrics || Object.values(selectedMetrics).every(v => !v)) {
+    //   this.toastService.info(this.translate.instant('workoutService.prompts.metricsSelectionCancelled'), 2000);
+    //   return null;
+    // }
+
     // 2. Build the main prompt fields based on selected metrics
     const baseParams: AlertInput[] = [
       { label: this.translate.instant('workoutService.prompts.labels.exerciseName'), name: 'name', type: 'text', value: selectedExercise.name, attributes: { disabled: true } },
       { label: this.translate.instant('workoutService.prompts.labels.numSets'), name: 'numSets', type: 'number', value: 3, attributes: { min: 1, required: true } }
     ];
-  
-    const metricInputs: AlertInput[] = [];
-    if (selectedMetrics[METRIC.reps]) {
-      metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.numReps'), name: METRIC.reps, type: 'number', value: 10, attributes: { min: 0, required: true } });
-    }
-    if (selectedMetrics[METRIC.weight]) {
-      metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.targetWeight', { unit: this.unitsService.getWeightUnitSuffix() }), name: METRIC.weight, type: 'number', value: 10, attributes: { min: 0, required: true } });
-    }
-    if (selectedMetrics[METRIC.distance]) {
-      metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.targetDistance', { unit: this.unitsService.getDistanceMeasureUnitSuffix() }), name: METRIC.distance, type: 'number', value: 1, attributes: { min: 0, required: true } });
-    }
-    if (selectedMetrics[METRIC.duration]) {
-      metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.targetDuration'), name: METRIC.duration, type: 'number', value: 60, attributes: { min: 0, required: true } });
-    }
-    if (selectedMetrics[METRIC.rest]) {
-      metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.rest'), name: METRIC.rest, type: 'number', value: 60, attributes: { min: 1, required: true } });
-    }
-  
+
+     const metricInputs: AlertInput[] = [];
+     if (fieldOrder.includes(METRIC.reps)) {
+       metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.numReps'), name: METRIC.reps, type: 'number', value: 10, attributes: { min: 0, required: true } });
+     }
+     if (fieldOrder.includes(METRIC.weight)) {
+       metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.targetWeight', { unit: this.unitsService.getWeightUnitSuffix() }), name: METRIC.weight, type: 'number', value: 10, attributes: { min: 0, required: true } });
+     }
+     if (fieldOrder.includes(METRIC.distance)) {
+       metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.targetDistance', { unit: this.unitsService.getDistanceMeasureUnitSuffix() }), name: METRIC.distance, type: 'number', value: 1, attributes: { min: 0, required: true } });
+     }
+     if (fieldOrder.includes(METRIC.duration)) {
+       metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.targetDuration'), name: METRIC.duration, type: 'number', value: 60, attributes: { min: 0, required: true } });
+     }
+     if (fieldOrder.includes(METRIC.rest)) {
+       metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.rest'), name: METRIC.rest, type: 'number', value: 60, attributes: { min: 1, required: true } });
+     }
+
     const exerciseParams = [...baseParams, ...metricInputs];
-  
+
     const exerciseData = await this.alertService.showPromptDialog(
       this.translate.instant('workoutService.prompts.addExerciseTitle', { exerciseName: selectedExercise.name }),
-      '',
+      this.translate.instant('workoutService.prompts.addExerciseSubtitle'),
       exerciseParams
     );
-  
+
     if (!exerciseData) {
       this.toastService.info(this.translate.instant('workoutService.prompts.addCancelled'), 2000);
       return null;
     }
-  
+
     const exerciseName = String(exerciseData['name']).trim() || selectedExercise.name;
     const numSets = parseInt(String(exerciseData['numSets'])) || 3;
-  
-    // 3. Patch newExerciseSets and fieldOrder based on selected metrics
-    const fieldOrder: METRIC[] = Object.keys(selectedMetrics)
-      .filter(m => selectedMetrics[m])
-      .map(m => m as METRIC);
-  
+
     const newExerciseSets: ExerciseTargetSetParams[] = [];
     for (let i = 0; i < numSets; i++) {
       const set: ExerciseTargetSetParams = {
         id: `custom-set-${uuidv4()}`,
-        fieldOrder: [...fieldOrder],
+        fieldOrder: [],
         type: 'standard'
       };
-      if (selectedMetrics[METRIC.reps]) set.targetReps = repsToExact(Number(exerciseData[METRIC.reps]) || 0);
-      if (selectedMetrics[METRIC.weight]) set.targetWeight = weightToExact(Number(exerciseData[METRIC.weight]) || 0);
-      if (selectedMetrics[METRIC.distance]) set.targetDistance = distanceToExact(Number(exerciseData[METRIC.distance]) || 0);
-      if (selectedMetrics[METRIC.duration]) set.targetDuration = durationToExact(Number(exerciseData[METRIC.duration]) || 0);
-      if (selectedMetrics[METRIC.rest]) set.targetRest = restToExact(Number(exerciseData[METRIC.rest]) || 0);
+      if (fieldOrder.indexOf(METRIC.reps) !== -1) set.targetReps = repsToExact(Number(exerciseData[METRIC.reps]) || 0);
+      if (fieldOrder.indexOf(METRIC.weight) !== -1) set.targetWeight = weightToExact(Number(exerciseData[METRIC.weight]) || 0);
+      if (fieldOrder.indexOf(METRIC.distance) !== -1) set.targetDistance = distanceToExact(Number(exerciseData[METRIC.distance]) || 0);
+      if (fieldOrder.indexOf(METRIC.duration) !== -1) set.targetDuration = durationToExact(Number(exerciseData[METRIC.duration]) || 0);
+      if (fieldOrder.indexOf(METRIC.rest) !== -1) set.targetRest = restToExact(Number(exerciseData[METRIC.rest]) || 0);
+
+      // specific checks
+      // WEIGHT CHECKS
+      if (getWeightValue(set.targetWeight) === 0){
+        set.targetWeight = { type: WeightTargetType.bodyweight }
+      }
+
+      // DISTANCE CHECKS
+      if (getDistanceValue(set.targetDistance) === 0){
+        set.targetDistance = undefined;
+        fieldOrder = fieldOrder.filter(field => field !== METRIC.distance);
+      }
+
+      // DURATION CHECKS
+      if (getDurationValue(set.targetDuration) === 0){
+        set.targetDuration = undefined;
+        fieldOrder = fieldOrder.filter(field => field !== METRIC.duration);
+      }
+
+      // REPS CHECKS
+      if (getRepsValue(set.targetReps) === 0){
+        set.targetReps = undefined;
+        fieldOrder = fieldOrder.filter(field => field !== METRIC.reps);
+      }
+
+      // REST CHECKS
+      if (getRestValue(set.targetRest) === 0){
+        set.targetRest = undefined;
+        fieldOrder = fieldOrder.filter(field => field !== METRIC.rest);
+      }
+
+      if (fieldOrder.length === 0) {
+        return null;
+      }
+
+      set.fieldOrder = [...fieldOrder];
+
       newExerciseSets.push(set);
     }
-  
+
     const newWorkoutExercise: WorkoutExercise = {
       id: `custom-exercise-${uuidv4()}`,
       exerciseId: selectedExercise.id,
@@ -838,7 +873,7 @@ export class WorkoutService {
       sessionStatus: 'pending',
       type: 'standard'
     };
-  
+
     return newWorkoutExercise;
   }
 

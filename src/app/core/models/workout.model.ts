@@ -3,6 +3,8 @@
 import { MuscleValue } from "../services/muscles-data";
 import { Exercise, ExerciseCategory } from "./exercise.model";
 import { LastPerformanceSummary, LoggedSet, LoggedWorkoutExercise } from "./workout-log.model";
+import { WorkoutSectionType } from "./workout-section-type.model";
+import { WorkoutSection } from "./workout-section.model";
 
 export enum RepsTargetType {
   "exact" = "exact",
@@ -71,7 +73,7 @@ export interface WeightTargetScheme {
 export const WEIGHT_TARGET_SCHEMES: WeightTargetScheme[] = [
   { type: WeightTargetType.exact, labelKey: 'weightSchemes.exact', isNumeric: true, availableInBuilder: true, availableInPlayer: true, availableInLogs: true },
   { type: WeightTargetType.range, labelKey: 'weightSchemes.range', isNumeric: true, availableInBuilder: true, availableInPlayer: false, availableInLogs: false },
-  { type: WeightTargetType.bodyweight, labelKey: 'weightSchemes.bodyweight', isNumeric: false, availableInBuilder: true, availableInPlayer: false, availableInLogs: true },
+  { type: WeightTargetType.bodyweight, labelKey: 'weightSchemes.bodyweight', isNumeric: false, availableInBuilder: true, availableInPlayer: true, availableInLogs: true },
   { type: WeightTargetType.percentage_1rm, labelKey: 'weightSchemes.percentage1rm', isNumeric: true, availableInBuilder: true, availableInPlayer: false, availableInLogs: false },
   // { type: WeightTargetType.rm1, labelKey: 'weightSchemes.rm1', isNumeric: true, availableInBuilder: true, availableInPlayer: false },
   // { type: WeightTargetType.rm3, labelKey: 'weightSchemes.rm3', isNumeric: true, availableInBuilder: true, availableInPlayer: false },
@@ -267,6 +269,7 @@ export interface WorkoutExercise {
   sessionStatus?: 'pending' | 'skipped' | 'do_later' | 'completed' | 'started'; // For in-session tracking
   type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | string; // More flexible
   category?: ExerciseCategory;
+  section?: WorkoutSectionType | undefined
 }
 
 export enum METRIC {
@@ -304,6 +307,7 @@ export interface Routine {
   secondaryCategory?: string; // For sub-categories, or even a different categorization axis
   tags?: string[]; // A flexible way to add specific labels like "Bodyweight", "HIIT", "Dumbbells", "Yoga" etc.
   // ==========================
+  sections?: WorkoutSection[];
 }
 
 

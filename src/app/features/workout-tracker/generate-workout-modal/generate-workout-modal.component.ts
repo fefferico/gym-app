@@ -62,7 +62,7 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
     options: WorkoutGenerationOptions = {
         duration: 45,
         goal: 'hypertrophy',
-        split: 'full-body',
+        split: "fullBody",
         targetMuscles: [],
         avoidMuscles: [],
         usePersonalGym: true,
@@ -132,7 +132,7 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
         this.options = {
             duration: 45,
             goal: 'hypertrophy',
-            split: 'full-body',
+            split: "fullBody",
             targetMuscles: [],
             avoidMuscles: [],
             usePersonalGym: true,

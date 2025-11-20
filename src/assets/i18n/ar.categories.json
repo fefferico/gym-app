@@ -1,10 +1,10 @@
 {
   "categories": {
-    "bodyweight-calisthenics": "تمارين وزن الجسم وكاليستنكس",
-    "rehabilitation-mobility": "إعادة التأهيل والحركة",
-    "yoga-pilates": "يوغا وبيلاتس",
+    "bodyweightCalisthenics": "تمارين وزن الجسم وكاليستنكس",
+    "rehabilitationMobility": "إعادة التأهيل والحركة",
+    "yogaPilates": "يوغا وبيلاتس",
     "powerlifting": "رفع الأثقال",
-    "olympic-weightlifting": "رفع الأثقال الأولمبي",
+    "olympicWeightlifting": "رفع الأثقال الأولمبي",
     "crossfit": "كروس فيت",
     "dumbbells": "دمبلز",
     "kettlebells": "كتل بيل",

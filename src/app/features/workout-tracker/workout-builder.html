@@ -328,6 +328,14 @@
                                 selectedExerciseIndicesForMultipleRemoval().length} }}
                             </button>
 
+                            <!-- NEW BUTTON: Put into section -->
+                             <button *ngIf="canRemoveSelectedExercises()" type="button"
+                                (click)="openSectionSelectionModal()"
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow-lg min-w-[100px] flex items-center justify-center">
+                                <app-icon name="bookmark" class="h-4 w-4 mr-1"></app-icon>
+                                <span>{{ 'Section' }}</span>
+                            </button>
+
                             <!-- Only one of these two buttons will ever be displayed at a time -->
                             <button *ngIf="!canUngroupSelectedExercises()" type="button"
                                 (click)="groupSelectedAsSuperset()"
@@ -351,6 +359,15 @@
                             (click)="expandExerciseCard(exIndex, $event)"
                             [title]="isEditableMode() && !shouldShowExpandedExercise(exIndex)? ('workoutBuilder.exercise.dragToReorder' | translate) : ''">
 
+                            <!-- NEW: SECTION BADGE -->
+                             <div *ngIf="getSectionBadgeInfo(exerciseControl) as sectionInfo" 
+                                  class="absolute -right-2 top-2 z-20 transform translate-x-1 -translate-y-5">
+                                <span class="text-[10px] uppercase font-black px-2 py-0.5 rounded-md text-white shadow-sm"
+                                      [ngStyle]="{'background-color': sectionInfo.color}">
+                                    {{ sectionInfo.label }}
+                                </span>
+                             </div>
+                             
                             <div #superSetControlPanel_Info
                                 *ngIf="isEditableMode() && isSuperSet(exIndex) && isFirstInSuperset(exIndex)"
                                 class="flex flex-col items-end space-y-2 flex-shrink-0 w-full sm:w-auto">
@@ -1378,7 +1395,8 @@
 <app-exercise-selection-modal [isOpen]="isExerciseModalOpen" [(searchTerm)]="modalSearchTerm" [isMultiSelect]="true"
     [title]="'workoutBuilder.modal.addTitle' | translate" [exercises]="availableExercises" itemIconName="plus-circle"
     itemIconClass="text-primary dark:text-primary-light" (exercisesSelected)="selectExercisesFromLibrary($event)"
-    (createCustomClicked)="handleTrulyCustomExerciseEntry()" (close)="closeExerciseSelectionModal()">
+    (createCustomClicked)="handleTrulyCustomExerciseEntry()" (close)="closeExerciseSelectionModal()"
+    [customPB]="context === 'modal' ? 'pb-32': ''">
 </app-exercise-selection-modal>
 
 <app-exercise-selection-modal [isOpen]="isSwitchExerciseModalOpen()" [(searchTerm)]="modalSearchTerm"

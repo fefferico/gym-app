@@ -1,13 +1,14 @@
 // src/app/core/services/stats.service.ts
 import { Injectable, inject } from '@angular/core';
 import { WorkoutLog, LoggedSet } from '../models/workout-log.model';
-import { ExerciseService } from './exercise.service'; // Assuming Exercise model is separate
+import { ExerciseService, HydratedExercise } from './exercise.service'; // Assuming Exercise model is separate
 import { parseISO, subDays, startOfWeek, format, differenceInWeeks, endOfWeek, isSameWeek, addDays } from 'date-fns'; // Add subWeeks, addWeeks, differenceInWeeks
 import { Exercise } from '../models/exercise.model';
 import { take } from 'rxjs';
 import { ActivityLog } from '../models/activity-log.model';
 import { TranslateService } from '@ngx-translate/core';
 import { getWeightValue, repsTypeToReps } from './workout-helper.service';
+import { MuscleMapService } from './muscle-map.service';
 
 // Define interfaces for StatsService return types if not already global
 export interface WeeklySummary {
@@ -44,6 +45,7 @@ export interface StreakInfo {
 export class StatsService {
   private exerciseService = inject(ExerciseService);
   private translate = inject(TranslateService);
+  private muscleService = inject(MuscleMapService);
 
   constructor() { }
 
@@ -149,9 +151,12 @@ export class StatsService {
     if (!logs || logs.length === 0) return [];
 
     const performanceMap = new Map<string, { volume: number; workoutCountSet: Set<string> }>();
-    const allExercisesFromLibrary = await new Promise<Exercise[]>(resolve => {
-      this.exerciseService.getExercises().pipe(take(1)).subscribe(exs => resolve(exs));
+    const hydratedExercises = await new Promise<HydratedExercise[]>(resolve => {
+      this.exerciseService.getHydratedExercises().pipe(take(1)).subscribe(exs => resolve(exs));
     });
+    const allExercisesFromLibrary: Exercise[] = hydratedExercises.map(ex =>
+      this.exerciseService.mapHydratedExerciseToExercise(ex)
+    );
     const exerciseMap = new Map(allExercisesFromLibrary.map(ex => [ex.id, ex]));
 
 
@@ -162,7 +167,11 @@ export class StatsService {
         if (baseExercise && baseExercise.muscleGroups) {
           const exerciseVolume = loggedEx.sets.reduce((sum, set) => sum + this.calculateSetVolume(set), 0);
           baseExercise.muscleGroups.forEach(group => {
-            const normalizedGroup = group.toLowerCase().trim();
+            if (group.includes('flexors')){
+              console.log("here")
+            }
+            
+            const normalizedGroup = this.translate.instant('muscles.' + this.muscleService.getCanonicalMuscleId(group.toLowerCase().trim()));
             if (!performanceMap.has(normalizedGroup)) {
               performanceMap.set(normalizedGroup, { volume: 0, workoutCountSet: new Set() });
             }

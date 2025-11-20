@@ -224,23 +224,23 @@
       "name": "Cable Woodchop (Holzhacken am Kabelzug)",
       "description": "Eine rotatorische Rumpfübung, die die schrägen und querverlaufenden Bauchmuskeln beansprucht."
     },
-    "resistance-band-bicep-curl": {
+    "resistanceBand-bicep-curl": {
       "name": "Bizepscurl mit Widerstandsband",
       "description": "Bizepscurls, die mit einem Widerstandsband ausgeführt werden und einen variablen Widerstand bieten."
     },
-    "resistance-band-tricep-pushdown": {
+    "resistanceBand-tricep-pushdown": {
       "name": "Trizepsdrücken mit Widerstandsband",
       "description": "Trizepsdrücken mit einem über Kopf verankerten oder gehaltenen Widerstandsband."
     },
-    "resistance-band-pull-apart": {
+    "resistanceBand-pull-apart": {
       "name": "Auseinanderziehen mit Widerstandsband",
       "description": "Eine großartige Übung für die Schultergesundheit, die auf die hinteren Deltamuskeln und die oberen Rückenmuskeln abzielt."
     },
-    "resistance-band-squat": {
+    "resistanceBand-squat": {
       "name": "Kniebeuge mit Widerstandsband",
       "description": "Kniebeugen, die mit einem Widerstandsband unter den Füßen und über die Schultern geschlungen oder gehalten ausgeführt werden, um den Widerstand zu erhöhen."
     },
-    "resistance-band-glute-bridge": {
+    "resistanceBand-glute-bridge": {
       "name": "Gesäßbrücke mit Widerstandsband",
       "description": "Gesäßbrücken mit einem Widerstandsband um die Oberschenkel für eine zusätzliche Aktivierung des Gluteus medius."
     },
@@ -352,19 +352,19 @@
       "name": "Oberkörperdrehung am Kabelzug (Stehend)",
       "description": "Eine Rumpfübung, die durch rotatorische Bewegung gegen den Kabelwiderstand auf die schrägen Bauchmuskeln abzielt."
     },
-    "resistance-band-chest-press": {
+    "resistanceBand-chest-press": {
       "name": "Brustpresse mit Widerstandsband",
       "description": "Eine Brustpressen-Variante mit Widerstandsbändern, die im Stehen oder Liegen ausgeführt werden kann."
     },
-    "resistance-band-row": {
+    "resistanceBand-row": {
       "name": "Rudern mit Widerstandsband (Sitzend oder Stehend)",
       "description": "Zielt auf die Rückenmuskulatur ab, unter Verwendung eines Widerstandsbandes, das verankert oder gehalten werden kann."
     },
-    "resistance-band-deadlift": {
+    "resistanceBand-deadlift": {
       "name": "Kreuzheben mit Widerstandsband",
       "description": "Eine Kreuzheben-Variante mit Widerstandsbändern, gut zum Erlernen der Form oder für leichtere Tage."
     },
-    "resistance-band-lateral-walk": {
+    "resistanceBand-lateral-walk": {
       "name": "Seitliches Gehen mit Widerstandsband (Crab Walk)",
       "description": "Zielt auf den Gluteus medius und die Hüftabduktoren ab, ausgeführt durch seitliches Gehen mit einem Band um die Knöchel oder Knie."
     },
@@ -686,7 +686,7 @@
     "name": "Konzentrationscurl mit Kurzhantel",
     "description": "Ein sitzender Bizepscurl, bei dem der Ellenbogen gegen die Innenseite des Oberschenkels gestützt wird, um den Bizepsmuskel zu isolieren."
   },
-  "dumbbell-incline-bench-press": {
+  "dumbbell-inclineBench-press": {
     "name": "Schrägbankdrücken mit Kurzhanteln",
     "description": "Zielt auf die obere Brust, die Schultern und den Trizeps ab, indem Kurzhanteln auf einer Schrägbank gedrückt werden."
   },

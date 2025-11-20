@@ -13954,7 +13954,7 @@
       "id": "alternating-proprioceptive-reverse-lunge",
       "name": "Alternating Proprioceptive Reverse Lunge",
       "description": "Alternating reverse lunges performed with a focus on balance and stability, potentially on an uneven surface or with an offset load.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Quadriceps",
       "muscleGroups": [
         "Quadriceps",
@@ -13988,7 +13988,7 @@
       "id": "archer-push-up",
       "name": "Archer Push-up",
       "description": "An advanced push-up variation that enhances unilateral chest and shoulder strength by shifting weight side to side.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Chest",
       "muscleGroups": [
         "Chest",
@@ -14180,7 +14180,7 @@
       ]
     },
     {
-      "id": "barbell-incline-bench-press",
+      "id": "barbell-inclineBench-press",
       "name": "Barbell Incline Bench Press",
       "description": "A compound upper body exercise that targets the upper chest, shoulders, and triceps using a barbell on an incline bench.",
       "category": "barbells",
@@ -14195,8 +14195,8 @@
         "Incline Bench"
       ],
       "imageUrls": [
-        "exercises/barbell-incline-bench-press_1.jpg",
-        "exercises/barbell-incline-bench-press_2.jpg"
+        "exercises/barbell-inclineBench-press_1.jpg",
+        "exercises/barbell-inclineBench-press_2.jpg"
       ],
       "videoUrl": "https://www.youtube.com/watch?v=s0PzXlP1l90",
       "notes": "Maintain a slight arch in your lower back. Control the eccentric phase. Do not bounce the bar off your chest.",
@@ -14282,7 +14282,7 @@
       "id": "bench-dips",
       "name": "Bench Dips (Triceps)",
       "description": "A bodyweight exercise targeting the triceps, performed using a bench or chair.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Triceps",
       "muscleGroups": [
         "Triceps",
@@ -14325,7 +14325,7 @@
       "id": "bird-dog",
       "name": "Bird Dog",
       "description": "A core and lower back stability exercise performed on hands and knees, extending opposite arm and leg.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Lower Back",
       "muscleGroups": [
         "Lower Back",
@@ -14359,7 +14359,7 @@
       "id": "bodyweight-calf-raise",
       "name": "Bodyweight Calf Raise",
       "description": "A simple yet effective bodyweight exercise to strengthen the calf muscles.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Calves",
       "muscleGroups": [
         "Calves (Gastrocnemius, Soleus)"
@@ -14374,7 +14374,7 @@
       "id": "bodyweight-squat",
       "name": "Bodyweight Squat",
       "description": "A fundamental lower body exercise engaging quads, glutes, and hamstrings without external weight.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Quadriceps",
       "muscleGroups": [
         "Quadriceps",
@@ -14394,7 +14394,7 @@
       "id": "box-jump",
       "name": "Box Jump",
       "description": "A plyometric exercise that involves jumping onto an elevated platform, developing explosive power in the lower body.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Quadriceps",
       "muscleGroups": [
         "Quadriceps",
@@ -14486,7 +14486,7 @@
       "id": "burpee",
       "name": "Burpee",
       "description": "A full-body, high-intensity exercise combining a squat, push-up, and jump.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Full Body",
       "muscleGroups": [
         "Chest",
@@ -14862,7 +14862,7 @@
       "id": "chin-up",
       "name": "Chin-up",
       "description": "A bodyweight exercise targeting the back and biceps using an underhand grip, often emphasizing biceps more than pull-ups.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Biceps",
       "muscleGroups": [
         "Lats",
@@ -14904,7 +14904,7 @@
       "id": "clapping-push-up",
       "name": "Clapping Push-up",
       "description": "A plyometric push-up that develops explosive upper body power by clapping hands mid-air.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Chest",
       "muscleGroups": [
         "Chest",
@@ -14930,7 +14930,7 @@
         "Shoulders"
       ],
       "equipmentNeeded": [
-        "Steel Clubs"
+        "steelClub"
       ],
       "imageUrls": []
     },
@@ -14948,7 +14948,7 @@
         "Forearms (Grip)"
       ],
       "equipmentNeeded": [
-        "Steel Clubs"
+        "steelClub"
       ],
       "imageUrls": []
     },
@@ -14965,7 +14965,7 @@
         "Forearms (Grip)"
       ],
       "equipmentNeeded": [
-        "Steel Clubs"
+        "steelClub"
       ],
       "imageUrls": [],
       "notes": "Focus on a smooth, fluid motion, keeping the elbow tight to the body as the club swings behind you."
@@ -14983,7 +14983,7 @@
         "Forearms (Grip)"
       ],
       "equipmentNeeded": [
-        "Steel Clubs"
+        "steelClub"
       ],
       "imageUrls": []
     },
@@ -14991,7 +14991,7 @@
       "id": "crab-walk",
       "name": "Crab Walk",
       "description": "A full-body exercise that improves shoulder stability, core strength, and coordination by walking on hands and feet.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Full Body",
       "muscleGroups": [
         "Shoulders",
@@ -15006,7 +15006,7 @@
     },
     {
       "description": "",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "muscleGroups": [],
       "primaryMuscleGroup": "",
       "imageUrls": [],
@@ -15063,7 +15063,7 @@
       "id": "decline-push-up",
       "name": "Decline Push-up",
       "description": "An increased difficulty push-up variation that targets the upper chest and shoulders by elevating the feet.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Chest",
       "muscleGroups": [
         "Upper Chest",
@@ -15079,7 +15079,7 @@
       "id": "dip-bar",
       "name": "Dip (Bar)",
       "description": "A compound bodyweight exercise primarily targeting the triceps and chest, performed on parallel bars.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Triceps",
       "muscleGroups": [
         "Triceps",
@@ -15099,7 +15099,7 @@
       "id": "dolphin-plank",
       "name": "Dolphin Plank",
       "description": "A core and shoulder stability exercise performed on forearms with hips raised, strengthening shoulders and core.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Shoulders",
       "muscleGroups": [
         "Shoulders",
@@ -16070,7 +16070,7 @@
       ]
     },
     {
-      "id": "dumbbell-incline-bench-press",
+      "id": "dumbbell-inclineBench-press",
       "name": "Dumbbell Incline Bench Press",
       "description": "A compound upper body exercise that targets the upper chest, shoulders, and triceps using dumbbells on an incline bench, allowing for a greater range of motion.",
       "category": "dumbbells",
@@ -16085,8 +16085,8 @@
         "Incline Bench"
       ],
       "imageUrls": [
-        "exercises/dumbbell-incline-bench-press_1.jpg",
-        "exercises/dumbbell-incline-bench-press_2.jpg"
+        "exercises/dumbbell-inclineBench-press_1.jpg",
+        "exercises/dumbbell-inclineBench-press_2.jpg"
       ],
       "videoUrl": "https://www.youtube.com/watch?v=0G2V_2eI-2w",
       "notes": "Focus on squeezing the chest at the top. Ensure a full range of motion. Keep elbows slightly tucked to protect shoulders.",
@@ -16416,7 +16416,7 @@
       "id": "explosive-clap-push-up",
       "name": "Explosive Clap Push-up",
       "description": "A plyometric push-up that develops explosive power by pushing off the ground to clap in mid-air.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Chest",
       "muscleGroups": [
         "Chest",
@@ -16455,7 +16455,7 @@
       "id": "frog-stand",
       "name": "Frog Stand",
       "description": "A beginner balance exercise that builds wrist, arm, and core strength necessary for handstands.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Core & Shoulders",
       "muscleGroups": [
         "Core",
@@ -16488,7 +16488,7 @@
       "id": "glute-bridge",
       "name": "Glute Bridge",
       "description": "A bodyweight exercise targeting the glutes and hamstrings by lifting the hips off the floor.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Glutes",
       "muscleGroups": [
         "Glutes",
@@ -16638,7 +16638,7 @@
       "id": "handstand-push-up",
       "name": "Handstand Push-up",
       "description": "An advanced exercise that builds shoulder, triceps, and core strength by performing a push-up while in a handstand position against a wall or free-standing.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Shoulders",
       "muscleGroups": [
         "Shoulders (Deltoids)",
@@ -16737,7 +16737,7 @@
         "Coordination"
       ],
       "equipmentNeeded": [
-        "Indian Clubs"
+        "indianClub"
       ],
       "imageUrls": []
     },
@@ -16753,7 +16753,7 @@
         "Forearms"
       ],
       "equipmentNeeded": [
-        "Indian Clubs"
+        "indianClub"
       ],
       "imageUrls": [],
       "notes": "This is a mobility drill, not a strength lift. Focus on perfect, graceful circles."
@@ -16762,7 +16762,7 @@
       "id": "inverted-row",
       "name": "Inverted Row",
       "description": "A back and biceps exercise performed underneath a bar or suspension trainer, pulling the chest towards the bar.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Back",
       "muscleGroups": [
         "Lats",
@@ -16771,7 +16771,7 @@
         "Traps"
       ],
       "equipmentNeeded": [
-        "Bar or Suspension Trainer"
+        "bar"
       ],
       "imageUrls": [
         "assets/images/exercises/inverted-row_1.jpg"
@@ -16802,7 +16802,7 @@
       "id": "jump-squat",
       "name": "Jump Squat",
       "description": "A plyometric squat that develops explosive power in the lower body.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Quadriceps",
       "muscleGroups": [
         "Quadriceps",
@@ -19012,7 +19012,7 @@
       "id": "l-sit",
       "name": "L-Sit",
       "description": "An isometric hold that develops core, hip flexors, and shoulder strength by supporting the body in an 'L' shape with hands on the ground.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Core",
       "muscleGroups": [
         "Core",
@@ -19112,7 +19112,7 @@
       "id": "leg-raises",
       "name": "Leg Raises",
       "description": "An effective core exercise that targets the lower abs by lifting legs while lying on the back.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Abs",
       "muscleGroups": [
         "Lower Abs",
@@ -19144,7 +19144,7 @@
       "id": "lunge",
       "name": "Lunge",
       "description": "A unilateral leg exercise that improves balance, stability, and strengthens quads, glutes, and hamstrings.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Quadriceps",
       "muscleGroups": [
         "Quadriceps",
@@ -19387,7 +19387,7 @@
       "id": "mountain-climbers",
       "name": "Mountain Climbers",
       "description": "A dynamic full-body exercise that builds cardio endurance, core strength, and agility, mimicking the motion of climbing a mountain.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Core",
       "muscleGroups": [
         "Core",
@@ -19405,7 +19405,7 @@
       "id": "muscle-up",
       "name": "Muscle-up",
       "description": "A challenging compound movement that combines a pull-up and a dip, requiring explosive strength and technique.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Upper Body",
       "muscleGroups": [
         "Lats",
@@ -19447,7 +19447,7 @@
       "id": "parallette-deep-push-up",
       "name": "Parallette Deep Push-up",
       "description": "A push-up performed on parallettes, allowing for an increased range of motion that provides a deeper stretch and contraction for the chest muscles.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Chest",
       "muscleGroups": [
         "Chest",
@@ -19463,7 +19463,7 @@
       "id": "parallette-l-sit",
       "name": "Parallette L-Sit",
       "description": "An isometric core exercise performed on parallettes, requiring significant strength in the abs, hip flexors, and triceps to hold the body in an 'L' shape.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Core",
       "muscleGroups": [
         "Rectus Abdominis (Abs)",
@@ -19480,7 +19480,7 @@
       "id": "parallette-shoot-through",
       "name": "Parallette Shoot-Through",
       "description": "A dynamic movement combining a push-up or support hold with swinging the legs through the parallettes into an L-Sit position, building core and upper body strength.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Core",
       "muscleGroups": [
         "Core",
@@ -19498,7 +19498,7 @@
       "id": "parallette-tuck-planche",
       "name": "Parallette Tuck Planche",
       "description": "An advanced calisthenics progression towards the full planche. It involves holding the body horizontally with tucked knees, requiring immense shoulder and straight-arm strength.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Shoulders",
       "muscleGroups": [
         "Shoulders (Anterior)",
@@ -19572,7 +19572,7 @@
       "id": "pike-push-up",
       "name": "Pike Push-up",
       "description": "Targets the shoulders and upper chest with a push-up position that emphasizes overhead pressing motion.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Shoulders",
       "muscleGroups": [
         "Shoulders (Deltoids)",
@@ -19605,7 +19605,7 @@
       "id": "pistol-squat",
       "name": "Pistol Squat",
       "description": "A challenging single-leg squat that improves balance, mobility, and leg strength.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Quadriceps",
       "muscleGroups": [
         "Quadriceps",
@@ -19622,7 +19622,7 @@
       "id": "planche",
       "name": "Planche",
       "description": "A highly advanced balance move that requires full-body strength, especially in the core, shoulders, and arms.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Core & Upper Body",
       "muscleGroups": [
         "Core",
@@ -19640,7 +19640,7 @@
       "id": "plank",
       "name": "Plank",
       "description": "An isometric core strength exercise that involves maintaining a position similar to a push-up for maximum duration.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Core",
       "muscleGroups": [
         "Core (Abs, Obliques, Lower Back)",
@@ -19658,7 +19658,7 @@
       "id": "plank-to-push-up",
       "name": "Plank to Push-up",
       "description": "A dynamic core and upper body exercise that transitions between plank and push-up positions.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Core",
       "muscleGroups": [
         "Core",
@@ -19674,7 +19674,7 @@
       "id": "proprioceptive-close-grip-push-up",
       "name": "Proprioceptive Close Grip Push Up",
       "description": "A close grip push-up performed on an unstable surface like a kettlebell to challenge stability and proprioception.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Triceps",
       "muscleGroups": [
         "Triceps",
@@ -19708,7 +19708,7 @@
       "id": "pull-up",
       "name": "Pull-up",
       "description": "An advanced bodyweight exercise that targets the back and biceps using an overhand grip.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Lats",
       "muscleGroups": [
         "Lats",
@@ -19730,7 +19730,7 @@
       "id": "push-up",
       "name": "Push-up",
       "description": "A classic bodyweight exercise that works the chest, shoulders, and triceps. Keep your body straight and core engaged.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Chest",
       "muscleGroups": [
         "Chest",
@@ -19780,7 +19780,7 @@
       ]
     },
     {
-      "id": "resistance-band-bicep-curl",
+      "id": "resistanceBand-bicep-curl",
       "name": "Resistance Band Bicep Curl",
       "description": "Bicep curls performed with a resistance band, providing variable resistance.",
       "category": "bands",
@@ -19798,7 +19798,7 @@
       ]
     },
     {
-      "id": "resistance-band-chest-press",
+      "id": "resistanceBand-chest-press",
       "name": "Resistance Band Chest Press",
       "description": "A chest press variation using resistance bands, can be done standing or lying down.",
       "category": "bands",
@@ -19818,7 +19818,7 @@
       ]
     },
     {
-      "id": "resistance-band-deadlift",
+      "id": "resistanceBand-deadlift",
       "name": "Resistance Band Deadlift",
       "description": "A deadlift variation using resistance bands, good for learning form or lighter days.",
       "category": "bands",
@@ -19840,7 +19840,7 @@
       "lastUsedLogId": "f61be36a-34b7-4a01-ae24-b9e65640c0ea"
     },
     {
-      "id": "resistance-band-glute-bridge",
+      "id": "resistanceBand-glute-bridge",
       "name": "Resistance Band Glute Bridge",
       "description": "Glute bridges with a resistance band around the thighs for added glute medius activation.",
       "category": "bands",
@@ -19859,7 +19859,7 @@
       ]
     },
     {
-      "id": "resistance-band-lateral-walk",
+      "id": "resistanceBand-lateral-walk",
       "name": "Resistance Band Lateral Walk (Crab Walk)",
       "description": "Targets the glute medius and hip abductors, performed by walking sideways with a band around ankles or knees.",
       "category": "bands",
@@ -19877,7 +19877,7 @@
       ]
     },
     {
-      "id": "resistance-band-pull-apart",
+      "id": "resistanceBand-pull-apart",
       "name": "Resistance Band Pull-Apart",
       "description": "A great exercise for shoulder health, targeting the rear deltoids and upper back muscles.",
       "category": "bands",
@@ -19896,7 +19896,7 @@
       ]
     },
     {
-      "id": "resistance-band-row",
+      "id": "resistanceBand-row",
       "name": "Resistance Band Row (Seated or Standing)",
       "description": "Targets back muscles using a resistance band, can be anchored or held.",
       "category": "bands",
@@ -19917,7 +19917,7 @@
       ]
     },
     {
-      "id": "resistance-band-squat",
+      "id": "resistanceBand-squat",
       "name": "Resistance Band Squat",
       "description": "Squats performed with a resistance band underfoot and looped over shoulders or held, adding resistance.",
       "category": "bands",
@@ -19936,7 +19936,7 @@
       ]
     },
     {
-      "id": "resistance-band-tricep-pushdown",
+      "id": "resistanceBand-tricep-pushdown",
       "name": "Resistance Band Tricep Pushdown",
       "description": "Tricep pushdowns using a resistance band anchored overhead or held.",
       "category": "bands",
@@ -19976,7 +19976,7 @@
       "id": "ring-archer-pull-up",
       "name": "Ring Archer Pull-up",
       "description": "An advanced pull-up variation that builds unilateral pulling strength by pulling towards one hand while the other arm remains straight, like an archer drawing a bow.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Lats",
       "muscleGroups": [
         "Lats",
@@ -19994,7 +19994,7 @@
       "id": "ring-dip",
       "name": "Ring Dip",
       "description": "A highly challenging dip variation on gymnastic rings that demands exceptional shoulder and elbow stability in addition to chest and tricep strength.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Triceps",
       "muscleGroups": [
         "Triceps",
@@ -20012,7 +20012,7 @@
       "id": "ring-muscle-up",
       "name": "Ring Muscle-up",
       "description": "An advanced gymnastic movement combining a powerful pull-up with a transition into a deep ring dip. Requires significant strength, skill, and coordination.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Upper Body",
       "muscleGroups": [
         "Lats",
@@ -20031,7 +20031,7 @@
       "id": "ring-row",
       "name": "Ring Row",
       "description": "A back and biceps exercise similar to an inverted row, where the instability of the rings forces greater muscle recruitment for stabilization.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Lats",
       "muscleGroups": [
         "Lats",
@@ -20049,7 +20049,7 @@
       "id": "ring-skin-the-cat",
       "name": "Ring Skin the Cat",
       "description": "A fundamental gymnastic movement for shoulder mobility and strength. It involves passing the entire body through the arms in a tuck position, ending in a passive hang.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Shoulders (stabilizers)",
       "muscleGroups": [
         "Shoulders",
@@ -20067,7 +20067,7 @@
       "id": "ring-support-hold",
       "name": "Ring Support Hold",
       "description": "A foundational isometric hold at the top of a dip position. It develops crucial stability and strength in the shoulders, chest, and triceps needed for all ring work.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Shoulders (stabilizers)",
       "muscleGroups": [
         "Shoulders",
@@ -20361,7 +20361,7 @@
       "id": "shrimp-squat",
       "name": "Shrimp Squat",
       "description": "A challenging single-leg squat variation that emphasizes balance and unilateral strength.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Quadriceps",
       "muscleGroups": [
         "Quadriceps",
@@ -20804,7 +20804,7 @@
       "id": "standing-calf-raise",
       "name": "Standing Calf Raise",
       "description": "An isolation exercise for the calf muscles (gastrocnemius and soleus), typically performed on a machine or with free weights.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Calves",
       "muscleGroups": [
         "Calves (Gastrocnemius, Soleus)"
@@ -20820,7 +20820,7 @@
       "id": "dip",
       "name": "Straight Bar Dip",
       "description": "An exercise that targets the chest, triceps, and shoulders by lowering and pressing on a straight bar or dip station.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Triceps",
       "muscleGroups": [
         "Triceps",
@@ -20874,7 +20874,7 @@
       "id": "superman-exercise",
       "name": "Superman",
       "description": "A bodyweight exercise that strengthens the lower back, glutes, and hamstrings by simultaneously lifting arms and legs off the floor while lying prone.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Lower Back",
       "muscleGroups": [
         "Lower Back (Erector Spinae)",
@@ -20891,7 +20891,7 @@
       "id": "superman",
       "name": "Superman",
       "description": "A lower back and posterior chain exercise performed lying prone, lifting arms and legs simultaneously.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Lower Back",
       "muscleGroups": [
         "Lower Back (Erector Spinae)",
@@ -20907,7 +20907,7 @@
       "id": "superman-extensions",
       "name": "Superman Extensions",
       "description": "Lying prone, lift arms, chest, and legs off the ground to strengthen lower back and posterior chain.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Lower Back",
       "muscleGroups": [
         "Lower Back",
@@ -20995,7 +20995,7 @@
       "id": "tuck-planche",
       "name": "Tuck Planche",
       "description": "An advanced balance move where knees are tucked in, challenging core and shoulder stability.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Core & Shoulders",
       "muscleGroups": [
         "Core",
@@ -21036,7 +21036,7 @@
       "id": "twist-sit-up",
       "name": "Twist Sit-up",
       "description": "A core exercise that combines a traditional sit-up with a torso twist to engage the obliques and rectus abdominis.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Core (Obliques)",
       "muscleGroups": [
         "Core (Obliques, Rectus Abdominis)",
@@ -21179,7 +21179,7 @@
       "id": "wall-handstand",
       "name": "Wall Handstand",
       "description": "A balance and shoulder stability exercise performed against a wall, building strength for free-standing handstands.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Shoulders",
       "muscleGroups": [
         "Shoulders",
@@ -21213,7 +21213,7 @@
       "id": "wall-sit",
       "name": "Wall Sit",
       "description": "An isometric hold that targets the quadriceps, glutes, and calves, simulating a seated position against a wall.",
-      "category": "bodyweight-calisthenics",
+      "category": "bodyweightCalisthenics",
       "primaryMuscleGroup": "Quadriceps",
       "muscleGroups": [
         "Quadriceps",
@@ -29737,7 +29737,7 @@
         },
         {
           "id": "20a5fabe-e8ba-427a-a51d-8ed9cf41e277",
-          "exerciseId": "barbell-incline-bench-press",
+          "exerciseId": "barbell-inclineBench-press",
           "exerciseName": "Barbell Incline Bench Press",
           "notes": "",
           "sets": [
@@ -29745,7 +29745,7 @@
               "id": "9eef1ab8-66c7-41e7-ad03-bb996159dee3",
               "exerciseName": "Barbell Incline Bench Press",
               "plannedSetId": "9eef1ab8-66c7-41e7-ad03-bb996159dee3",
-              "exerciseId": "barbell-incline-bench-press",
+              "exerciseId": "barbell-inclineBench-press",
               "type": "warmup",
               "repsLogged": 6,
               "weightLogged": 10,
@@ -29762,7 +29762,7 @@
               "id": "f59510d6-50f2-4154-9f4d-fa8caffc6117",
               "exerciseName": "Barbell Incline Bench Press",
               "plannedSetId": "9eef1ab8-66c7-41e7-ad03-bb996159dee3",
-              "exerciseId": "barbell-incline-bench-press",
+              "exerciseId": "barbell-inclineBench-press",
               "type": "standard",
               "repsLogged": 10,
               "weightLogged": 10,
@@ -29779,7 +29779,7 @@
               "id": "4a6b1b83-7c22-4369-b719-dbf93baab9da",
               "exerciseName": "Barbell Incline Bench Press",
               "plannedSetId": "9eef1ab8-66c7-41e7-ad03-bb996159dee3",
-              "exerciseId": "barbell-incline-bench-press",
+              "exerciseId": "barbell-inclineBench-press",
               "type": "standard",
               "repsLogged": 10,
               "weightLogged": 20,
@@ -29796,7 +29796,7 @@
               "id": "9777e25e-c4f8-40ae-9c7a-3322fbe06b08",
               "exerciseName": "Barbell Incline Bench Press",
               "plannedSetId": "9eef1ab8-66c7-41e7-ad03-bb996159dee3",
-              "exerciseId": "barbell-incline-bench-press",
+              "exerciseId": "barbell-inclineBench-press",
               "type": "standard",
               "repsLogged": 10,
               "weightLogged": 25,
@@ -29813,7 +29813,7 @@
               "id": "d38d7f1a-8247-4c02-a875-14791ff5135c",
               "exerciseName": "Barbell Incline Bench Press",
               "plannedSetId": "9eef1ab8-66c7-41e7-ad03-bb996159dee3",
-              "exerciseId": "barbell-incline-bench-press",
+              "exerciseId": "barbell-inclineBench-press",
               "type": "standard",
               "repsLogged": 10,
               "weightLogged": 30,
@@ -32162,7 +32162,7 @@
         },
         {
           "id": "custom-exercise-acea0447-8503-4f74-8696-442d2c923f64",
-          "exerciseId": "resistance-band-deadlift",
+          "exerciseId": "resistanceBand-deadlift",
           "exerciseName": "Resistance Band Deadlift",
           "notes": "",
           "sets": [
@@ -32170,7 +32170,7 @@
               "id": "9e5a56e4-0d30-4f79-ab26-7c7efc5c60fe",
               "exerciseName": "Resistance Band Deadlift",
               "plannedSetId": "1 of 3",
-              "exerciseId": "resistance-band-deadlift",
+              "exerciseId": "resistanceBand-deadlift",
               "type": "standard",
               "repsLogged": 10,
               "weightLogged": 10,
@@ -32187,7 +32187,7 @@
               "id": "4dffd7f3-2f9d-482e-a977-b98507e11a52",
               "exerciseName": "Resistance Band Deadlift",
               "plannedSetId": "2 of 3",
-              "exerciseId": "resistance-band-deadlift",
+              "exerciseId": "resistanceBand-deadlift",
               "type": "standard",
               "repsLogged": 10,
               "weightLogged": 10,
@@ -32204,7 +32204,7 @@
               "id": "c2d67d12-f740-4eae-8215-d32a6ed8dbf7",
               "exerciseName": "Resistance Band Deadlift",
               "plannedSetId": "3 of 3",
-              "exerciseId": "resistance-band-deadlift",
+              "exerciseId": "resistanceBand-deadlift",
               "type": "standard",
               "repsLogged": 10,
               "weightLogged": 10,
@@ -42114,12 +42114,12 @@
         ]
       }
     ],
-    "resistance-band-deadlift": [
+    "resistanceBand-deadlift": [
       {
         "id": "9e5a56e4-0d30-4f79-ab26-7c7efc5c60fe",
         "exerciseName": "Resistance Band Deadlift",
         "plannedSetId": "1 of 3",
-        "exerciseId": "resistance-band-deadlift",
+        "exerciseId": "resistanceBand-deadlift",
         "type": "standard",
         "repsLogged": 1,
         "weightLogged": 13.33,
@@ -42138,7 +42138,7 @@
         "id": "9e5a56e4-0d30-4f79-ab26-7c7efc5c60fe",
         "exerciseName": "Resistance Band Deadlift",
         "plannedSetId": "1 of 3",
-        "exerciseId": "resistance-band-deadlift",
+        "exerciseId": "resistanceBand-deadlift",
         "type": "standard",
         "repsLogged": 10,
         "weightLogged": 10,
@@ -42458,12 +42458,12 @@
         ]
       }
     ],
-    "barbell-incline-bench-press": [
+    "barbell-inclineBench-press": [
       {
         "id": "d38d7f1a-8247-4c02-a875-14791ff5135c",
         "exerciseName": "Barbell Incline Bench Press",
         "plannedSetId": "9eef1ab8-66c7-41e7-ad03-bb996159dee3",
-        "exerciseId": "barbell-incline-bench-press",
+        "exerciseId": "barbell-inclineBench-press",
         "type": "standard",
         "repsLogged": 1,
         "weightLogged": 40,
@@ -42515,7 +42515,7 @@
         "id": "d38d7f1a-8247-4c02-a875-14791ff5135c",
         "exerciseName": "Barbell Incline Bench Press",
         "plannedSetId": "9eef1ab8-66c7-41e7-ad03-bb996159dee3",
-        "exerciseId": "barbell-incline-bench-press",
+        "exerciseId": "barbell-inclineBench-press",
         "type": "standard",
         "repsLogged": 10,
         "weightLogged": 30,

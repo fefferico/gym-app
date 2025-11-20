@@ -1,4 +1,5 @@
-<div *ngIf="isOpen()" class="fixed inset-0 z-[70] flex flex-col bg-white dark:bg-gray-800 transition-opacity pb-32">
+<div *ngIf="isOpen()" class="fixed inset-0 z-[70] flex flex-col bg-white dark:bg-gray-800 transition-opacity"
+     [ngClass]="customPB()">
 
     <div (clickOutside)="onClose()"
         class="relative flex flex-col w-full h-full overflow-hidden text-left transition-all">
@@ -45,11 +46,12 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
                             'exerciseSelectionModal.muscleGroupLabel' | translate }}</label>
-                        <select (change)="onMuscleGroupChange($event)" [value]="selectedMuscleGroup() || ''"
+                        <select (change)="onMuscleGroupChange($event)" [value]="selectedMuscleGroup()?.id || ''"
                             class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200">
                             <option value="">{{ 'exerciseSelectionModal.allMuscles' | translate }}</option>
-                            <option *ngFor="let muscle of primaryMuscleGroups$ | async" [value]="muscle">{{ muscle.name|
-                                titlecase }}</option>
+                            @for (group of primaryMuscleGroups$ | async; track group.name) {
+                            <option [value]="group.id">{{ group.name | titlecase }}</option>
+                            }
                         </select>
                     </div>
                 </div>
@@ -107,7 +109,7 @@
         <!-- Scrollable Exercise List -->
         <div #scrollContainer class="flex-grow min-h-0 px-4 sm:px-6 py-2 overflow-y-auto custom-scrollbar">
             <ul class="space-y-1">
-                <ng-container *ngFor="let item of processedExercises(); let odd = odd">
+                <ng-container *ngFor="let item of processedExercises(); let odd = odd; trackBy: trackByExerciseOrHeader">
                     <!-- Case 1: Item is an Alphabetical Header -->
                     <div *ngIf="!isExercise(item)"
                         class="py-2 px-3 sticky top-0 bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-200 font-bold text-lg z-10">
@@ -118,7 +120,7 @@
                     <li appBumpClick *ngIf="isExercise(item)" (click)="onExerciseClicked(item)"
                         class="p-3 mx-1 rounded-md cursor-pointer transition-colors duration-150 ease-in-out flex justify-between items-center"
                         [ngClass]="{
-                            'selected-item': isSelected(item),
+                            'border border-4 border-primary': isSelected(item),
                             'bg-gray-200 dark:bg-gray-600': odd && !isSelected(item),
                             'bg-gray-100 dark:bg-gray-500': !odd && !isSelected(item)
                         }">
@@ -150,7 +152,7 @@
                         </div>
                         <ng-container *ngIf="isMultiSelect(); else singleSelectIcon">
                             <span *ngIf="getSelectionIndex(item) as selIdx"
-                                class="mx-2 inline-flex items-center justify-center rounded-full bg-primary text-white text-xs font-bold w-6 h-6">
+                                class="p-2 mx-1 inline-flex items-center justify-center rounded-full bg-primary text-white text-xs font-bold w-6 h-6">
                                 {{ selIdx }}
                             </span>
                             <input type="checkbox" [checked]="isSelected(item)" (change)="toggleSelection(item)"
@@ -173,33 +175,40 @@
 
 
         <!-- Footer -->
-        <div
-            class="bg-gray-50 dark:bg-gray-800 px-4 py-2 sm:flex sm:flex-row-reverse sm:px-6 flex-shrink-0 justify-center gap-2 sticky bottom-0">
-            <!-- NEW: Primary Action for Multi-Select -->
+                <div
+          class="bg-gray-50 dark:bg-gray-800 px-4 py-2 flex justify-center sticky bottom-0">
+          <div class="flex flex-col sm:flex-row gap-2 w-full max-w-xs">
+            <!-- Multi-Select Confirm Button -->
             <button *ngIf="isMultiSelect() && selectionCount() > 0" type="button" (click)="confirmSelection()"
-                [disabled]="selectionCount() === 0" class="inline-flex w-full justify-center items-center rounded-md px-4 py-2 text-xl font-semibold text-white shadow-sm sm:w-auto
-                   bg-primary hover:bg-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-focus
-                   disabled:opacity-50 disabled:cursor-not-allowed">
-                <app-icon name="done" class="w-6 h-6 mr-2"></app-icon>
-                {{ 'exerciseSelectionModal.addSelected' | translate }} {{ selectionCount() > 0 ? '(' + selectionCount()
-                + ')' : '' }}
+              [disabled]="selectionCount() === 0"
+              class="w-full rounded-md px-4 py-2 text-xl font-semibold text-white shadow-sm
+                     bg-primary hover:bg-primary-dark focus-visible:outline focus-visible:outline-2
+                     focus-visible:outline-offset-2 focus-visible:outline-primary-focus
+                     disabled:opacity-50 disabled:cursor-not-allowed mb-1 sm:mb-0">
+              <app-icon name="done" class="w-6 h-6 mr-2"></app-icon>
+              {{ 'exerciseSelectionModal.addSelected' | translate }} {{ selectionCount() > 0 ? '(' + selectionCount() + ')' : '' }}
             </button>
-
-            <div *ngIf="showCreateCustomLink() || (!processedExercises() || !processedExercises().length)"
-                class="px-4 text-center flex-shrink-0">
-                <!-- <p class="text-gray-500 dark:text-gray-400">Otherwise....</p> -->
-                <button type="button" (click)="onCreateCustom()"
-                    class="inline-flex w-full justify-center items-center rounded-md px-4 py-2 text-lg font-semibold text-white shadow-sm sm:w-auto bg-green-500 hover:bg-green-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-focus disabled:opacity-50 disabled:cursor-not-allowed">
-                    {{ 'exerciseSelectionModal.createCustom' | translate }}
-                </button>
-            </div>
-
-            <!-- Existing Cancel/Close Button -->
+        
+            <!-- Create Custom Button -->
+            <button *ngIf="showCreateCustomLink() || (!processedExercises() || !processedExercises().length)"
+              type="button" (click)="onCreateCustom()"
+              class="w-full rounded-md px-4 py-2 text-lg font-semibold text-white shadow-sm
+                     bg-green-500 hover:bg-green-700 focus-visible:outline focus-visible:outline-2
+                     focus-visible:outline-offset-2 focus-visible:outline-primary-focus
+                     disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
+                     <app-icon name="plus-circle" class="w-6 h-6 mr-2"></app-icon>
+              {{ 'exerciseSelectionModal.createCustom' | translate }}
+            </button>
+        
+            <!-- Cancel Button -->
             <button type="button" (click)="onClose()"
-                class="mt-3 sm:mt-0 inline-flex w-full justify-center items-center rounded-md bg-white dark:bg-gray-600 px-3 py-2 text-xl font-semibold text-gray-900 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500 sm:w-auto">
-                <app-icon name="cancel" class="w-6 h-6 mr-1"></app-icon>
-                {{ 'exerciseSelectionModal.cancel' | translate }}
+              class="w-full rounded-md bg-white dark:bg-gray-600 px-3 py-2 text-xl font-semibold
+                     text-gray-900 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300
+                     dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500 flex items-center justify-center">
+              <app-icon name="cancel" class="w-6 h-6 mr-1"></app-icon>
+              {{ 'exerciseSelectionModal.cancel' | translate }}
             </button>
+          </div>
         </div>
     </div>
 </div>

@@ -53,8 +53,6 @@ import { repsTargetAsString, repsTypeToReps, genRepsTypeFromRepsNumber, getWeigh
 import { WorkoutUtilsService } from '../../core/services/workout-utils.service';
 import { WorkoutFormService } from '../../core/services/workout-form.service';
 import { WorkoutCategory } from '../../core/models/workout-category.model';
-import { WorkoutSectionType } from '../../core/models/workout-section-type.model';
-import { WorkoutSection } from '../../core/models/workout-section.model';
 
 export enum BuilderMode {
   routineBuilder = 'routineBuilder',
@@ -248,21 +246,21 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   availableScheduledDayInfos: ScheduledRoutineDay[] = [];
   // END: Added properties
   modalSearchTerm = signal('');
-  filteredAvailableExercises = computed(() => {
-    let term = this.modalSearchTerm().trim().toLowerCase();
-    if (!term || term.length < 2) {
-      return this.availableExercises;
-    }
-    // Optionally normalize the search term
-    // term = this.exerciseService.normalizeExerciseNameForSearch(term);
+filteredAvailableExercises = computed(() => {
+  let term = this.modalSearchTerm().trim().toLowerCase();
+  if (!term || term.length < 2) {
+    return this.availableExercises;
+  }
+  // Optionally normalize the search term
+  // term = this.exerciseService.normalizeExerciseNameForSearch(term);
 
-    return this.availableExercises.filter(ex =>
-      ex._searchName?.includes(term) ||
-      ex._searchCategory?.includes(term) ||
-      ex._searchDescription?.includes(term) ||
-      ex._searchPrimaryMuscle?.includes(term)
-    );
-  });
+  return this.availableExercises.filter(ex =>
+    ex._searchName?.includes(term) ||
+    ex._searchCategory?.includes(term) ||
+    ex._searchDescription?.includes(term) ||
+    ex._searchPrimaryMuscle?.includes(term)
+  );
+});
   selectedExerciseIndicesForSuperset = signal<number[]>([]);
   selectedExerciseIndicesForMultipleRemoval = signal<number[]>([]);
 
@@ -1036,28 +1034,28 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.subscriptions.add(distanceSub);
   }
 
-  private loadAvailableExercises(): void {
-    this.exerciseService.getExercises().pipe(
-      take(1),
-      switchMap(untranslatedExercises => {
-        if (!untranslatedExercises || untranslatedExercises.length === 0) {
-          return of([]);
-        }
-        return this.exerciseService.getTranslatedExerciseList(untranslatedExercises);
-      })
-    ).subscribe(translatedExercises => {
-      // Precompute normalized fields for fast filtering
-      this.availableExercises = translatedExercises
-        .filter(ex => !ex.isHidden)
-        .map(ex => ({
-          ...ex,
-          _searchName: this.exerciseService.normalizeExerciseNameForSearch(ex.name).toLowerCase(),
-          _searchCategory: ex.category ? ex.category.toLowerCase() : '',
-          _searchDescription: ex.description ? ex.description.toLowerCase() : '',
-          _searchPrimaryMuscle: ex.primaryMuscleGroup ? ex.primaryMuscleGroup.toLowerCase() : ''
-        }));
-    });
-  }
+private loadAvailableExercises(): void {
+  this.exerciseService.getExercises().pipe(
+    take(1),
+    switchMap(untranslatedExercises => {
+      if (!untranslatedExercises || untranslatedExercises.length === 0) {
+        return of([]);
+      }
+      return this.exerciseService.getTranslatedExerciseList(untranslatedExercises);
+    })
+  ).subscribe(translatedExercises => {
+    // Precompute normalized fields for fast filtering
+    this.availableExercises = translatedExercises
+      .filter(ex => !ex.isHidden)
+      .map(ex => ({
+        ...ex,
+        _searchName: this.exerciseService.normalizeExerciseNameForSearch(ex.name).toLowerCase(),
+        _searchCategory: ex.category ? ex.category.toLowerCase() : '',
+        _searchDescription: ex.description ? ex.description.toLowerCase() : '',
+        _searchPrimaryMuscle: ex.primaryMuscleGroup ? ex.primaryMuscleGroup.toLowerCase() : ''
+      }));
+  });
+}
 
   /**
    * Iterates through the existing exercises in the form and updates their names
@@ -1093,21 +1091,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     });
     this.updateSanitizedDescription(routine.description || '');
     this.exercisesFormArray.clear();
-
-
-// Only add each exercise once, using its section property if present
-if (routine.exercises) {
-  routine.exercises.forEach(exerciseData => {
-    const newExerciseFormGroup = this.workoutFormService.createExerciseFormGroup(exerciseData, true, false);
-    // Add section control with the section type or null
-    newExerciseFormGroup.addControl('section', this.fb.control(exerciseData.section ?? null));
-
-    this.exercisesFormArray.push(newExerciseFormGroup);
-    this.addRepsListener(newExerciseFormGroup);
-    this.addDurationListener(newExerciseFormGroup);
-  });
-}
-
+    routine.exercises.forEach(exerciseData => {
+      const newExerciseFormGroup = this.workoutFormService.createExerciseFormGroup(exerciseData, true, false);
+      this.exercisesFormArray.push(newExerciseFormGroup);
+      this.addRepsListener(newExerciseFormGroup);
+      this.addDurationListener(newExerciseFormGroup);
+    });
     this.updateExerciseNamesInForm();
     this.builderForm.markAsPristine();
   }
@@ -2398,7 +2387,8 @@ if (routine.exercises) {
     // --- 1. Determine State ---
     const supersetId = exerciseControl.get('supersetId')?.value;
     const isEmom = exerciseControl.get('supersetType')?.value === 'emom';
-    const isStandardSuperset = !!supersetId && !isEmom;
+    const isStandardSuperset = !!supersetId && !isEmom; // Explicitly not EMOM
+    const isSupersetMember = !!supersetId; // Is it part of ANY group?
 
     const isSelected = this.selectedExerciseIndicesForSuperset().includes(exIndex);
     const sets = exerciseControl.get('sets')?.value || [];
@@ -2408,10 +2398,8 @@ if (routine.exercises) {
     const supersetSize = this.getSupersetSize(exIndex);
     const isFirst = supersetOrder === 0;
     const isLast = supersetOrder === supersetSize - 1;
+    const isMiddle = !isFirst && !isLast;
     const isSingle = supersetSize === 1;
-
-    // New: Check for section
-    const sectionType = exerciseControl.get('section')?.value as WorkoutSectionType;
 
     let classes: { [key: string]: boolean } = {};
 
@@ -2425,7 +2413,7 @@ if (routine.exercises) {
         'mb-2': isSingle || isLast,
         'mt-4': isSingle || isFirst,
         'rounded-t-xl border-x-2 border-t-2': isFirst && !isSingle,
-        'border-x-2': !isFirst,
+        'border-x-2': !isFirst, // <-- Always apply for non-master EMOM exercises
         'rounded-b-xl border-b-2': isLast || isSingle,
       };
     } else if (isStandardSuperset) {
@@ -2434,48 +2422,22 @@ if (routine.exercises) {
         'bg-orange-100 dark:bg-orange-900/10': !isSelected,
         'bg-orange-200 dark:bg-orange-800/50': isSelected,
         'rounded-t-xl border-x-2 border-t-2 mt-2': isFirst,
-        'border-x-2': !isFirst,
+        'border-x-2': !isFirst, // <-- ALWAYS apply for non-master superset exercises
         'rounded-b-xl border-b-2 mb-2': isLast,
       };
 
     } else {
       // This is a standard, non-superset exercise
+
       classes = {
         'border rounded-xl mb-2': true,
         'bg-blue-50 dark:bg-blue-900/40 border-blue-400': isWarmup && !isSelected,
-        'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600': !isWarmup && !isSelected && !sectionType, // Only default gray if no section
+        'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600': !isWarmup && !isSelected,
         'mt-5': this.isEditableMode() && this.selectedExerciseIndicesForSuperset().length >= 2 && exIndex === this.firstSelectedExerciseIndexForSuperset,
       };
     }
 
-    // --- 3. Apply Section Styling (New Logic) ---
-    // We apply this if it's NOT selected (selection highlight wins)
-    // AND it's NOT an EMOM or Standard Superset (they have strict structural borders)
-    if (!isSelected && !isEmom && !isStandardSuperset && sectionType) {
-      // Thicker left border to indicate grouping
-      classes['border-l-4'] = true;
-
-      // Apply specific color based on section type
-      switch (sectionType) {
-        case WorkoutSectionType.WARM_UP:
-          classes['border-amber-500 dark:border-amber-500'] = true;
-          break;
-        case WorkoutSectionType.MAIN_LIFT:
-          classes['border-red-500 dark:border-red-500'] = true;
-          break;
-        case WorkoutSectionType.CARDIO:
-          classes['border-blue-500 dark:border-blue-500'] = true;
-          break;
-        case WorkoutSectionType.FINISHER:
-          classes['border-purple-500 dark:border-purple-500'] = true;
-          break;
-        case WorkoutSectionType.COOL_DOWN:
-          classes['border-emerald-500 dark:border-emerald-500'] = true;
-          break;
-      }
-    }
-
-    // --- 4. Apply Overriding and Common Classes ---
+    // --- 3. Apply Overriding and Common Classes ---
     if (isSelected) {
       classes['ring-2 ring-yellow-400 dark:ring-yellow-300'] = true;
     }
@@ -2486,7 +2448,6 @@ if (routine.exercises) {
 
     return classes;
   }
-
 
   /**
    * Checks if the exercise at the given index is adjacent to another exercise with the same supersetId.
@@ -2598,17 +2559,20 @@ if (routine.exercises) {
     return this.exercisesFormArray.length;
   }
 
-  private mapFormToRoutineOLD(formValue: any): Routine {
+  private mapFormToRoutine(formValue: any): Routine {
     const initialRoutine = this.loadedRoutine();
 
-    // 1. Handle Tags (Convert comma-separated string to array)
+    // Convert comma-separated tags string into a clean string array
     const tagsValue = formValue.tags;
     let tagsArray: string[] = [];
+
+    // Check if tagsValue is a string (from user input) or already an array (from a restored state)
     if (typeof tagsValue === 'string') {
       tagsArray = tagsValue.split(',')
         .map((tag: string) => tag.trim())
         .filter((tag: string) => tag.length > 0);
     } else if (Array.isArray(tagsValue)) {
+      // If it's already an array, just use it directly.
       tagsArray = tagsValue;
     }
 
@@ -2654,109 +2618,8 @@ if (routine.exercises) {
       createdAt: initialRoutine?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-
     return valueObj;
   }
-
-  private mapFormToRoutine(formValue: any): Routine {
-    const initialRoutine = this.loadedRoutine();
-
-    // 1. Handle Tags (Convert comma-separated string to array)
-    const tagsValue = formValue.tags;
-    let tagsArray: string[] = [];
-    if (typeof tagsValue === 'string') {
-      tagsArray = tagsValue.split(',')
-        .map((tag: string) => tag.trim())
-        .filter((tag: string) => tag.length > 0);
-    } else if (Array.isArray(tagsValue)) {
-      tagsArray = tagsValue;
-    }
-
-    // 2. Process Exercises
-    // We first map ALL form exercises to clean WorkoutExercise objects
-    const rawExercises = formValue.exercises || [];
-
-    const topLevelExercises: WorkoutExercise[] = [];
-    const sectionMap = new Map<WorkoutSectionType, WorkoutExercise[]>();
-
-    // If goal is 'rest', we ignore exercises
-    const exercises: WorkoutExercise[] = [];
-    if (formValue.goal !== METRIC.rest) {
-      rawExercises.forEach((exInput: any) => {
-        const isSuperset = !!exInput.supersetId;
-        const sectionType = exInput.section as WorkoutSectionType | undefined;
-
-        const cleanExercise: WorkoutExercise = {
-          id: exInput.id || uuidv4(),
-          exerciseId: exInput.exerciseId,
-          exerciseName: exInput.exerciseName,
-          notes: exInput.notes,
-          sets: exInput.sets.map((setInput: any) => ({
-            ...setInput,
-            targetWeight: this.unitService.convertWeight(setInput.targetWeight, 'kg', this.unitService.currentWeightUnit()) ?? null,
-            targetDuration: setInput.targetDuration ?? null,
-            targetDistance: setInput.targetDistance ?? null,
-            targetTempo: setInput.targetTempo ?? null,
-          } as ExerciseTargetSetParams)),
-          supersetId: exInput.supersetId || null,
-          supersetOrder: isSuperset ? exInput.supersetOrder : null,
-          supersetType: isSuperset ? (exInput.supersetType || 'standard') : null,
-          emomTimeSeconds: isSuperset && exInput.supersetType === 'emom' ? exInput.emomTimeSeconds : null,
-          type: exInput.type,
-          section: sectionType ?? undefined, // <-- add this property if not present
-        };
-
-        exercises.push(cleanExercise);
-      });
-    }
-
-    // 2. Build sections as references to exercises in the array above
-    const sections: WorkoutSection[] = [];
-    const orderedTypes = [
-      WorkoutSectionType.WARM_UP,
-      WorkoutSectionType.MAIN_LIFT,
-      WorkoutSectionType.CARDIO,
-      WorkoutSectionType.FINISHER,
-      WorkoutSectionType.COOL_DOWN
-    ];
-
-    orderedTypes.forEach(type => {
-      const exercisesInSection = exercises.filter(ex => ex.section === type);
-      if (exercisesInSection.length > 0) {
-        sections.push({
-          id: uuidv4(),
-          type: type,
-          titleI18nKey: `workoutSections.${type}`,
-          exercises: exercisesInSection
-        });
-      }
-    });
-
-    // 3. Construct the Routine
-    const valueObj: Routine = {
-      id: this.currentRoutineId || uuidv4(),
-      name: formValue.name,
-      description: formValue.description,
-      goal: formValue.goal,
-      primaryCategory: formValue.primaryCategory || undefined,
-      secondaryCategory: formValue.secondaryCategory || undefined,
-      tags: tagsArray,
-      exercises, // <-- all exercises, with section property
-      sections: sections.length > 0 ? sections : undefined,
-
-      // Preserve existing metadata
-      isFavourite: initialRoutine?.isFavourite,
-      isHidden: initialRoutine?.isHidden,
-      lastPerformed: initialRoutine?.lastPerformed,
-      isDisabled: false,
-      cardColor: initialRoutine?.cardColor || undefined,
-      createdAt: initialRoutine?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    return valueObj;
-  }
-
 
   isSuperSet(index: number): boolean {
     const exercises = this.liveFormAsRoutine()?.exercises;
@@ -5881,86 +5744,5 @@ if (routine.exercises) {
     }
     return null;
   }
-
-
-  /**
-    * Returns style information for the section badge if the exercise belongs to one.
-    */
-  getSectionBadgeInfo(exerciseControl: AbstractControl): { label: string, color: string } | null {
-    const sectionType = exerciseControl.get('section')?.value as WorkoutSectionType;
-    if (!sectionType) return null;
-
-    const info = this.getSectionColorAndLabel(sectionType);
-    return info;
-  }
-
-  /**
-   * Helper to get color and label for a section type.
-   */
-  private getSectionColorAndLabel(type: WorkoutSectionType): { label: string, color: string } {
-    switch (type) {
-      case WorkoutSectionType.WARM_UP: return { label: 'Warm Up', color: '#f59e0b' }; // Amber-500
-      case WorkoutSectionType.MAIN_LIFT: return { label: 'Main Lift', color: '#ef4444' }; // Red-500
-      case WorkoutSectionType.CARDIO: return { label: 'Cardio', color: '#3b82f6' }; // Blue-500
-      case WorkoutSectionType.FINISHER: return { label: 'Finisher', color: '#a855f7' }; // Purple-500
-      case WorkoutSectionType.COOL_DOWN: return { label: 'Cool Down', color: '#10b981' }; // Emerald-500
-      default: return { label: type, color: '#6b7280' }; // Gray-500
-    }
-  }
-
-  /**
-   * Opens a dialog to assign selected exercises to a specific section.
-   */
-  async openSectionSelectionModal(): Promise<void> {
-    if (this.isViewMode) return;
-
-    const selectedIndices = this.selectedExerciseIndicesForMultipleRemoval().sort((a, b) => a - b);
-    if (selectedIndices.length === 0) return;
-
-    const sectionOptions = Object.values(WorkoutSectionType).map(type => ({
-      label: this.getSectionColorAndLabel(type).label,
-      value: type
-    }));
-
-    // Add an option to remove from section
-    sectionOptions.unshift({ label: 'None (Remove from Section)', value: WorkoutSectionType.NONE });
-
-    const result = await this.alertService.showPromptDialog(
-      'Assign to Section',
-      'Select a section for the selected exercises:',
-      [{
-        name: 'sectionType',
-        type: 'select',
-        label: 'Section',
-        value: 'none',
-        options: sectionOptions,
-        required: true
-      }],
-      'Assign'
-    );
-
-    if (result && result['sectionType']) {
-      const selectedType = result['sectionType'] === 'none' ? null : result['sectionType'];
-
-      // Update the form controls
-      selectedIndices.forEach(index => {
-        const control = this.exercisesFormArray.at(index) as FormGroup;
-        // Ensure the control exists
-        if (!control.contains('section')) {
-          control.addControl('section', this.fb.control(selectedType));
-        } else {
-          control.patchValue({ section: selectedType });
-        }
-        control.markAsDirty();
-      });
-
-      this.toastService.success(`Assigned ${selectedIndices.length} exercises to ${selectedType ? selectedType : 'general list'}.`);
-
-      // Clear selection
-      this.selectedExerciseIndicesForMultipleRemoval.set([]);
-      this.selectedExerciseIndicesForSuperset.set([]);
-    }
-  }
-
 
 }

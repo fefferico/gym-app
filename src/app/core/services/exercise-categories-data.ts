@@ -1,9 +1,9 @@
 export const EXERCISE_CATEGORIES_DATA: string[] = [
-  "bodyweight-calisthenics",
-  "rehabilitation-mobility",
-  "yoga-pilates",
+  "bodyweightCalisthenics",
+  "rehabilitationMobility",
+  "yogaPilates",
   "powerlifting",
-  "olympic-weightlifting",
+  "olympicWeightlifting",
   "crossfit",
   "dumbbells",
   "kettlebells",

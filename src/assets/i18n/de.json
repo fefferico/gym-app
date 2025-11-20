@@ -56,7 +56,7 @@
         }
     },
     "home": {
-        "welcomeBack": "Willkommen zurück, {{name}}!",
+        "welcomeBack": "Willkommen zurück, {{name}}",
         "readyMessage": "Bereit, heute deine Ziele zu erreichen?",
         "quickActionsTitle": "Schnellaktionen",
         "appVersion": "App-Version:"

@@ -30,7 +30,7 @@ const MUSCLE_TO_SVG_ID_MAP: Record<string, string[]> = {
     'adductors': ['adductors-left', 'adductors-right'],
     'traps': ['traps-upper', 'traps-middle'],
     'lats': ['lats-left', 'lats-right'],
-    'lower back': ['lower-back'],
+    'lower back': ["backLower"],
     'upper back': ['upper-back-left', 'upper-back-right'] // Example for Rhomboids/Middle Back
 };
 
@@ -128,10 +128,7 @@ export class MuscleMapService {
 
     muscles$: Observable<Muscle[]> = of(MUSCLES_DATA);
 
-    // Create a quick-lookup map for muscles
-    musclesMap$: Observable<Map<string, Muscle>> = this.muscles$.pipe(
-        map(muscles => new Map(muscles.map(m => [m.id, m])))
-    );
+
 
     /**
     * An observable stream that provides the complete list of muscles with all names
@@ -159,6 +156,11 @@ export class MuscleMapService {
             );
         }),
         shareReplay(1)
+    );
+
+    // Create a quick-lookup map for muscles
+    musclesMap$: Observable<Map<string, Muscle>> = this.translatedMuscles$.pipe(
+        map(muscles => new Map(muscles.map(m => [m.id, m])))
     );
 
     // The old method can be removed or kept for non-reactive scenarios,
@@ -255,10 +257,11 @@ export const MUSCLE_NORMALIZATION_MAP: Record<string, string> = (() => {
         }
     }
     // Add custom/legacy mappings if needed
-    map['upper chest'] = 'chest-upper';
-    map['traps (upper)'] = 'traps-upper';
-    map['lower back'] = 'lowerBack';
-    map['lower back (erector spinae)'] = 'lowerBack';
+    map['upper chest'] = 'chestUpper';
+    map['upper back'] = 'backUpper';
+    map['traps (upper)'] = 'trapsUpper';
+    map['lower back'] = 'backLower';
+    map['lower back (erector spinae)'] = 'backLower';
     map['abs (rectus abdominis)'] = 'abs';
     return map;
 })();

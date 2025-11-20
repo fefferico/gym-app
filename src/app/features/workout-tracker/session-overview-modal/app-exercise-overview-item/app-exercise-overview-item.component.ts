@@ -120,7 +120,8 @@ export class ExerciseOverviewItemComponent {
         let distance: string | undefined;
         let duration: string | undefined;
 
-        const weightReal = this.workoutUtilsService.getSetFieldValue(set, METRIC.weight);
+        const anySet: any = set;
+        const weightReal = this.workoutUtilsService.weightTargetAsString(anySet.weightLogged || anySet.targetWeight);
         const repsReal = this.workoutUtilsService.getSetFieldValue(set, METRIC.reps);
         const distanceReal = this.workoutUtilsService.getSetFieldValue(set, METRIC.distance);
         const durationReal = this.workoutUtilsService.getSetFieldValue(set, METRIC.duration);
@@ -136,12 +137,14 @@ export class ExerciseOverviewItemComponent {
         const distanceText = this.translate.instant('exerciseItem.distance');
         const durationText = this.translate.instant('exerciseItem.duration');
 
+        // check if weight contains digits, otherwise it's BW or similar
+        const weightContainsDigits = /\d/.test(weight ?? '');
         if (reps != null && weight != null && weight !== '-' && reps !== '-' && reps != '0') {
-            parts.push(`${reps} ${repsText} @ ${weight}${this.unitsService.getWeightUnitSuffix()}`);
+            parts.push(`${reps} ${repsText} @ ${weight}${(weightContainsDigits ? ' ' + this.unitsService.getWeightUnitSuffix() : '')}`);
         } else if (reps != null && reps !== '-' && reps != '0') {
             parts.push(`${reps} ${repsText}`);
         } else if (weight != null && weight !== '-') {
-            parts.push(`${weight}${this.unitsService.getWeightUnitSuffix()}`);
+            parts.push(`${weight}${(weightContainsDigits ? ' ' + this.unitsService.getWeightUnitSuffix() : '')}`);
         }
 
         if (distance != null && distance !== '-') {

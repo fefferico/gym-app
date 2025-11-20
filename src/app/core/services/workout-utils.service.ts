@@ -375,8 +375,8 @@ export class WorkoutUtilsService {
             return this.translate.instant('workoutService.display.weightNotApplicable');
         }
 
-        // 2. Handle bodyweight-calisthenics exercises.
-        if (exercise?.category === 'bodyweight-calisthenics') {
+        // 2. Handle bodyweightCalisthenics exercises.
+        if (exercise?.category === 'bodyweightCalisthenics') {
             // If additional weight was used or targeted, display it.
             if (displayWeight != null && displayWeight > 0) {
                 return `${displayWeight} ${this.unitsService.getWeightUnitSuffix()}`;
@@ -1344,7 +1344,7 @@ export class WorkoutUtilsService {
             this.translate.instant(`schemes.titles.selectType`, { metric: this.translate.instant(`metrics.${metric}`) }),
             '',
             typeButtons,
-            { customButtonDivCssClass: 'grid grid-cols-2 gap-3', showCloseButton: true }
+            { customButtonDivCssClass: typeButtons.length > 1 ? 'grid grid-cols-2 gap-3' : 'grid grid-cols-1 gap-3', showCloseButton: true }
         );
 
         if (!typeChoice || !typeChoice.data) {

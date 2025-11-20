@@ -14,13 +14,14 @@ import { Muscle } from '../../../core/models/muscle.model';
 import { MuscleMapService } from '../../../core/services/muscle-map.service';
 import { MuscleValue } from '../../../core/services/muscles-data';
 import { HydratedCategory } from '../../../core/services/exercise-category.service';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
 type ListItem = Exercise | { isHeader: true; label: string };
 
 @Component({
     selector: 'app-exercise-selection-modal',
     standalone: true,
-    imports: [CommonModule, FormsModule, TitleCasePipe, DatePipe, IconComponent, AsyncPipe, TranslateModule, BumpClickDirective],
+    imports: [CommonModule, FormsModule, TitleCasePipe, DatePipe, IconComponent, AsyncPipe, TranslateModule, BumpClickDirective, ScrollingModule],
     templateUrl: './exercise-selection-modal.component.html',
 })
 export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges {
@@ -33,6 +34,7 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
 
     isMultiSelect = input<boolean>(false);
     isFocusInputOnStart = input<boolean>(false);
+    customPB = input<string>('');
 
     // --- OUTPUTS ---
     @Output() exerciseSelected = new EventEmitter<Exercise>(); // For single-select mode
@@ -153,7 +155,7 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
 
     isFilterAccordionOpen = signal(false);
     selectedCategory = signal<string | null>(null);
-    selectedMuscleGroup = signal<MuscleValue | null>(null);
+    selectedMuscleGroup = signal<Muscle | null>(null);
     sortMode = signal<'alpha' | 'lastUsed' | 'frequency'>('alpha');
 
     categories$: Observable<HydratedCategory[]> = this.exerciseService.getUniqueCategories();
@@ -173,8 +175,8 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
         }
         if (muscleGroup) {
             exerciseList = exerciseList.filter(ex =>
-                ex.primaryMuscleGroup === muscleGroup ||
-                (Array.isArray(ex.muscleGroups) && ex.muscleGroups.includes(muscleGroup))
+                ex.primaryMuscleGroup === muscleGroup.id ||
+                (Array.isArray(ex.muscleGroups) && ex.muscleGroups.includes(muscleGroup.id))
             );
         }
         if (term) {
@@ -357,12 +359,16 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     }
 
     onMuscleGroupChange(event: Event): void {
-        const selectedMuscle = this.getMuscleById((event.target as HTMLSelectElement).value);
-        if (!selectedMuscle) {
+        const target = event.target as HTMLSelectElement;
+        if (!target.value || !this.primaryMuscleGroups$) {
             this.selectedMuscleGroup.set(null);
             return;
         }
-        this.selectedMuscleGroup.set(this.muscleToMuscleValue(selectedMuscle));
+        // Subscribe to the observable to get the array and then find the muscle group
+        this.primaryMuscleGroups$?.subscribe((muscleGroups: Muscle[]) => {
+            const selectedMuscleGroup = muscleGroups.find((mg: Muscle) => mg.id === target.value) || null;
+            this.selectedMuscleGroup.set(selectedMuscleGroup);
+        });
     }
 
     private muscleToMuscleValue(muscle: Muscle): MuscleValue {
@@ -401,5 +407,14 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
         const selectedIds = this.selectedExerciseIds();
         const idx = selectedIds.findIndex(id => id === item.id);
         return idx !== -1 ? idx + 1 : null;
+    }
+
+    trackByExerciseOrHeader(index: number, item: ListItem): string {
+        // If it's a header, use its label; if it's an exercise, use its id
+        return (item as any).isHeader ? 'header-' + (item as any).label : 'exercise-' + (item as Exercise).id;
+    }
+
+        isMobileScreen(): boolean {
+      return window.innerWidth < 640; // or use your preferred breakpoint
     }
 }

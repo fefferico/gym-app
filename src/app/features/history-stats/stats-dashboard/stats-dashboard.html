@@ -209,9 +209,14 @@
                             <tr *ngFor="let summary of weeklySummariesTableDataForPeriod()">
                                 <td
                                     class="px-2 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    {{ summary.weekStartDate | date:'MMM d' | titlecase }} - {{
+                                    summary.weekEndDate | date:'MMM d' | titlecase }}
+                                </td>
+                                <!-- <td
+                                    class="px-2 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                     {{ summary.weekLabel }} ({{ summary.weekStartDate | date:'MMM d' }} - {{
                                     summary.weekEndDate | date:'MMM d' }})
-                                </td>
+                                </td> -->
                                 <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{
                                     summary.workoutCount }}</td>
                                 <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{
@@ -251,7 +256,7 @@
                             <tr *ngFor="let perf of muscleGroupPerformanceTableDataForPeriod()">
                                 <td
                                     class="px-2 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 text-balance">
-                                    {{ perf.muscleGroup | titlecase }}</td>
+                                    {{ perf.muscleGroup }}</td>
                                 <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{
                                     perf.workoutCount }}</td>
                                 <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{

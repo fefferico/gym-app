@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, computed, Signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, computed, Signal, SimpleChanges } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { Routine, WorkoutExercise } from '../../../core/models/workout.model';
 import { LoggedWorkoutExercise, WorkoutLog } from '../../../core/models/workout-log.model';
@@ -27,10 +27,6 @@ type DisplayGroup = StandardExerciseGroup | SupersetGroup;
 })
 export class SessionOverviewModalComponent {
   @Input() isOpen: boolean = false;
-  // CORRECTED: Remove the old, non-signal inputs
-  // @Input() routine: Routine | undefined | null = undefined;
-  // @Input() loggedExercises: LoggedWorkoutExercise[] = [];
-
   // Use signals for reactive data flow from the parent component
   @Input() routineSignal: Signal<Routine | null | undefined> = computed(() => undefined);
   @Input() loggedExercisesSignal: Signal<LoggedWorkoutExercise[]> = computed(() => []);
@@ -67,5 +63,20 @@ export class SessionOverviewModalComponent {
 
   trackByGroup(index: number, group: DisplayGroup): string {
     return group.type === 'standard' ? group.exercise.id : group.supersetId;
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if ('isOpen' in changes) {
+      if (this.isOpen) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = '';
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    // Restore scrolling if the component is destroyed while open
+    document.body.style.overflow = '';
   }
 }

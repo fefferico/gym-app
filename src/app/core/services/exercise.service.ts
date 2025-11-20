@@ -13,7 +13,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { Muscle } from '../models/muscle.model';
 import { Equipment } from '../models/equipment.model';
 import { EQUIPMENT_NORMALIZATION_MAP, EquipmentService, HydratedEquipment } from './equipment.service';
-import { MUSCLE_NORMALIZATION_MAP, MuscleMapService } from './muscle-map.service';
+import { HydratedMuscle, MUSCLE_NORMALIZATION_MAP, MuscleMapService } from './muscle-map.service';
 import { MUSCLES_DATA, MuscleValue } from './muscles-data';
 import { EquipmentValue } from './equipment-data';
 import { EXERCISE_CATEGORY_NORMALIZATION_MAP, ExerciseCategoryService, HydratedCategory } from './exercise-category.service';
@@ -38,7 +38,7 @@ const MUSCLE_GROUP_TO_ID_MAP: Record<string, string[]> = {
   'adductors': ['adductors-left', 'adductors-right'],
   'traps': ['traps-upper', 'traps-middle', 'traps-lower'],
   'lats': ['lats-left', 'lats-right'],
-  'lower back': ['lower-back'],
+  'lower back': ["backLower"],
   'neck': ['neck-front']
 };
 
@@ -76,9 +76,11 @@ export class ExerciseService {
   private isLoadingExercisesSubject = new BehaviorSubject<boolean>(true); // Start as true
   public isLoadingExercises$: Observable<boolean> = this.isLoadingExercisesSubject.asObservable();
   protected exerciseCategories: HydratedCategory[];
+  protected muscleGroupCategories: HydratedMuscle[];
 
   constructor() {
     this.exerciseCategories = this.exerciseCategoryService.getHydratedCategories();
+    this.muscleGroupCategories = this.muscleMapService.getHydratedMuscles();
 
     this.isLoadingExercisesSubject.next(true);
     const exercisesFromStorage = this._loadExercisesFromStorage();
@@ -385,7 +387,7 @@ export class ExerciseService {
               .filter((cat): cat is string => !!cat)
           )
         ].sort();
-  
+
         // 2. Map those IDs to hydrated categories with translated labels
         return uniqueCategoryIds
           .map(id => hydratedCategories.find(cat => cat.id === id))
@@ -505,9 +507,9 @@ export class ExerciseService {
         { type: 'dumbbell', index: dumbbellIndex },
         { type: 'machine', index: machineIndex },
         { type: 'machine', index: cableIndex }, // treat cable as machine
-        { type: 'bodyweight-calisthenics', index: bodyweightIndex },
-        { type: 'bodyweight-calisthenics', index: noneIndex },
-        { type: 'resistance-band', index: resistanceBandIndex }
+        { type: 'bodyweightCalisthenics', index: bodyweightIndex },
+        { type: 'bodyweightCalisthenics', index: noneIndex },
+        { type: 'resistanceBand', index: resistanceBandIndex }
       ].filter(e => e.index !== -1);
 
       if (equipmentPriority.length > 0) {
@@ -521,16 +523,16 @@ export class ExerciseService {
     if (nameLower.includes('dumbbell') || nameLower.includes('db ')) return 'dumbbell';
     if (nameLower.includes('kettlebell')) return 'kettlebell';
     if (nameLower.includes('squat') && nameLower.includes('barbell')) return 'barbell';
-    if (nameLower.includes('squat') && !nameLower.includes('barbell') && !nameLower.includes('dumbbell')) return 'bodyweight-calisthenics';
+    if (nameLower.includes('squat') && !nameLower.includes('barbell') && !nameLower.includes('dumbbell')) return 'bodyweightCalisthenics';
     if (nameLower.includes('deadlift')) return 'barbell';
     if (nameLower.includes('bench press')) return 'barbell';
     if (nameLower.includes('row') && (nameLower.includes('barbell') || !nameLower.includes('dumbbell'))) return 'barbell';
     if (nameLower.includes('curl') && nameLower.includes('barbell')) return 'barbell';
     if (nameLower.includes('curl') && nameLower.includes('dumbbell')) return 'dumbbell';
     if (nameLower.includes('machine') || nameLower.includes('cable')) return 'machine';
-    if (nameLower.includes('body') || nameLower.includes('none')) return 'bodyweight-calisthenics';
+    if (nameLower.includes('body') || nameLower.includes('none')) return 'bodyweightCalisthenics';
     if (nameLower.includes('run') || nameLower.includes('cardio') || nameLower.includes('tapis') || nameLower.includes('jog')) return 'cardio';
-    if (nameLower.includes('resistance band')) return 'resistance-band';
+    if (nameLower.includes('resistance band')) return 'resistanceBand';
 
     if (baseExercise?.category) {
       const categoryLower = baseExercise.category.toLowerCase();
@@ -538,7 +540,7 @@ export class ExerciseService {
         if (nameLower.includes('squat') || nameLower.includes('deadlift') || nameLower.includes('bench')) return 'barbell';
       }
       if (categoryLower === 'cardio') return 'cardio';
-      if (categoryLower === 'calisthenics' || categoryLower === 'plyometrics' || categoryLower === 'bodyweight-calisthenics') return 'bodyweight-calisthenics'; // Added bodyweight category check
+      if (categoryLower === 'calisthenics' || categoryLower === 'plyometrics' || categoryLower === 'bodyweightCalisthenics') return 'bodyweightCalisthenics'; // Added bodyweight category check
     }
     return 'default-exercise';
   }
@@ -922,12 +924,14 @@ export class ExerciseService {
     // 2. Use ngx-translate to fetch the translation object for this key
     return this.translate.get(translationKey).pipe(
       map(translations => {
-        // 3. Create a new object, merging the original static data
-        //    with the fetched translated name and description.
+        // Fallback: if translation is missing or equals the key, use the original name/description
+        const translatedName = translations.name;
+        const translatedDescription = translations.description;
+
         return {
-          ...exercise, // Spread all original properties (id, category, images, etc.)
-          name: translations.name || exercise.name, // Fallback to original name if translation is missing
-          description: translations.description || exercise.description, // Fallback to original description
+          ...exercise,
+          name: (!translatedName || translatedName === `${translationKey}.name`) ? exercise.name : translatedName,
+          description: (!translatedDescription || translatedDescription === `${translationKey}.description`) ? exercise.description : translatedDescription,
         };
       })
     );
@@ -978,6 +982,9 @@ export class ExerciseService {
           const normalizedPrimary = ex.primaryMuscleGroup
             ? MUSCLE_NORMALIZATION_MAP[ex.primaryMuscleGroup.toLowerCase().trim()] || ex.primaryMuscleGroup.toLowerCase().trim()
             : undefined;
+          if (normalizedPrimary?.includes('flexors')) {
+            console.log("here muscle");
+          }
           const primaryMuscleGroup = normalizedPrimary ? musclesMap.get(normalizedPrimary) : undefined;
 
           // Hydrate muscle groups
@@ -1029,56 +1036,51 @@ export class ExerciseService {
           return of(null);
         }
 
-        // Build translation keys
-        const nameKey = `exercises.${exercise.id}.name`;
-        const descKey = `exercises.${exercise.id}.description`;
+        // Use getTranslatedExercise for proper translation/fallback logic
+        return this.getTranslatedExercise(exercise).pipe(
+          switchMap(translatedExercise =>
+            combineLatest([
+              this.muscleMapService.musclesMap$,
+              this.equipmentService.getTranslatedEquipment()
+            ]).pipe(
+              map(([musclesMap, translatedEquipments]) => {
+                // Build a map for fast lookup
+                const translatedEquipmentMap = new Map(translatedEquipments.map(eq => [eq.id, eq]));
 
-        // Use translated equipment
-        return combineLatest([
-          this.muscleMapService.musclesMap$,
-          this.equipmentService.getTranslatedEquipment(), // <-- Use translated equipment here
-          this.translate.get([nameKey, descKey])
-        ]).pipe(
-          map(([musclesMap, translatedEquipments, translations]) => {
-            // Build a map for fast lookup
-            const translatedEquipmentMap = new Map(translatedEquipments.map(eq => [eq.id, eq]));
+                // Hydrate Primary Muscle Group
+                const primaryMuscleGroup = translatedExercise.primaryMuscleGroup
+                  ? musclesMap.get(
+                    MUSCLE_NORMALIZATION_MAP[translatedExercise.primaryMuscleGroup.toLowerCase().trim()] ||
+                    translatedExercise.primaryMuscleGroup.toLowerCase().trim()
+                  )
+                  : undefined;
 
-            // Hydrate Primary Muscle Group
-            // --- Normalize and hydrate primaryMuscleGroup ---
-            const primaryMuscleGroup = exercise.primaryMuscleGroup
-              ? musclesMap.get(
-                MUSCLE_NORMALIZATION_MAP[exercise.primaryMuscleGroup.toLowerCase().trim()] ||
-                exercise.primaryMuscleGroup.toLowerCase().trim()
-              )
-              : undefined;
+                // Hydrate muscleGroups
+                const muscleGroups = (translatedExercise.muscleGroups || [])
+                  .map(muscleId => {
+                    const normId = MUSCLE_NORMALIZATION_MAP[muscleId.toLowerCase().trim()] || muscleId.toLowerCase().trim();
+                    return musclesMap.get(normId);
+                  })
+                  .filter((m): m is Muscle => !!m);
 
-            // --- Normalize and hydrate muscleGroups ---
-            const muscleGroups = (exercise.muscleGroups || [])
-              .map(muscleId => {
-                const normId = MUSCLE_NORMALIZATION_MAP[muscleId.toLowerCase().trim()] || muscleId.toLowerCase().trim();
-                return musclesMap.get(normId);
+                // Hydrate equipmentNeeded
+                const equipmentNeeded = (translatedExercise.equipmentNeeded || [])
+                  .map(eqRaw => {
+                    if (!eqRaw) return undefined;
+                    const eqKey = EQUIPMENT_NORMALIZATION_MAP[eqRaw.toLowerCase().trim()] || eqRaw.toLowerCase().trim();
+                    return translatedEquipmentMap.get(eqKey);
+                  })
+                  .filter((eq): eq is HydratedEquipment => !!eq);
+
+                return {
+                  ...translatedExercise,
+                  primaryMuscleGroup,
+                  muscleGroups,
+                  equipmentNeeded
+                };
               })
-              .filter((m): m is Muscle => !!m);
-
-            // HYDRATE EQUIPMENT (with normalization and translation)
-            const equipmentNeeded = (exercise.equipmentNeeded || [])
-              .map(eqRaw => {
-                if (!eqRaw) return undefined;
-                const eqKey = EQUIPMENT_NORMALIZATION_MAP[eqRaw.toLowerCase().trim()] || eqRaw.toLowerCase().trim();
-                return translatedEquipmentMap.get(eqKey);
-              })
-              .filter((eq): eq is HydratedEquipment => !!eq);
-
-            // Assemble the final hydrated object
-            return {
-              ...exercise,
-              name: translations[nameKey] || exercise.name,
-              description: translations[descKey] || exercise.description,
-              primaryMuscleGroup,
-              muscleGroups,
-              equipmentNeeded
-            };
-          })
+            )
+          )
         );
       })
     );

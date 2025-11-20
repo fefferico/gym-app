@@ -5,11 +5,11 @@ import { Muscle } from "./muscle.model";
 
 // src/app/core/models/exercise.model.ts
 export const EXERCISE_CATEGORIES = [
-  'bodyweight-calisthenics',
-  'rehabilitation-mobility',
-  'yoga-pilates',
+  'bodyweightCalisthenics',
+  'rehabilitationMobility',
+  'yogaPilates',
   'powerlifting',
-  'olympic-weightlifting',
+  'olympicWeightlifting',
   'crossfit',
   'dumbbells',
   'kettlebells',
@@ -39,7 +39,7 @@ export interface Exercise {
   imageUrls: string[]; // Paths to static images in assets, e.g., ['exercises/push-up_1.jpg', 'exercises/push-up_2.jpg']
   videoUrl?: string; // Optional: Link to a demonstration video (e.g., YouTube)
   notes?: string; // Optional: Tips, common mistakes, variations
-  equipment?: EquipmentValue; // << NEW: e.g., 'Barbell', 'Dumbbell', 'Machine', 'Bodyweight/Calisthenics'
+  equipment?: EquipmentValue; // << NEW: e.g., 'Barbell', 'Dumbbell', 'Machine', 'bodyweightCalisthenics'
   iconName?: string;
   isCustom?: boolean; // Flag to indicate if this is a user-defined exercise
   createdAt?: string; // Timestamp for when the exercise was created
@@ -48,4 +48,9 @@ export interface Exercise {
   lastUsedLogId?: string;
   isHidden?: boolean; // Flag to indicate if the exercise is hidden from the main list
   usageCount?: number;
+
+  _searchName?: string;
+  _searchCategory?: string;
+  _searchDescription?: string;
+  _searchPrimaryMuscle?: string;
 }

@@ -16,8 +16,10 @@
   <div class="relative w-64 h-64 md:w-72 md:h-72 flex items-center justify-center text-white">
 
     <!-- Circular Timer SVG (Absolutely positioned inside the container, only for 'timer' mode) -->
-    <svg *ngIf="mode() === 'timer'" #progressCircleSvg class="absolute inset-0 transform -rotate-90" viewBox="0 0 200 200">
-      <circle cx="100" cy="100" [attr.r]="getCircleRadius()" fill="transparent" stroke="rgba(255, 255, 255, 0.15)" stroke-width="18" />
+    <svg *ngIf="mode() === 'timer'" #progressCircleSvg class="absolute inset-0 transform -rotate-90"
+      viewBox="0 0 200 200">
+      <circle cx="100" cy="100" [attr.r]="getCircleRadius()" fill="transparent" stroke="rgba(255, 255, 255, 0.15)"
+        stroke-width="18" />
       <circle cx="100" cy="100" [attr.r]="getCircleRadius()" fill="transparent" stroke="currentColor"
         class="text-yellow-400" stroke-width="12" [attr.stroke-dasharray]="getCircleCircumference()"
         [attr.stroke-dashoffset]="strokeDashoffset()" stroke-linecap="round" />
@@ -30,7 +32,7 @@
       </div>
       <div class="mt-1 text-lg md:text-xl font-semibold uppercase tracking-widest text-gray-300">
         {{ mode() === 'timer' ? mainText() : ('restTimer.elapsed' | translate) }}
-                <p><app-icon name="rest" class="h-12 w-12 text-yellow-400"></app-icon></p>
+        <p><app-icon name="rest" class="h-12 w-12 text-yellow-400"></app-icon></p>
       </div>
     </div>
   </div>
@@ -45,7 +47,8 @@
         <app-icon name="flame-2" class="h-12 w-12 text-yellow-400"></app-icon>
       </div>
       <div class="min-w-0 flex-1 overflow-y-auto max-h-40 pr-2 custom-scrollbar">
-        <h3 class="font-semibold text-gray-300 uppercase tracking-wider text-sm">{{ 'restTimer.nextUp' | translate }}</h3>
+        <h3 class="font-semibold text-gray-300 uppercase tracking-wider text-sm">{{ 'restTimer.nextUp' | translate }}
+        </h3>
         <div class="text-white text-lg font-medium text-wrap leading-tight" [innerHTML]="nextUpText()"></div>
       </div>
     </div>

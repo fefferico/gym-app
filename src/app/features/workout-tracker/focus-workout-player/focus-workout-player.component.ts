@@ -2126,7 +2126,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const newWorkoutExercise: Exercise = {
       id: `custom-adhoc-ex-${uuidv4()}`,
       name: 'Custom exercise',
-      description: '', category: 'bodyweight-calisthenics', muscleGroups: [], primaryMuscleGroup: undefined, imageUrls: []
+      description: '', category: 'bodyweightCalisthenics', muscleGroups: [], primaryMuscleGroup: undefined, imageUrls: []
     };
     this.selectExerciseToAddFromModal(newWorkoutExercise);
   }

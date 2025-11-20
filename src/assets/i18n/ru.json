@@ -56,7 +56,7 @@
     }
   },
   "home": {
-    "welcomeBack": "С Возвращением, {{name}}!",
+    "welcomeBack": "С Возвращением, {{name}}",
     "readyMessage": "Готовы сегодня достигать своих целей?",
     "quickActionsTitle": "Быстрые Действия",
     "appVersion": "Версия Приложения:"

@@ -1,10 +1,10 @@
 {
   "categories": {
-    "bodyweight-calisthenics": "自重＆カリステニクス",
-    "rehabilitation-mobility": "リハビリ＆モビリティ",
-    "yoga-pilates": "ヨガ＆ピラティス",
+    "bodyweightCalisthenics": "自重＆カリステニクス",
+    "rehabilitationMobility": "リハビリ＆モビリティ",
+    "yogaPilates": "ヨガ＆ピラティス",
     "powerlifting": "パワーリフティング",
-    "olympic-weightlifting": "オリンピックウェイトリフティング",
+    "olympicWeightlifting": "オリンピックウェイトリフティング",
     "crossfit": "クロスフィット",
     "dumbbells": "ダンベル",
     "kettlebells": "ケトルベル",

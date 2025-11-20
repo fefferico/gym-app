@@ -224,23 +224,23 @@
       "name": "绳索伐木（高位到低位或低位到高位）",
       "description": "一个锻炼腹斜肌和腹横肌的核心旋转训练动作。"
     },
-    "resistance-band-bicep-curl": {
+    "resistanceBand-bicep-curl": {
       "name": "弹力带二头肌弯举",
       "description": "使用弹力带进行的二头肌弯举，提供可变阻力。"
     },
-    "resistance-band-tricep-pushdown": {
+    "resistanceBand-tricep-pushdown": {
       "name": "弹力带三头肌下压",
       "description": "使用固定在高处或手持的弹力带进行的三头肌下压。"
     },
-    "resistance-band-pull-apart": {
+    "resistanceBand-pull-apart": {
       "name": "弹力带拉开",
       "description": "一个有益于肩部健康的极佳训练动作，锻炼后束三角肌和上背部肌肉。"
     },
-    "resistance-band-squat": {
+    "resistanceBand-squat": {
       "name": "弹力带深蹲",
       "description": "将弹力带踩在脚下并绕过肩膀或手持进行的深蹲，增加阻力。"
     },
-    "resistance-band-glute-bridge": {
+    "resistanceBand-glute-bridge": {
       "name": "弹力带臀桥",
       "description": "在大腿周围套上弹力带进行的臀桥，以增加臀中肌的激活。"
     },
@@ -352,19 +352,19 @@
       "name": "绳索躯干转体（站姿）",
       "description": "一个通过对抗绳索阻力进行旋转运动来锻炼腹斜肌的核心训练动作。"
     },
-    "resistance-band-chest-press": {
+    "resistanceBand-chest-press": {
       "name": "弹力带胸部推举",
       "description": "一种使用弹力带的胸部推举变式，可以站着或躺着进行。"
     },
-    "resistance-band-row": {
+    "resistanceBand-row": {
       "name": "弹力带划船（坐姿或站姿）",
       "description": "使用弹力带锻炼背部肌肉，可以固定或手持。"
     },
-    "resistance-band-deadlift": {
+    "resistanceBand-deadlift": {
       "name": "弹力带硬拉",
       "description": "一种使用弹力带的硬拉变式，适合学习动作或在较轻的日子里进行。"
     },
-    "resistance-band-lateral-walk": {
+    "resistanceBand-lateral-walk": {
       "name": "弹力带侧向行走（螃蟹步）",
       "description": "锻炼臀中肌和髋外展肌，通过将弹力带套在脚踝或膝盖周围侧向行走来完成。"
     },
@@ -685,7 +685,7 @@
     "name": "哑铃集中弯举",
     "description": "一种坐姿的二头肌弯举，肘部抵住大腿内侧，以孤立锻炼二头肌。"
   },
-  "dumbbell-incline-bench-press": {
+  "dumbbell-inclineBench-press": {
     "name": "哑铃上斜卧推",
     "description": "在上斜凳上推举哑铃，目标是上胸部、肩部和三头肌。"
   },

@@ -72,6 +72,8 @@ import { SET_TYPE } from '../workout-builder';
 import { BumpClickDirective } from '../../../shared/directives/bump-click.directive';
 import { repsTargetAsString, repsTypeToReps, genRepsTypeFromRepsNumber, getDurationValue, durationToExact, getWeightValue, weightToExact, getDistanceValue, distanceToExact, restToExact, getRestValue, getRepsValue, repsToExact, weightTargetAsString, distanceTargetAsString, durationTargetAsString, restTargetAsString } from '../../../core/services/workout-helper.service';
 import { WorkoutUtilsService } from '../../../core/services/workout-utils.service';
+import { WorkoutSection } from '../../../core/models/workout-section.model';
+import { WorkoutSectionType } from '../../../core/models/workout-section-type.model';
 
 // Interface for saving the paused state
 
@@ -275,6 +277,26 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const totalCompletedSets = log.exercises?.reduce((total, ex) => total + ex.sets.length, 0) || 0;
     return Math.min(100, (totalCompletedSets / totalPlannedSets) * 100);
   });
+
+  sectionProgress(section: WorkoutSection, log: Partial<WorkoutLog>) {
+    const totalSets = section.exercises.reduce((sum, ex) => sum + (ex.sets?.length ?? 0), 0);
+    const completedSets = section.exercises.reduce((sum, ex) => {
+      const logEx = log.exercises?.find(le => le.exerciseId === ex.exerciseId);
+      return sum + (logEx?.sets.length ?? 0);
+    }, 0);
+    return totalSets ? Math.min(100, (completedSets / totalSets) * 100) : 0;
+  }
+
+  getSectionProgressColor(section: WorkoutSection | null): string {
+    switch (section?.type) {
+      case WorkoutSectionType.WARM_UP: return '#f59e0b'; // amber-500
+      case WorkoutSectionType.MAIN_LIFT: return '#ef4444'; // red-500
+      case WorkoutSectionType.CARDIO: return '#3b82f6'; // blue-500
+      case WorkoutSectionType.FINISHER: return '#a855f7'; // purple-500
+      case WorkoutSectionType.COOL_DOWN: return '#10b981'; // emerald-500
+      default: return '#6b7280'; // gray-500
+    }
+  }
 
 
   @ViewChildren('exerciseCard') exerciseCards!: QueryList<ElementRef>;
@@ -1103,8 +1125,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
             // --- SCROLL LOGIC ---
             // If sets HAVE been logged, find the first uncompleted one to scroll to.
-            if (false){
-              
+            if (false) {
+
             }
             if (hasLoggedSetsForThisExercise) {
               if (this.isSupersetStart(index)) {
@@ -1867,7 +1889,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const newCustomExercise: Exercise = {
       id: `custom-adhoc-ex-${uuidv4()}`,
       name: 'Custom exercise',
-      description: '', category: 'bodyweight-calisthenics', muscleGroups: [], primaryMuscleGroup: undefined, imageUrls: []
+      description: '', category: 'bodyweightCalisthenics', muscleGroups: [], primaryMuscleGroup: undefined, imageUrls: []
     };
     await this.selectExerciseToAddFromModal(newCustomExercise);
   }
@@ -2223,7 +2245,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.playerSubState.set(PlayerSubState.Resting);
     this.restTimerMode.set(TIMER_MODES.timer);
     this.restDuration.set(duration);
-    this.restTimerMainText.set('RESTING');
+    this.restTimerMainText.set(this.translate.instant('compactPlayer.rest'));
     this.restTimerNextUpText.set('Loading next set...');
     this.restTimerNextSetDetails.set(null);
     this.isRestTimerVisible.set(true);
@@ -3709,7 +3731,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
       if (shouldStartRest && set.targetRest) {
         this.lastLoggedSetForRestUpdate = this.getLoggedSet(exIndex, setIndex, roundIndex) ?? null;
-        this.startRestPeriod(getRestValue(set.targetRest), exIndex, setIndex);
+        setTimeout(() => {
+          this.startRestPeriod(getRestValue(set.targetRest), exIndex, setIndex);
+        }, 300);
       } else {
         setTimeout(() => { this.handleAutoExpandNextExercise(); }, 800);
         // this.autoCollapsePreviousSets();
@@ -3744,12 +3768,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (!routine) return this.workoutUtilsService.defaultHiddenFields();
     // Delegate to the existing service method
     const result = this.workoutUtilsService.getFieldsForSet(routine, exIndex, setIndex);
-    if (restExcluded){
-      result.visible = result.visible.filter(field => field !== METRIC.rest )
+    if (restExcluded) {
+      result.visible = result.visible.filter(field => field !== METRIC.rest)
     }
     return result;
   }
-  
+
 
   public canAddField(exIndex: number, setIndex: number): boolean {
     const fields = this.getFieldsForSet(exIndex, setIndex);
@@ -4786,6 +4810,49 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return Array.from(this.invalidInputs()).some(key => key.startsWith(prefix));
   }
 
+  protected countAvailableMetrics(exIndex: number, setIndex: number, metric: METRIC): number {
+    const routine = this.routine();
+    if (!routine) return 0;
+    const set = routine.exercises[exIndex]?.sets[setIndex];
+    if (!set) return 0;
+
+    let availableSchemes: AnyScheme[];
+    let currentTarget: AnyTarget | null | undefined;
+
+    // 1. Get the correct metadata array and current value based on the metric.
+    //    CRUCIALLY, we filter for `availableInPlayer` because this is the player component.
+    switch (metric) {
+      case METRIC.reps:
+        availableSchemes = REPS_TARGET_SCHEMES.filter(s => s.availableInPlayer);
+        currentTarget = set.targetReps;
+        break;
+      case METRIC.weight:
+        availableSchemes = WEIGHT_TARGET_SCHEMES.filter(s => s.availableInPlayer);
+        currentTarget = set.targetWeight;
+        break;
+      case METRIC.duration:
+        availableSchemes = DURATION_TARGET_SCHEMES.filter(s => s.availableInPlayer);
+        currentTarget = set.targetDuration;
+        break;
+      case METRIC.distance:
+        availableSchemes = DISTANCE_TARGET_SCHEMES.filter(s => s.availableInPlayer);
+        currentTarget = set.targetDistance;
+        break;
+      case METRIC.rest:
+        availableSchemes = REST_TARGET_SCHEMES.filter(s => s.availableInPlayer);
+        currentTarget = set.targetRest;
+        break;
+      default:
+        this.toastService.error(`Scheme editing is not supported for metric: ${metric}`);
+        return 0;
+    }
+
+
+    availableSchemes = availableSchemes.filter(s => s.type !== currentTarget?.type);
+
+    return availableSchemes.length;
+  }
+
   /**
  * GENERIC: Opens a modal to configure the target scheme for any metric.
  * @param exIndex The index of the exercise.
@@ -5234,26 +5301,32 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   showExerciseSelectionModal = signal(false);
-        async onAddExercisesSelected(exercises: Exercise[]) {
-      this.showExerciseSelectionModal.set(false);
-    
-      for (const exercise of exercises) {
-        // Use the same logic as selectExerciseToAddFromModal
-        const log = this.currentWorkoutLog();
-        const allLoggedExercises = log.exercises || [];
-        const lastLoggedExercise = allLoggedExercises.length > 0 ? allLoggedExercises[allLoggedExercises.length - 1] : null;
-        const lastLoggedSet = lastLoggedExercise && lastLoggedExercise.sets.length > 0 ? lastLoggedExercise.sets[lastLoggedExercise.sets.length - 1] : null;
-    
-        const newWorkoutExercise = await this.workoutService.promptAndCreateWorkoutExercise(exercise, lastLoggedSet);
-    
-        if (newWorkoutExercise) {
-          if (exercise.id.startsWith('custom-adhoc-ex-')) {
-            const newExerciseToBeSaved = this.exerciseService.mapWorkoutExerciseToExercise(newWorkoutExercise, exercise);
-            this.exerciseService.addExercise(newExerciseToBeSaved);
-          }
-          this.addExerciseToRoutine(newWorkoutExercise);
+  async onAddExercisesSelected(exercises: Exercise[]) {
+    this.showExerciseSelectionModal.set(false);
+
+    for (const exercise of exercises) {
+      // Use the same logic as selectExerciseToAddFromModal
+      const log = this.currentWorkoutLog();
+      const allLoggedExercises = log.exercises || [];
+      const lastLoggedExercise = allLoggedExercises.length > 0 ? allLoggedExercises[allLoggedExercises.length - 1] : null;
+      const lastLoggedSet = lastLoggedExercise && lastLoggedExercise.sets.length > 0 ? lastLoggedExercise.sets[lastLoggedExercise.sets.length - 1] : null;
+
+      const newWorkoutExercise = await this.workoutService.promptAndCreateWorkoutExercise(exercise, lastLoggedSet);
+
+      if (newWorkoutExercise) {
+        if (exercise.id.startsWith('custom-adhoc-ex-')) {
+          const newExerciseToBeSaved = this.exerciseService.mapWorkoutExerciseToExercise(newWorkoutExercise, exercise);
+          this.exerciseService.addExercise(newExerciseToBeSaved);
         }
+        this.addExerciseToRoutine(newWorkoutExercise);
       }
     }
+  }
+
+  getSectionForExercise(exIndex: number): WorkoutSection | null {
+    const exercise = this.routine()?.exercises?.[exIndex];
+    if (!exercise || !exercise.section) return null;
+    return this.routine()?.sections?.find(s => s.type === exercise.section) ?? null;
+  }
 
 }

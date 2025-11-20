@@ -1,10 +1,10 @@
 {
   "categories": {
-    "bodyweight-calisthenics": "Собственный вес и калистеника",
-    "rehabilitation-mobility": "Реабилитация и мобильность",
-    "yoga-pilates": "Йога и пилатес",
+    "bodyweightCalisthenics": "Собственный вес и калистеника",
+    "rehabilitationMobility": "Реабилитация и мобильность",
+    "yogaPilates": "Йога и пилатес",
     "powerlifting": "Пауэрлифтинг",
-    "olympic-weightlifting": "Олимпийская тяжёлая атлетика",
+    "olympicWeightlifting": "Олимпийская тяжёлая атлетика",
     "crossfit": "Кроссфит",
     "dumbbells": "Гантели",
     "kettlebells": "Гири",

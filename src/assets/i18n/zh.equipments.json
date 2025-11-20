@@ -43,7 +43,7 @@
         "flat-bench": "平凳",
         "foam-roller": "泡沫轴",
         "ghd": "臀腿训练器",
-        "gymnastic-rings": "体操环",
+        "gymnasticRing": "体操环",
         "hack-squat-machine": "哈克深蹲机",
         "harness-straps": "背带/绑带",
         "head-harness": "头部训练带",
@@ -51,7 +51,7 @@
         "hip-abduction-machine": "髋外展训练机",
         "hip-adduction-machine": "髋内收训练机",
         "hyperextension-bench": "俯身挺背凳",
-        "incline-bench": "上斜训练凳",
+        "inclineBench": "上斜训练凳",
         "inversion-table": "倒立台",
         "jump-rope": "跳绳",
         "keg": "啤酒桶",
@@ -141,7 +141,7 @@
         "medicineBall": "健身球/重力球",
         "padding": "垫子",
         "bulgarianBag": "保加利亚包",
-        "indianClubs": "印度棒",
+        "indianClub": "印度棒",
         "vipr": "ViPR训练器",
         "stairs": "楼梯"
     }

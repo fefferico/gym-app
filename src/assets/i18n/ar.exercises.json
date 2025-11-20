@@ -225,23 +225,23 @@
       "name": "تقطيع الخشب بالكابل (من الأعلى للأسفل أو من الأسفل للأعلى)",
       "description": "تمرين دوراني للجذع يشغل العضلات المائلة والبطنية المستعرضة."
     },
-    "resistance-band-bicep-curl": {
+    "resistanceBand-bicep-curl": {
       "name": "مرجحة البايسبس بشريط المقاومة",
       "description": "مرجحة البايسبس تتم بشريط مقاومة، مما يوفر مقاومة متغيرة."
     },
-    "resistance-band-tricep-pushdown": {
+    "resistanceBand-tricep-pushdown": {
       "name": "ضغط الترايسبس بشريط المقاومة",
       "description": "ضغط الترايسبس باستخدام شريط مقاومة مثبت في الأعلى أو ممسوك."
     },
-    "resistance-band-pull-apart": {
+    "resistanceBand-pull-apart": {
       "name": "سحب شريط المقاومة",
       "description": "تمرين رائع لصحة الكتف، يستهدف العضلة الدالية الخلفية وعضلات الظهر العلوية."
     },
-    "resistance-band-squat": {
+    "resistanceBand-squat": {
       "name": "سكوات بشريط المقاومة",
       "description": "سكوات يتم بشريط مقاومة تحت القدمين وملفوف فوق الكتفين أو ممسوك، مما يضيف مقاومة."
     },
-    "resistance-band-glute-bridge": {
+    "resistanceBand-glute-bridge": {
       "name": "جسر الأرداف بشريط المقاومة",
       "description": "جسر الأرداف مع شريط مقاومة حول الفخذين لتنشيط إضافي للعضلة الألوية الوسطى."
     },
@@ -353,19 +353,19 @@
       "name": "لف الجذع بالكابل (واقفًا)",
       "description": "تمرين للجذع يستهدف العضلات المائلة من خلال الحركة الدورانية ضد مقاومة الكابل."
     },
-    "resistance-band-chest-press": {
+    "resistanceBand-chest-press": {
       "name": "ضغط الصدر بشريط المقاومة",
       "description": "شكل من أشكال ضغط الصدر باستخدام أشرطة المقاومة، يمكن إجراؤه واقفًا أو مستلقيًا."
     },
-    "resistance-band-row": {
+    "resistanceBand-row": {
       "name": "تجديف بشريط المقاومة (جالسًا أو واقفًا)",
       "description": "يستهدف عضلات الظهر باستخدام شريط مقاومة، يمكن تثبيته أو مسكه."
     },
-    "resistance-band-deadlift": {
+    "resistanceBand-deadlift": {
       "name": "الرفعة الميتة بشريط المقاومة",
       "description": "شكل من أشكال الرفعة الميتة باستخدام أشرطة المقاومة، جيد لتعلم الأداء الصحيح أو للأيام الخفيفة."
     },
-    "resistance-band-lateral-walk": {
+    "resistanceBand-lateral-walk": {
       "name": "مشي جانبي بشريط المقاومة (مشي السلطعون)",
       "description": "يستهدف العضلة الألوية الوسطى ومبعدات الورك، يتم بالمشي جانبيًا مع شريط حول الكاحلين أو الركبتين."
     },
@@ -689,7 +689,7 @@
       "name": "مرجحة التركيز بالدمبل",
       "description": "مرجحة بايسبس جالسة حيث يتم إسناد الكوع على الفخذ الداخلي لعزل عضلة البايسبس."
     },
-    "dumbbell-incline-bench-press": {
+    "dumbbell-inclineBench-press": {
       "name": "ضغط بنش مائل بالدمبل",
       "description": "يستهدف الجزء العلوي من الصدر والكتفين والترايسبس عن طريق ضغط الدمبل على مقعد مائل."
     },

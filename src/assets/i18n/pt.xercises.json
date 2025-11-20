@@ -224,23 +224,23 @@
       "name": "Lenhador no Cabo (de Cima para Baixo ou de Baixo para Cima)",
       "description": "Um exercício de rotação do core que trabalha os oblíquos e o transverso do abdômen."
     },
-    "resistance-band-bicep-curl": {
+    "resistanceBand-bicep-curl": {
       "name": "Rosca Bíceps com Elástico de Resistência",
       "description": "Rosca bíceps realizada com um elástico de resistência, proporcionando resistência variável."
     },
-    "resistance-band-tricep-pushdown": {
+    "resistanceBand-tricep-pushdown": {
       "name": "Tríceps na Polia com Elástico de Resistência",
       "description": "Extensão de tríceps utilizando um elástico de resistência ancorado acima da cabeça ou seguro por algo."
     },
-    "resistance-band-pull-apart": {
+    "resistanceBand-pull-apart": {
       "name": "Puxada com Elástico de Resistência",
       "description": "Um ótimo exercício para a saúde dos ombros, visando os deltoides posteriores e os músculos da parte superior das costas."
     },
-    "resistance-band-squat": {
+    "resistanceBand-squat": {
       "name": "Agachamento com Elástico de Resistência",
       "description": "Agachamentos realizados com um elástico de resistência sob os pés e passado sobre os ombros ou segurado, adicionando resistência."
     },
-    "resistance-band-glute-bridge": {
+    "resistanceBand-glute-bridge": {
       "name": "Elevação Pélvica com Elástico de Resistência",
       "description": "Elevações pélvicas com um elástico de resistência ao redor das coxas para maior ativação do glúteo médio."
     },
@@ -352,19 +352,19 @@
       "name": "Giro de Tronco no Cabo (Em Pé)",
       "description": "Um exercício para o core que visa os oblíquos através de um movimento rotacional contra a resistência do cabo."
     },
-    "resistance-band-chest-press": {
+    "resistanceBand-chest-press": {
       "name": "Supino com Elástico de Resistência",
       "description": "Uma variação do supino utilizando elásticos de resistência, pode ser feita em pé ou deitado."
     },
-    "resistance-band-row": {
+    "resistanceBand-row": {
       "name": "Remada com Elástico de Resistência (Sentado ou Em Pé)",
       "description": "Visa os músculos das costas utilizando um elástico de resistência, que pode ser ancorado ou segurado."
     },
-    "resistance-band-deadlift": {
+    "resistanceBand-deadlift": {
       "name": "Levantamento Terra com Elástico de Resistência",
       "description": "Uma variação do levantamento terra utilizando elásticos de resistência, boa para aprender a forma ou para dias mais leves."
     },
-    "resistance-band-lateral-walk": {
+    "resistanceBand-lateral-walk": {
       "name": "Caminhada Lateral com Elástico de Resistência (Passada de Caranguejo)",
       "description": "Visa o glúteo médio e os abdutores do quadril, realizada caminhando de lado com um elástico ao redor dos tornozelos ou joelhos."
     },
@@ -686,7 +686,7 @@
       "name": "Rosca Concentrada com Halter",
       "description": "Uma rosca de bíceps sentada onde o cotovelo é apoiado na parte interna da coxa para isolar o músculo do bíceps."
     },
-    "dumbbell-incline-bench-press": {
+    "dumbbell-inclineBench-press": {
       "name": "Supino Inclinado com Halteres",
       "description": "Visa a parte superior do peito, ombros e tríceps, empurrando halteres em um banco inclinado."
     },

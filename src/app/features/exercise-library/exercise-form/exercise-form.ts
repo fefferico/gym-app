@@ -59,13 +59,13 @@ export class ExerciseFormComponent implements OnInit {
   private muscleMap = new Map<string, string>(); // <id, translatedName>
   private equipmentMap = new Map<string, string>(); // <id, translatedName>
 
-  categories: ExerciseCategory[] = ['barbells', 'dumbbells', 'bodyweight-calisthenics', 'machines', 'cables', 'kettlebells', 'bands', 'other', 'stretching', 'cardio'];
+  categories: ExerciseCategory[] = ['barbells', 'dumbbells', 'bodyweightCalisthenics', 'machines', 'cables', 'kettlebells', 'bands', 'other', 'stretching', 'cardio'];
 
 constructor() {
     this.exerciseForm = this.fb.group({
       name: ['', Validators.required],
       description: [''],
-      category: ['bodyweight-calisthenics' as ExerciseCategory, Validators.required],
+      category: ['bodyweightCalisthenics' as ExerciseCategory, Validators.required],
       primaryMuscleGroup: ['', Validators.required], // Will store muscle ID
       muscleGroups: this.fb.array([]), // Will store muscle IDs
       equipmentNeeded: this.fb.array([]), // Will store equipment IDs
@@ -161,11 +161,11 @@ constructor() {
       this.exerciseForm.markAllAsTouched();
       return;
     }
-    const formValue = this.exerciseForm.value;
+    const formValue: Exercise = this.exerciseForm.value;
 
     try {
       if (this.isEditMode() && this.editingExerciseId) {
-        await firstValueFrom(this.exerciseService.updateExercise({ id: this.editingExerciseId, ...formValue }));
+        await firstValueFrom(this.exerciseService.updateExercise({ ...formValue, id: this.editingExerciseId }));
         this.router.navigate(['/library', this.editingExerciseId]);
       } else {
         const newExercise = await firstValueFrom(this.exerciseService.addExercise(formValue));

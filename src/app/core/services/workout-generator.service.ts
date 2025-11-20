@@ -15,7 +15,7 @@ import { distanceToExact, durationToExact, repsNumberToExactRepsTarget, restToEx
 export interface WorkoutGenerationOptions {
     duration: number; // in minutes
     goal: 'hypertrophy' | 'strength' | 'muscular endurance';
-    split: 'full-body' | 'upper-lower' | 'push-pull-legs';
+    split: "fullBody" | 'upper-lower' | 'push-pull-legs';
     targetMuscles: string[];
     avoidMuscles: string[];
     usePersonalGym: boolean;
@@ -46,7 +46,7 @@ export class WorkoutGeneratorService {
         const optionsForFiltering: WorkoutGenerationOptions = {
             usePersonalGym: true,
             avoidMuscles: [],
-            split: 'full-body', // A quick workout is always full-body
+            split: "fullBody", // A quick workout is always full-body
             targetMuscles: [],    // No specific targets, so the service will use the default for the split
             // These properties aren't used by the filtering step, but we provide them to satisfy the type.
             duration: 45,
@@ -163,7 +163,7 @@ export class WorkoutGeneratorService {
         if (equipmentFilterValues.length > 0) {
             availableExercises = availableExercises.filter(ex => {
                 // Always include exercises that don't require any specific equipment
-                if (ex.category === 'bodyweight-calisthenics' || (!ex.equipment && (!ex.equipmentNeeded || ex.equipmentNeeded.length === 0))) {
+                if (ex.category === 'bodyweightCalisthenics' || (!ex.equipment && (!ex.equipmentNeeded || ex.equipmentNeeded.length === 0))) {
                     return true;
                 }
 
@@ -220,7 +220,7 @@ export class WorkoutGeneratorService {
         switch (split) {
             case 'upper-lower': return new Set(['chest', 'lats', 'shoulders', 'biceps', 'triceps', 'traps', 'lower back', 'forearms', 'abs', 'obliques']);
             case 'push-pull-legs': return new Set(['chest', 'shoulders', 'triceps']);
-            case 'full-body':
+            case "fullBody":
             default:
                 return new Set(['quadriceps', 'hamstrings', 'glutes', 'calves', 'chest', 'lats', 'shoulders', 'biceps', 'triceps', 'lower back', 'traps', 'abs']);
         }
@@ -245,7 +245,7 @@ export class WorkoutGeneratorService {
         // This inherently respects all exclusions applied by getSelectableExercises.
         const equipmentGoals = new Set<string>();
         allValidExercises.forEach(ex => {
-            if (ex.equipment && ex.category !== 'bodyweight-calisthenics') {
+            if (ex.equipment && ex.category !== 'bodyweightCalisthenics') {
                 equipmentGoals.add(ex.equipment.toLowerCase());
             }
             // Also consider the equipmentNeeded array if it exists
@@ -381,7 +381,7 @@ export class WorkoutGeneratorService {
                 targetDuration: durationToExact(duration),
                 targetDistance: distanceToExact(1),
             };
-        } else if (exercise.category === 'bodyweight-calisthenics') {
+        } else if (exercise.category === 'bodyweightCalisthenics') {
             templateSet = {
                 fieldOrder: [METRIC.reps, METRIC.rest],
                 targetReps: { type: RepsTargetType.range, min: repRange.min, max: repRange.max },
@@ -435,7 +435,7 @@ export class WorkoutGeneratorService {
                 targetDistance: distanceToExact(1),   // Default to 1 km/mi
                 targetRest: restToExact(90),
             }));
-        } else if (exercise.category === 'bodyweight-calisthenics') {
+        } else if (exercise.category === 'bodyweightCalisthenics') {
             // Bodyweight exercises get reps but no weight
             sets = Array.from({ length: numSets }, () => ({
                 id: uuidv4(),

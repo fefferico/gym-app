@@ -1,10 +1,10 @@
 {
   "categories": {
-    "bodyweight-calisthenics": "Peso corporal & Calistenia",
-    "rehabilitation-mobility": "Reabilitação & Mobilidade",
-    "yoga-pilates": "Yoga & Pilates",
+    "bodyweightCalisthenics": "Peso corporal & Calistenia",
+    "rehabilitationMobility": "Reabilitação & Mobilidade",
+    "yogaPilates": "Yoga & Pilates",
     "powerlifting": "Levantamento de potência",
-    "olympic-weightlifting": "Levantamento olímpico",
+    "olympicWeightlifting": "Levantamento olímpico",
     "crossfit": "CrossFit",
     "dumbbells": "Halteres",
     "kettlebells": "Kettlebells",

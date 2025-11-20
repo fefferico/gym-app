@@ -25,8 +25,9 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { EquipmentService } from '../../core/services/equipment.service';
 import { Muscle } from '../../core/models/muscle.model';
 import { Equipment } from '../../core/models/equipment.model';
-import { getDistanceValue, getDurationValue, getWeightValue, repsTypeToReps } from '../../core/services/workout-helper.service';
+import { getDistanceValue, getDurationValue, getRepsValue, getWeightValue, repsTypeToReps } from '../../core/services/workout-helper.service';
 import { DistanceTarget, DurationTarget, RepsTarget, WeightTarget } from '../../core/models/workout.model';
+import { SafeUrlPipe } from '../../shared/directives/safeUrl.directive';
 
 
 export interface HydratedExercise extends Omit<Exercise, 'primaryMuscleGroup' | 'muscleGroups' | 'equipmentNeeded'> {
@@ -54,8 +55,8 @@ type TopLevelRecord = {
 @Component({
   selector: 'app-exercise-detail',
   standalone: true,
-  providers: [DecimalPipe],
-  imports: [CommonModule, RouterLink, DatePipe, NgxChartsModule, ActionMenuComponent, IconComponent, MuscleMapComponent, WeightUnitPipe, TranslateModule], // Added DatePipe, NgxChartsModule
+  providers: [DecimalPipe, SafeUrlPipe],
+  imports: [CommonModule, RouterLink, DatePipe, NgxChartsModule, ActionMenuComponent, IconComponent, MuscleMapComponent, WeightUnitPipe, TranslateModule, SafeUrlPipe], // Added DatePipe, NgxChartsModule
   templateUrl: './exercise-detail.html',
   styleUrl: './exercise-detail.scss',
   animations: [
@@ -152,7 +153,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   maxDurationChartData = signal<ChartSeries[]>([]);
   maxDistanceChartData = signal<ChartSeries[]>([]);
   // --- END: ADD/UPDATE SIGNALS ---
-
+  showVideoModal = false;
   constructor(@Inject(DOCUMENT) private document: Document) {
     effect(() => {
       // When this component is acting as a modal and is visible, prevent body scrolling.
@@ -279,15 +280,15 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   formatPbValue(pb: PersonalBestSet): string {
     let value = '';
     if (pb.weightLogged !== undefined && pb.weightLogged !== null) {
-      value += `${pb.weightLogged}${this.unitService.getWeightUnitSuffix()}`;
+      value += `${getWeightValue(pb.weightLogged)}${this.unitService.getWeightUnitSuffix()}`;
       if (pb.repsLogged && repsTypeToReps(pb.repsLogged) > 1 && !pb.pbType.includes('RM (Actual)') && !pb.pbType.includes('RM (Estimated)')) {
         // Show reps for "Heaviest Lifted" if reps > 1, but not for explicit 1RMs where reps is 1 by definition
-        value += ` x ${pb.repsLogged}`;
+        value += ` x ${getRepsValue(pb.repsLogged)}`;
       } else if (pb.repsLogged && repsTypeToReps(pb.repsLogged) > 1 && pb.pbType === "Heaviest Lifted") {
-        value += ` x ${pb.repsLogged}`;
+        value += ` x ${getRepsValue(pb.repsLogged)}`;
       }
     } else if (pb.repsLogged && pb.pbType.includes('Max Reps')) {
-      value = `${pb.repsLogged} reps`;
+      value = `${getRepsValue(pb.repsLogged)} reps`;
     } else if (pb.durationLogged && getDurationValue(pb.durationLogged) > 0 && pb.pbType.includes('Max Duration')) {
       value = `${this.formatDurationForRecord(getDurationValue(pb.durationLogged))}s`;
     }
@@ -491,7 +492,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
       const maxWeight = pbs.find(p => p.pbType === 'Heaviest Lifted');
       if (est1RM) records.push({ label: this.translate.instant('exerciseDetail.records.est1rm'), value: this.decimalPipe.transform(getWeightValue(est1RM.weightLogged), '1.0-1') ?? '0', unit: 'kg' });
       if (maxVol) records.push({ label: this.translate.instant('exerciseDetail.records.maxVolume'), value: this.decimalPipe.transform(maxVol.volume, '1.0-1') ?? '0', unit: 'kg' });
-      if (maxWeight) records.push({ label: this.translate.instant('exerciseDetail.records.maxWeight'), value: this.decimalPipe.transform(getWeightValue(maxWeight.weightLogged), '1.od-1') ?? '0', unit: 'kg' });
+      if (maxWeight) records.push({ label: this.translate.instant('exerciseDetail.records.maxWeight'), value: this.decimalPipe.transform(getWeightValue(maxWeight.weightLogged), '1.0-1') ?? '0', unit: 'kg' });
     }
 
     return records;
@@ -690,7 +691,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
       parts.push(this.translate.instant('exerciseDetail.historyDisplay.bodyweight'));
     }
 
-    if (set.repsLogged) parts.push(`${set.repsLogged} ${this.translate.instant('exerciseDetail.historyDisplay.reps')}`);
+    if (set.repsLogged) parts.push(`${getRepsValue(set.repsLogged)} ${this.translate.instant('exerciseDetail.historyDisplay.reps')}`);
     if (set.distanceLogged && getDistanceValue(set.distanceLogged) > 0) parts.push(`${this.decimalPipe.transform(getDistanceValue(set.distanceLogged), '1.0-2')} ${this.unitService.getDistanceMeasureUnitSuffix()}`);
     if (set.durationLogged && getDurationValue(set.durationLogged) > 0) parts.push(this.formatDurationForRecord(getDurationValue(set.durationLogged)));
 
@@ -733,12 +734,12 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   getTranslatedExercise(exercise: Exercise): Observable<Exercise> {
-  return this.translate.get('exercises').pipe(
-    map((translations: any) => ({
-      ...exercise,
-      name: translations[exercise.id]?.name || exercise.name,
-      description: translations[exercise.id]?.description || exercise.description,
-    }))
-  );
-}
+    return this.translate.get('exercises').pipe(
+      map((translations: any) => ({
+        ...exercise,
+        name: translations[exercise.id]?.name || exercise.name,
+        description: translations[exercise.id]?.description || exercise.description,
+      }))
+    );
+  }
 }

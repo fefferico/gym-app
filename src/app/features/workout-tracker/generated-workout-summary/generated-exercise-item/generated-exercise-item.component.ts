@@ -79,7 +79,7 @@ export class GeneratedExerciseItemComponent implements OnInit {
     ngOnInit(): void { }
 
 
-    isBodyweight = computed<boolean>(() => this.baseExercise()?.category === 'bodyweight-calisthenics');
+    isBodyweight = computed<boolean>(() => this.baseExercise()?.category === 'bodyweightCalisthenics');
     isCardio = computed<boolean>(() => this.baseExercise()?.category === 'cardio');
 
     roundInfo = computed(() => {

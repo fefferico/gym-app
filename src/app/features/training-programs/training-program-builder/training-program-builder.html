@@ -1015,7 +1015,8 @@
     [isMultiSelect]="true" [title]="'workoutBuilder.modal.addTitle' | translate" [exercises]="availableExercises"
     itemIconName="plus-circle" itemIconClass="text-primary dark:text-primary-light"
     (exercisesSelected)="selectExercisesForDay($event)" (createCustomClicked)="handleTrulyCustomExerciseEntry()"
-    (close)="closeExerciseSelectionModal()">
+    (close)="closeExerciseSelectionModal()"
+    >
 </app-exercise-selection-modal>
 
 <!-- NEW: Custom Workout Builder Modal -->
