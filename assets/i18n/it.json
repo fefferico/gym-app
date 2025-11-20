@@ -783,6 +783,7 @@
     "defaultWorkoutName": "Allenamento",
     "paused": "[IN PAUSA]",
     "overallProgress": "Progresso totale",
+    "overallSectionProgress": "Progresso sezioni",
     "emom": "EMOM",
     "superset": "SUPERSET",
     "rounds": "Turno",
@@ -2846,5 +2847,13 @@
     "invalidNumber": "Per favore, inserisci un numero valido per '{{field}}'.",
     "minNumber": "Il valore per '{{field}}' deve essere almeno {{min}}.",
     "maxNumber": "Il valore per '{{field}}' non deve superare {{max}}."
+  },
+  "workoutSections": {
+    "None": "",
+    "WarmUp": "Riscaldamento",
+    "MainLift": "Allenamento",
+    "Cardio": "Cardio",
+    "Finisher": "Finisher",
+    "CoolDown": "Defaticamento"
   }
 }
