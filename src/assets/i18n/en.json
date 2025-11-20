@@ -152,6 +152,18 @@
       "targetWaistLabel": "Target Waist ({{unit}})"
     },
     "player": {
+      "restTimerMode": {
+        "label": "Rest Timer Mode",
+        "description": "Choose between a fullscreen or compact rest timer.",
+        "fullscreen": "Fullscreen",
+        "compact": "Compact"
+      },
+      "summaryDisplayMode": {
+        "label": "Summary Display",
+        "description": "Choose how set summaries are displayed.",
+        "icons": "Visual (icons)",
+        "text": "Textual"
+      },
       "title": "Workout Player Settings",
       "playerModeLabel": "Player Mode",
       "playerModeDescription": "Choose between Compact and Focus player",
@@ -888,9 +900,9 @@
       "enterNumericRepsError": "You must change the actual reps value before setting the set as completed",
       "enterNumericWeightError": "You must change the actual weight value before setting the set as completed",
       "progressiveOverloadApplied": "Progressive Overload applied to {{name}}",
-    "progressiveOverloadAppliedMultiple": "Progressive Overload applied to: {{names}}",
-    "progressiveOverloadAppliedMultipleTitle": "Progressive Overload Applied",
-    "progressiveOverloadAppliedMultipleMessage": "The following exercises have been auto-incremented:"
+      "progressiveOverloadAppliedMultiple": "Progressive Overload applied to: {{names}}",
+      "progressiveOverloadAppliedMultipleTitle": "Progressive Overload Applied",
+      "progressiveOverloadAppliedMultipleMessage": "The following exercises have been auto-incremented:"
     },
     "alerts": {
       "toughWorkoutTitle": "Last Workout Was Tough",
@@ -955,7 +967,7 @@
       "chooseTimerMessage": "Choose the timer type",
       "chooseTimerTitle": "Timer type",
       "prefillTitle": "Prefill with Previous Performance?",
-    "prefillMessage": "Historical data was found for some of the exercises in this routine. Do you want to use the most recently logged values or keep the original targets?",
+      "prefillMessage": "Historical data was found for some of the exercises in this routine. Do you want to use the most recently logged values or keep the original targets?",
       "useHistorical": "Previous Values",
       "useOriginal": "Routine Targets"
     },
@@ -1102,7 +1114,7 @@
       "custom": "Custom"
     },
     "routineBuilder": {
-      "nameWizardMsg":"Enter a name for your new routine.",
+      "nameWizardMsg": "Enter a name for your new routine.",
       "goalWizardMsg": "Select the main goal for this routine",
       "nameLabel": "Routine Name",
       "namePlaceholder": "Routine name",
@@ -2839,7 +2851,7 @@
     "invalidNumber": "Please enter a valid number for '{{field}}'.",
     "minNumber": "The value for '{{field}}' must be at least {{min}}.",
     "maxNumber": "The value for '{{field}}' must not exceed {{max}}."
-  } ,
+  },
   "workoutSections": {
     "None": "",
     "WarmUp": "WarmUp",

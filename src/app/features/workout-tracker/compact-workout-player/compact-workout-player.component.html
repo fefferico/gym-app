@@ -107,7 +107,7 @@
 
 
   <!-- Main Content: Exercises List -->
-  <main class="pt-5 px-1 pb-36 bg-gray-200 dark:bg-gray-900">
+  <main class="mt-4 px-1 pb-36 bg-gray-200 dark:bg-gray-900">
     <div *ngIf="routine() as currentRoutine; else loading" cdkDropList [cdkDropListData]="currentRoutine.exercises"
       (cdkDropListDropped)="onExerciseDrop($event)" class="">
       <ng-container *ngFor="let exercise of currentRoutine.exercises; let exIndex = index;">
@@ -133,21 +133,27 @@
           <div (click)="toggleExerciseExpansion(exIndex)"
             class="py-2 px-1 my-1 flex-col items-center justify-between cursor-pointer hover:bg-gray-100/50 dark:hover:bg-gray-700/50 hover:rounded-md">
             <div class="flex-col justify-start items-start space-x-3 min-w-0">
-              <div class="flex items-start">
+              <div class="flex items-start pt-1">
                 <div cdkDragHandle class="cursor-move pr-2">
                   <app-icon name="reorder" class="h-6 w-6 text-gray-400"></app-icon>
                 </div>
-                <h2
-                  class="max-w-[200px] sm:max-w-[250px] text-md font-semibold text-gray-800 dark:text-gray-100 text-wrap">
-                  <span [ngStyle]="{
-                    background: getSectionProgressColor(getSectionForExercise(exIndex))
-                  }" [ngClass]="{
-                    'text-white px-3 w-fit rounded-full inline-flex': true
-                  }">{{ getExerciseDisplayIndex(exIndex)}}</span>
-                  -
-                  <ng-container *ngIf="isSuperSet(exIndex)">{{ getSupersetDisplayName(exercise.supersetId!)
-                    }}</ng-container>
-                  <ng-container *ngIf="!isSuperSet(exIndex)">{{ exercise.exerciseName }}</ng-container>
+                <h2 #exerciseHeader
+                  class="max-w-[75vw] sm:max-w-[350px] text-md font-semibold text-gray-800 dark:text-gray-100 break-words">
+                  <ng-container *ngIf="isSuperSet(exIndex); else standardHeader">
+                    <span [ngClass]="{ 'text-white inline-flex flex-col items-start': true }">
+                      <span class="w-fit rounded-full px-2"
+                        [ngStyle]="{ background: getSectionProgressColor(getSectionForExercise(exIndex)) }">{{
+                        getExerciseDisplayIndex(exIndex) }}</span>
+                      <span style="white-space: pre-line;">{{ getSupersetDisplayName(exercise.supersetId!) }}</span>
+                    </span>
+                  </ng-container>
+                  <ng-template #standardHeader>
+                    <span [ngStyle]="{ background: getSectionProgressColor(getSectionForExercise(exIndex)) }"
+                      [ngClass]="{ 'text-white px-3 w-fit rounded-full inline-flex': true }">
+                      {{ getExerciseDisplayIndex(exIndex) }}
+                    </span>
+                    - {{ exercise.exerciseName }}
+                  </ng-template>
                 </h2>
               </div>
               <div class="px-5 flex items-center text-black dark:text-gray-400 text-sm"
@@ -166,8 +172,7 @@
             </div> -->
 
             <!-- Action Menu Container -->
-            <div class="absolute top-2 right-2 z-60" 
-                    appClickOutside (clickOutside)="closeExerciseActionMenu()">
+            <div class="absolute top-2 right-2 z-60" appClickOutside (clickOutside)="closeExerciseActionMenu()">
               <div class="relative">
                 <div class="flex">
                   <!-- <button appBumpClick (click)="toggleExerciseNotes(exIndex, $event)"
@@ -194,6 +199,8 @@
             </app-action-menu>
           </div>
 
+
+
           <!-- Sets Container -->
           <div *ngIf="expandedExerciseIndex() === exIndex"
             class="bg-gray-100 dark:bg-gray-700/50 pt-2 pb-1 px-1 border-t border-gray-200 dark:border-gray-700 rounded-b-md"
@@ -215,7 +222,7 @@
                 [style.maxHeight]="expandedSetAllPanel() === exIndex ? '500px' : '0px'">
                 <!-- METRIC CHIPS -->
                 <div class="flex flex-wrap gap-2 py-3 justify-center bg-gray-200 dark:bg-gray-800">
-                  <ng-container *ngFor="let metric of availableMetricsForSetAll">
+                  <ng-container *ngFor="let metric of getAvailableMetricsForSet(exIndex)">
                     <button type="button" class="px-3 py-1 rounded-full border font-semibold text-xs transition"
                       [ngClass]="{
                         'bg-primary text-white border-primary-light': isMetricActiveForAllSets(exIndex, metric),
@@ -320,10 +327,51 @@
                       </div>
 
                       <!-- Summary for collapsed view -->
-                      <div class="flex-1 text-sm text-gray-700 dark:text-gray-200 font-medium inline-flex items-center gap-1"
-                        *ngIf="!isSetExpanded(exIndex, setIndex)">
+                      <div
+                        class="flex-1 text-sm text-gray-700 dark:text-gray-200 font-medium inline-flex items-center gap-1"
+                        *ngIf=" getSummaryDisplayMode() === summaryDisplayModeEnum.Text && !isSetExpanded(exIndex, setIndex)">
                         {{ getSetSummary(exIndex, setIndex) }}
+                        <div class="flex flex-col">
+                          <ng-container *ngIf="!isSetCompleted(exIndex, setIndex)">
+                            <span *ngIf="setIndex === findFirstIncompleteSetIndex(exIndex)"
+                              class="w-fit inline-flex items-center gap-1 rounded-full bg-yellow-100 dark:bg-yellow-900/70 px-2 py-1 text-xs font-medium text-yellow-800 dark:text-yellow-300 animate-pulse">
+                              <app-icon name="target" class="h-4 w-4"></app-icon>
+                              {{ 'compactPlayer.nextUp' | translate }}
+                            </span>
+                            <span *ngIf="setIndex !== findFirstIncompleteSetIndex(exIndex)"
+                              class="w-fit inline-flex items-center gap-1 rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400">
+                              {{ 'compactPlayer.pending' | translate }}
+                            </span>
+                          </ng-container>
+                          <p *ngIf="isSetWarmup(exIndex, setIndex)" class="font-bold">
+                            <app-icon name="flame" class="h-4 w-4 inline-block mr-1"></app-icon>
+                            {{ 'compactPlayer.warmupSet' | translate }}
+                          </p>
+                        </div>
+                      </div>
 
+                      <div
+                        class="flex-1 text-sm text-gray-700 dark:text-gray-200 font-medium flex flex-wrap items-center gap-x-3 gap-y-1"
+                        *ngIf="getSummaryDisplayMode() === summaryDisplayModeEnum.Icons && !isSetExpanded(exIndex, setIndex)">
+                        <ng-container *ngIf="getSetUniformValues(exIndex, setIndex) as values">
+                          <span class="inline-flex items-center" *ngIf="values.reps">
+                            <app-icon name="reps" class="h-4 w-4 mr-0.5 inline-block"></app-icon>
+                            {{ values.reps }}
+                          </span>
+                          <span class="inline-flex items-center" *ngIf="values.weight">
+                            <app-icon name="weight" class="h-5 w-5 mr-0.5 inline-block"></app-icon>
+                            {{ values.weight }}{{ unitsService.getWeightUnitSuffix() }}
+                          </span>
+                          <span class="inline-flex items-center" *ngIf="values.distance">
+                            <app-icon name="distance" class="h-5 w-5 mr-0.5 inline-block"></app-icon>
+                            {{ values.distance }}{{ unitsService.getDistanceMeasureUnitSuffix() }}
+                          </span>
+                          <span class="inline-flex items-center"
+                            *ngIf="values.rest && getRestTimerMode() !== restTimerModeEnum.Compact">
+                            <app-icon name="rest" class="h-5 w-5 mr-0.5 inline-block"></app-icon>
+                            {{ formatSecondsToTime(values.rest) }}
+                          </span>
+                        </ng-container>
                         <div class="flex flex-col">
                           <ng-container *ngIf="!isSetCompleted(exIndex, setIndex)">
                             <span *ngIf="setIndex === findFirstIncompleteSetIndex(exIndex)"
@@ -449,6 +497,9 @@
                           </div>
                         </div>
                       </div>
+
+
+
                     </div>
 
                     <div *ngIf="activeSetActionMenuKey() === (exIndex + '-' + setIndex) && getMenuMode() === 'compact'">
@@ -459,7 +510,6 @@
                       </app-action-menu>
                     </div>
 
-                    <!-- *ngIf="isTimedSet(exIndex, setIndex) && getSetTimerState(exIndex, setIndex).status === timerSetEnum.Running" -->
                     <div *ngIf="isTimedSet(exIndex, setIndex)"
                       class="relative flex items-center px-2 py-1 mt-2 transition-all">
                       <!-- Timed set Progress Bar -->
@@ -492,17 +542,23 @@
                       </button>
                     </div>
 
-                    <div *ngIf="isSetExpanded(exIndex, setIndex)">
-                      <!-- <div *ngIf="isSetExpanded(exIndex, setIndex)" class="border-t border-white dark:border-gray-600/50"> -->
+                    <!-- Compact Rest Timer Progress Bar (per set, styled like timed set) STANDARD SET -->
+                    <div *ngIf="getRestTimerMode() === restTimerModeEnum.Compact && isRestTimerVisibleForSet(exIndex, setIndex)"
+                         class="relative flex items-center px-2 py-1 mt-2 transition-all">
+                      <div class="progress-bar-container w-full bg-gray-300 dark:bg-gray-700 rounded-full h-5 relative flex items-center">
+                        <div class="progress-bar bg-yellow-400 h-3 rounded-full my-1 mx-1"
+                             [style.width.%]="restTimerProgressForSet(exIndex, setIndex)">
+                        </div>
+                        <!-- Percentage label, centered absolutely -->
+                        <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
+                          {{ formatSecondsToTime(restTimerElapsedForSet(exIndex, setIndex)) }} / {{ formatSecondsToTime(getSetRestDuration(exIndex, setIndex)) }}
+                        </span>
+                      </div>
+                      <app-icon name="rest" class="h-6 w-6 text-yellow-600 ml-2" [strokeWidth]="2.5"></app-icon>
+                    </div>
 
-                      <!-- <div
-                        *ngIf="activeSetActionMenuKey() === (exIndex + '-' + setIndex) && getMenuMode() === 'compact'">
-                        <app-action-menu [isVisible]="true" [modalTitle]="''" [displayMode]="'compact'"
-                          [items]="setActionItemsMap().get(exIndex + '-' + setIndex) || []"
-                          (itemClick)="handleSetActionMenuItemClick($event)"
-                          (closeMenu)="activeSetActionMenuKey.set(null)">
-                        </app-action-menu>
-                      </div> -->
+
+                    <div *ngIf="isSetExpanded(exIndex, setIndex)">
 
                       <!-- Set ADD/REMOVE METRICS - STANDARD SET -->
                       <div #metricsSectionStandard [attr.data-metrics-section]="exIndex + '-' + setIndex"
@@ -661,35 +717,49 @@
                       class="flex items-center justify-between p-1 cursor-pointer">
 
                       <div class="flex items-start gap-2">
-                        <!-- <app-icon name="chevron-down" class="h-5 w-5 transition-transform duration-200 flex-shrink-0"
-                          [class.rotate-180]="isRoundExpanded(exIndex, roundIndex)"></app-icon> -->
-                        <div class="flex-shrink-0 px-1 text-center rounded-lg" [ngClass]="{
-                              'bg-primary text-white': isRoundExpanded(exIndex, roundIndex) && isStandardSuperSet(exIndex),
-                              'bg-teal-500 text-white': isRoundExpanded(exIndex, roundIndex) && isEmom(exIndex),
-                            }">
-                          <span class="font-bold text-lg text-gray-700 dark:text-white">#{{
-                            'compactPlayer.roundHeader' |
-                            translate:{number: roundIndex + 1} }}</span>
-                        </div>
-                        <div *ngIf="!isRoundExpanded(exIndex, roundIndex)">
-                          <div (click)="$event.stopPropagation()">
-                            <ng-container *ngIf="!isRoundCompleted(exIndex, roundIndex)">
-                              <span *ngIf="roundIndex === findFirstIncompleteRoundIndex(exIndex)"
-                                class="inline-flex items-center gap-1 rounded-full bg-yellow-100 dark:bg-yellow-900/70 px-2 py-1 text-xs font-medium text-yellow-800 dark:text-yellow-300 animate-pulse">
-                                <app-icon name="target" class="h-4 w-4"></app-icon>
-                                {{ 'compactPlayer.nextUp' | translate }}
+                        <ng-container *ngIf="!isRoundExpanded(exIndex, roundIndex); else expandedRoundHeader">
+                          <div class="flex flex-col flex-1 gap-0.5">
+                            <div class="flex-shrink-0 px-1 text-center rounded-lg w-fit" [ngClass]="{
+                                'bg-primary text-white': isStandardSuperSet(exIndex) && !isEmom(exIndex),
+                                'bg-teal-500 text-white': isEmom(exIndex)
+                              }">
+                              <span class="font-bold text-lg text-gray-700 dark:text-white">
+                                #{{ 'compactPlayer.roundHeader' | translate:{number: roundIndex + 1} }}
                               </span>
-                              <span *ngIf="roundIndex !== findFirstIncompleteRoundIndex(exIndex)"
-                                class="inline-flex items-center gap-1 rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400">
-                                {{ 'compactPlayer.pending' | translate }}
-                              </span>
-                            </ng-container>
+                            </div>
+                            <div
+                              class="text-sm text-gray-700 dark:text-gray-200 font-medium inline-flex items-center gap-1">
+                              {{ getSupersetRoundSummary(exIndex, roundIndex) }}
+                              <div (click)="$event.stopPropagation()">
+                                <ng-container *ngIf="!isRoundCompleted(exIndex, roundIndex)">
+                                  <span *ngIf="roundIndex === findFirstIncompleteRoundIndex(exIndex)"
+                                    class="inline-flex items-center gap-1 rounded-full bg-yellow-100 dark:bg-yellow-900/70 px-2 py-1 text-xs font-medium text-yellow-800 dark:text-yellow-300 animate-pulse">
+                                    <app-icon name="target" class="h-4 w-4"></app-icon>
+                                    {{ 'compactPlayer.nextUp' | translate }}
+                                  </span>
+                                  <span *ngIf="roundIndex !== findFirstIncompleteRoundIndex(exIndex)"
+                                    class="inline-flex items-center gap-1 rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400">
+                                    {{ 'compactPlayer.pending' | translate }}
+                                  </span>
+                                </ng-container>
+                              </div>
+                            </div>
                           </div>
-                        </div>
+                        </ng-container>
+                        <ng-template #expandedRoundHeader>
+                          <div class="flex-shrink-0 px-1 text-center rounded-lg w-fit" [ngClass]="{
+                              'bg-primary text-white': isRoundExpanded(exIndex, roundIndex) && isStandardSuperSet(exIndex),
+                              'bg-teal-500 text-white': isRoundExpanded(exIndex, roundIndex) && isEmom(exIndex)
+                            }">
+                            <span class="font-bold text-lg text-gray-700 dark:text-white">
+                              #{{ 'compactPlayer.roundHeader' | translate:{number: roundIndex + 1} }}
+                            </span>
+                          </div>
+                        </ng-template>
                       </div>
 
 
-                      <div class="flex items-center">
+                      <div class="flex items-center relative gap-1">
                         <!-- +++ NEW BUTTON/STATUS ELEMENT +++ -->
 
                         <!-- ROUND NOTES BUTTON -->
@@ -722,7 +792,28 @@
                           [ngClass]="isRoundCompleted(exIndex, roundIndex) ? 'bg-green-500 text-white shadow-lg' : 'bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-300'">
                           <app-icon name="done" class="h-6 w-6"></app-icon>
                         </button>
+                        <button appBumpClick (click)="toggleSetActionMenu(exIndex, roundIndex, $event)"
+                          class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center">
+                          <app-icon name="menu-action" class="h-6 w-6 text-gray-500 dark:text-gray-400"></app-icon>
+                        </button>
+
+                        <!-- SUPER SET ACTION MENU -->
+                        <app-action-menu
+                          [isVisible]="activeSetActionMenuKey() === (exIndex + '-' + roundIndex) && getMenuMode() !== 'compact'"
+                          [modalTitle]="''" [displayMode]="getMenuMode()"
+                          [items]="setActionItemsMap().get(exIndex + '-' + roundIndex) || []"
+                          (itemClick)="handleSetActionMenuItemClick($event)" (closeMenu)="closeSetActionMenu()">
+                        </app-action-menu>
                       </div>
+                    </div>
+
+                    <div
+                      *ngIf="activeSetActionMenuKey() === (exIndex + '-' + roundIndex) && getMenuMode() === 'compact'">
+                      <app-action-menu [isVisible]="true" [modalTitle]="''" [displayMode]="'compact'"
+                        [items]="setActionItemsMap().get(exIndex + '-' + roundIndex) || []"
+                        (itemClick)="handleSetActionMenuItemClick($event)"
+                        (closeMenu)="activeSetActionMenuKey.set(null)">
+                      </app-action-menu>
                     </div>
                     <!-- Set Notes Textarea (if visible) -->
                     <!-- <div *ngIf="expandedSetNotes() === (exIndex + '-' + roundIndex)" class="px-2 pb-1"
@@ -732,6 +823,21 @@
                         [placeholder]="'compactPlayer.roundNotesPlaceholder' | translate"
                         class="w-full text-xs bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-400 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
                     </div> -->
+
+                    <!-- Compact Rest Timer Progress Bar (per set, styled like timed set) SUPERSET -->
+                    <div *ngIf="getRestTimerMode() === restTimerModeEnum.Compact && isRestTimerVisibleForSet(exIndex, roundIndex)"
+                         class="relative flex items-center px-2 py-1 mt-2 transition-all">
+                      <div class="progress-bar-container w-full bg-gray-300 dark:bg-gray-700 rounded-full h-5 relative flex items-center">
+                        <div class="progress-bar bg-yellow-400 h-3 rounded-full my-1 mx-1"
+                             [style.width.%]="restTimerProgressForSet(exIndex, roundIndex)">
+                        </div>
+                        <!-- Percentage label, centered absolutely -->
+                        <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
+                          {{ formatSecondsToTime(restTimerElapsedForSet(exIndex, roundIndex)) }} / {{ formatSecondsToTime(getSetRestDuration(exIndex, roundIndex)) }}
+                        </span>
+                      </div>
+                      <app-icon name="rest" class="h-6 w-6 text-yellow-600 ml-2" [strokeWidth]="2.5"></app-icon>
+                    </div>
 
                     <!-- Collapsible Round Body -->
                     <ng-container *ngIf="isRoundExpanded(exIndex, roundIndex)">
@@ -750,21 +856,34 @@
                               <div class="flex justify-between">
                                 <!-- Exercise Name -->
                                 <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-1">
-                                  {{ getExerciseDisplayIndex(ssOriginalIndex) }} - {{ ssExercise.exerciseName }}
+                                  {{ getExerciseDisplayIndex(ssOriginalIndex, true) }} - {{ ssExercise.exerciseName }}
                                 </p>
 
-                                <!-- METRICS BUTTONS FOR SUPERSET -->
-                                <!-- <div class="flex items-center justify-center gap-1 px-1">
-                                  <button *ngIf="canRemoveAnyField(ssOriginalIndex, roundIndex)"
-                                    (click)="promptRemoveField(ssOriginalIndex, roundIndex); $event.stopPropagation()"
-                                    class="flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors">
-                                    <app-icon name="minus-circle" class="h-5 w-5"></app-icon>
-                                  </button>
-                                  <button *ngIf="getFieldsForSet(ssOriginalIndex, roundIndex).hidden.length > 0"
-                                    (click)="promptAddField(ssOriginalIndex, roundIndex); $event.stopPropagation()"
-                                    class="flex items-center gap-1 text-xs font-semibold text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 p-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors">
-                                    <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
-                                  </button>
+                                <!-- Set ADD/REMOVE METRICS - SUPER SET -->
+                                <!-- <div #metricsSectionSuperSet [attr.data-metrics-section]="exIndex + '-' + roundIndex"
+                                  class="flex-shrink-0 flex flex-col items-center justify-center gap-1">
+                                  <div
+                                    *ngIf="!isSetCompleted(exIndex, roundIndex) && isMetricsSectionExpanded(exIndex, roundIndex)"
+                                    class="flex items-center">
+                                    <div
+                                      class="flex w-fit items-center justify-center gap-2 bg-gray-300 dark:bg-gray-900/50 p-1 px-2 rounded-full mt-1">
+                                      <label
+                                        class="flex items-center justify-between text-s font-medium text-white dark:text-gray-400">
+                                        {{ 'workoutBuilder.set.metrics' | translate }}:
+                                      </label>
+                                      <button appBumpClick *ngIf="canRemoveAnyField(exIndex, roundIndex)"
+                                        (click)="promptRemoveField(exIndex, roundIndex); $event.stopPropagation()"
+                                        class="p-1.5 rounded-full bg-red-500 dark:bg-red-500/80 hover:bg-red-500 text-white flex items-center">
+                                        <app-icon name="minus" class="h-5 w-5"></app-icon>
+                                      </button>
+                                      <button appBumpClick
+                                        *ngIf="getFieldsForSet(exIndex, roundIndex).hidden.length > 0"
+                                        (click)="promptAddField(exIndex, roundIndex); $event.stopPropagation()"
+                                        class="p-1.5 rounded-full bg-blue-500 dark:bg-blue-500/80 hover:bg-blue-500 text-white flex items-center">
+                                        <app-icon name="plus" class="h-5 w-5"></app-icon>
+                                      </button>
+                                    </div>
+                                  </div>
                                 </div> -->
                               </div>
 
@@ -805,13 +924,13 @@
 
                                   <!-- "Add GHOST Field" Button for 1 or 3 fields - SUPERSET -->
                                   <!-- <div
-        *ngIf="!isRoundCompleted(exIndex, roundIndex) && canAddField(ssOriginalIndex, roundIndex) && getFieldsForSet(ssOriginalIndex, roundIndex).visible.length%2===1"
-        class="flex items-center justify-center h-full">
-        <button (click)="promptAddField(ssOriginalIndex, roundIndex); $event.stopPropagation()"
-          class="flex items-center justify-center w-full p-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-          <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
-        </button>
-      </div> -->
+                                    *ngIf="!isRoundCompleted(exIndex, roundIndex) && canAddField(ssOriginalIndex, roundIndex) && getFieldsForSet(ssOriginalIndex, roundIndex).visible.length%2===1"
+                                    class="flex items-center justify-center h-full">
+                                    <button (click)="promptAddField(ssOriginalIndex, roundIndex); $event.stopPropagation()"
+                                      class="flex items-center justify-center w-full p-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                      <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
+                                    </button>
+                                  </div> -->
                                 </ng-container>
 
 
@@ -823,6 +942,8 @@
                         </ng-container>
                       </div>
                     </ng-container>
+
+
 
                   </div>
                 </ng-container>
@@ -850,7 +971,10 @@
 
               </ng-container>
             </div>
+
+
           </div>
+
 
 
         </div>
@@ -1261,11 +1385,8 @@
       </h2>
       <textarea
         class="w-full min-h-[120px] p-2 border border-gray-300 dark:border-gray-600 rounded mb-4 bg-gray-50 dark:bg-gray-900 text-black dark:text-white"
-        [ngModel]="noteModalValue()"
-        (ngModelChange)="noteModalValue.set($event)"
-        placeholder="{{ 'compactPlayer.notesPlaceholder' | translate }}"
-        autofocus
-      ></textarea>
+        [ngModel]="noteModalValue()" (ngModelChange)="noteModalValue.set($event)"
+        placeholder="{{ 'compactPlayer.notesPlaceholder' | translate }}" autofocus></textarea>
       <div class="flex justify-end gap-2">
         <button class="px-4 py-2 rounded bg-gray-300 dark:bg-gray-700" (click)="closeNoteModal()">
           {{ 'common.cancel' | translate }}

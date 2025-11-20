@@ -458,7 +458,7 @@
                                                         (click)="openModal(exerciseControl.value, $event)"></app-icon>
                                                 </div>
                                                 <div class="text-xl text-gray-500 dark:text-gray-400 truncate">
-                                                    <ng-container
+                                                    <ng-container #uniformValues
                                                         *ngIf="getUniformSetValues(exerciseControl) as uniformValues; else detailedSetView">
                                                         <!-- UNIFORM VIEW: Dynamically shows all uniform metrics -->
                                                         <p

@@ -1,7 +1,7 @@
 // src/app/core/services/app-settings.service.ts
 import { Injectable, inject, signal, WritableSignal, effect, PLATFORM_ID } from '@angular/core';
 import { StorageService } from './storage.service';
-import { AppSettings, MenuMode, PlayerMode } from '../models/app-settings.model';
+import { AppSettings, MenuMode, PlayerMode, RestTimerMode, SummaryDisplayMode } from '../models/app-settings.model';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
 
@@ -19,6 +19,8 @@ const DEFAULT_APP_SETTINGS: AppSettings = {
     durationStep: 5,
     distanceStep: 0.1,
     restStep: 5,
+    restTimerMode: 'fullscreen' as RestTimerMode,
+    summaryDisplayMode: 'icons' as SummaryDisplayMode,
 };
 
 // 1. Define a type for the three menu modes for type safety.
@@ -50,7 +52,8 @@ export class AppSettingsService {
     public durationStep = signal<number>(DEFAULT_APP_SETTINGS.durationStep);
     public distanceStep = signal<number>(DEFAULT_APP_SETTINGS.distanceStep);
     public restStep = signal<number>(DEFAULT_APP_SETTINGS.restStep);
-
+    public restTimerMode = signal<RestTimerMode>(DEFAULT_APP_SETTINGS.restTimerMode!);
+    public summaryDisplayMode = signal<SummaryDisplayMode>(DEFAULT_APP_SETTINGS.summaryDisplayMode!);
 
     constructor() {
         const storedSettings = this.storageService.getItem<AppSettings>(this.APP_SETTINGS_KEY);
@@ -70,6 +73,9 @@ export class AppSettingsService {
         this.restStep.set(initialSettings.restStep);
         const storedMenuMode = this.storageService.getItem<MenuMode>(this.MENU_MODE_KEY);
         this.menuMode.set(storedMenuMode || 'dropdown');
+
+        this.restTimerMode.set(initialSettings.restTimerMode || RestTimerMode.Fullscreen);
+        this.summaryDisplayMode.set(initialSettings.summaryDisplayMode || SummaryDisplayMode.Icons);
 
         effect(() => {
             if (isPlatformBrowser(this.platformId)) {
@@ -103,7 +109,8 @@ export class AppSettingsService {
         if (settings.durationStep !== undefined) this.durationStep.set(settings.durationStep);
         if (settings.distanceStep !== undefined) this.distanceStep.set(settings.distanceStep);
         if (settings.restStep !== undefined) this.restStep.set(settings.restStep);
-
+        if (settings.restTimerMode !== undefined) this.restTimerMode.set(settings.restTimerMode);
+        if (settings.summaryDisplayMode !== undefined) this.summaryDisplayMode.set(settings.summaryDisplayMode);
     }
 
     // Example of updating a specific setting directly via signal and saving
@@ -135,6 +142,8 @@ export class AppSettingsService {
         this.durationStep.set(settingsToSave.durationStep);
         this.distanceStep.set(settingsToSave.distanceStep);
         this.restStep.set(settingsToSave.restStep);
+        this.restTimerMode.set(settingsToSave.restTimerMode || RestTimerMode.Fullscreen);
+        this.summaryDisplayMode.set(settingsToSave.summaryDisplayMode || SummaryDisplayMode.Icons);
     }
 
     // Method to clear app settings (used by ProfileSettingsComponent)
@@ -189,5 +198,19 @@ export class AppSettingsService {
 
     isShowMetricTarget(): boolean {
         return this.showMetricTarget() && this.showMetricTarget() === true;
+    }
+
+    setRestTimerMode(mode: RestTimerMode) {
+        this.saveSettings({ restTimerMode: mode });
+    }
+    getRestTimerMode(): RestTimerMode {
+        return this.restTimerMode();
+    }
+
+    setSummaryDisplayMode(mode: SummaryDisplayMode) {
+        this.saveSettings({ summaryDisplayMode: mode });
+    }
+    getSummaryDisplayMode(): SummaryDisplayMode {
+        return this.summaryDisplayMode();
     }
 }

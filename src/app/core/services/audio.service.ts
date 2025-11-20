@@ -11,6 +11,8 @@ export enum AUDIO_TYPES {
   "untoggle" = 'untoggle',
   "magic" = "magic",
   "pop" = "pop",
+  "whistle" = "whistle",
+  "referee" = "referee"
 };
 
 @Injectable({
@@ -264,6 +266,39 @@ export class AudioService {
         this.playPopSound();
         break;
       }
+      case AUDIO_TYPES.referee:
+        // --- Referee Whistle (Fixed Pitch / Sharp Stop) ---
+        const whistleDur = 0.4;
+
+        // Master gain for this sound
+        const whistleGain = this.audioCtx.createGain();
+
+        // Volume Envelope
+        whistleGain.gain.setValueAtTime(0, now);
+        whistleGain.gain.linearRampToValueAtTime(0.8, now + 0.05); // Fast attack
+        whistleGain.gain.setValueAtTime(0.8, now + whistleDur - 0.05); // Sustain
+        // Sharp release (0.05s fade out) to avoid the "sliding" feel
+        whistleGain.gain.linearRampToValueAtTime(0.0001, now + whistleDur);
+
+        whistleGain.connect(this.audioCtx.destination);
+
+        // Oscillator 1: Base Tone
+        // We keep the frequency CONSTANT now (no ramping down)
+        osc1.type = 'triangle';
+        osc1.frequency.setValueAtTime(3000, now);
+        osc1.connect(whistleGain);
+
+        // Oscillator 2: Interference Tone (The "Pea")
+        // Also constant frequency
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(3080, now); // 80Hz difference = fast rattle
+        osc2.connect(whistleGain);
+
+        osc1.start(now);
+        osc1.stop(now + whistleDur);
+        osc2.start(now);
+        osc2.stop(now + whistleDur);
+        break;
     }
   }
 

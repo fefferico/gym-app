@@ -12,7 +12,11 @@ export interface AppSettings {
   durationStep: number;
   distanceStep: number;
   restStep: number;
+  restTimerMode?: RestTimerMode;
+  summaryDisplayMode?: SummaryDisplayMode;
 }
 
 export type MenuMode = 'dropdown' | 'compact' | 'modal';
 export type PlayerMode = 'focus' | 'compact';
+export enum RestTimerMode { Fullscreen = 'fullscreen', Compact = 'compact' };
+export enum SummaryDisplayMode { Text = 'text', Icons = 'icons' };

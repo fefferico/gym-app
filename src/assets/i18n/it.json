@@ -104,6 +104,18 @@
       "targetWaistLabel": "Vita Target ({{unit}})"
     },
     "player": {
+      "restTimerMode": {
+        "label": "Modalità Timer Riposo",
+        "description": "Scegli tra un timer a schermo intero o compatto.",
+        "fullscreen": "Schermo Intero",
+        "compact": "Compatto"
+      },
+      "summaryDisplayMode": {
+        "label": "Visualizzazione Riepilogo",
+        "description": "Scegli come vengono visualizzati i riepiloghi delle serie.",
+        "icons": "Visuale (icone)",
+        "text": "Testuale"
+      },
       "title": "Impostazioni Player Allenamento",
       "playerModeLabel": "Modalità Player",
       "playerModeDescription": "Scegli tra la modalità Compatta e Focus",
@@ -888,9 +900,9 @@
       "enterNumericRepsError": "Devi impostare il numero effettuato di ripetizioni prima di poter completare la serie",
       "enterNumericWeightError": "Devi modificare il valore effettivo del peso prima di impostare la serie come completata",
       "progressiveOverloadApplied": "Progressive Overload applicato a {{name}}",
-    "progressiveOverloadAppliedMultiple": "Progressive Overload applicato a: {{names}}",
-    "progressiveOverloadAppliedMultipleTitle": "Progressive Overload Applicato",
-    "progressiveOverloadAppliedMultipleMessage": "I seguenti esercizi sono stati incrementati automaticamente:"
+      "progressiveOverloadAppliedMultiple": "Progressive Overload applicato a: {{names}}",
+      "progressiveOverloadAppliedMultipleTitle": "Progressive Overload Applicato",
+      "progressiveOverloadAppliedMultipleMessage": "I seguenti esercizi sono stati incrementati automaticamente:"
     },
     "alerts": {
       "toughWorkoutTitle": "L'ultimo Allenamento è Stato Duro",
@@ -954,9 +966,9 @@
       "chooseTimerMessage": "Scegli il tipo di timer",
       "chooseTimerTitle": "Tipo di timer",
       "prefillTitle": "Precompila con la performance precedente?",
-    "prefillMessage": "Sono stati trovati dei dati storici per alcuni degli esercizi presenti in questa scheda. Vuoi usare i valori registrati più recenti o mantenere gli obiettivi originali?",
-    "useHistorical": "Valori precedenti",
-    "useOriginal": "Obiettivi della scheda"
+      "prefillMessage": "Sono stati trovati dei dati storici per alcuni degli esercizi presenti in questa scheda. Vuoi usare i valori registrati più recenti o mantenere gli obiettivi originali?",
+      "useHistorical": "Valori precedenti",
+      "useOriginal": "Obiettivi della scheda"
     },
     "actions": {
       "pause": "PAUSA SESSIONE",
@@ -1101,8 +1113,8 @@
       "custom": "Personalizzato"
     },
     "routineBuilder": {
-      "nameWizardMsg":"Inserisci un nome per la tua nuova scheda.",
-        "goalWizardMsg": "Seleziona l'obiettivo principale per questa scheda",
+      "nameWizardMsg": "Inserisci un nome per la tua nuova scheda.",
+      "goalWizardMsg": "Seleziona l'obiettivo principale per questa scheda",
       "nameLabel": "Nome Scheda",
       "namePlaceholder": "Nome scheda",
       "nameRequired": "Il nome della scheda è obbligatorio",

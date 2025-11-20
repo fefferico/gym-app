@@ -14,7 +14,7 @@ import { UnitsService, WeightUnit, BodyWeightUnit, BodyMeasureUnit, MeasureUnit,
 import { AlertService } from '../../../core/services/alert.service';
 import { SpinnerService } from '../../../core/services/spinner.service';
 import { ThemeService } from '../../../core/services/theme.service';
-import { AppSettings, MenuMode } from '../../../core/models/app-settings.model';
+import { AppSettings, MenuMode, RestTimerMode, SummaryDisplayMode } from '../../../core/models/app-settings.model';
 import { ToastService } from '../../../core/services/toast.service';
 import { Gender, MeasurementEntry, UserMeasurements, UserProfile } from '../../../core/models/user-profile.model';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
@@ -33,6 +33,7 @@ import { SubscriptionService, PremiumFeature } from '../../../core/services/subs
 import { ActivityService } from '../../../core/services/activity.service';
 import { LanguageService } from '../../../core/services/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Sum } from '@tensorflow/tfjs-core';
 
 @Component({
   selector: 'app-profile-settings',
@@ -109,7 +110,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
       routines.forEach((routine, idx) => {
         routine.isDisabled = idx > 3;
       });
-  this.workoutService.saveRoutinesToStorage(routines);
+      this.workoutService.saveRoutinesToStorage(routines);
       this.toastService.veryImportant(this.translate.instant('toasts.routinesDisabledOnDowngrade', { count: routines.length > 4 ? routines.length - 4 : 0 }), 10000, this.translate.instant('toasts.routinesDisabledTitle'));
     }
   }
@@ -143,6 +144,8 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
 
   private readonly BACKUP_VERSION = 6;
 
+  protected restTimerModeEnum = RestTimerMode;
+  protected summaryDisplayModeEnum = SummaryDisplayMode;
   constructor() {
     this.profileForm = this.fb.group({
       general: this.fb.group({
@@ -177,7 +180,9 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
       durationStep: [5, [Validators.required, Validators.min(1), Validators.pattern("^[0-9]*$")]],
       distanceStep: [0.1, [Validators.required, Validators.min(0.01)]],
       restStep: [5, [Validators.required, Validators.min(1), Validators.pattern("^[0-9]*$")]],
-      showMetricTarget: [false]
+      showMetricTarget: [false],
+      restTimerMode: [RestTimerMode.Fullscreen],
+      summaryDisplayMode: [SummaryDisplayMode.Icons],
     });
 
     this.progressiveOverloadForm = this.fb.group({

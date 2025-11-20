@@ -257,6 +257,68 @@
                 </div>
                 <!-- END: NEW SHOW METRIC TARGET TOGGLE -->
 
+                <!-- Rest Timer Mode Setting -->
+                                <div class="flex items-center justify-between py-2">
+                  <div>
+                    <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">
+                      {{ 'settings.player.restTimerMode.label' | translate }}
+                    </h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                      {{ 'settings.player.restTimerMode.description' | translate }}
+                    </p>
+                  </div>
+                  <div class="relative w-44 flex rounded-lg bg-gray-200 dark:bg-gray-600 p-1">
+                    <div class="absolute top-1 bottom-1 bg-primary rounded-md shadow transition-all duration-300 ease-in-out"
+                      [ngClass]="{
+                        'left-1 right-1/2': appSettingsForm.get('restTimerMode')?.value === 'fullscreen',
+                        'left-1/2 right-1': appSettingsForm.get('restTimerMode')?.value === 'compact'
+                      }"></div>
+                    <button type="button"
+                      (click)="appSettingsForm.get('restTimerMode')?.setValue('fullscreen'); appSettingsService.setRestTimerMode(restTimerModeEnum.Fullscreen)"
+                      class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
+                      [ngClass]="{'text-white': appSettingsForm.get('restTimerMode')?.value === 'fullscreen', 'text-gray-700 dark:text-gray-300': appSettingsForm.get('restTimerMode')?.value !== 'fullscreen'}">
+                      {{ 'settings.player.restTimerMode.fullscreen' | translate }}
+                    </button>
+                    <button type="button"
+                      (click)="appSettingsForm.get('restTimerMode')?.setValue('compact'); appSettingsService.setRestTimerMode(restTimerModeEnum.Compact)"
+                      class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
+                      [ngClass]="{'text-white': appSettingsForm.get('restTimerMode')?.value === 'compact', 'text-gray-700 dark:text-gray-300': appSettingsForm.get('restTimerMode')?.value !== 'compact'}">
+                      {{ 'settings.player.restTimerMode.compact' | translate }}
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Summary Display Mode Setting -->
+                                <div class="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-600 pb-4">
+                  <div>
+                    <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">
+                      {{ 'settings.player.summaryDisplayMode.label' | translate }}
+                    </h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                      {{ 'settings.player.summaryDisplayMode.description' | translate }}
+                    </p>
+                  </div>
+                  <div class="relative w-44 flex rounded-lg bg-gray-200 dark:bg-gray-600 p-1">
+                    <div class="absolute top-1 bottom-1 bg-primary rounded-md shadow transition-all duration-300 ease-in-out"
+                      [ngClass]="{
+                        'left-1 right-1/2': appSettingsForm.get('summaryDisplayMode')?.value === 'icons',
+                        'left-1/2 right-1': appSettingsForm.get('summaryDisplayMode')?.value === 'text'
+                      }"></div>
+                    <button type="button"
+                      (click)="appSettingsForm.get('summaryDisplayMode')?.setValue('icons'); appSettingsService.setSummaryDisplayMode(summaryDisplayModeEnum.Icons)"
+                      class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
+                      [ngClass]="{'text-white': appSettingsForm.get('summaryDisplayMode')?.value === 'icons', 'text-gray-700 dark:text-gray-300': appSettingsForm.get('summaryDisplayMode')?.value !== 'icons'}">
+                      {{ 'settings.player.summaryDisplayMode.icons' | translate }}
+                    </button>
+                    <button type="button"
+                      (click)="appSettingsForm.get('summaryDisplayMode')?.setValue('text'); appSettingsService.setSummaryDisplayMode(summaryDisplayModeEnum.Text)"
+                      class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
+                      [ngClass]="{'text-white': appSettingsForm.get('summaryDisplayMode')?.value === 'text', 'text-gray-700 dark:text-gray-300': appSettingsForm.get('summaryDisplayMode')?.value !== 'text'}">
+                      {{ 'settings.player.summaryDisplayMode.text' | translate }}
+                    </button>
+                  </div>
+                </div>
+
                 <div class="border-b border-gray-200 dark:border-gray-600 pb-4">
                     <label for="weightStep" class="block text-md font-medium text-gray-700 dark:text-gray-300">{{
                         'settings.player.weightIncrementLabel' | translate }}</label>

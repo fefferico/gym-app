@@ -747,10 +747,23 @@ export class WorkoutService {
     lastLoggedSet: LoggedSet | null
   ): Promise<WorkoutExercise | null> {
     const isCardioKeyWords: string[] = ['run', 'jog', 'treadmill', 'walk', 'sprint'];
-    const isCardioOnly = selectedExercise.category === 'cardio' || isCardioKeyWords.some(keyword => selectedExercise.id.includes(keyword));
-    const kbRelated = selectedExercise.category === 'kettlebells';
+    const isWeightedKeyWords: string[] = ['kb', 'kettlebell', 'macebell', 'indian-club', 'steelmace', 'dumbbell', 'barbell'];
 
-    let fieldOrder: METRIC[] = isCardioOnly ? [METRIC.duration, METRIC.rest] : [METRIC.reps, METRIC.weight, METRIC.rest];
+    const includesCardio = isCardioKeyWords.some(keyword => selectedExercise.id.includes(keyword));
+    const includesWeighted = isWeightedKeyWords.some(keyword => selectedExercise.id.includes(keyword));
+
+    let fieldOrder: METRIC[];
+
+    if (includesCardio && !includesWeighted) {
+      // Pure cardio: duration, distance, rest
+      fieldOrder = [METRIC.duration, METRIC.distance, METRIC.rest];
+    } else if (includesCardio && includesWeighted) {
+      // Weighted cardio: distance, reps, weight, rest
+      fieldOrder = [METRIC.distance, METRIC.reps, METRIC.weight, METRIC.rest];
+    } else {
+      // Standard: reps, weight, rest
+      fieldOrder = [METRIC.reps, METRIC.weight, METRIC.rest];
+    }
 
     // 1. Ask the user which metrics to include
     // const metricChoices: AlertInput[] = [
@@ -778,22 +791,22 @@ export class WorkoutService {
       { label: this.translate.instant('workoutService.prompts.labels.numSets'), name: 'numSets', type: 'number', value: 3, attributes: { min: 1, required: true } }
     ];
 
-     const metricInputs: AlertInput[] = [];
-     if (fieldOrder.includes(METRIC.reps)) {
-       metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.numReps'), name: METRIC.reps, type: 'number', value: 10, attributes: { min: 0, required: true } });
-     }
-     if (fieldOrder.includes(METRIC.weight)) {
-       metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.targetWeight', { unit: this.unitsService.getWeightUnitSuffix() }), name: METRIC.weight, type: 'number', value: 10, attributes: { min: 0, required: true } });
-     }
-     if (fieldOrder.includes(METRIC.distance)) {
-       metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.targetDistance', { unit: this.unitsService.getDistanceMeasureUnitSuffix() }), name: METRIC.distance, type: 'number', value: 1, attributes: { min: 0, required: true } });
-     }
-     if (fieldOrder.includes(METRIC.duration)) {
-       metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.targetDuration'), name: METRIC.duration, type: 'number', value: 60, attributes: { min: 0, required: true } });
-     }
-     if (fieldOrder.includes(METRIC.rest)) {
-       metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.rest'), name: METRIC.rest, type: 'number', value: 60, attributes: { min: 1, required: true } });
-     }
+    const metricInputs: AlertInput[] = [];
+    if (fieldOrder.includes(METRIC.reps)) {
+      metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.numReps'), name: METRIC.reps, type: 'number', value: 10, attributes: { min: 0, required: true } });
+    }
+    if (fieldOrder.includes(METRIC.weight)) {
+      metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.targetWeight', { unit: this.unitsService.getWeightUnitSuffix() }), name: METRIC.weight, type: 'number', value: 10, attributes: { min: 0, required: true } });
+    }
+    if (fieldOrder.includes(METRIC.distance)) {
+      metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.targetDistance', { unit: this.unitsService.getDistanceMeasureUnitSuffix() }), name: METRIC.distance, type: 'number', value: 1, attributes: { min: 0, required: true } });
+    }
+    if (fieldOrder.includes(METRIC.duration)) {
+      metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.targetDuration'), name: METRIC.duration, type: 'number', value: 60, attributes: { min: 0, required: true } });
+    }
+    if (fieldOrder.includes(METRIC.rest)) {
+      metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.rest'), name: METRIC.rest, type: 'number', value: 60, attributes: { min: 1, required: true } });
+    }
 
     const exerciseParams = [...baseParams, ...metricInputs];
 
@@ -826,30 +839,30 @@ export class WorkoutService {
 
       // specific checks
       // WEIGHT CHECKS
-      if (getWeightValue(set.targetWeight) === 0){
+      if (getWeightValue(set.targetWeight) === 0) {
         set.targetWeight = { type: WeightTargetType.bodyweight }
       }
 
       // DISTANCE CHECKS
-      if (getDistanceValue(set.targetDistance) === 0){
+      if (getDistanceValue(set.targetDistance) === 0) {
         set.targetDistance = undefined;
         fieldOrder = fieldOrder.filter(field => field !== METRIC.distance);
       }
 
       // DURATION CHECKS
-      if (getDurationValue(set.targetDuration) === 0){
+      if (getDurationValue(set.targetDuration) === 0) {
         set.targetDuration = undefined;
         fieldOrder = fieldOrder.filter(field => field !== METRIC.duration);
       }
 
       // REPS CHECKS
-      if (getRepsValue(set.targetReps) === 0){
+      if (getRepsValue(set.targetReps) === 0) {
         set.targetReps = undefined;
         fieldOrder = fieldOrder.filter(field => field !== METRIC.reps);
       }
 
       // REST CHECKS
-      if (getRestValue(set.targetRest) === 0){
+      if (getRestValue(set.targetRest) === 0) {
         set.targetRest = undefined;
         fieldOrder = fieldOrder.filter(field => field !== METRIC.rest);
       }

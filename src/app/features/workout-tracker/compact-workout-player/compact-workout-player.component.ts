@@ -53,12 +53,12 @@ import { ActionMenuComponent } from '../../../shared/components/action-menu/acti
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { StorageService } from '../../../core/services/storage.service';
-import { MenuMode } from '../../../core/models/app-settings.model';
+import { MenuMode, RestTimerMode, SummaryDisplayMode } from '../../../core/models/app-settings.model';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
 import { TrainingProgram } from '../../../core/models/training-program.model';
 import { AlertButton, AlertInput } from '../../../core/models/alert.model';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { addExerciseBtn, addRoundToExerciseBtn, addSetToExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, calculatorBtn, createSuperSetBtn, exerciseNotesBtn, finishEarlyBtn, openSessionPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeExerciseBtn, removeFromSuperSetBtn, removeRoundFromExerciseBtn, removeSetFromExerciseBtn, resumeSessionBtn, sessionNotesBtn, switchExerciseBtn, timerBtn } from '../../../core/services/buttons-data';
+import { addExerciseBtn, addRoundToExerciseBtn, addSetToExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, calculatorBtn, createSuperSetBtn, exerciseNotesBtn, finishEarlyBtn, metricsBtn, openSessionPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeExerciseBtn, removeFromSuperSetBtn, removeRoundFromExerciseBtn, removeSetFromExerciseBtn, restBtn, resumeSessionBtn, sessionNotesBtn, setNotesBtn, switchExerciseBtn, timerBtn } from '../../../core/services/buttons-data';
 import { mapExerciseTargetSetParamsToExerciseExecutedSetParams } from '../../../core/models/workout-mapper';
 import { ProgressiveOverloadService } from '../../../core/services/progressive-overload.service.ts';
 import { BarbellCalculatorModalComponent } from '../../../shared/components/barbell-calculator-modal/barbell-calculator-modal.component';
@@ -165,6 +165,16 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return this.appSettingsService.isShowMetricTarget();
   }
 
+  protected restTimerModeEnum = RestTimerMode;
+  protected getRestTimerMode() {
+    return this.appSettingsService.getRestTimerMode();
+  }
+
+  protected summaryDisplayModeEnum = SummaryDisplayMode;
+  protected getSummaryDisplayMode() {
+    return this.appSettingsService.getSummaryDisplayMode();
+  }
+
   lastSetInfo = computed<ActiveSetInfo | null>(() => {
     const r = this.routine();
     const exIndex = this.lastExerciseIndex();
@@ -224,6 +234,34 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   restTimerNextUpText = signal<string | null>(this.translate.instant('compactPlayer.loading'));
   restTimerNextSetDetails = signal<ExerciseTargetSetParams | null>(null);
 
+
+  private compactRestStartTimestamp: number | null = null;
+  private compactRestDuration: number = 0;
+  /**
+ * Returns the remaining rest time in seconds.
+ */
+  restTimerRemaining(): number {
+    if (!this.isRestTimerVisible()) return 0;
+    if (this.getRestTimerMode() !== this.restTimerModeEnum.Compact) {
+      // fallback for fullscreen or other modes
+      return this.restDuration();
+    }
+    if (this.compactRestStartTimestamp === null) return this.compactRestDuration;
+    const elapsed = Math.floor((Date.now() - this.compactRestStartTimestamp) / 1000);
+    const remaining = this.compactRestDuration - elapsed;
+    return Math.max(0, remaining);
+  }
+
+  /**
+   * Returns the progress of the rest timer as a percentage (0-100).
+   */
+  restTimerProgress(): number {
+    const total = this.compactRestDuration;
+    const remaining = this.restTimerRemaining();
+    if (!total || total <= 0) return 0;
+    const elapsed = total - remaining;
+    return Math.max(0, Math.min(100, (elapsed / total) * 100));
+  }
   menuModeDropdown: boolean = false;
   menuModeCompact: boolean = false;
   menuModeModal: boolean = false;
@@ -1626,7 +1664,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     // --- CASE 1: Removing a Superset Round ---
     if (exercise.supersetId) {
-      const roundIndexToRemove = exercise.sets.length - 1;
+      // Use provided setIndex if valid, otherwise default to last round
+      const roundIndexToRemove = (typeof setIndex === 'number' && setIndex >= 0 && setIndex < exercise.sets.length)
+        ? setIndex
+        : exercise.sets.length - 1;
       const exercisesInGroup = this.getSupersetExercises(exercise.supersetId);
 
       // Failsafe: if the exercise is somehow the last in a group and has no sets, treat it as an exercise removal.
@@ -2258,9 +2299,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       }
 
       actionsArray = [...actionsArray,
-      // addSetRoundBtn as ActionMenuItem,
       { isDivider: true },
-        // removeSetRoundBtn as ActionMenuItem,
         removeExerciseBtnItem,
       ];
 
@@ -2305,7 +2344,32 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.restTimerMainText.set(this.translate.instant('compactPlayer.rest'));
     this.restTimerNextUpText.set('Loading next set...');
     this.restTimerNextSetDetails.set(null);
-    this.isRestTimerVisible.set(true);
+
+    if (this.getRestTimerMode() === this.restTimerModeEnum.Fullscreen) {
+      this.isRestTimerVisible.set(true);
+    }
+
+    if (this.getRestTimerMode() === this.restTimerModeEnum.Compact) {
+      const restKey = this.getSupersetRestKey(completedExIndex, completedSetIndex);
+      this.restStartTimestamps[restKey] = Date.now();
+      this.lastCompactRestBeepSecond = null;
+      if (this.compactRestInterval) clearInterval(this.compactRestInterval);
+      this.compactRestInterval = setInterval(() => {
+        const remaining = this.restTimerRemainingForSet(completedExIndex, completedSetIndex);
+        // Play countdown sound for last 5 seconds
+        if (remaining > 0 && remaining <= 5 && remaining !== this.lastCompactRestBeepSecond) {
+          this.playCountdownSound(remaining);
+          this.lastCompactRestBeepSecond = remaining;
+        }
+        // Play end sound and clear interval when done
+        if (remaining === 0) {
+          this.playEndSound();
+          clearInterval(this.compactRestInterval);
+          this.compactRestInterval = null;
+          this.lastCompactRestBeepSecond = null;
+        }
+      }, 250); // Check 4 times per second for responsiveness
+    }
 
     const nextStep = await this.peekNextStepInfo(completedExIndex, completedSetIndex);
 
@@ -2339,7 +2403,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         if (!setForThisRound) return '';
 
         const originalExIndex = this.getOriginalExIndex(groupEx.id);
-        const displayIndex = this.getExerciseDisplayIndex(originalExIndex);
+        const displayIndex = this.getExerciseDisplayIndex(originalExIndex, true);
         const exName = groupEx.exerciseName;
         const targetDetails = this.formatSetTargetForDisplay(setForThisRound, groupEx, originalExIndex, roundIndex);
 
@@ -3026,50 +3090,54 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return this.isSupersetEnd(exIndex);
   }
 
-  getExerciseDisplayIndex(exIndex: number): string {
+  getExerciseDisplayIndex(exIndex: number, expanded: boolean = false): string {
     const exercises = this.routine()?.exercises;
-    if (!exercises) {
-      return `${exIndex + 1}`; // Fallback if routine is not loaded
-    }
-
+    if (!exercises) return `${exIndex + 1}`;
     const currentEx = exercises[exIndex];
 
-    // Determine the effective index to calculate the prefix number.
-    // For a superset, this is the index of the first exercise in its group.
-    // For a standard exercise, it's its own index.
-    let effectiveIndex = exIndex;
     if (currentEx.supersetId) {
-      // Find the index of the first exercise in the current superset group
-      const firstInSuperset = exercises.findIndex(ex => ex.supersetId === currentEx.supersetId);
-      if (firstInSuperset !== -1) {
-        effectiveIndex = firstInSuperset;
-      }
-    }
+      // Find all exercises in the superset, sorted by supersetOrder
+      const exercisesInGroup = exercises
+        .filter(ex => ex.supersetId === currentEx.supersetId)
+        .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0));
 
-    let displayIndex = 1;
-    const countedSupersetIds = new Set<string>();
-
-    // Calculate the numeric prefix by iterating up to the effective index
-    for (let i = 0; i < effectiveIndex; i++) {
-      const prevEx = exercises[i];
-      if (prevEx.supersetId) {
-        // If we haven't counted this superset group yet, increment the index and record it
-        if (!countedSupersetIds.has(prevEx.supersetId)) {
-          displayIndex++;
-          countedSupersetIds.add(prevEx.supersetId);
+      // Find the block number for this superset group
+      const supersetBlockMap = new Map<string, number>();
+      let blockNumber = 1;
+      for (let i = 0; i < exercises.length; i++) {
+        const ex = exercises[i];
+        if (ex.supersetId) {
+          if (!supersetBlockMap.has(ex.supersetId)) {
+            supersetBlockMap.set(ex.supersetId, blockNumber++);
+          }
+        } else {
+          blockNumber++;
         }
-      } else {
-        // It's a standard exercise, so it always gets its own number
-        displayIndex++;
       }
-    }
+      const block = supersetBlockMap.get(currentEx.supersetId) ?? 1;
 
-    // Append the letter if it's part of a superset
-    if (currentEx.supersetId) {
-      const letter = String.fromCharCode(65 + (currentEx.supersetOrder || 0)); // A, B, C...
-      return `${displayIndex}${letter}`;
+      if (expanded) {
+        // Show only the index for this exercise (e.g. 1A, 1B, ...)
+        const idx = currentEx.supersetOrder ?? exercisesInGroup.findIndex(e => e.id === currentEx.id);
+        return `${block}${String.fromCharCode(65 + idx)}`;
+      } else {
+        // Show all indexes for the group (e.g. 1A/1B/1C)
+        return exercisesInGroup.map((ex, idx) => `${block}${String.fromCharCode(65 + idx)}`).join('/');
+      }
     } else {
-      return `${displayIndex}`;
+      // Standard exercise: just return its block number
+      let block = 1;
+      for (let i = 0; i < exIndex; i++) {
+        const ex = exercises[i];
+        if (ex.supersetId) {
+          if (i === exercises.findIndex(e => e.supersetId === ex.supersetId)) {
+            block++;
+          }
+        } else {
+          block++;
+        }
+      }
+      return `${block}`;
     }
   }
 
@@ -3115,14 +3183,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     if (isCompleted) {
       return {
-        'rounded-xl shadow-sm transition-all duration-300': true,
+        'rounded-xl shadow-sm transition-all duration-300 pb-2': true,
         'bg-green-300 dark:bg-green-700 border border-green-300 dark:border-green-800': true, // Subtle completed style
       };
     }
 
     // Default style for a standard, non-focused, non-completed set
     return {
-      'rounded-xl shadow-sm transition-all duration-300': true,
+      'rounded-xl shadow-sm transition-all duration-300 pb-2': true,
       'bg-white dark:bg-gray-800': set.type !== 'warmup',
       'border-2 border-blue-400 dark:border-blue-500 bg-blue-100 dark:bg-blue-700/80': set.type === 'warmup', // Subtle warmup style
     };
@@ -3492,8 +3560,33 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   getSupersetDisplayName(supersetId: string): string {
     if (!supersetId) return '';
-    const exercisesInGroup = this.getSupersetExercises(supersetId);
-    return exercisesInGroup.map(ex => ex.exerciseName).join(' / ');
+    const exercises = this.routine()?.exercises;
+    if (!exercises) return '';
+
+    // Find all exercises in the superset, sorted by supersetOrder
+    const exercisesInGroup = exercises
+      .filter(ex => ex.supersetId === supersetId)
+      .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0));
+
+    // Find the block number for this superset group
+    const supersetBlockMap = new Map<string, number>();
+    let blockNumber = 1;
+    for (let i = 0; i < exercises.length; i++) {
+      const ex = exercises[i];
+      if (ex.supersetId) {
+        if (!supersetBlockMap.has(ex.supersetId)) {
+          supersetBlockMap.set(ex.supersetId, blockNumber++);
+        }
+      } else {
+        blockNumber++;
+      }
+    }
+    const block = supersetBlockMap.get(supersetId) ?? 1;
+
+    // Compose "1A - KB Press\n1B - Squat\n1C - Abs crunches"
+    return exercisesInGroup
+      .map((ex, idx) => `${block}${String.fromCharCode(65 + idx)} - ${ex.exerciseName}`)
+      .join('\n');
   }
 
   /**
@@ -3638,6 +3731,17 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           exerciseLog.sets.splice(setIndexInLog, 1);
         }
       }
+
+      // --- Reset the compact rest timer for this set ---
+      if (this.restStartTimestamps[`${exIndex}-${setIndex}`]) {
+        delete this.restStartTimestamps[`${exIndex}-${setIndex}`];
+      }
+      if (this.compactRestInterval) {
+        clearInterval(this.compactRestInterval);
+        this.compactRestInterval = null;
+        this.lastCompactRestBeepSecond = null;
+      }
+
     } else {
 
       const userInputs = this.performanceInputValues()[key] || {};
@@ -3790,11 +3894,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       if (shouldStartRest && set.targetRest) {
         this.lastLoggedSetForRestUpdate = this.getLoggedSet(exIndex, setIndex, roundIndex) ?? null;
         setTimeout(() => {
+          // Add this line:
+          if (this.getRestTimerMode() === this.restTimerModeEnum.Compact) {
+            const restKey = this.getSupersetRestKey(exIndex, setIndex);
+            this.restStartTimestamps[restKey] = Date.now();
+          }
           this.startRestPeriod(getRestValue(set.targetRest), exIndex, setIndex);
         }, 300);
-      } else {
-        setTimeout(() => { this.handleAutoExpandNextExercise(); }, 800);
-        // this.autoCollapsePreviousSets();
       }
     }
   }
@@ -4026,11 +4132,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const reps = loggedSet?.repsLogged ?? plannedSet.targetReps;
     const distance = loggedSet?.distanceLogged ?? plannedSet.targetDistance;
     const duration = loggedSet?.durationLogged ?? plannedSet.targetDuration;
+    const rest = loggedSet?.restLogged ?? plannedSet.targetRest;
     const tempo = loggedSet?.targetTempo ?? plannedSet.targetTempo;
 
-    let summary = '';
+    let parts: string[] = [];
 
-    // Compose "10 reps @ 20kg" if both reps and weight are present
+    // Reps & Weight
     if (
       reps !== undefined && reps !== null &&
       weight !== undefined && weight !== null
@@ -4052,15 +4159,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         weightStr = 'BW';
       }
       if (repsStr && weightStr) {
-        summary = `${repsStr} @ ${weightStr}`;
+        parts.push(`${repsStr} @ ${weightStr}`);
       } else if (repsStr) {
-        summary = repsStr;
+        parts.push(repsStr);
       } else if (weightStr) {
-        summary = weightStr;
+        parts.push(weightStr);
       }
     } else {
-      // Fallback to previous logic for other metrics
-      let parts: string[] = [];
+      // Fallback for reps or weight alone
       if (weight !== undefined && weight !== null && getWeightValue(weight) > 0) {
         parts.push(`${this.weightUnitPipe.transform(getWeightValue(weight))}`);
       }
@@ -4075,20 +4181,50 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           parts.push(`${repsType.toUpperCase()} reps`);
         }
       }
-      if (distance !== undefined && distance !== null && getDistanceValue(distance) > 0) {
-        parts.push(`${getDistanceValue(distance)} ${this.unitsService.getDistanceMeasureUnitSuffix()}`);
-      }
-      if (duration !== undefined && duration !== null && getDurationValue(duration) > 0) {
-        parts.push(this.formatSecondsToTime(getDurationValue(duration)));
-      }
-      if (tempo) {
-        parts.push(`T: ${tempo}`);
-      }
-      summary = parts.join(' x ');
     }
 
-    if (!summary) return 'Tap to log...';
-    return summary;
+    // Distance
+    if (distance !== undefined && distance !== null && getDistanceValue(distance) > 0) {
+      parts.push(`${getDistanceValue(distance)} ${this.unitsService.getDistanceMeasureUnitSuffix()}`);
+    }
+
+    // Duration
+    if (duration !== undefined && duration !== null && getDurationValue(duration) > 0) {
+      parts.push(this.formatSecondsToTime(getDurationValue(duration)));
+    }
+
+    // Rest
+    if (rest !== undefined && rest !== null && getRestValue(rest) > 0) {
+      parts.push(`Rest: ${this.formatSecondsToTime(getRestValue(rest))}`);
+    }
+
+    // Tempo
+    if (tempo) {
+      parts.push(`T: ${tempo}`);
+    }
+
+    if (parts.length === 0) return 'Tap to log...';
+    return parts.join(' | ');
+  }
+
+  getSupersetRoundSummary(exIndex: number, roundIndex: number): string {
+    const routine = this.routine();
+    if (!routine) return '';
+    const exercise = routine.exercises[exIndex];
+    if (!exercise.supersetId) return '';
+
+    const exercisesInGroup = this.getSupersetExercises(exercise.supersetId);
+
+    // For each exercise in the superset, get the summary for the set at roundIndex (metrics only)
+    const parts = exercisesInGroup.map((ex) => {
+      const exIdx = this.getOriginalExIndex(ex.id);
+      if (exIdx === -1) return '';
+      // Use the existing getSetSummary for each set in the round
+      // Remove the exercise name from the summary
+      return this.getSetSummary(exIdx, roundIndex);
+    }).filter(Boolean);
+
+    return parts.join(' | ');
   }
 
 
@@ -4223,6 +4359,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const state = this.getSetTimerState(exIndex, setIndex);
     const duration = state.remainingTime;
 
+    this.audioService.playSound(AUDIO_TYPES.referee);
     this.setTimerState.update(states => {
       if (!states[key]) {
         states[key] = { status: TimerSetState.Running, remainingTime: duration };
@@ -4465,10 +4602,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     let newValue: AnyTarget | string;
 
     // Handle different metric types
-    if (field === METRIC.duration || field === METRIC.rest) {
+    if (field === METRIC.duration) {
       // Parse time string or object to seconds
       currentValue = typeof currentValue === 'string' ? this.parseTimeToSeconds(currentValue) : getDurationValue(currentValue) || 0;
       newValue = durationToExact(Math.max(0, parseFloat((currentValue + step).toFixed(2))));
+    } else if (field === METRIC.rest) {
+      // Parse time string or object to seconds
+      currentValue = typeof currentValue === 'string' ? this.parseTimeToSeconds(currentValue) : getRestValue(currentValue) || 0;
+      newValue = restToExact(Math.max(0, parseFloat((currentValue + step).toFixed(2))));
     } else if (field === METRIC.weight) {
       currentValue = getWeightValue(currentValue) || 0;
       newValue = weightToExact(Math.max(0, parseFloat((currentValue + step).toFixed(2))));
@@ -4511,9 +4652,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     let newValue: AnyTarget | string;
 
     // Handle different metric types
-    if (field === METRIC.duration || field === METRIC.rest) {
+    if (field === METRIC.duration) {
       currentValue = typeof currentValue === 'string' ? this.parseTimeToSeconds(currentValue) : getDurationValue(currentValue) || 0;
       newValue = durationToExact(Math.max(0, parseFloat((currentValue - step).toFixed(2))));
+    } else if (field === METRIC.rest) {
+      currentValue = typeof currentValue === 'string' ? this.parseTimeToSeconds(currentValue) : getRestValue(currentValue) || 0;
+      newValue = restToExact(Math.max(0, parseFloat((currentValue - step).toFixed(2))));
     } else if (field === METRIC.weight) {
       currentValue = getWeightValue(currentValue) || 0;
       newValue = weightToExact(Math.max(0, parseFloat((currentValue - step).toFixed(2))));
@@ -4522,7 +4666,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       newValue = distanceToExact(Math.max(0, parseFloat((currentValue - step).toFixed(2))));
     } else if (field === METRIC.reps) {
       currentValue = repsTypeToReps(currentValue) || 0;
-      newValue = repsToExact(Math.max(0, parseInt((currentValue + step).toFixed(0), 10)));
+      newValue = repsToExact(Math.max(0, parseInt((currentValue - step).toFixed(0), 10)));
     } else {
       newValue = '';
     }
@@ -5331,6 +5475,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return getDistanceValue(distance);
   }
 
+  getRestValue(rest: RestTarget | undefined): number {
+    return getRestValue(rest);
+  }
+
   getRepsValue(reps: RepsTarget | undefined): number {
     return repsTypeToReps(reps);
   }
@@ -5347,6 +5495,34 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   get availableMetricsForSetAll(): METRIC[] {
     return this.allAvailableMetrics;
   }
+
+  /**
+ * Returns the available metrics for a set.
+ * - For supersets: only weight, reps, and rest are allowed.
+ * - For standard exercises: all metrics are allowed.
+ */
+  getAvailableMetricsForSet(exIndex: number): METRIC[] {
+    const routine = this.routine();
+    if (!routine) return [];
+    const exercise = routine.exercises[exIndex];
+    if (!exercise) return [];
+
+    if (exercise.supersetId) {
+      // Only allow weight, reps, and rest for supersets
+      return [METRIC.weight, METRIC.reps, METRIC.rest];
+    } else {
+      // Allow all metrics for standard exercises
+      return [
+        METRIC.reps,
+        METRIC.weight,
+        METRIC.distance,
+        METRIC.duration,
+        METRIC.rest
+      ];
+    }
+  }
+
+
 
 
   protected repsStep: number = 1;
@@ -5618,43 +5794,36 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
         if (!isCompleted) {
           // Toggle Metrics Button
-          items.push({
-            actionKey: 'toggle_metrics',
-            label: this.translate.instant('compactPlayer.toggleMetrics'),
-            iconName: 'metric',
-            data: { exIndex, setIndex },
-            overrideCssButtonClass: 'hover:bg-gray-200 dark:hover:bg-gray-600' + commonModalButtonClass,
-            buttonClass: this.isMetricsSectionExpanded(exIndex, setIndex) ? 'bg-blue-100 dark:bg-blue-900' : ''
-          });
+          if (!exercise.supersetId) {
+            items.push({
+              ...metricsBtn,
+              label: this.translate.instant('compactPlayer.toggleMetrics'),
+              data: { exIndex, setIndex }
+            });
+          }
 
-          // Notes Button
-          items.push({
-            actionKey: 'toggle_notes',
-            label: this.translate.instant('compactPlayer.setNotes'),
-            iconName: 'clipboard-list',
-            data: { exIndex, setIndex },
-            overrideCssButtonClass: 'hover:bg-gray-200 dark:hover:bg-gray-600' + commonModalButtonClass
-          });
 
           // Rest Button
           items.push({
-            actionKey: 'open_rest',
+            ...restBtn,
+            data: { exIndex, setIndex },
             label: this.translate.instant('compactPlayer.rest'),
-            iconName: 'rest',
-            data: { exIndex, setIndex },
-            overrideCssButtonClass: 'hover:bg-gray-200 dark:hover:bg-gray-600' + commonModalButtonClass
-          });
-
-          // Remove Set Button
-          items.push({
-            actionKey: 'remove_set',
-            label: this.translate.instant('compactPlayer.removeSet'),
-            iconName: 'trash',
-            data: { exIndex, setIndex },
-            overrideCssButtonClass: 'hover:bg-gray-200 dark:hover:bg-gray-600' + commonModalButtonClass,
-            buttonClass: 'text-red-500'
           });
         }
+
+        // Notes Button
+        items.push({
+          ...setNotesBtn,
+          label: this.translate.instant('compactPlayer.setNotes'),
+          data: { exIndex, setIndex }
+        });
+
+        // Remove Set Button
+        items.push({
+          ...removeSetFromExerciseBtn,
+          label: exercise.supersetId ? this.translate.instant('actionButtons.removeRound') : this.translate.instant('actionButtons.removeSet'),
+          data: { exIndex, setIndex }
+        });
 
         map.set(key, items);
       });
@@ -5673,10 +5842,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       case 'toggle_metrics':
         this.toggleMetricsSection(exIndex, setIndex, new Event('click'));
         break;
-      case 'toggle_notes':
+      case 'set_notes':
         this.toggleSetNotes(exIndex, setIndex, new Event('click'));
         break;
-      case 'open_rest':
+      case 'rest':
         this.openRestModal(exIndex, setIndex, new Event('click'));
         break;
       case 'remove_set':
@@ -5826,11 +5995,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   getNoteModalTitle(): string {
     const ctx = this.noteModalContext();
     if (!ctx) return '';
-  
+
     if (ctx.type === 'session') {
       return this.translate.instant('compactPlayer.sessionNotes');
     }
-  
+
     if (ctx.type === 'exercise' && typeof ctx.exIndex === 'number') {
       const exercise = this.routine()?.exercises[ctx.exIndex];
       if (exercise) {
@@ -5838,7 +6007,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       }
       return this.translate.instant('compactPlayer.exerciseNotes');
     }
-  
+
     if (ctx.type === 'set' && typeof ctx.exIndex === 'number' && typeof ctx.setIndex === 'number') {
       const exercise = this.routine()?.exercises[ctx.exIndex];
       const setNumber = ctx.setIndex + 1;
@@ -5847,7 +6016,130 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       }
       return `${this.translate.instant('compactPlayer.setNotes')} (Set ${setNumber})`;
     }
-  
+
     return '';
   }
+
+  getSetUniformValues(exIndex: number, setIndex: number) {
+    const routine = this.routine();
+    if (!routine) return {};
+    const exercise = routine.exercises[exIndex];
+    const plannedSet = exercise.sets[setIndex];
+    const loggedSet = this.getLoggedSet(exIndex, setIndex);
+    const key = `${exIndex}-${setIndex}`;
+    const userInputs = this.performanceInputValues()[key] || {};
+
+    return {
+      reps: this.getRepsValue(
+        userInputs.actualReps ??
+        loggedSet?.repsLogged ??
+        plannedSet.targetReps
+      ),
+      weight: this.getWeightValue(
+        userInputs.actualWeight ??
+        loggedSet?.weightLogged ??
+        plannedSet.targetWeight
+      ),
+      distance: this.getDistanceValue(
+        userInputs.actualDistance ??
+        loggedSet?.distanceLogged ??
+        plannedSet.targetDistance
+      ),
+      duration: this.getDurationValue(
+        userInputs.actualDuration ??
+        loggedSet?.durationLogged ??
+        plannedSet.targetDuration
+      ),
+      rest: this.getRestValue(
+        userInputs.actualRest ??
+        loggedSet?.restLogged ??
+        plannedSet.targetRest
+      ),
+    };
+  }
+
+  // Returns the planned rest duration for this set (in seconds)
+  getSetRestDuration(exIndex: number, setIndex: number): number {
+    const routine = this.routine();
+    if (!routine) return 0;
+    const exercise = routine.exercises[exIndex];
+
+    // If this is a superset, always get rest from the first exercise in the group
+    if (exercise.supersetId) {
+      const firstExIndex = routine.exercises.findIndex(
+        ex => ex.supersetId === exercise.supersetId
+      );
+      if (firstExIndex !== -1) {
+        const firstSet = routine.exercises[firstExIndex]?.sets?.[setIndex];
+        return firstSet && firstSet.targetRest ? getRestValue(firstSet.targetRest) : 0;
+      }
+    }
+
+    // Standard case
+    const set = exercise.sets?.[setIndex];
+    return set && set.targetRest ? getRestValue(set.targetRest) : 0;
+  }
+
+  // Returns true if the rest timer for this set should be visible
+  isRestTimerVisibleForSet(exIndex: number, setIndex: number): boolean {
+    // Implement your logic to determine if this set's rest timer is running/visible
+    // For example, you might track the currently active rest set:
+    const routine = this.routine();
+    if (!routine || !routine.exercises || routine.exercises.length === 0) return false;
+    const exercise = routine.exercises?.[exIndex];
+    if (!exercise || !exercise.sets || exercise.sets.length === 0) return false;
+    const plannedSet = exercise.sets[setIndex];
+    const key = `${exIndex}-${setIndex}`;
+    const userInputs = this.performanceInputValues()[key] || {};
+    const rest = userInputs.actualRest ?? plannedSet.targetRest;
+    const hasRest = rest !== undefined && rest !== null && getRestValue(rest) !== 0;
+    return hasRest;
+  }
+
+  restStartTimestamps: { [key: string]: number } = {};
+  // Returns the remaining rest time for this set (in seconds)
+  restTimerRemainingForSet(exIndex: number, setIndex: number): number {
+    if (!this.isRestTimerVisibleForSet(exIndex, setIndex)) return 0;
+    const startTimestamp = this.restStartTimestamps?.[`${exIndex}-${setIndex}`];
+    const duration = this.getSetRestDuration(exIndex, setIndex);
+    if (!startTimestamp || !duration) return duration;
+    const elapsed = Math.floor((Date.now() - startTimestamp) / 1000);
+    const remaining = duration - elapsed;
+    return Math.max(0, remaining);
+  }
+
+  // Returns how many seconds have elapsed since rest started for this set
+  restTimerElapsedForSet(exIndex: number, setIndex: number): number {
+    if (!this.isRestTimerVisibleForSet(exIndex, setIndex)) return 0;
+    const key = this.getSupersetRestKey(exIndex, setIndex);
+    const startTimestamp = this.restStartTimestamps?.[key];
+    const duration = this.getSetRestDuration(exIndex, setIndex);
+    if (!startTimestamp || !duration) return 0;
+    const elapsed = Math.floor((Date.now() - startTimestamp) / 1000);
+    return Math.min(duration, Math.max(0, elapsed));
+  }
+
+  // Returns progress (0-100) as the bar fills up
+  restTimerProgressForSet(exIndex: number, setIndex: number): number {
+    const duration = this.getSetRestDuration(exIndex, setIndex);
+    const elapsed = this.restTimerElapsedForSet(exIndex, setIndex);
+    if (!duration) return 0;
+    return Math.max(0, Math.min(100, (elapsed / duration) * 100));
+  }
+
+  getSupersetRestKey(exIndex: number, setIndex: number): string {
+    const routine = this.routine();
+    if (!routine) return `${exIndex}-${setIndex}`;
+    const exercise = routine.exercises[exIndex];
+    if (exercise.supersetId) {
+      const firstExIndex = routine.exercises.findIndex(
+        ex => ex.supersetId === exercise.supersetId
+      );
+      return `${firstExIndex}-${setIndex}`;
+    }
+    return `${exIndex}-${setIndex}`;
+  }
+
+  private compactRestInterval: any = null;
+  private lastCompactRestBeepSecond: number | null = null;
 }

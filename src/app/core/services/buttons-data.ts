@@ -228,7 +228,7 @@ export const removeSetFromExerciseBtn = {
     ],
     buttonClass: ' hover:bg-teal-800 ',
     iconClass: 'w-8 h-8 mr-2'
-}
+} as ActionMenuItem;
 
 export const addRoundToExerciseBtn = {
     label: 'actionButtons.addRound', actionKey: 'add_round',
@@ -278,6 +278,22 @@ export const resumeSessionBtn = {
     iconClass: 'w-8 h-8 mr-2'
 }
 
+export const metricsBtn = {
+    label: 'actionButtons.metrics',
+    actionKey: 'toggle_metrics',
+    iconName: 'metric',
+    buttonClass: ' hover:bg-blue-600 ',
+    iconClass: 'w-8 h-8 mr-2'
+} as ActionMenuItem;
+
+export const restBtn = {
+    label: 'actionButtons.rest',
+    actionKey: 'rest',
+    iconName: 'rest',
+    buttonClass: ' hover:bg-sky-600 ',
+    iconClass: 'w-8 h-8 mr-2'
+} as ActionMenuItem;
+
 export const sessionNotesBtn = {
     label: 'actionButtons.sessionNotes',
     actionKey: 'session_notes',
@@ -289,6 +305,14 @@ export const sessionNotesBtn = {
 export const exerciseNotesBtn = {
     label: 'actionButtons.exerciseNotes',
     actionKey: 'exercise_notes',
+    iconName: 'clipboard-list',
+    buttonClass: ' hover:bg-purple-600 ',
+    iconClass: 'w-8 h-8 mr-2'
+}
+
+export const setNotesBtn = {
+    label: 'actionButtons.setNotes',
+    actionKey: 'set_notes',
     iconName: 'clipboard-list',
     buttonClass: ' hover:bg-purple-600 ',
     iconClass: 'w-8 h-8 mr-2'
