@@ -773,6 +773,8 @@
     }
   },
   "compactPlayer": {
+    "toggleMetrics": "Metrics",
+    "removeSet": "Remove Set",
     "pausedScreen": {
       "sessionPaused": "Session Paused",
       "elapsedTime": "Elapsed Time",
@@ -796,7 +798,7 @@
     "rounds": "Rounds",
     "sets": "Sets",
     "notesPlaceholder": "Notes for this exercise...",
-    "toggleNotes": "Toggle notes for exercise",
+    "toggleNotes": "Notes for exercise",
     "logPerformance": "Log performance",
     "loggedPerformance": "Performance logged",
     "markAsUndone": "Mark as undone to edit",
@@ -844,6 +846,7 @@
       "ok": "OK"
     },
     "toasts": {
+      "setTypeChanged": "Set #{{setNumber}} type changed.",
       "noFurtherSchemes": "No further available schemes found for metric: {{metric}}. Consider that while doing a workout, only 'exact' metric types are allowed.",
       "intensityAdjusted": "Routine intensity will be adjusted by {{percent}}%",
       "intensityAdjustedTitle": "Intensity Adjusted",

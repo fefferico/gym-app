@@ -85,6 +85,13 @@ enum SessionState {
   End = 'end',
 }
 
+enum TimerSetState {
+  Idle = 'idle',
+  Running = 'running',
+  Paused = 'paused',
+  Completed = 'completed'
+}
+
 export interface SupersetInfo {
   supersetId: string,
   supersetSize: number,
@@ -142,7 +149,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   isAddToSupersetModalOpen = signal(false);
   exerciseToSupersetIndex = signal<number | null>(null);
   expandedSets = signal(new Set<string>());
-  setTimerState = signal<{ [key: string]: { status: 'idle' | 'running' | 'paused', remainingTime: number } }>({});
+  setTimerState = signal<{ [key: string]: { status: TimerSetState, remainingTime: number } }>({});
   private setTimerSub: Subscription | undefined;
 
   lastExerciseIndex = signal<number>(-1);
@@ -152,10 +159,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   protected getMenuMode(): MenuMode {
     return this.appSettingsService.getMenuMode();
-  }
-
-  protected getTrueGymMode(): boolean {
-    return this.appSettingsService.isTrueGymMode();
   }
 
   protected getShowMetricTarget(): boolean {
@@ -205,6 +208,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   originalRoutineSnapshot = signal<Routine | null | undefined>(undefined);
   sessionState = signal<SessionState>(SessionState.Loading);
   protected sessionStateEnum = SessionState;
+  protected timerSetEnum = TimerSetState;
   sessionTimerDisplay = signal('00:00');
   expandedExerciseIndex = signal<number | null>(null);
   activeActionMenuIndex = signal<number | null>(null);
@@ -261,7 +265,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   } | null>(null);
 
   // Key: "exIndex-roundIndex", Value: state object
-  emomState = signal<{ [key: string]: { status: 'idle' | 'running' | 'paused' | 'completed', remainingTime: number } }>({});
+  emomState = signal<{ [key: string]: { status: TimerSetState, remainingTime: number } }>({});
   private emomTimerSub: Subscription | undefined;
 
   workoutProgress = computed(() => {
@@ -340,6 +344,33 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           setTimeout(() => {
             cardElement?.classList.remove(animationClass);
           }, 300); // Duration should match the animation duration in CSS
+        }
+      }, 0);
+    });
+
+    effect(() => {
+      const notesKey = this.expandedSetNotes();
+      const metricsKey = this.expandedMetricsSection();
+
+      if (!notesKey && !metricsKey) return;
+
+      setTimeout(() => {
+        // Handle notes section animation
+        if (notesKey) {
+          const notesElement = document.querySelector(`[data-notes-section="${notesKey}"]`) as HTMLElement;
+          if (notesElement) {
+            notesElement.classList.add('animate-bump-in');
+            setTimeout(() => notesElement?.classList.remove('animate-bump-in'), 300);
+          }
+        }
+
+        // Handle metrics section animation
+        if (metricsKey) {
+          const metricsElement = document.querySelector(`[data-metrics-section="${metricsKey}"]`) as HTMLElement;
+          if (metricsElement) {
+            metricsElement.classList.add('animate-bump-in');
+            setTimeout(() => metricsElement?.classList.remove('animate-bump-in'), 300);
+          }
         }
       }, 0);
     });
@@ -3262,19 +3293,19 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     });
   }
 
-  getEmomState(exIndex: number, roundIndex: number): { status: 'idle' | 'running' | 'paused' | 'completed', remainingTime: number } {
+  getEmomState(exIndex: number, roundIndex: number): { status: TimerSetState, remainingTime: number } {
     // 1. FIRST, check the source of truth: the workout log.
     // If the log shows this round is completed, ALWAYS return a 'completed' state.
     // This is a PURE READ operation.
     if (this.isRoundCompleted(exIndex, roundIndex)) {
-      return { status: 'completed', remainingTime: 0 };
+      return { status: TimerSetState.Completed, remainingTime: 0 };
     }
 
     // 2. If the round is not completed, THEN read the current timer state from the signal.
     // This handles the 'idle', 'running', and 'paused' states for active timers.
     const key = `${exIndex}-${roundIndex}`;
     const allStates = this.emomState();
-    return allStates[key] || { status: 'idle', remainingTime: this.routine()?.exercises[exIndex].emomTimeSeconds ?? 60 };
+    return allStates[key] || { status: TimerSetState.Idle, remainingTime: this.routine()?.exercises[exIndex].emomTimeSeconds ?? 60 };
   }
 
   handleEmomAction(exIndex: number, roundIndex: number): void {
@@ -3282,14 +3313,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const state = this.getEmomState(exIndex, roundIndex);
 
     switch (state.status) {
-      case 'idle':
-      case 'paused':
+      case TimerSetState.Idle:
+      case TimerSetState.Paused:
         this.startEmomTimer(exIndex, roundIndex, key);
         break;
-      case 'running':
+      case TimerSetState.Running:
         this.pauseEmomTimer(key);
         break;
-      case 'completed':
+      case TimerSetState.Completed:
         // Do nothing if already completed
         break;
     }
@@ -3298,8 +3329,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private playCountdownSound(currentRemaining: number): void {
     if (
       this.appSettingsService.enableTimerCountdownSound() &&
-      currentRemaining <= this.appSettingsService.countdownSoundSeconds() &&
-      currentRemaining !== this.lastBeepSecond
+      currentRemaining <= this.appSettingsService.countdownSoundSeconds()
+      && currentRemaining !== this.lastBeepSecond
     ) {
       this.audioService.playSound(AUDIO_TYPES.countdown);
       this.lastBeepSecond = currentRemaining;
@@ -3322,9 +3353,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     this.emomState.update(states => {
       if (!states[key]) {
-        states[key] = { status: 'running', remainingTime: duration };
+        states[key] = { status: TimerSetState.Running, remainingTime: duration };
       } else {
-        states[key].status = 'running';
+        states[key].status = TimerSetState.Running;
       }
       return { ...states };
     });
@@ -3384,7 +3415,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.emomTimerSub?.unsubscribe();
     this.emomState.update(states => {
       if (states[key]) {
-        states[key].status = 'paused';
+        states[key].status = TimerSetState.Paused;
       }
       return { ...states };
     });
@@ -3404,7 +3435,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     });
 
     this.emomState.update(states => {
-      states[key] = { ...states[key], status: 'completed', remainingTime: 0 };
+      states[key] = { ...states[key], status: TimerSetState.Completed, remainingTime: 0 };
       return { ...states };
     });
 
@@ -3866,6 +3897,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
       this._prefillPerformanceInputs();
       this.scrollToSet(exIndex, setIndex);
+      this.toggleMetricsSection(exIndex, setIndex);
     }
   }
 
@@ -3951,6 +3983,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       }
       return newSet;
     });
+    this.closeSetActionMenu();
   }
 
   // +++ ADD THIS METHOD: Gets a summary of the set for the collapsed view +++
@@ -4107,9 +4140,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
      * Gets the current timer state for a specific standard set.
      * It prioritizes the user's input for the duration if it differs from the planned target.
      */
-  getSetTimerState(exIndex: number, setIndex: number): { status: 'idle' | 'running' | 'paused', remainingTime: number } {
+  getSetTimerState(exIndex: number, setIndex: number): { status: TimerSetState, remainingTime: number } {
     if (this.isSetCompleted(exIndex, setIndex)) {
-      return { status: 'idle', remainingTime: 0 };
+      return { status: TimerSetState.Completed, remainingTime: 0 };
     }
     const key = `${exIndex}-${setIndex}`;
     const allTimerStates = this.setTimerState();
@@ -4133,7 +4166,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     // Return the idle state with the correctly prioritized duration.
-    return { status: 'idle', remainingTime: duration };
+    return { status: TimerSetState.Idle, remainingTime: duration };
   }
 
   /**
@@ -4145,11 +4178,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const state = this.getSetTimerState(exIndex, setIndex);
 
     switch (state.status) {
-      case 'idle':
-      case 'paused':
+      case TimerSetState.Idle:
+      case TimerSetState.Paused:
         this.startSetTimer(exIndex, setIndex, key);
         break;
-      case 'running':
+      case TimerSetState.Running:
         this.pauseSetTimer(key);
         break;
     }
@@ -4162,44 +4195,51 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
    */
   private startSetTimer(exIndex: number, setIndex: number, key: string): void {
     this.lastBeepSecond = null;
-    // Get the state object, which correctly prioritizes user input for its `remainingTime`.
     const state = this.getSetTimerState(exIndex, setIndex);
     const duration = state.remainingTime;
 
     this.setTimerState.update(states => {
-      // When starting fresh, use the correct duration.
-      // When resuming, the `remainingTime` is already correct from the state.
       if (!states[key]) {
-        states[key] = { status: 'running', remainingTime: duration };
+        states[key] = { status: TimerSetState.Running, remainingTime: duration };
       } else {
-        states[key].status = 'running';
+        states[key].status = TimerSetState.Running;
       }
       return { ...states };
     });
 
     this.setTimerSub?.unsubscribe();
-    this.setTimerSub = timer(0, 1000).subscribe(() => {
+
+    this.setTimerSub = timer(1000, 1000).subscribe(() => {
       const currentRemaining = this.setTimerState()[key]?.remainingTime;
-      if (currentRemaining > 0) {
-        this.playCountdownSound(currentRemaining);
+
+      if (currentRemaining !== undefined && currentRemaining > 0) {
+        // Decrement first
         this.setTimerState.update(states => {
           states[key].remainingTime--;
           return { ...states };
         });
-      } else {
-        this.setTimerSub?.unsubscribe();
 
-        const exercise = this.routine()!.exercises[exIndex];
-        const set = exercise.sets[setIndex];
-        if (!this.isSetCompleted(exIndex, setIndex)) {
-          this.toastService.success(`Set #${setIndex + 1} complete!`);
-          this.toggleSetCompletion(exercise, set, exIndex, setIndex, 0);
+        // Play sound for the NEW remaining time (after decrement)
+        const newRemaining = this.setTimerState()[key]?.remainingTime;
+        // +++ Only play countdown sound if newRemaining > 0 +++
+        if (newRemaining > 0) {
+          this.playCountdownSound(newRemaining);
+        } else {
+          this.playEndSound();
+          const exercise = this.routine()!.exercises[exIndex];
+          const set = exercise.sets[setIndex];
+          if (!this.isSetCompleted(exIndex, setIndex)) {
+            // this.toastService.success(`Set #${setIndex + 1} complete!`);
+            setTimeout(() => {
+              this.toggleSetCompletion(exercise, set, exIndex, setIndex, 0);
+              this.setTimerSub?.unsubscribe();
+              this.setTimerState.update(states => {
+                delete states[key];
+                return { ...states };
+              });
+            }, 150);
+          }
         }
-        this.setTimerState.update(states => {
-          delete states[key];
-          return { ...states };
-        });
-        this.playEndSound();
       }
     });
   }
@@ -4211,7 +4251,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.setTimerSub?.unsubscribe();
     this.setTimerState.update(states => {
       if (states[key]) {
-        states[key].status = 'paused';
+        states[key].status = TimerSetState.Paused;
       }
       return { ...states };
     });
@@ -4222,7 +4262,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
    */
   getSetTimerButtonText(exIndex: number, setIndex: number): string {
     const state = this.getSetTimerState(exIndex, setIndex);
-    const textMap = { idle: 'START', running: 'PAUSE', paused: 'RESUME' };
+    const textMap = { [TimerSetState.Idle]: 'START', [TimerSetState.Running]: 'PAUSE', [TimerSetState.Paused]: 'RESUME', [TimerSetState.Completed]: 'DONE' };
     return textMap[state.status];
   }
 
@@ -4231,7 +4271,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
    */
   getSetTimerButtonIcon(exIndex: number, setIndex: number): string {
     const state = this.getSetTimerState(exIndex, setIndex);
-    const iconMap = { idle: 'play', running: 'pause', paused: 'play' };
+    const iconMap = { [TimerSetState.Idle]: 'play', [TimerSetState.Running]: 'pause', [TimerSetState.Paused]: 'play', [TimerSetState.Completed]: 'check' };
     return iconMap[state.status];
   }
 
@@ -4241,9 +4281,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   getSetTimerButtonClass(exIndex: number, setIndex: number): string {
     const state = this.getSetTimerState(exIndex, setIndex);
     const classMap = {
-      idle: 'bg-teal-500 hover:bg-teal-600',
-      running: 'bg-yellow-500 hover:bg-yellow-600',
-      paused: 'bg-teal-500 hover:bg-teal-600 animate-pulse',
+      [TimerSetState.Idle]: 'bg-teal-500 hover:bg-teal-600',
+      [TimerSetState.Running]: 'bg-yellow-500 hover:bg-yellow-600',
+      [TimerSetState.Paused]: 'bg-teal-500 hover:bg-teal-600 animate-pulse',
+      [TimerSetState.Completed]: 'bg-green-500 hover:bg-green-600',
     };
     return classMap[state.status];
   }
@@ -4418,6 +4459,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     // Use your setter to update and validate
     this.setPerformanceInputValue(exIndex, setIndex, field, newValue);
+    if (field === METRIC.duration) {
+      const durationValue = typeof newValue === 'number' ? newValue : getDurationValue(newValue as DurationTarget);
+      this.resetTimerIfActive(exIndex, setIndex, durationValue);
+    }
   }
 
   private decrementValue(exIndex: number, setIndex: number, field: METRIC): void {
@@ -4438,29 +4483,62 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     // Get the current value using the new getter
     let currentValue = this.getPerformanceInputValue(exIndex, setIndex, field);
-    let newValue: number;
+    let newValue: AnyTarget | string;
 
     // Handle different metric types
     if (field === METRIC.duration || field === METRIC.rest) {
       currentValue = typeof currentValue === 'string' ? this.parseTimeToSeconds(currentValue) : getDurationValue(currentValue) || 0;
-      newValue = Math.max(0, parseFloat((currentValue - step).toFixed(2)));
+      newValue = durationToExact(Math.max(0, parseFloat((currentValue - step).toFixed(2))));
     } else if (field === METRIC.weight) {
       currentValue = getWeightValue(currentValue) || 0;
-      newValue = Math.max(0, parseFloat((currentValue - step).toFixed(2)));
+      newValue = weightToExact(Math.max(0, parseFloat((currentValue - step).toFixed(2))));
     } else if (field === METRIC.distance) {
       currentValue = getDistanceValue(currentValue) || 0;
-      newValue = Math.max(0, parseFloat((currentValue - step).toFixed(2)));
+      newValue = distanceToExact(Math.max(0, parseFloat((currentValue - step).toFixed(2))));
     } else if (field === METRIC.reps) {
       currentValue = repsTypeToReps(currentValue) || 0;
-      newValue = Math.max(0, parseInt((currentValue - step).toFixed(0), 10));
+      newValue = repsToExact(Math.max(0, parseInt((currentValue + step).toFixed(0), 10)));
     } else {
-      newValue = 0;
+      newValue = '';
     }
 
     // Use your setter to update and validate
     this.setPerformanceInputValue(exIndex, setIndex, field, newValue);
+    if (field === METRIC.duration) {
+      const durationValue = typeof newValue === 'number' ? newValue : getDurationValue(newValue as DurationTarget);
+      this.resetTimerIfActive(exIndex, setIndex, durationValue);
+    }
   }
 
+    protected resetTimerIfActive(exIndex: number, setIndex: number, newDuration?: number): void {
+    const key = `${exIndex}-${setIndex}`;
+    const timerState = this.setTimerState()[key];
+  
+    // Only reset if timer exists and is running or paused
+    if (timerState && (timerState.status === TimerSetState.Running || timerState.status === TimerSetState.Paused)) {
+      // If newDuration is not provided, fall back to planned targetDuration
+      let durationToSet = newDuration;
+      if (durationToSet === undefined) {
+        const set = this.routine()?.exercises[exIndex]?.sets[setIndex];
+        durationToSet = set ? getDurationValue(set.targetDuration) : 0;
+      }
+  
+      // Update the timer state with the new duration
+      this.setTimerState.update(states => {
+        states[key] = {
+          ...states[key],
+          remainingTime: durationToSet
+        };
+        return { ...states };
+      });
+  
+      // If it was running, restart the timer with the new duration
+      if (timerState.status === TimerSetState.Running) {
+        this.setTimerSub?.unsubscribe();
+        this.startSetTimer(exIndex, setIndex, key);
+      }
+    }
+  }
 
   private isManualRestActive = false;
   restTimerMode = signal<TIMER_MODES>(TIMER_MODES.timer);
@@ -4565,7 +4643,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       const exercise = routine.exercises[exIndex];
       if (exercise && exercise.sets[setIndex]) {
         exercise.sets[setIndex].type = newType;
-        this.toastService.info(`Set #${setIndex + 1} type changed.`);
+        this.toastService.info(
+          this.translate.instant('compactPlayer.toasts.setTypeChanged', {
+            setNumber: setIndex + 1
+          })
+        );
       }
 
       return { ...routine };
@@ -4597,7 +4679,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   protected isGhostFieldVisible(exIndex: number, setIndex: number, fieldOrder?: METRIC[],): boolean {
     const visibleFields: any = this.getFieldsForSet(exIndex, setIndex).visible;
     const visibleFieldsLength = visibleFields && visibleFields.indexOf("rest") ? visibleFields.length - 1 : visibleFields.length;
-    return !!(!this.isSetCompleted(exIndex, setIndex) && this.canAddField(exIndex, setIndex) && (visibleFieldsLength % 2 === 1 || visibleFieldsLength === 1) && !this.getTrueGymMode());
+    return !!(!this.isSetCompleted(exIndex, setIndex) && this.canAddField(exIndex, setIndex) && (visibleFieldsLength % 2 === 1 || visibleFieldsLength === 1));
     // return !!(this.isEditableMode() && !this.isSuperSet(exIndex) && fieldOrder && fieldOrder.length !== undefined && ((fieldOrder.length <= 1) || (fieldOrder.length > 2 && fieldOrder.length % 2 == 1)));
   }
 
@@ -5238,10 +5320,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   ];
 
   get availableMetricsForSetAll(): METRIC[] {
-    // Only allow reps and weight in True Gym Mode, else all
-    // return this.getTrueGymMode()
-    //   ? [METRIC.reps, METRIC.weight]
-    //   : this.allAvailableMetrics;
     return this.allAvailableMetrics;
   }
 
@@ -5467,16 +5545,148 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
 
-// Add this with your other signals
-expandedMetricsSection = signal<string | null>(null); // Key will be "exIndex-setIndex"
-toggleMetricsSection(exIndex: number, setIndex: number, event: Event): void {
-  event.stopPropagation();
-  const key = `${exIndex}-${setIndex}`;
-  this.expandedMetricsSection.update(current => current === key ? null : key);
-}
+  // Add this with your other signals
+  expandedMetricsSection = signal<string | null>(null); // Key will be "exIndex-setIndex"
+  toggleMetricsSection(exIndex: number, setIndex: number, event?: Event): void {
+    event?.stopPropagation();
+    const key = `${exIndex}-${setIndex}`;
+    this.expandedMetricsSection.update(current => current === key ? null : key);
+  }
 
-isMetricsSectionExpanded(exIndex: number, setIndex: number): boolean {
-  const key = `${exIndex}-${setIndex}`;
-  return this.expandedMetricsSection() === key;
-}
+  isMetricsSectionExpanded(exIndex: number, setIndex: number): boolean {
+    const key = `${exIndex}-${setIndex}`;
+    return this.expandedMetricsSection() === key;
+  }
+
+
+  setActionItemsMap = computed<Map<string, ActionMenuItem[]>>(() => {
+    const map = new Map<string, ActionMenuItem[]>();
+    const routine = this.routine();
+    const commonModalButtonClass = this.menuButtonBaseClass();
+
+    if (!routine) return map;
+
+    routine.exercises.forEach((exercise, exIndex) => {
+      exercise.sets.forEach((set, setIndex) => {
+        const key = `${exIndex}-${setIndex}`;
+        const isCompleted = this.isSetCompleted(exIndex, setIndex);
+
+        const items: ActionMenuItem[] = [];
+
+        if (!isCompleted) {
+          // Toggle Metrics Button
+          items.push({
+            actionKey: 'toggle_metrics',
+            label: this.translate.instant('compactPlayer.toggleMetrics'),
+            iconName: 'metric',
+            data: { exIndex, setIndex },
+            overrideCssButtonClass: 'hover:bg-gray-200 dark:hover:bg-gray-600' + commonModalButtonClass,
+            buttonClass: this.isMetricsSectionExpanded(exIndex, setIndex) ? 'bg-blue-100 dark:bg-blue-900' : ''
+          });
+
+          // Notes Button
+          items.push({
+            actionKey: 'toggle_notes',
+            label: this.translate.instant('compactPlayer.toggleNotes'),
+            iconName: 'clipboard-list',
+            data: { exIndex, setIndex },
+            overrideCssButtonClass: 'hover:bg-gray-200 dark:hover:bg-gray-600' + commonModalButtonClass
+          });
+
+          // Rest Button
+          items.push({
+            actionKey: 'open_rest',
+            label: this.translate.instant('compactPlayer.rest'),
+            iconName: 'rest',
+            data: { exIndex, setIndex },
+            overrideCssButtonClass: 'hover:bg-gray-200 dark:hover:bg-gray-600' + commonModalButtonClass
+          });
+
+          // Remove Set Button
+          items.push({
+            actionKey: 'remove_set',
+            label: this.translate.instant('compactPlayer.removeSet'),
+            iconName: 'trash',
+            data: { exIndex, setIndex },
+            overrideCssButtonClass: 'hover:bg-gray-200 dark:hover:bg-gray-600' + commonModalButtonClass,
+            buttonClass: 'text-red-500'
+          });
+        }
+
+        map.set(key, items);
+      });
+    });
+
+    return map;
+  });
+
+  activeSetActionMenuKey = signal<string | null>(null);
+
+  handleSetActionMenuItemClick(event: { actionKey: string, data?: any }): void {
+    const { actionKey, data } = event;
+    const { exIndex, setIndex } = data;
+
+    switch (actionKey) {
+      case 'toggle_metrics':
+        this.toggleMetricsSection(exIndex, setIndex, new Event('click'));
+        break;
+      case 'toggle_notes':
+        this.toggleSetNotes(exIndex, setIndex, new Event('click'));
+        break;
+      case 'open_rest':
+        this.openRestModal(exIndex, setIndex, new Event('click'));
+        break;
+      case 'remove_set':
+        this.removeSet(exIndex, setIndex);
+        break;
+    }
+
+    this.closeSetActionMenu();
+  }
+
+  toggleSetActionMenu(exIndex: number, setIndex: number, event: Event): void {
+    event.stopPropagation();
+    const key = `${exIndex}-${setIndex}`;
+    this.activeSetActionMenuKey.update(current => current === key ? null : key);
+  }
+
+  closeSetActionMenu() {
+    this.activeSetActionMenuKey.set(null);
+  }
+
+  /**
+ * Checks if a metric input field should be disabled.
+ * Duration fields are disabled when their associated timer (set timer or EMOM) is running.
+ * @param exIndex The exercise index
+ * @param setIndex The set/round index
+ * @param field The metric field to check
+ * @returns True if the field should be disabled
+ */
+  isMetricInputDisabled(exIndex: number, setIndex: number, field: METRIC): boolean {
+    if (field !== METRIC.duration) {
+      return false;
+    }
+
+    const setTimerRunning = this.getSetTimerState(exIndex, setIndex).status === this.timerSetEnum.Running;
+    const emomTimerRunning = this.getEmomState(exIndex, setIndex).status === this.timerSetEnum.Running;
+
+    return setTimerRunning || emomTimerRunning;
+  }
+
+
+  protected getSetTimerProgress(exIndex: number, setIndex: number): number {
+    const set = this.routine()?.exercises[exIndex]?.sets[setIndex];
+    if (!set) return 0;
+
+    const performanceKey = `${exIndex}-${setIndex}`;
+    const actualDuration = getDurationValue(this.performanceInputValues()[performanceKey]?.actualDuration);
+    const targetDuration = getDurationValue(set.targetDuration);
+    const totalDuration = actualDuration ?? targetDuration ?? 1;
+
+    const elapsed = totalDuration - this.getSetTimerState(exIndex, setIndex).remainingTime;
+    const progress = (elapsed / totalDuration) * 100;
+
+    return Math.min(100, Math.max(0, progress)); // Clamp between 0 and 100
+  }
+
 }

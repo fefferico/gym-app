@@ -597,17 +597,18 @@ export class WorkoutUtilsService {
 
         // If the call is coming from the workout player, filter out the 'rest' metric
         // If in the player and True GYM mode is on, filter the available metrics
-        if (isPlayer && appSettings.enableTrueGymMode) {
+        // if (isPlayer) {
+        // if (isPlayer && appSettings.enableTrueGymMode) {
             // We need the base exercise to determine if it's cardio
-            const baseExercise = await firstValueFrom(this.exerciseService.getExerciseById(routine.exercises[exIndex].exerciseId));
-            const isCardio = baseExercise?.category === 'cardio';
+        //     const baseExercise = await firstValueFrom(this.exerciseService.getExerciseById(routine.exercises[exIndex].exerciseId));
+        //     const isCardio = baseExercise?.category === 'cardio';
 
-            const allowedFields = isCardio
-                ? [METRIC.duration, METRIC.distance] // Rest is handled by its own modal now
-                : [METRIC.weight, METRIC.reps];
+        //     const allowedFields = isCardio
+        //         ? [METRIC.duration, METRIC.distance] // Rest is handled by its own modal now
+        //         : [METRIC.weight, METRIC.reps];
 
-            availableMetrics = availableMetrics.filter(field => allowedFields.includes(field as METRIC));
-        }
+        //     availableMetrics = availableMetrics.filter(field => allowedFields.includes(field as METRIC));
+        // }
 
         // If after all filtering there are no metrics left to add, inform the user and exit.
         if (availableMetrics.length === 0) {
@@ -875,16 +876,16 @@ export class WorkoutUtilsService {
         if (isPlayer) {
             removableFields = removableFields.filter(field => field !== METRIC.rest);
 
-            if (appSettings.enableTrueGymMode) {
-                const baseExercise = await firstValueFrom(this.exerciseService.getExerciseById(routine.exercises[exIndex].exerciseId));
-                const isCardio = baseExercise?.category === 'cardio';
+            // if (appSettings.enableTrueGymMode) {
+            //     const baseExercise = await firstValueFrom(this.exerciseService.getExerciseById(routine.exercises[exIndex].exerciseId));
+            //     const isCardio = baseExercise?.category === 'cardio';
 
-                const allowedFields = isCardio
-                    ? [METRIC.duration, METRIC.distance] // Rest is handled by its own modal now
-                    : [METRIC.weight, METRIC.reps];
+            //     const allowedFields = isCardio
+            //         ? [METRIC.duration, METRIC.distance] // Rest is handled by its own modal now
+            //         : [METRIC.weight, METRIC.reps];
 
-                removableFields = removableFields.filter(field => allowedFields.includes(field as METRIC));
-            }
+            //     removableFields = removableFields.filter(field => allowedFields.includes(field as METRIC));
+            // }
         }
 
         if (removableFields.length === 0) {

@@ -173,8 +173,8 @@ export class AlertComponent implements OnInit {
           setTimeout(() => {
             const numberInput = this.inputElements.get(firstNumberInputIndex);
             if (numberInput) {
-              numberInput.nativeElement.focus();
-              numberInput.nativeElement.select(); // The key action for this request
+              // numberInput.nativeElement.focus();
+              // numberInput.nativeElement.select(); // The key action for this request
             }
           }, focusDelay);
           return; // Mobile-specific task is done, exit.

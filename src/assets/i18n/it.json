@@ -773,6 +773,8 @@
     }
   },
   "compactPlayer": {
+    "toggleMetrics": "Metriche",
+    "removeSet": "Rimuovi Serie",
     "pausedScreen": {
       "sessionPaused": "Sessione in pausa",
       "elapsedTime": "Tempo trascorso",
@@ -796,7 +798,7 @@
     "rounds": "Turno",
     "sets": "Serie",
     "notesPlaceholder": "Note per questo esercizio...",
-    "toggleNotes": "Mostra/Nascondi note esercizio",
+    "toggleNotes": "Note esercizio",
     "logPerformance": "Registra performance",
     "loggedPerformance": "Performance registrata",
     "markAsUndone": "Segna come non fatto per modificare",
@@ -844,6 +846,7 @@
       "ok": "OK"
     },
     "toasts": {
+      "setTypeChanged": "Tipo della serie #{{setNumber}} modificato.",
       "noFurtherSchemes": "Non sono stati trovati ulteriori schemi disponibili per la metrica: {{metric}}. Tieni presente che durante un allenamento sono consentiti solo i tipi di metrica di tipo 'esatto'.",
       "intensityAdjusted": "L'intensità della scheda sarà modificata del {{percent}}%",
       "intensityAdjustedTitle": "Intensità Modificata",
