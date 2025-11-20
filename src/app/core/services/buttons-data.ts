@@ -16,7 +16,7 @@ export const addExerciseBtn = {
     actionKey: 'addExercise',
     iconName: `plus-circle`,
     iconClass: 'w-8 h-8 mr-2',
-    buttonClass: ' hover:bg-blue-700 ',
+    buttonClass: ' hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed',
 } as ActionMenuItem;
 
 export const jumpToExerciseBtn = {

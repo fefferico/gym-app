@@ -11,9 +11,9 @@
   </header>
 
   <!-- Paused Workout Session Card -->
-<section *ngIf="pausedWorkoutInfo() as pausedInfo" class="mb-6 md:mb-8" [@collapse]>
-  <div appShatterable [id]="'pausedWorkout'"
-    class="bg-yellow-50 dark:bg-yellow-900/30 border-2 border-yellow-400 dark:border-yellow-600 rounded-xl shadow-lg p-4 sm:p-6 animate-pulse relative">
+  <section *ngIf="pausedWorkoutInfo() as pausedInfo" class="mb-6 md:mb-8" [@collapse]>
+    <div appShatterable [id]="'pausedWorkout'"
+      class="bg-yellow-50 dark:bg-yellow-900/30 border-2 border-yellow-400 dark:border-yellow-600 rounded-xl shadow-lg p-4 sm:p-6 animate-pulse relative">
       <!-- This container now has 'justify-center' to center its children horizontally -->
       <div class="flex flex-col sm:flex-row items-center justify-center">
         <app-icon name="alert-filled" class="w-10 h-10 sm:w-12 sm:h-12 text-yellow-500 dark:text-yellow-400"></app-icon>
@@ -78,7 +78,8 @@
         <div class="flex flex-col items-start text-center">
           <div class="flex items-center py-2 text-left">
             <app-icon name="play" class="w-14 h-14 mr-2 text-primary"></app-icon>
-            <h3 class="text-md font-semibold text-gray-800 dark:text-gray-100 text-left">{{ 'quickActions.startNewSessionTitle' |
+            <h3 class="text-md font-semibold text-gray-800 dark:text-gray-100 text-left">{{
+              'quickActions.startNewSessionTitle' |
               translate }}</h3>
           </div>
           <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">{{
@@ -100,6 +101,33 @@
           <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">{{ 'quickActions.myRoutinesDescription' |
             translate }}
           </p>
+        </div>
+      </button>
+
+      <button appBumpClick (click)="navigateToHistory()"
+        class="flex items-start block px-2 py-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow dark:hover:bg-gray-600 hover:bg-gray-200">
+        <div class="flex flex-col items-start text-center">
+          <div class="flex items-center py-2">
+            <app-icon name="clock" class="w-14 h-14  text-purple-500 dark:text-purple-400 mr-2"></app-icon>
+            <h3 class="text-md font-semibold text-gray-800 dark:text-gray-100 text-left">{{
+              'quickActions.workoutHistoryTitle' | translate }}</h3>
+          </div>
+          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">{{
+            'quickActions.workoutHistoryDescription' | translate }}
+          </p>
+        </div>
+      </button>
+
+      <button appBumpClick (click)="navigateToProfile()"
+        class="flex items-start block px-2 py-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow dark:hover:bg-gray-600 hover:bg-gray-200">
+        <div class="flex flex-col items-start text-center">
+          <div class="flex items-center py-2">
+            <app-icon name="profile" class="w-14 h-14 text-orange-500 dark:text-orange-400 mr-2"></app-icon>
+            <h3 class="text-md font-semibold text-gray-800 dark:text-gray-100 text-left">{{
+              'quickActions.profileAndSettingsTitle' | translate }}</h3>
+          </div>
+          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">{{
+            'quickActions.profileAndSettingsDescription' | translate }}</p>
         </div>
       </button>
 
@@ -141,32 +169,8 @@
         </div>
       </button>
 
-      <button appBumpClick (click)="navigateToHistory()"
-        class="flex items-start block px-2 py-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow dark:hover:bg-gray-600 hover:bg-gray-200">
-        <div class="flex flex-col items-start text-center">
-          <div class="flex items-center py-2">
-            <app-icon name="clock" class="w-14 h-14  text-purple-500 dark:text-purple-400 mr-2"></app-icon>
-            <h3 class="text-md font-semibold text-gray-800 dark:text-gray-100 text-left">{{
-              'quickActions.workoutHistoryTitle' | translate }}</h3>
-          </div>
-          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">{{
-            'quickActions.workoutHistoryDescription' | translate }}
-          </p>
-        </div>
-      </button>
-      <!-- Add more quick action cards as needed, e.g., Profile/Settings -->
-      <button appBumpClick (click)="navigateToProfile()"
-        class="flex items-start block px-2 py-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow dark:hover:bg-gray-600 hover:bg-gray-200">
-        <div class="flex flex-col items-start text-center">
-          <div class="flex items-center py-2">
-            <app-icon name="profile" class="w-14 h-14 text-orange-500 dark:text-orange-400 mr-2"></app-icon>
-            <h3 class="text-md font-semibold text-gray-800 dark:text-gray-100 text-left">{{
-              'quickActions.profileAndSettingsTitle' | translate }}</h3>
-          </div>
-          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">{{
-            'quickActions.profileAndSettingsDescription' | translate }}</p>
-        </div>
-      </button>
+
+
       <button appBumpClick (click)="navigateToPersonalGym()"
         class="flex items-start block px-2 py-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow dark:hover:bg-gray-600 hover:bg-gray-200">
         <div class="flex flex-col items-start text-center">

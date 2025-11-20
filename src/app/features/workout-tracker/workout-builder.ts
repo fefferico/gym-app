@@ -60,6 +60,7 @@ export enum BuilderMode {
   routineBuilder = 'routineBuilder',
   customProgramEntryBuilder = 'customProgramEntryBuilder',
   manualLogEntry = 'manualLogEntry',
+  newFromLog = 'newFromLog'
 }
 
 export interface UniformSetValues {
@@ -362,7 +363,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   ngOnInit(): void {
     console.log('WorkoutBuilderComponent mode:', this.mode, 'context:', this.context);
     window.scrollTo(0, 0);
-    this.isRoutineMode = this.mode === BuilderMode.routineBuilder || this.mode === BuilderMode.customProgramEntryBuilder;
+    this.isRoutineMode = this.mode === BuilderMode.routineBuilder || this.mode === BuilderMode.customProgramEntryBuilder || this.mode === BuilderMode.newFromLog;
 
     // Populate the list for the builder context
     this.availableRepSchemes = this.workoutUtilsService.getAvailableRepsSchemes('builder');
@@ -408,7 +409,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         }
 
         this.spinnerService.hide();
-        if (this.isRoutineMode && this.isNewMode && openGenerator !== 'true') {
+        if (this.isRoutineMode && this.isNewMode && openGenerator !== 'true' && this.mode !== BuilderMode.newFromLog) {
           this.showCreationWizard();
         }
 
@@ -466,7 +467,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             this.originalStateSnapshot = JSON.parse(JSON.stringify(loadedData));
           }
 
-          if (this.mode === BuilderMode.routineBuilder && this.currentLogId && this.isNewMode) {
+          if (this.mode === BuilderMode.newFromLog && this.currentLogId && this.isNewMode) {
             this.prefillRoutineFormFromLog(loadedData as WorkoutLog);
           } else if (this.mode === BuilderMode.routineBuilder) {
             // Set our new signal with the initial data
@@ -1095,18 +1096,18 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.exercisesFormArray.clear();
 
 
-// Only add each exercise once, using its section property if present
-if (routine.exercises) {
-  routine.exercises.forEach(exerciseData => {
-    const newExerciseFormGroup = this.workoutFormService.createExerciseFormGroup(exerciseData, true, false);
-    // Add section control with the section type or null
-    newExerciseFormGroup.addControl('section', this.fb.control(exerciseData.section ?? null));
+    // Only add each exercise once, using its section property if present
+    if (routine.exercises) {
+      routine.exercises.forEach(exerciseData => {
+        const newExerciseFormGroup = this.workoutFormService.createExerciseFormGroup(exerciseData, true, false);
+        // Add section control with the section type or null
+        newExerciseFormGroup.addControl('section', this.fb.control(exerciseData.section ?? null));
 
-    this.exercisesFormArray.push(newExerciseFormGroup);
-    this.addRepsListener(newExerciseFormGroup);
-    this.addDurationListener(newExerciseFormGroup);
-  });
-}
+        this.exercisesFormArray.push(newExerciseFormGroup);
+        this.addRepsListener(newExerciseFormGroup);
+        this.addDurationListener(newExerciseFormGroup);
+      });
+    }
 
     this.updateExerciseNamesInForm();
     this.builderForm.markAsPristine();
@@ -1184,7 +1185,7 @@ if (routine.exercises) {
     this.builderForm.markAsDirty();
   }
 
-  prefillRoutineFormFromLog(log: WorkoutLog): void {
+    private prefillRoutineFormFromLog(log: WorkoutLog): void {
     this.builderForm.patchValue({
       // Suggest a name for the new routine based on the log
       name: `${log.routineName || this.translate.instant('workoutBuilder.logEntry.adHocTitle')} - As Routine`,
@@ -1193,18 +1194,24 @@ if (routine.exercises) {
       // Try to find the original goal, otherwise default to 'custom'
       goal: this.availableRoutines.find(r => r.id === log.routineId)?.goal || 'custom',
     }, { emitEvent: false });
-
+  
     this.updateSanitizedDescription(log.notes || '');
-
+  
     this.exercisesFormArray.clear({ emitEvent: false });
-
+  
     log.exercises.forEach(loggedEx => {
       const newRoutineExercise = this.createRoutineExerciseFromLoggedExercise(loggedEx);
       this.exercisesFormArray.push(newRoutineExercise, { emitEvent: false });
     });
-
+  
     this.toggleFormState(false); // Enable the form for editing
     this.builderForm.markAsDirty(); // Mark as dirty since it's a new, unsaved routine
+    
+    // +++ FIX: Force the form to update before mapping +++
+    this.builderForm.updateValueAndValidity();
+    
+    // Now map the form to routine - the exercises array should be populated
+    this.loadedRoutine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
   }
 
   private createRoutineExerciseFromLoggedExercise(loggedEx: LoggedWorkoutExercise): FormGroup {
@@ -1213,12 +1220,12 @@ if (routine.exercises) {
       // For the new routine, the 'target' is what was 'achieved' in the log.
       const newSetParams: ExerciseTargetSetParams = {
         id: this.workoutService.generateExerciseSetId(), // New ID for the routine set
-        targetReps: loggedSet.repsLogged,
-        targetWeight: loggedSet.weightLogged ?? undefined,
-        targetDuration: loggedSet.durationLogged,
-        targetDistance: loggedSet.distanceLogged,
+        targetReps: loggedSet.targetReps ?? loggedSet.repsLogged,
+        targetWeight: loggedSet.targetWeight ?? loggedSet.weightLogged ?? undefined,
+        targetDuration: loggedSet.targetDuration ?? loggedSet.durationLogged,
+        targetDistance: loggedSet.targetDistance ?? loggedSet.distanceLogged,
         targetTempo: loggedSet.targetTempo,
-        targetRest: loggedSet.restLogged ?? restToExact(60), // Use original target rest, or default
+        targetRest: loggedSet.targetRest ?? loggedSet.restLogged ?? restToExact(60), // Use original target rest, or default
         type: loggedSet.type,
         notes: loggedSet.notes,
         fieldOrder: loggedSet.fieldOrder
@@ -5918,12 +5925,9 @@ if (routine.exercises) {
     if (selectedIndices.length === 0) return;
 
     const sectionOptions = Object.values(WorkoutSectionType).map(type => ({
-      label: this.getSectionColorAndLabel(type).label,
+      label: type === WorkoutSectionType.NONE ? 'None (Remove from Section)' : this.getSectionColorAndLabel(type).label,
       value: type
     }));
-
-    // Add an option to remove from section
-    sectionOptions.unshift({ label: 'None (Remove from Section)', value: WorkoutSectionType.NONE });
 
     const result = await this.alertService.showPromptDialog(
       'Assign to Section',

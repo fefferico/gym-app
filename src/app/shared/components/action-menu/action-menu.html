@@ -73,7 +73,7 @@
                             [ngClass]="item.iconClass || 'w-6 h-6'"></span>
                     </ng-container>
 
-                    <span *ngIf="showLabelInCompact(item)" class="truncate ml-2">
+                    <span *ngIf="showLabelInCompact(item)" class="ml-2">
                                 {{ item.label ? (item.label | translate) : '' }}
                     </span>
                 </button>

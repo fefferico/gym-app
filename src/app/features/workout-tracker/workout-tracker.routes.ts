@@ -19,13 +19,13 @@ export const WORKOUT_TRACKER_ROUTES: Routes = [
   {
     path: 'routine/new', // Changed path for clarity
     component: WorkoutBuilderComponent,
-    data: { mode: 'routineBuilder', isNew: true,showPausedWorkoutBanner: false }, // Pass mode and isNew
+    data: { mode: BuilderMode.routineBuilder, isNew: true, showPausedWorkoutBanner: false }, // Pass mode and isNew
     title: 'Create New Routine'
   },
   {
     path: 'routine/new-from-log/:logId',
     component: WorkoutBuilderComponent,
-    data: { mode: 'routineBuilder', isNew: true,showPausedWorkoutBanner: false },
+    data: { mode: BuilderMode.newFromLog, isNew: true, showPausedWorkoutBanner: false },
     title: 'Create New Routine'
   },
   {
@@ -37,26 +37,26 @@ export const WORKOUT_TRACKER_ROUTES: Routes = [
   {
     path: 'routine/view/:routineId', // Changed path for clarity
     component: WorkoutBuilderComponent,
-    data: { mode: 'routineBuilder', isNew: false, isView: true,showPausedWorkoutBanner: false, animation: 'RoutineViewDetail' }, // Pass mode, isNew, and isView
+    data: { mode: BuilderMode.routineBuilder, isNew: false, isView: true,showPausedWorkoutBanner: false, animation: 'RoutineViewDetail' }, // Pass mode, isNew, and isView
     title: 'View Routine'
   },
   // --- Manual Log Entry Routes ---
   {
     path: 'log/manual/new', // New path for creating a manual log
     component: WorkoutBuilderComponent,
-    data: { mode: 'manualLogEntry', isNew: true,showPausedWorkoutBanner: false },
+    data: { mode: BuilderMode.manualLogEntry, isNew: true,showPausedWorkoutBanner: false },
     title: 'Log Past Workout'
   },
   {
     path: 'log/manual/new/from/:routineId', // New path for creating a manual log prefilled from a routine
     component: WorkoutBuilderComponent,
-    data: { mode: 'manualLogEntry', isNew: true, prefillFromRoutine: true,showPausedWorkoutBanner: false }, // Indicate prefill
+    data: { mode: BuilderMode.manualLogEntry, isNew: true, prefillFromRoutine: true,showPausedWorkoutBanner: false }, // Indicate prefill
     title: 'Log Workout from Routine'
   },
   {
     path: 'log/manual/edit/:logId', // New path for editing a manual log
     component: WorkoutBuilderComponent,
-    data: { mode: 'manualLogEntry', isNew: false,showPausedWorkoutBanner: false },
+    data: { mode: BuilderMode.manualLogEntry, isNew: false,showPausedWorkoutBanner: false },
     title: 'Edit Workout Log'
   },
   // --- Player and Summary Routes ---

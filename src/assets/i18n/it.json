@@ -773,7 +773,14 @@
     }
   },
   "compactPlayer": {
+    "pausedScreen": {
+      "sessionPaused": "Sessione in pausa",
+      "elapsedTime": "Tempo trascorso",
+      "resumeWorkout": "RIPRENDI ALLENAMENTO",
+      "quitWorkoutNoSave": "ESCI DALL'ALLENAMENTO (SENZA SALVARE)"
+    },
     "allMetricMustBeValid": "Tutte le metriche devono essere valide per poter completare la serie",
+    "setMetricsForAllNonLoggedSets": "Imposta le metriche per tutte le serie non registrate",
     "restTitle": "Recupero serie",
     "warmupSet": "Serie di riscaldamento",
     "completedSet": "SERIE COMPLETATA",
@@ -956,7 +963,11 @@
     "set": {
       "atLeastOneMetric": "È richiesto almeno un parametro",
       "metricsUpdated": "Aggiornato: {{summary}}",
-      "none": "Nessuno"
+      "none": "Nessuno",
+      "allSetsAlreadyLogged": "Tutte le serie per questo esercizio sono già state registrate.",
+      "metricsUpdatedCount": "Aggiornate {{count}} serie/turni: {{summary}}",
+      "metricAddedCount": "'{{metric}}' aggiunto a {{count}} serie/turni",
+      "metricRemovedCount": "'{{metric}}' rimosso da {{count}} serie/turni"
     }
   },
   "actionButtons": {

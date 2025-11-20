@@ -981,7 +981,7 @@
                                                         translate):('workoutBuilder.set.set' | translate)}}
                                                         <div class="flex items-center justify-end">
                                                             <div *ngIf="isEditableMode()"
-                                                                class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/70 p-2 rounded-full">
+                                                                class="flex w-fit items-center justify-center gap-2 bg-gray-200 dark:bg-gray-900/70 p-2 rounded-full">
                                                                 <!-- Remove metric button -->
                                                                 <button appBumpClick type="button"
                                                                     (click)="removeSet(exerciseControl, exIndex, setIndex, $event)"
@@ -995,7 +995,7 @@
                                                     <!-- ADD/REMOVE METRICS BUTTONS -->
                                                     <div class="flex items-center justify-center">
                                                         <div *ngIf="isEditableMode() && !isSuperSet(exIndex)"
-                                                            class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/70 py-1 px-2 rounded-full">
+                                                            class="flex w-fit items-center justify-center gap-2 bg-gray-200 dark:bg-gray-900/70 py-1 px-2 rounded-full">
                                                             <!-- Remove metric button -->
                                                             <label
                                                                 class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">{{
@@ -1107,7 +1107,7 @@
                                         <!-- Col 2: Set +/- SETS Buttons -->
                                         <div *ngIf="!isSuperSet(exIndex)" class="flex items-center justify-center py-2">
                                             <div
-                                                class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/70 py-1 px-2 rounded-full shadow-md">
+                                                class="flex w-fit items-center justify-center gap-2 bg-gray-200 dark:bg-gray-900/70 py-1 px-2 rounded-full shadow-md">
                                                 <label
                                                     class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">{{'workoutBuilder.set.set'
                                                     |
@@ -1136,7 +1136,7 @@
                             <div #superSetControlPanel_rounds class="flex items-center justify-center py-2"
                                 *ngIf="isEditableMode() && isSuperSet(exIndex) && isLastInSuperset(exIndex)">
                                 <div
-                                    class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/70 py-1 px-2 rounded-full">
+                                    class="flex w-fit items-center justify-center gap-2 bg-gray-200 dark:bg-gray-900/70 py-1 px-2 rounded-full">
                                     <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
                                         {{ 'workoutBuilder.superset.rounds' | translate }}:
                                     </span>

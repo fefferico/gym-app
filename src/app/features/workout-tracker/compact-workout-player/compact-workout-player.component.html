@@ -1,4 +1,23 @@
 <div class="compact-player-container bg-gray-200 dark:bg-gray-900 min-h-screen">
+
+  <!-- PAUSED OVERLAY -->
+  <div *ngIf="sessionState() === sessionStateEnum.Paused"
+    class="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center space-y-6 p-4">
+    <h2 class="text-4xl font-bold text-white">{{ 'compactPlayer.pausedScreen.sessionPaused' | translate }}</h2>
+    <p class="text-lg text-gray-200">{{ 'compactPlayer.pausedScreen.elapsedTime' | translate }}: {{
+      sessionTimerDisplay() }}</p>
+    <button appPress (shortPress)="resumeSession()"
+      class="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-md text-xl shadow-lg w-full max-w-xs">
+      <app-icon name="play" class="w-7 h-7 mr-1"></app-icon>
+      {{ 'compactPlayer.pausedScreen.resumeWorkout' | translate }}
+    </button>
+    <button appPress (shortPress)="quitWorkout()"
+      class="flex items-center justify-center text-m text-red-300 hover:text-red-100 font-medium py-2 px-4 rounded-md border border-red-300 hover:bg-red-700/30 w-full max-w-xs mt-2">
+      <app-icon name="exit-door" class="w-7 h-7 mr-1"></app-icon>
+      {{ 'compactPlayer.pausedScreen.quitWorkoutNoSave' | translate }}
+    </button>
+  </div>
+
   <!-- Header -->
   <header #header
     class="sticky top-0 z-20 bg-white dark:bg-gray-800 shadow-md px-3 pt-3 pb-2 flex flex-col justify-between rounded-b-md">
@@ -15,7 +34,7 @@
         </h1>
         <div class="flex-col text-xl font-mono font-semibold text-primary dark:text-primary-light tracking-wider">
           {{ sessionTimerDisplay() }}
-          <p>{{ sessionState() === 'paused' ? ('compactPlayer.paused' | translate):''}}</p>
+          <p>{{ sessionState() === sessionStateEnum.Paused ? ('compactPlayer.paused' | translate):''}}</p>
         </div>
       </div>
       <!-- MODIFIED: Container for Pause/Resume and Notes buttons -->
@@ -23,10 +42,6 @@
         <button appBumpClick (click)="toggleMainSessionActionMenu($event)"
           class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
           <app-icon name="menu-action" class="h-10 w-10"></app-icon>
-        </button>
-        <!-- The separate pause/resume button is now inside the action menu -->
-        <button appBumpClick *ngIf="sessionState() === 'paused'" (click)="resumeSession()" class="p-2">
-          <app-icon name="play" class="h-6 w-6 text-primary dark:text-primary-light animate-pulse"></app-icon>
         </button>
         <app-action-menu [isVisible]="mainSessionActionMenuOpened() === true && getMenuMode() !== 'compact'"
           class="action-menu-container" [modalTitle]="''" [displayMode]="getMenuMode()" [modalTitle]="''"
@@ -183,7 +198,7 @@
             class="bg-gray-100 dark:bg-gray-700/50 pt-2 pb-1 px-1 border-t border-gray-200 dark:border-gray-700 rounded-b-md"
             [ngClass]="{' mb-8':!isSuperSet(exIndex)}">
 
-            <!-- SET INFO FOR ALL THE SETS -->
+            <!-- SET INFO FOR ALL THE SETS - STANDARD EXERCISE -->
             <div *ngIf="getExerciseSetsLength(exIndex) > 1" class="px-2 pb-2">
               <!-- Toggle Button -->
               <button (click)="toggleSetAllPanel(exIndex, $event)"
@@ -197,24 +212,22 @@
               <!-- Collapsible Content -->
               <div class="overflow-hidden transition-all duration-300 ease-in-out"
                 [style.maxHeight]="expandedSetAllPanel() === exIndex ? '500px' : '0px'">
-
                 <!-- METRIC CHIPS -->
                 <div class="flex flex-wrap gap-2 py-3 justify-center bg-gray-200 dark:bg-gray-800">
                   <ng-container *ngFor="let metric of availableMetricsForSetAll">
                     <button type="button" class="px-3 py-1 rounded-full border font-semibold text-xs transition"
                       [ngClass]="{
-        'bg-primary text-white border-primary-light': isMetricActiveForAllSets(exIndex, metric),
-        'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600': !isMetricActiveForAllSets(exIndex, metric)
-      }" (click)="toggleMetricForAllSets(exIndex, metric)">
+                        'bg-primary text-white border-primary-light': isMetricActiveForAllSets(exIndex, metric),
+                        'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600': !isMetricActiveForAllSets(exIndex, metric)
+                      }" (click)="toggleMetricForAllSets(exIndex, metric)">
                       {{ 'metrics.' + metric | translate }}
                     </button>
                   </ng-container>
                 </div>
 
                 <div
-                  class="p-4 border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-xl bg-white dark:bg-gray-800">
+                  class="px-4 py-2 border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-xl bg-white dark:bg-gray-800">
                   <div class="grid grid-cols-2 gap-4">
-
                     <!-- Reps Input -->
                     <div *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.reps]">
                       <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{ 'metrics.reps' |
@@ -338,19 +351,29 @@
 
                       <!-- Set actions - STANDARD SET -->
                       <div *ngIf="isSetExpanded(exIndex,setIndex)" class="flex-shrink-0 flex">
-                        <div *ngIf="!isSetCompleted(exIndex, setIndex)" class="flex items-center justify-center gap-1">
+                        <div #setButtons *ngIf="!isSetCompleted(exIndex, setIndex)"
+                          class="flex items-center justify-center gap-1">
+
+                          <!-- Toggle Metrics Button -->
+                          <button appBumpClick (click)="toggleMetricsSection(exIndex, setIndex, $event)"
+                            [title]="'compactPlayer.toggleMetrics' | translate"
+                            class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center"
+                            [ngClass]="{'bg-blue-100 dark:bg-blue-900': isMetricsSectionExpanded(exIndex, setIndex)}">
+                            <app-icon name="metric" class="h-6 w-6 text-gray-500 dark:text-gray-400"></app-icon>
+                          </button>
+
+                          <!-- Notes Button -->
                           <button appBumpClick (click)="toggleSetNotes(exIndex, setIndex, $event)"
                             class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center"><app-icon
                               name="clipboard-list"
                               class="h-6 w-6 text-gray-500 dark:text-gray-400"></app-icon></button>
 
-                          <!-- START: ADD THIS NEW BUTTON -->
+                          <!-- Toggle Rest Button -->
                           <button appBumpClick (click)="openRestModal(exIndex, setIndex, $event)"
                             [title]="'compactPlayer.rest' | translate"
                             class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center">
                             <app-icon name="rest" class="h-6 w-6 text-gray-500 dark:text-gray-400"></app-icon>
                           </button>
-                          <!-- END: ADD THIS NEW BUTTON -->
 
                           <button appBumpClick (click)="removeSet(exIndex, setIndex)"
                             class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center"><app-icon
@@ -413,27 +436,27 @@
                       <!-- <div *ngIf="isSetExpanded(exIndex, setIndex)" class="border-t border-white dark:border-gray-600/50"> -->
 
                       <!-- Set ADD/REMOVE METRICS - STANDARD SET -->
-                      <div class="flex-shrink-0 flex flex-col items-center justify-center gap-1">
-                        <div *ngIf="!isSetCompleted(exIndex, setIndex)" class="flex items-center">
-                          <div
-                            class="flex w-fit items-center justify-center gap-1 bg-gray-300 dark:bg-gray-900/50 p-1 px-2 rounded-full mt-1">
-                            <label
-                              class="flex items-center justify-between text-s font-medium text-white dark:text-gray-400">{{
-                              'workoutBuilder.set.metrics' | translate }}:</label>
-                            <!-- Remove metric button -->
-                            <button appBumpClick *ngIf="canRemoveAnyField(exIndex, setIndex)"
-                              (click)="promptRemoveField(exIndex, setIndex); $event.stopPropagation()"
-                              class="p-1.5 rounded-full bg-red-500 dark:bg-red-500/80 hover:bg-red-500 text-white flex items-center">
-                              <app-icon name="minus" class="h-5 w-5"></app-icon>
-                            </button>
-                            <!-- ADD metric -->
-                            <button appBumpClick *ngIf="getFieldsForSet(exIndex, setIndex).hidden.length > 0"
-                              (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
-                              class="p-1.5 rounded-full bg-blue-500 dark:bg-blue-500/80 hover:bg-blue-500 text-white flex items-center">
-                              <app-icon name="plus" class="h-5 w-5"></app-icon>
-                            </button>
-                          </div>
-                        </div>
+                      <div #metricsSectionStandard
+                        class="flex-shrink-0 flex flex-col items-center justify-center gap-1">
+                        <div *ngIf="!isSetCompleted(exIndex, setIndex) && isMetricsSectionExpanded(exIndex, setIndex)" class="flex items-center">
+    <div class="flex w-fit items-center justify-center gap-2 bg-gray-300 dark:bg-gray-900/50 p-1 px-2 rounded-full mt-1">
+      <label class="flex items-center justify-between text-s font-medium text-white dark:text-gray-400">
+        {{ 'workoutBuilder.set.metrics' | translate }}:
+      </label>
+      <!-- Remove metric button -->
+      <button appBumpClick *ngIf="canRemoveAnyField(exIndex, setIndex)"
+        (click)="promptRemoveField(exIndex, setIndex); $event.stopPropagation()"
+        class="p-1.5 rounded-full bg-red-500 dark:bg-red-500/80 hover:bg-red-500 text-white flex items-center">
+        <app-icon name="minus" class="h-5 w-5"></app-icon>
+      </button>
+      <!-- ADD metric -->
+      <button appBumpClick *ngIf="getFieldsForSet(exIndex, setIndex).hidden.length > 0"
+        (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
+        class="p-1.5 rounded-full bg-blue-500 dark:bg-blue-500/80 hover:bg-blue-500 text-white flex items-center">
+        <app-icon name="plus" class="h-5 w-5"></app-icon>
+      </button>
+    </div>
+  </div>
                         <div *ngIf="getSetType(exIndex, setIndex) && !getTrueGymMode()"
                           class="flex justify-start w-full">
                           <div class="w-full px-1">
@@ -775,13 +798,13 @@
   <div class="flex flex-col items-center"
     *ngIf="!routine() || (routine() !== null && routine() !== undefined && (!routine()?.exercises || routine()?.exercises?.length === 0))">
     <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-200">
-      {{ sessionState() === 'error' ? ('compactPlayer.errorLoading' | translate) :
+      {{ sessionState() === sessionStateEnum.Error ? ('compactPlayer.errorLoading' | translate) :
       (currentWorkoutLog().exercises?.length
       === 0 ?
       (routineId === '-1' ? ('compactPlayer.workoutStarted' | translate) : ('compactPlayer.workoutEnded' | translate)) :
       ('compactPlayer.workoutComplete' | translate)) }}
     </h2>
-    <p class="text-gray-600 dark:text-gray-400 mt-2" *ngIf="sessionState() !== 'error'">
+    <p class="text-gray-600 dark:text-gray-400 mt-2" *ngIf="sessionState() !== sessionStateEnum.Error">
       {{ currentWorkoutLog().exercises?.length === 0 ? ('compactPlayer.noSetsLogged' | translate) :
       ('compactPlayer.allSetsDone' | translate) }}
     </p>
@@ -791,14 +814,14 @@
     <div
       class="w-full max-w-sm grid grid-cols-2 gap-4 bg-white dark:bg-gray-800/80 dark:backdrop-blur-sm border-t border-x border-gray-200 dark:border-gray-700 p-3 rounded-t-2xl">
 
-      <button appBumpClick (click)="openAddExerciseModal()"
-        class="flex items-center justify-center space-x-2 bg-blue-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors">
+      <button appBumpClick (click)="openAddExerciseModal()" [disabled]="sessionState() === sessionStateEnum.Paused"
+        class="flex items-center justify-center space-x-2 bg-blue-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
         <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
         <span>{{ 'compactPlayer.addExercise' | translate }}</span>
       </button>
 
       <button appBumpClick (click)="finishWorkout()"
-        [disabled]="!this.currentWorkoutLog() || !this.currentWorkoutLog().exercises || this.currentWorkoutLog().exercises?.length === 0"
+        [disabled]="!this.currentWorkoutLog() || !this.currentWorkoutLog().exercises || this.currentWorkoutLog().exercises?.length === 0 || sessionState() === sessionStateEnum.Paused"
         class="flex items-center justify-center space-x-2 bg-green-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
         <app-icon name="done" class="h-6 w-6"></app-icon>
         <span>{{ 'compactPlayer.finish' | translate }}</span>

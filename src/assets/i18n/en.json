@@ -773,7 +773,14 @@
     }
   },
   "compactPlayer": {
+    "pausedScreen": {
+      "sessionPaused": "Session Paused",
+      "elapsedTime": "Elapsed Time",
+      "resumeWorkout": "RESUME WORKOUT",
+      "quitWorkoutNoSave": "QUIT WORKOUT (NO SAVE)"
+    },
     "allMetricMustBeValid": "Each metric must be valid to complete the set",
+    "setMetricsForAllNonLoggedSets": "Set metrics for all non-logged sets",
     "restTitle": "Set rest",
     "warmupSet": "Warmup set",
     "completedSet": "COMPLETED SET",
@@ -957,7 +964,11 @@
     "set": {
       "atLeastOneMetric": "At least one metric is required",
       "metricsUpdated": "Updated: {{summary}}",
-      "none": "None"
+      "none": "None",
+      "allSetsAlreadyLogged": "All sets for this exercise have already been logged.",
+      "metricsUpdatedCount": "Updated {{count}} set(s)/round(s): {{summary}}",
+      "metricAddedCount": "'{{metric}}' added to {{count}} set(s)/round(s)",
+      "metricRemovedCount": "'{{metric}}' removed from {{count}} set(s)/round(s)"
     }
   },
   "actionButtons": {

@@ -1,5 +1,5 @@
 // src/app/app.config.ts
-import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom, inject, Injectable, LOCALE_ID, PLATFORM_ID, provideZoneChangeDetection } from '@angular/core';
+import { APP_INITIALIZER, ApplicationConfig, DOCUMENT, importProvidersFrom, inject, Injectable, LOCALE_ID, PLATFORM_ID, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withFetch, HttpClient } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -92,6 +92,23 @@ export function appInitializerFactory(languageService: LanguageService, translat
   };
 }
 
+// Theme initializer factory - runs before app starts
+export function themeInitializerFactory(platformId: Object, document: Document): () => void {
+  return () => {
+    if (isPlatformBrowser(platformId)) {
+      const storedTheme = localStorage.getItem('fitTrackPro-theme');
+      const isDark = storedTheme === 'dark' || 
+                     (!storedTheme && window.matchMedia?.('(prefers-color-scheme: dark)').matches);
+      
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  };
+}
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
@@ -104,7 +121,12 @@ export const appConfig: ApplicationConfig = {
       useClass: CustomHammerConfig
     },
     importProvidersFrom(NgxIndexedDBModule.forRoot(dbConfig)),
-    
+    {
+      provide: APP_INITIALIZER,
+      useFactory: themeInitializerFactory,
+      deps: [PLATFORM_ID, DOCUMENT],
+      multi: true
+    },
     // ==========================================================
     // START: CORRECTED PROVIDER ORDER
     // (LanguageService MUST be provided before APP_INITIALIZER and LOCALE_ID)
