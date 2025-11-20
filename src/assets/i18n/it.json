@@ -228,6 +228,7 @@
   },
   "common": {
     "loading": "Caricamento...",
+    "save": "Salva",
     "on": "On",
     "off": "Off",
     "premium": "PREMIUM",
@@ -773,6 +774,9 @@
     }
   },
   "compactPlayer": {
+    "sessionNotes": "Note della sessione",
+    "exerciseNotes": "Note dell'esercizio",
+    "setNotes": "Note della serie",
     "toggleMetrics": "Metriche",
     "removeSet": "Rimuovi Serie",
     "pausedScreen": {
@@ -784,7 +788,7 @@
     "allMetricMustBeValid": "Tutte le metriche devono essere valide per poter completare la serie",
     "setMetricsForAllNonLoggedSets": "Imposta le metriche per tutte le serie non registrate",
     "restTitle": "Recupero serie",
-    "warmupSet": "Serie di riscaldamento",
+    "warmupSet": "Riscaldamento",
     "completedSet": "SERIE COMPLETATA",
     "completeSet": "COMPLETA SERIE",
     "takeABreak": "Prenditi una pausa",
@@ -798,7 +802,6 @@
     "rounds": "Turno",
     "sets": "Serie",
     "notesPlaceholder": "Note per questo esercizio...",
-    "toggleNotes": "Note esercizio",
     "logPerformance": "Registra performance",
     "loggedPerformance": "Performance registrata",
     "markAsUndone": "Segna come non fatto per modificare",
@@ -846,6 +849,8 @@
       "ok": "OK"
     },
     "toasts": {
+      "exerciseNotesUpdated": "Note dell'esercizio aggiornate.",
+      "setNotesUpdated": "Note della serie aggiornate.",
       "setTypeChanged": "Tipo della serie #{{setNumber}} modificato.",
       "noFurtherSchemes": "Non sono stati trovati ulteriori schemi disponibili per la metrica: {{metric}}. Tieni presente che durante un allenamento sono consentiti solo i tipi di metrica di tipo 'esatto'.",
       "intensityAdjusted": "L'intensità della scheda sarà modificata del {{percent}}%",
@@ -997,6 +1002,8 @@
     "removeRound": "Rimuovi Turno",
     "resume": "Riprendi",
     "sessionNotes": "Note sessione",
+    "exerciseNotes": "Note esercizio",
+    "setNotes": "Note serie",
     "hide": "NASCONDI",
     "unhide": "MOSTRA",
     "markFavourite": "PREFERITO",

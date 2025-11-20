@@ -58,7 +58,7 @@ import { AppSettingsService } from '../../../core/services/app-settings.service'
 import { TrainingProgram } from '../../../core/models/training-program.model';
 import { AlertButton, AlertInput } from '../../../core/models/alert.model';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { addExerciseBtn, addRoundToExerciseBtn, addSetToExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, calculatorBtn, createSuperSetBtn, finishEarlyBtn, openSessionPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeExerciseBtn, removeFromSuperSetBtn, removeRoundFromExerciseBtn, removeSetFromExerciseBtn, resumeSessionBtn, sessionNotesBtn, switchExerciseBtn, timerBtn } from '../../../core/services/buttons-data';
+import { addExerciseBtn, addRoundToExerciseBtn, addSetToExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, calculatorBtn, createSuperSetBtn, exerciseNotesBtn, finishEarlyBtn, openSessionPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeExerciseBtn, removeFromSuperSetBtn, removeRoundFromExerciseBtn, removeSetFromExerciseBtn, resumeSessionBtn, sessionNotesBtn, switchExerciseBtn, timerBtn } from '../../../core/services/buttons-data';
 import { mapExerciseTargetSetParamsToExerciseExecutedSetParams } from '../../../core/models/workout-mapper';
 import { ProgressiveOverloadService } from '../../../core/services/progressive-overload.service.ts';
 import { BarbellCalculatorModalComponent } from '../../../shared/components/barbell-calculator-modal/barbell-calculator-modal.component';
@@ -211,7 +211,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   protected timerSetEnum = TimerSetState;
   sessionTimerDisplay = signal('00:00');
   expandedExerciseIndex = signal<number | null>(null);
-  activeActionMenuIndex = signal<number | null>(null);
+  activeExerciseMenuIndex = signal<number | null>(null);
   mainSessionActionMenuOpened = signal<boolean>(false);
   playerSubState = signal<PlayerSubState>(PlayerSubState.PerformingSet);
 
@@ -1016,33 +1016,34 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   async editSessionNotes() {
-    const result = await this.alertService.showPromptDialog(
-      this.translate.instant('compactPlayer.alerts.sessionNotesTitle'),
-      this.translate.instant('compactPlayer.alerts.sessionNotesMessage'),
-      [{
-        name: 'notes',
-        type: 'text',
-        placeholder: this.translate.instant('compactPlayer.alerts.sessionNotesPlaceholder'),
-        value: this.currentWorkoutLog().notes ?? undefined,
-        autofocus: this.currentWorkoutLog().notes ? false : true
-      }] as AlertInput[],
-      this.translate.instant('compactPlayer.alerts.saveNotes'),
-      this.translate.instant('common.cancel'),
-      [{
-        role: 'confirm',
-        text: this.translate.instant('compactPlayer.alerts.saveNotes'),
-        icon: 'save',
-        data: true
-      } as AlertButton]
-    );
+    // const result = await this.alertService.showPromptDialog(
+    //   this.translate.instant('compactPlayer.alerts.sessionNotesTitle'),
+    //   this.translate.instant('compactPlayer.alerts.sessionNotesMessage'),
+    //   [{
+    //     name: 'notes',
+    //     type: 'text',
+    //     placeholder: this.translate.instant('compactPlayer.alerts.sessionNotesPlaceholder'),
+    //     value: this.currentWorkoutLog().notes ?? undefined,
+    //     autofocus: this.currentWorkoutLog().notes ? false : true
+    //   }] as AlertInput[],
+    //   this.translate.instant('compactPlayer.alerts.saveNotes'),
+    //   this.translate.instant('common.cancel'),
+    //   [{
+    //     role: 'confirm',
+    //     text: this.translate.instant('compactPlayer.alerts.saveNotes'),
+    //     icon: 'save',
+    //     data: true
+    //   } as AlertButton]
+    // );
 
-    if (result && result['notes'] !== undefined && result['notes'] !== null) {
-      this.currentWorkoutLog.update(log => {
-        log.notes = String(result['notes']) || '';
-        return log;
-      });
-      this.toastService.success(this.translate.instant('compactPlayer.toasts.sessionNotesUpdated'));
-    }
+    // if (result && result['notes'] !== undefined && result['notes'] !== null) {
+    //   this.currentWorkoutLog.update(log => {
+    //     log.notes = String(result['notes']) || '';
+    //     return log;
+    //   });
+    //   this.toastService.success(this.translate.instant('compactPlayer.toasts.sessionNotesUpdated'));
+    // }
+    this.openNoteModal('session');
   }
 
   getInitialExerciseNoteInputValue(exIndex: number): string {
@@ -1205,15 +1206,25 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   expandedSetNotes = signal<string | null>(null); // Key will be "exIndex-setIndex"
   expandedRounds = signal(new Set<string>());
 
-  toggleExerciseNotes(exIndex: number, event: Event) {
-    event.stopPropagation();
-    this.expandedExerciseNotes.update(current => current === exIndex ? null : exIndex);
+  toggleExerciseNotes(exIndex: number, event?: Event) {
+    event?.stopPropagation();
+    // this.expandedExerciseNotes.update(current => current === exIndex ? null : exIndex);
+    this.openNoteModal('exercise', exIndex);
   }
 
   toggleSetNotes(exIndex: number, setIndex: number, event: Event) {
-    event.stopPropagation();
-    const key = `${exIndex}-${setIndex}`;
-    this.expandedSetNotes.update(current => current === key ? null : key);
+    // event.stopPropagation();
+    // const key = `${exIndex}-${setIndex}`;
+    // this.expandedSetNotes.update(current => current === key ? null : key);
+    // // expand set if collapsed
+    // if (!this.expandedSets().has(key)) {
+    //   this.expandedSets.update(currentSet => {
+    //     const newSet = new Set(currentSet);
+    //     newSet.add(key);
+    //     return newSet;
+    //   });
+    // }
+    this.openNoteModal('set', exIndex, setIndex);
   }
 
   // compact-workout-player.component.ts
@@ -1396,20 +1407,22 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return { completedExercises: completed, incompleteExercises: incomplete, skippedExercises: skipped };
   }
 
-  toggleActionMenu(index: number, event: Event) {
+  toggleExerciseActionMenu(index: number, event: Event) {
     event.stopPropagation();
-    this.activeActionMenuIndex.update(current => current === index ? null : index);
+    this.activeExerciseMenuIndex.update(current => current === index ? null : index);
+    this.closeSetActionMenu();
+    this.closeMainSessionActionMenu();
   }
+  closeExerciseActionMenu() { this.activeExerciseMenuIndex.set(null); }
 
-  closeActionMenu() { this.activeActionMenuIndex.set(null); }
-
-  handleActionMenuItemClick(event: { actionKey: string, data?: any }) {
+  handleExerciseMenuItemClick(event: { actionKey: string, data?: any }) {
     const { actionKey, data: { exIndex } } = event;
     switch (actionKey) {
       case 'switchExercise': this.openSwitchExerciseModal(exIndex); break;
       case 'insights': this.openPerformanceInsightsModal(exIndex); break;
       // 'add_round' is now handled by 'add_set'
       case 'add_set': this.addSet(exIndex); break;
+      case 'exercise_notes': this.toggleExerciseNotes(exIndex); break;
       case 'remove_set': this.removeSet(exIndex, 0); break;
       case 'add_warmup_set': this.addWarmupSet(exIndex); break;
       case 'remove': this.removeExercise(exIndex); break;
@@ -2059,12 +2072,18 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   toggleCompletedSetsForDayInfo(): void { this.showCompletedSetsForDayInfo.update(v => !v); }
 
   areActionsVisible(exerciseIndex: number): boolean {
-    return this.activeActionMenuIndex() === exerciseIndex;
+    return this.activeExerciseMenuIndex() === exerciseIndex;
   }
 
   toggleMainSessionActionMenu(event: Event | null) {
     event?.stopPropagation();
     this.mainSessionActionMenuOpened.update(current => current === true ? false : true);
+    this.closeExerciseActionMenu();
+    this.closeSetActionMenu();
+  }
+
+  closeMainSessionActionMenu() {
+    this.mainSessionActionMenuOpened.set(false);
   }
 
   protected menuButtonBaseClass = computed(() => {
@@ -2174,7 +2193,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return loggedEx.sets.length > 0 && loggedEx.sets.length < totalPlannedCompletions;
   }
 
-  compactActionItemsMap = computed<Map<number, ActionMenuItem[]>>(() => {
+  exerciseActionItemsMap = computed<Map<number, ActionMenuItem[]>>(() => {
     const map = new Map<number, ActionMenuItem[]>();
     const routine = this.routine(); // Read the dependency signal once
     const commonModalButtonClass = this.menuButtonBaseClass();
@@ -2195,6 +2214,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         ...openSessionPerformanceInsightsBtn,
         data: { exIndex },
         overrideCssButtonClass: openSessionPerformanceInsightsBtn.buttonClass + commonModalButtonClass
+      };
+      const addExerciseNotesBtn: ActionMenuItem = {
+        ...exerciseNotesBtn,
+        data: { exIndex },
+        overrideCssButtonClass: exerciseNotesBtn.buttonClass + commonModalButtonClass
       };
 
       const baseAddSetRoundBtn = !this.isSuperSet(exIndex) ? addSetToExerciseBtn : { ...addRoundToExerciseBtn, actionKey: 'add_set' };
@@ -2224,7 +2248,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       } as ActionMenuItem;
 
       let actionsArray: ActionMenuItem[] = [
-        currOpenPerformanceInsightsBtn
+        currOpenPerformanceInsightsBtn,
+        addExerciseNotesBtn
       ];
 
       if (!this.isExercisePartiallyLogged(exercise) && !this.isExerciseFullyLogged(exercise) && !this.isSuperSet(exIndex)) {
@@ -4510,10 +4535,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-    protected resetTimerIfActive(exIndex: number, setIndex: number, newDuration?: number): void {
+  protected resetTimerIfActive(exIndex: number, setIndex: number, newDuration?: number): void {
     const key = `${exIndex}-${setIndex}`;
     const timerState = this.setTimerState()[key];
-  
+
     // Only reset if timer exists and is running or paused
     if (timerState && (timerState.status === TimerSetState.Running || timerState.status === TimerSetState.Paused)) {
       // If newDuration is not provided, fall back to planned targetDuration
@@ -4522,7 +4547,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         const set = this.routine()?.exercises[exIndex]?.sets[setIndex];
         durationToSet = set ? getDurationValue(set.targetDuration) : 0;
       }
-  
+
       // Update the timer state with the new duration
       this.setTimerState.update(states => {
         states[key] = {
@@ -4531,7 +4556,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         };
         return { ...states };
       });
-  
+
       // If it was running, restart the timer with the new duration
       if (timerState.status === TimerSetState.Running) {
         this.setTimerSub?.unsubscribe();
@@ -5551,6 +5576,24 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     event?.stopPropagation();
     const key = `${exIndex}-${setIndex}`;
     this.expandedMetricsSection.update(current => current === key ? null : key);
+    // expand set if collapsed
+    if (!this.expandedSets().has(key)) {
+      this.expandedSets.update(currentSet => {
+        const newSet = new Set(currentSet);
+        newSet.add(key);
+        return newSet;
+      });
+      return;
+    }
+
+    // if toggling hide the metric section and the set is expanded, collapse it
+    if (this.expandedMetricsSection() == key && this.expandedSets().has(key)) {
+      this.expandedSets.update(currentSet => {
+        const newSet = new Set(currentSet);
+        newSet.delete(key);
+        return newSet;
+      });
+    }
   }
 
   isMetricsSectionExpanded(exIndex: number, setIndex: number): boolean {
@@ -5587,7 +5630,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           // Notes Button
           items.push({
             actionKey: 'toggle_notes',
-            label: this.translate.instant('compactPlayer.toggleNotes'),
+            label: this.translate.instant('compactPlayer.setNotes'),
             iconName: 'clipboard-list',
             data: { exIndex, setIndex },
             overrideCssButtonClass: 'hover:bg-gray-200 dark:hover:bg-gray-600' + commonModalButtonClass
@@ -5648,6 +5691,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     const key = `${exIndex}-${setIndex}`;
     this.activeSetActionMenuKey.update(current => current === key ? null : key);
+    this.closeExerciseActionMenu();
+    this.closeMainSessionActionMenu();
   }
 
   closeSetActionMenu() {
@@ -5689,4 +5734,120 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return Math.min(100, Math.max(0, progress)); // Clamp between 0 and 100
   }
 
+
+  // Modal state and context
+  noteModalVisible = signal(false);
+  noteModalContext = signal<{ type: 'session' | 'exercise' | 'set', exIndex?: number, setIndex?: number } | null>(null);
+  noteModalValue = signal<string>('');
+  openNoteModal(type: 'session' | 'exercise' | 'set', exIndex?: number, setIndex?: number) {
+    let initial = '';
+    if (type === 'session') {
+      initial = this.currentWorkoutLog().notes ?? '';
+    } else if (type === 'exercise' && exIndex !== undefined) {
+      initial = this.routine()?.exercises[exIndex]?.notes ?? '';
+    } else if (type === 'set' && exIndex !== undefined && setIndex !== undefined) {
+      const key = `${exIndex}-${setIndex}`;
+      // Prefer logged set, then user input, then planned
+      const loggedSet = this.getLoggedSet(exIndex, setIndex);
+      initial = loggedSet?.notes
+        ?? this.performanceInputValues()[key]?.notes
+        ?? this.routine()?.exercises[exIndex]?.sets[setIndex]?.notes
+        ?? '';
+    }
+    this.noteModalContext.set({ type, exIndex, setIndex });
+    this.noteModalValue.set(initial);
+    this.noteModalVisible.set(true);
+  }
+
+  async saveNoteModal() {
+    const ctx = this.noteModalContext();
+    const value = this.noteModalValue();
+    if (!ctx) return;
+
+    if (ctx.type === 'session') {
+      this.currentWorkoutLog.update(log => {
+        log.notes = value;
+        return { ...log };
+      });
+      this.toastService.success(this.translate.instant('compactPlayer.toasts.sessionNotesUpdated'));
+    } else if (ctx.type === 'exercise' && ctx.exIndex !== undefined && typeof ctx.exIndex === 'number') {
+      const exIndex = ctx.exIndex;
+      this.routine.update(r => {
+        if (!r) return r;
+        r.exercises[exIndex].notes = value;
+        return { ...r };
+      });
+      // Also update log if exercise is logged
+      const exercise = this.routine()?.exercises[ctx.exIndex];
+      if (exercise) {
+        this.currentWorkoutLog.update(log => {
+          const loggedEx = log.exercises?.find(ex => ex.id === exercise.id);
+          if (loggedEx) loggedEx.notes = value;
+          return { ...log };
+        });
+      }
+      this.toastService.success(this.translate.instant('compactPlayer.toasts.exerciseNotesUpdated'));
+    } else if (
+      ctx.type === 'set' &&
+      typeof ctx.exIndex === 'number' &&
+      typeof ctx.setIndex === 'number'
+    ) {
+      const key = `${ctx.exIndex}-${ctx.setIndex}`;
+      this.performanceInputValues.update(inputs => {
+        if (!inputs[key]) inputs[key] = {};
+        inputs[key].notes = value;
+        return { ...inputs };
+      });
+      // If set is logged, update log as well
+      const exercise = this.routine()?.exercises[ctx.exIndex];
+      if (exercise) {
+        const exIndex = ctx.exIndex;
+        this.currentWorkoutLog.update(log => {
+          const loggedEx = log.exercises?.find(ex => ex.id === exercise.id);
+          if (loggedEx) {
+            const loggedSet = loggedEx.sets.find(s => s.plannedSetId === exercise.sets[exIndex].id);
+            if (loggedSet) loggedSet.notes = value;
+          }
+          return { ...log };
+        });
+      }
+      this.toastService.success(this.translate.instant('compactPlayer.toasts.setNotesUpdated'));
+    }
+    this.closeNoteModal();
+  }
+
+  closeNoteModal() {
+    this.noteModalVisible.set(false);
+    this.noteModalContext.set(null);
+    this.noteModalValue.set('');
+  }
+
+
+  getNoteModalTitle(): string {
+    const ctx = this.noteModalContext();
+    if (!ctx) return '';
+  
+    if (ctx.type === 'session') {
+      return this.translate.instant('compactPlayer.sessionNotes');
+    }
+  
+    if (ctx.type === 'exercise' && typeof ctx.exIndex === 'number') {
+      const exercise = this.routine()?.exercises[ctx.exIndex];
+      if (exercise) {
+        return `${this.translate.instant('compactPlayer.exerciseNotes')} - ${exercise.exerciseName || ''}`;
+      }
+      return this.translate.instant('compactPlayer.exerciseNotes');
+    }
+  
+    if (ctx.type === 'set' && typeof ctx.exIndex === 'number' && typeof ctx.setIndex === 'number') {
+      const exercise = this.routine()?.exercises[ctx.exIndex];
+      const setNumber = ctx.setIndex + 1;
+      if (exercise) {
+        return `${this.translate.instant('compactPlayer.setNotes')} - ${exercise.exerciseName || ''} (Set ${setNumber})`;
+      }
+      return `${this.translate.instant('compactPlayer.setNotes')} (Set ${setNumber})`;
+    }
+  
+    return '';
+  }
 }

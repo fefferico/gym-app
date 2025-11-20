@@ -282,7 +282,15 @@ export const sessionNotesBtn = {
     label: 'actionButtons.sessionNotes',
     actionKey: 'session_notes',
     iconName: 'clipboard-list',
-    buttonClass: ' hover:bg-green-600 ',
+    buttonClass: ' hover:bg-purple-600 ',
+    iconClass: 'w-8 h-8 mr-2'
+}
+
+export const exerciseNotesBtn = {
+    label: 'actionButtons.exerciseNotes',
+    actionKey: 'exercise_notes',
+    iconName: 'clipboard-list',
+    buttonClass: ' hover:bg-purple-600 ',
     iconClass: 'w-8 h-8 mr-2'
 }
 

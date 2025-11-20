@@ -276,6 +276,7 @@
   },
   "common": {
     "loading": "Loading...",
+    "save": "Save",
     "on": "On",
     "off": "Off",
     "premium": "PREMIUM",
@@ -781,10 +782,13 @@
       "resumeWorkout": "RESUME WORKOUT",
       "quitWorkoutNoSave": "QUIT WORKOUT (NO SAVE)"
     },
+    "sessionNotes": "Session Notes",
+    "exerciseNotes": "Exercise Notes",
+    "setNotes": "Set Notes",
     "allMetricMustBeValid": "Each metric must be valid to complete the set",
     "setMetricsForAllNonLoggedSets": "Set metrics for all non-logged sets",
     "restTitle": "Set rest",
-    "warmupSet": "Warmup set",
+    "warmupSet": "Warmup",
     "completedSet": "COMPLETED SET",
     "completeSet": "COMPLETE SET",
     "takeABreak": "Take a break",
@@ -798,7 +802,6 @@
     "rounds": "Rounds",
     "sets": "Sets",
     "notesPlaceholder": "Notes for this exercise...",
-    "toggleNotes": "Notes for exercise",
     "logPerformance": "Log performance",
     "loggedPerformance": "Performance logged",
     "markAsUndone": "Mark as undone to edit",
@@ -846,6 +849,8 @@
       "ok": "OK"
     },
     "toasts": {
+      "exerciseNotesUpdated": "Exercise notes updated.",
+      "setNotesUpdated": "Set notes updated.",
       "setTypeChanged": "Set #{{setNumber}} type changed.",
       "noFurtherSchemes": "No further available schemes found for metric: {{metric}}. Consider that while doing a workout, only 'exact' metric types are allowed.",
       "intensityAdjusted": "Routine intensity will be adjusted by {{percent}}%",
@@ -998,6 +1003,8 @@
     "removeRound": "Remove Round",
     "resume": "Resume",
     "sessionNotes": "Session notes",
+    "exerciseNotes": "Exercise notes",
+    "setNotes": "Set notes",
     "hide": "HIDE",
     "unhide": "UNHIDE",
     "markFavourite": "MARK",

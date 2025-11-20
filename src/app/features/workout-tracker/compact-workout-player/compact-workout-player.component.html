@@ -46,14 +46,14 @@
         <app-action-menu [isVisible]="mainSessionActionMenuOpened() === true && getMenuMode() !== 'compact'"
           class="action-menu-container" [modalTitle]="''" [displayMode]="getMenuMode()" [modalTitle]="''"
           [items]="mainSessionActionItems()" (itemClick)="handleMainSessionActionMenuItemClick($event)"
-          (closeMenu)="toggleMainSessionActionMenu(null)">
+          (closeMenu)="closeMainSessionActionMenu()">
         </app-action-menu>
       </div>
     </div>
     <app-action-menu [isVisible]="mainSessionActionMenuOpened() === true && getMenuMode() === 'compact'"
       class="action-menu-container" [modalTitle]="''" [displayMode]="getMenuMode()" [modalTitle]="''"
       [items]="mainSessionActionItems()" (itemClick)="handleMainSessionActionMenuItemClick($event)"
-      (closeMenu)="toggleMainSessionActionMenu(null)">
+      (closeMenu)="closeMainSessionActionMenu()">
     </app-action-menu>
 
     <!-- Workout Progress Bar -->
@@ -158,38 +158,39 @@
               </div>
             </div>
             <!-- Exercise Notes Textarea -->
-            <div *ngIf="expandedExerciseNotes() === (exIndex)" class="flex py-2 w-full">
+            <!-- <div *ngIf="expandedExerciseNotes() === (exIndex)" class="flex py-2 w-full">
               <textarea [ngModel]="getInitialExerciseNoteInputValue(exIndex)"
                 (change)="updateExerciseNotes(exIndex, $event)"
                 [placeholder]="'compactPlayer.notesPlaceholder' | translate"
                 class="w-full text-xs bg-inherit dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
-            </div>
+            </div> -->
 
             <!-- Action Menu Container -->
-            <div class="absolute top-2 right-2 z-60">
+            <div class="absolute top-2 right-2 z-60" 
+                    appClickOutside (clickOutside)="closeExerciseActionMenu()">
               <div class="relative">
                 <div class="flex">
-                  <button appBumpClick (click)="toggleExerciseNotes(exIndex, $event)"
+                  <!-- <button appBumpClick (click)="toggleExerciseNotes(exIndex, $event)"
                     [title]="'compactPlayer.toggleNotes' | translate"
                     class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center p-2">
                     <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
-                  </button>
-                  <button appBumpClick (click)="toggleActionMenu(exIndex, $event)"
+                  </button> -->
+                  <button appBumpClick (click)="toggleExerciseActionMenu(exIndex, $event)"
                     class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
                     <app-icon name="menu-action" class="h-8 w-8"></app-icon>
                   </button>
                 </div>
-                <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex && getMenuMode()  !== 'compact'"
+                <app-action-menu [isVisible]="activeExerciseMenuIndex() === exIndex && getMenuMode()  !== 'compact'"
                   [modalTitle]="''" class="action-menu-container" [displayMode]="getMenuMode()"
-                  [items]="compactActionItemsMap().get(exIndex)!" (itemClick)="handleActionMenuItemClick($event)"
-                  (closeMenu)="closeActionMenu()">
+                  [items]="exerciseActionItemsMap().get(exIndex)!" (itemClick)="handleExerciseMenuItemClick($event)"
+                  (closeMenu)="closeExerciseActionMenu()">
                 </app-action-menu>
               </div>
             </div>
-            <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex && getMenuMode() === 'compact'"
+            <app-action-menu [isVisible]="activeExerciseMenuIndex() === exIndex && getMenuMode() === 'compact'"
               [modalTitle]="''" class="action-menu-container" [displayMode]="getMenuMode()"
-              [items]="compactActionItemsMap().get(exIndex)!" (itemClick)="handleActionMenuItemClick($event)"
-              (closeMenu)="closeActionMenu()">
+              [items]="exerciseActionItemsMap().get(exIndex)!" (itemClick)="handleExerciseMenuItemClick($event)"
+              (closeMenu)="closeExerciseActionMenu()">
             </app-action-menu>
           </div>
 
@@ -305,7 +306,10 @@
                     appClickOutside (clickOutside)="closeSetActionMenu()">
                     <!-- Set Header (Always visible, now clickable) -->
 
-                    <div class="flex items-center gap-3 p-1 cursor-pointer"
+
+
+
+                    <div class="flex items-center gap-1 p-1 cursor-pointer relative"
                       (click)="toggleSetExpansion(exIndex, setIndex, $event)">
                       <!-- Set Number -->
                       <div class="flex-shrink-0 w-8 text-center rounded-xl " [ngClass]="{
@@ -316,25 +320,27 @@
                       </div>
 
                       <!-- Summary for collapsed view -->
-                      <div class="flex-1 text-sm text-gray-700 dark:text-gray-200 font-medium inline-flex items-center"
+                      <div class="flex-1 text-sm text-gray-700 dark:text-gray-200 font-medium inline-flex items-center gap-1"
                         *ngIf="!isSetExpanded(exIndex, setIndex)">
                         {{ getSetSummary(exIndex, setIndex) }}
 
-                        <ng-container *ngIf="!isSetCompleted(exIndex, setIndex)">
-                          <span *ngIf="setIndex === findFirstIncompleteSetIndex(exIndex)"
-                            class="ml-2 inline-flex items-center gap-1 rounded-full bg-yellow-100 dark:bg-yellow-900/70 px-2 py-1 text-xs font-medium text-yellow-800 dark:text-yellow-300 animate-pulse">
-                            <app-icon name="target" class="h-4 w-4"></app-icon>
-                            {{ 'compactPlayer.nextUp' | translate }}
-                          </span>
-                          <span *ngIf="setIndex !== findFirstIncompleteSetIndex(exIndex)"
-                            class="ml-2 inline-flex items-center gap-1 rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400">
-                            {{ 'compactPlayer.pending' | translate }}
-                          </span>
-                        </ng-container>
-                        <p *ngIf="isSetWarmup(exIndex, setIndex)" class="font-bold">
-                          <app-icon name="flame" class="h-4 w-4 inline-block mr-1"></app-icon>
-                          {{ 'compactPlayer.warmupSet' | translate }}
-                        </p>
+                        <div class="flex flex-col">
+                          <ng-container *ngIf="!isSetCompleted(exIndex, setIndex)">
+                            <span *ngIf="setIndex === findFirstIncompleteSetIndex(exIndex)"
+                              class="w-fit inline-flex items-center gap-1 rounded-full bg-yellow-100 dark:bg-yellow-900/70 px-2 py-1 text-xs font-medium text-yellow-800 dark:text-yellow-300 animate-pulse">
+                              <app-icon name="target" class="h-4 w-4"></app-icon>
+                              {{ 'compactPlayer.nextUp' | translate }}
+                            </span>
+                            <span *ngIf="setIndex !== findFirstIncompleteSetIndex(exIndex)"
+                              class="w-fit inline-flex items-center gap-1 rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400">
+                              {{ 'compactPlayer.pending' | translate }}
+                            </span>
+                          </ng-container>
+                          <p *ngIf="isSetWarmup(exIndex, setIndex)" class="font-bold">
+                            <app-icon name="flame" class="h-4 w-4 inline-block mr-1"></app-icon>
+                            {{ 'compactPlayer.warmupSet' | translate }}
+                          </p>
+                        </div>
                       </div>
 
                       <!-- Placeholder text for expanded view -->
@@ -382,6 +388,19 @@
                         <app-icon name="done" class="h-6 w-6"></app-icon>
                       </button>
 
+                      <button appBumpClick (click)="toggleSetActionMenu(exIndex, setIndex, $event)"
+                        class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center">
+                        <app-icon name="menu-action" class="h-6 w-6 text-gray-500 dark:text-gray-400"></app-icon>
+                      </button>
+
+                      <!-- Action Menu Component - DROPDOW -->
+                      <app-action-menu
+                        [isVisible]="activeSetActionMenuKey() === (exIndex + '-' + setIndex) && getMenuMode() !== 'compact'"
+                        [modalTitle]="''" [displayMode]="getMenuMode()"
+                        [items]="setActionItemsMap().get(exIndex + '-' + setIndex) || []"
+                        (itemClick)="handleSetActionMenuItemClick($event)" (closeMenu)="closeSetActionMenu()">
+                      </app-action-menu>
+
                       <!-- Set actions - STANDARD SET -->
                       <div *ngIf="isSetExpanded(exIndex,setIndex)" class="flex-shrink-0 flex">
                         <div class="relative">
@@ -413,22 +432,31 @@
                             class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center"><app-icon
                               name="trash" class="h-6 w-6 text-red-500" [strokeWidth]="2"></app-icon></button> -->
                             <!-- Action Menu Trigger Button -->
-                            <button appBumpClick (click)="toggleSetActionMenu(exIndex, setIndex, $event)"
+                            <!-- Action Menu Component - DROPDOW -->
+
+                            <!-- <button appBumpClick (click)="toggleSetActionMenu(exIndex, setIndex, $event)"
                               class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center">
                               <app-icon name="menu-action" class="h-6 w-6 text-gray-500 dark:text-gray-400"></app-icon>
-                            </button>
+                            </button> -->
 
-                            <!-- Action Menu Component - DROPDOW -->
-                            <app-action-menu
+                            <!-- <app-action-menu
                               [isVisible]="activeSetActionMenuKey() === (exIndex + '-' + setIndex) && getMenuMode() !== 'compact'"
                               [modalTitle]="''" [displayMode]="getMenuMode()"
                               [items]="setActionItemsMap().get(exIndex + '-' + setIndex) || []"
                               (itemClick)="handleSetActionMenuItemClick($event)" (closeMenu)="closeSetActionMenu()">
-                            </app-action-menu>
+                            </app-action-menu> -->
 
                           </div>
                         </div>
                       </div>
+                    </div>
+
+                    <div *ngIf="activeSetActionMenuKey() === (exIndex + '-' + setIndex) && getMenuMode() === 'compact'">
+                      <app-action-menu [isVisible]="true" [modalTitle]="''" [displayMode]="'compact'"
+                        [items]="setActionItemsMap().get(exIndex + '-' + setIndex) || []"
+                        (itemClick)="handleSetActionMenuItemClick($event)"
+                        (closeMenu)="activeSetActionMenuKey.set(null)">
+                      </app-action-menu>
                     </div>
 
                     <!-- *ngIf="isTimedSet(exIndex, setIndex) && getSetTimerState(exIndex, setIndex).status === timerSetEnum.Running" -->
@@ -455,7 +483,7 @@
                         <app-icon name="restore" class="h-6 w-6 text-white"></app-icon>
                       </button>
                       <!-- INSTANTLY TOGGLE SET COMPLETION REGARDLESS REMAINING TIMER -->
-                      <button
+                      <button *ngIf="getSetTimerState(exIndex, setIndex).status !== timerSetEnum.Completed"
                         (click)="toggleSetCompletion(exercise, set, exIndex, setIndex, 0); $event.stopPropagation()"
                         [disabled]="!isSetDataValid(exIndex, setIndex)"
                         class="ml-2 px-2 h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 ease-in-out transform active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
@@ -467,14 +495,14 @@
                     <div *ngIf="isSetExpanded(exIndex, setIndex)">
                       <!-- <div *ngIf="isSetExpanded(exIndex, setIndex)" class="border-t border-white dark:border-gray-600/50"> -->
 
-                      <div
+                      <!-- <div
                         *ngIf="activeSetActionMenuKey() === (exIndex + '-' + setIndex) && getMenuMode() === 'compact'">
                         <app-action-menu [isVisible]="true" [modalTitle]="''" [displayMode]="'compact'"
                           [items]="setActionItemsMap().get(exIndex + '-' + setIndex) || []"
                           (itemClick)="handleSetActionMenuItemClick($event)"
                           (closeMenu)="activeSetActionMenuKey.set(null)">
                         </app-action-menu>
-                      </div>
+                      </div> -->
 
                       <!-- Set ADD/REMOVE METRICS - STANDARD SET -->
                       <div #metricsSectionStandard [attr.data-metrics-section]="exIndex + '-' + setIndex"
@@ -566,13 +594,13 @@
                         </ng-container>
                       </div>
                       <!-- Set Notes Textarea (if visible) -->
-                      <div appBumpClick *ngIf="expandedSetNotes() === (exIndex + '-' + setIndex)" class="px-2 pb-1"
+                      <!-- <div appBumpClick *ngIf="expandedSetNotes() === (exIndex + '-' + setIndex)" class="px-2 pb-1"
                         [attr.data-notes-section]="exIndex + '-' + setIndex">
                         <textarea [ngModel]="getInitialInputValue(exIndex, setIndex, 'notes')"
                           (change)="updateSetData(exIndex, setIndex, 0, 'notes', $event)"
                           [placeholder]="'compactPlayer.setNotesPlaceholder' | translate"
                           class="w-full text-xs bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-400 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
-                      </div>
+                      </div> -->
                       <!-- LOWER EXPANDED SET COMPLETE BUTTON -->
                       <div class="flex flex-col items-center text-center py-2">
                         <div class="">
@@ -601,7 +629,6 @@
                     <!-- END: Set Card Layout -->
 
                   </div>
-
 
                 </ng-container>
                 <!-- Col 2: Set +/- Buttons STANDAR SET -->
@@ -640,7 +667,7 @@
                               'bg-primary text-white': isRoundExpanded(exIndex, roundIndex) && isStandardSuperSet(exIndex),
                               'bg-teal-500 text-white': isRoundExpanded(exIndex, roundIndex) && isEmom(exIndex),
                             }">
-                          <span class="font-bold text-lg text-gray-700 dark:text-gray-200">#{{
+                          <span class="font-bold text-lg text-gray-700 dark:text-white">#{{
                             'compactPlayer.roundHeader' |
                             translate:{number: roundIndex + 1} }}</span>
                         </div>
@@ -648,12 +675,12 @@
                           <div (click)="$event.stopPropagation()">
                             <ng-container *ngIf="!isRoundCompleted(exIndex, roundIndex)">
                               <span *ngIf="roundIndex === findFirstIncompleteRoundIndex(exIndex)"
-                                class="ml-2 inline-flex items-center gap-1 rounded-full bg-yellow-100 dark:bg-yellow-900/70 px-2 py-1 text-xs font-medium text-yellow-800 dark:text-yellow-300 animate-pulse">
+                                class="inline-flex items-center gap-1 rounded-full bg-yellow-100 dark:bg-yellow-900/70 px-2 py-1 text-xs font-medium text-yellow-800 dark:text-yellow-300 animate-pulse">
                                 <app-icon name="target" class="h-4 w-4"></app-icon>
                                 {{ 'compactPlayer.nextUp' | translate }}
                               </span>
                               <span *ngIf="roundIndex !== findFirstIncompleteRoundIndex(exIndex)"
-                                class="ml-2 inline-flex items-center gap-1 rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400">
+                                class="inline-flex items-center gap-1 rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400">
                                 {{ 'compactPlayer.pending' | translate }}
                               </span>
                             </ng-container>
@@ -666,12 +693,12 @@
                         <!-- +++ NEW BUTTON/STATUS ELEMENT +++ -->
 
                         <!-- ROUND NOTES BUTTON -->
-                        <button *ngIf="!isEmom(exIndex)" appBumpClick
+                        <!-- <button *ngIf="!isEmom(exIndex)" appBumpClick
                           (click)="toggleSetNotes(exIndex, roundIndex, $event)"
                           [title]="'compactPlayer.toggleNotes' | translate"
                           class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center p-2">
                           <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
-                        </button>
+                        </button> -->
 
                         <!-- EMOM Controls (for EMOM supersets) -->
                         <div *ngIf="isEmom(exIndex)" class="flex items-center gap-2 text-white font-semibold">
@@ -698,13 +725,13 @@
                       </div>
                     </div>
                     <!-- Set Notes Textarea (if visible) -->
-                    <div *ngIf="expandedSetNotes() === (exIndex + '-' + roundIndex)" class="px-2 pb-1"
+                    <!-- <div *ngIf="expandedSetNotes() === (exIndex + '-' + roundIndex)" class="px-2 pb-1"
                       [attr.data-notes-section]="exIndex + '-' + roundIndex">
                       <textarea [ngModel]="getInitialInputValue(exIndex, roundIndex, 'notes')"
                         (change)="updateSetData(exIndex, roundIndex, 0,'notes', $event)"
                         [placeholder]="'compactPlayer.roundNotesPlaceholder' | translate"
                         class="w-full text-xs bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-400 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
-                    </div>
+                    </div> -->
 
                     <!-- Collapsible Round Body -->
                     <ng-container *ngIf="isRoundExpanded(exIndex, roundIndex)">
@@ -719,7 +746,7 @@
 
                           <ng-container *ngLet="getOriginalExIndex(ssExercise.id) as ssOriginalIndex">
                             <div *ngIf="ssOriginalIndex > -1"
-                              class="py-2 px-1 rounded bg-white dark:bg-gray-800 shadow-sm">
+                              class="py-2 px-1 rounded-xl bg-white dark:bg-gray-800 shadow-sm">
                               <div class="flex justify-between">
                                 <!-- Exercise Name -->
                                 <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-1">
@@ -1225,6 +1252,31 @@
   </ng-container>
 </ng-template>
 
+
+<ng-container *ngIf="noteModalVisible()">
+  <div class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-start justify-center">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md mt-8">
+      <h2 class="text-lg font-bold mb-2 text-black dark:text-white">
+        {{ getNoteModalTitle() }}
+      </h2>
+      <textarea
+        class="w-full min-h-[120px] p-2 border border-gray-300 dark:border-gray-600 rounded mb-4 bg-gray-50 dark:bg-gray-900 text-black dark:text-white"
+        [ngModel]="noteModalValue()"
+        (ngModelChange)="noteModalValue.set($event)"
+        placeholder="{{ 'compactPlayer.notesPlaceholder' | translate }}"
+        autofocus
+      ></textarea>
+      <div class="flex justify-end gap-2">
+        <button class="px-4 py-2 rounded bg-gray-300 dark:bg-gray-700" (click)="closeNoteModal()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button class="px-4 py-2 rounded bg-primary text-white" (click)="saveNoteModal()">
+          {{ 'common.save' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container>
 
 <div class="hidden bottom-3"></div>
 <div class="hidden p-5"></div>
