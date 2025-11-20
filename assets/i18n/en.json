@@ -152,6 +152,18 @@
       "targetWaistLabel": "Target Waist ({{unit}})"
     },
     "player": {
+      "restTimerMode": {
+        "label": "Rest Timer Mode",
+        "description": "Choose between a fullscreen or compact rest timer.",
+        "fullscreen": "Fullscreen",
+        "compact": "Compact"
+      },
+      "summaryDisplayMode": {
+        "label": "Summary Display",
+        "description": "Choose how set summaries are displayed.",
+        "icons": "Visual (icons)",
+        "text": "Textual"
+      },
       "title": "Workout Player Settings",
       "playerModeLabel": "Player Mode",
       "playerModeDescription": "Choose between Compact and Focus player",
@@ -276,6 +288,7 @@
   },
   "common": {
     "loading": "Loading...",
+    "save": "Save",
     "on": "On",
     "off": "Off",
     "premium": "PREMIUM",
@@ -773,9 +786,21 @@
     }
   },
   "compactPlayer": {
+    "toggleMetrics": "Metrics",
+    "removeSet": "Remove Set",
+    "pausedScreen": {
+      "sessionPaused": "Session Paused",
+      "elapsedTime": "Elapsed Time",
+      "resumeWorkout": "RESUME WORKOUT",
+      "quitWorkoutNoSave": "QUIT WORKOUT (NO SAVE)"
+    },
+    "sessionNotes": "Session Notes",
+    "exerciseNotes": "Exercise Notes",
+    "setNotes": "Set Notes",
     "allMetricMustBeValid": "Each metric must be valid to complete the set",
+    "setMetricsForAllNonLoggedSets": "Set metrics for all non-logged sets",
     "restTitle": "Set rest",
-    "warmupSet": "Warmup set",
+    "warmupSet": "Warmup",
     "completedSet": "COMPLETED SET",
     "completeSet": "COMPLETE SET",
     "takeABreak": "Take a break",
@@ -789,7 +814,6 @@
     "rounds": "Rounds",
     "sets": "Sets",
     "notesPlaceholder": "Notes for this exercise...",
-    "toggleNotes": "Toggle notes for exercise",
     "logPerformance": "Log performance",
     "loggedPerformance": "Performance logged",
     "markAsUndone": "Mark as undone to edit",
@@ -837,6 +861,9 @@
       "ok": "OK"
     },
     "toasts": {
+      "exerciseNotesUpdated": "Exercise notes updated.",
+      "setNotesUpdated": "Set notes updated.",
+      "setTypeChanged": "Set #{{setNumber}} type changed.",
       "noFurtherSchemes": "No further available schemes found for metric: {{metric}}. Consider that while doing a workout, only 'exact' metric types are allowed.",
       "intensityAdjusted": "Routine intensity will be adjusted by {{percent}}%",
       "intensityAdjustedTitle": "Intensity Adjusted",
@@ -873,9 +900,9 @@
       "enterNumericRepsError": "You must change the actual reps value before setting the set as completed",
       "enterNumericWeightError": "You must change the actual weight value before setting the set as completed",
       "progressiveOverloadApplied": "Progressive Overload applied to {{name}}",
-    "progressiveOverloadAppliedMultiple": "Progressive Overload applied to: {{names}}",
-    "progressiveOverloadAppliedMultipleTitle": "Progressive Overload Applied",
-    "progressiveOverloadAppliedMultipleMessage": "The following exercises have been auto-incremented:"
+      "progressiveOverloadAppliedMultiple": "Progressive Overload applied to: {{names}}",
+      "progressiveOverloadAppliedMultipleTitle": "Progressive Overload Applied",
+      "progressiveOverloadAppliedMultipleMessage": "The following exercises have been auto-incremented:"
     },
     "alerts": {
       "toughWorkoutTitle": "Last Workout Was Tough",
@@ -940,7 +967,7 @@
       "chooseTimerMessage": "Choose the timer type",
       "chooseTimerTitle": "Timer type",
       "prefillTitle": "Prefill with Previous Performance?",
-    "prefillMessage": "Historical data was found for some of the exercises in this routine. Do you want to use the most recently logged values or keep the original targets?",
+      "prefillMessage": "Historical data was found for some of the exercises in this routine. Do you want to use the most recently logged values or keep the original targets?",
       "useHistorical": "Previous Values",
       "useOriginal": "Routine Targets"
     },
@@ -957,7 +984,11 @@
     "set": {
       "atLeastOneMetric": "At least one metric is required",
       "metricsUpdated": "Updated: {{summary}}",
-      "none": "None"
+      "none": "None",
+      "allSetsAlreadyLogged": "All sets for this exercise have already been logged.",
+      "metricsUpdatedCount": "Updated {{count}} set(s)/round(s): {{summary}}",
+      "metricAddedCount": "'{{metric}}' added to {{count}} set(s)/round(s)",
+      "metricRemovedCount": "'{{metric}}' removed from {{count}} set(s)/round(s)"
     }
   },
   "actionButtons": {
@@ -984,6 +1015,8 @@
     "removeRound": "Remove Round",
     "resume": "Resume",
     "sessionNotes": "Session notes",
+    "exerciseNotes": "Exercise notes",
+    "setNotes": "Set notes",
     "hide": "HIDE",
     "unhide": "UNHIDE",
     "markFavourite": "MARK",
@@ -1081,7 +1114,7 @@
       "custom": "Custom"
     },
     "routineBuilder": {
-      "nameWizardMsg":"Enter a name for your new routine.",
+      "nameWizardMsg": "Enter a name for your new routine.",
       "goalWizardMsg": "Select the main goal for this routine",
       "nameLabel": "Routine Name",
       "namePlaceholder": "Routine name",
@@ -2818,7 +2851,7 @@
     "invalidNumber": "Please enter a valid number for '{{field}}'.",
     "minNumber": "The value for '{{field}}' must be at least {{min}}.",
     "maxNumber": "The value for '{{field}}' must not exceed {{max}}."
-  } ,
+  },
   "workoutSections": {
     "None": "",
     "WarmUp": "WarmUp",
