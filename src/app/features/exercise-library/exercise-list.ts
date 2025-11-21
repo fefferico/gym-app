@@ -21,7 +21,7 @@ import { TrackingService } from '../../core/services/tracking.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Muscle } from '../../core/models/muscle.model';
 import { EXERCISE_CATEGORIES_DATA } from '../../core/services/exercise-categories-data';
-import { ExerciseCategoryService, HydratedCategory } from '../../core/services/exercise-category.service';
+import { ExerciseCategoryService, HydratedExerciseCategory } from '../../core/services/exercise-category.service';
 import { MuscleMapService } from '../../core/services/muscle-map.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { EquipmentService, HydratedEquipment } from '../../core/services/equipment.service';
@@ -132,10 +132,10 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
   // Signal for hydrated exercises
   hydratedExercises = toSignal(
     combineLatest([
-      this.exerciseService.getHydratedExercises(), 
-      this.exerciseCategoryService.hydratedCategories$, 
-      this.muscleGroupService.hydratedMuscles$, 
-      this.equipmentService.hydratedEquipments$ 
+      this.exerciseService.getHydratedExercises(),
+      this.exerciseCategoryService.hydratedCategories$,
+      this.muscleGroupService.hydratedMuscles$,
+      this.equipmentService.hydratedEquipments$
     ]).pipe(
       map(([exercises, categories, muscles, equipments]) =>
         exercises.map(ex => {
@@ -147,8 +147,8 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
                 .filter(equipment => [ex.equipmentNeeded.map(eq => eq.id)].toString().includes(equipment.id))
                 .map(eq => eq.name)
             )
-          ];          
-          
+          ];
+
           return {
             ...ex,
             categoryLabel: categoryObj?.label || ex.category,
@@ -158,13 +158,13 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
         })
       )
     ),
-  { initialValue: [] } // <-- pass as an object!
+    { initialValue: [] } // <-- pass as an object!
   );
 
   filteredExercises = computed(() => {
     let exercises = this.hydratedExercises();
     const showHidden = this.showHiddenExercises(); // Get value once
-    if (!exercises){
+    if (!exercises) {
       return [];
     }
 
@@ -184,10 +184,13 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
 
     let term = this.searchTerm();
     term = this.exerciseService.normalizeExerciseNameForSearch(term);
+
     if (term) {
       const words = term.split(/\s+/).filter(Boolean);
       exercises = exercises.filter(ex => {
+        const englishName = [ex._searchId, ex._searchName, ex.name].filter(Boolean).join(' ');
         const searchable = [
+          englishName,
           ex.name,
           ex.category,
           ex.description || ''

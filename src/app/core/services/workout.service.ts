@@ -884,7 +884,6 @@ export class WorkoutService {
       supersetId: null,
       supersetOrder: null,
       sessionStatus: 'pending',
-      type: 'standard'
     };
 
     return newWorkoutExercise;
@@ -1009,7 +1008,6 @@ export class WorkoutService {
         targetExercise.sets = [];
         targetExercise.supersetId = newSupersetId;
         targetExercise.supersetOrder = currentOrder++;
-        targetExercise.type = 'superset'; // Ensure type is correctly set
 
         // 3. Create the new sets, now including the correct fieldOrder
         for (let i = 1; i <= rounds; i++) {
@@ -1128,7 +1126,6 @@ export class WorkoutService {
     }));
     targetExercise.supersetId = String(chosenSupersetId);
     targetExercise.supersetOrder = existingInSuperset.length; // It becomes the new last item.
-    targetExercise.type = 'superset';
 
     // =================== END OF FIX ===================
 
@@ -1170,7 +1167,6 @@ export class WorkoutService {
     // Reset superset properties on the target exercise
     exerciseToRemove.supersetId = null;
     exerciseToRemove.supersetOrder = null;
-    exerciseToRemove.type = 'standard';
 
     const remainingInSuperset = updatedRoutine.exercises.filter(ex => ex.supersetId === supersetId);
 
@@ -1178,7 +1174,6 @@ export class WorkoutService {
       remainingInSuperset.forEach(ex => {
         ex.supersetId = null;
         ex.supersetOrder = null;
-        ex.type = 'standard';
       });
       toastService.info("Superset dissolved as only one exercise remains.");
     } else {

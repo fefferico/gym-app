@@ -1718,48 +1718,6 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         return false;
     }
 
-    selectExercisesFromLibrary(selectedExercises: Exercise[]): void {
-        selectedExercises.forEach(exerciseFromLibrary => {
-
-            const isCardio = this.isExerciseCardioOnly(exerciseFromLibrary.id);
-
-            let fieldOrder = [];
-            if (isCardio) {
-                fieldOrder = [
-                    METRIC.duration, METRIC.distance, METRIC.rest
-                ];
-            } else {
-                fieldOrder = [
-                    METRIC.reps, METRIC.weight, METRIC.rest
-                ];
-            }
-
-            const baseSet = {
-                id: this.workoutService.generateExerciseSetId(),
-                type: 'standard',
-                fieldOrder: fieldOrder,
-                targetReps: isCardio ? undefined : repsToExact(8),
-                targetWeight: isCardio ? undefined : weightToExact(10),
-                targetRest: restToExact(60),
-                targetDuration: isCardio ? durationToExact(60) : undefined,
-                targetDistance: isCardio ? distanceToExact(1) : undefined,
-                targetTempo: undefined,
-                notes: undefined
-            } as ExerciseTargetSetParams;
-
-            const workoutExercise: WorkoutExercise = {
-                id: this.workoutService.generateWorkoutExerciseId(),
-                exerciseId: exerciseFromLibrary.id,
-                exerciseName: exerciseFromLibrary.name,
-                sets: [baseSet],
-                type: 'standard',
-                supersetId: null,
-                supersetOrder: null,
-            };
-        });
-        this.generateFakeRoutineForSelectedExercises(selectedExercises);
-    }
-
     // generate fake routine for selected exercises
     private generateFakeRoutineForSelectedExercises(exercises: Exercise[]): Routine {
         const workoutExercises: WorkoutExercise[] = exercises.map(exerciseFromLibrary => {
@@ -1829,7 +1787,6 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 exerciseId: newExercise.id,
                 exerciseName: newExercise.name,
                 sets: newExerciseSets,
-                type: 'standard',
                 supersetId: null,
                 supersetOrder: null,
             };

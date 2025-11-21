@@ -3,7 +3,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { EXERCISE_CATEGORIES_DATA } from './exercise-categories-data';
 import { toObservable } from '@angular/core/rxjs-interop';
 
-export interface HydratedCategory {
+export interface HydratedExerciseCategory {
   id: string;
   label: string;
 }
@@ -13,7 +13,7 @@ export class ExerciseCategoryService {
   private translate = inject(TranslateService);
 
   // Signal for hydrated categories
-  private hydratedCategories = signal<HydratedCategory[]>([]);
+  private hydratedCategories = signal<HydratedExerciseCategory[]>([]);
   hydratedCategories$ = toObservable(this.hydratedCategories);
 
   constructor() {
@@ -38,7 +38,7 @@ export class ExerciseCategoryService {
   }
 
   // Returns all hydrated categories
-  getHydratedCategories(): HydratedCategory[] {
+  getHydratedCategories(): HydratedExerciseCategory[] {
     return this.hydratedCategories();
   }
 
@@ -48,7 +48,7 @@ export class ExerciseCategoryService {
   }
 
   // Returns a single hydrated category by ID
-  getCategoryById(id: string): HydratedCategory | undefined {
+  getCategoryById(id: string): HydratedExerciseCategory | undefined {
     return this.hydratedCategories().find(cat => cat.id === id);
   }
 }

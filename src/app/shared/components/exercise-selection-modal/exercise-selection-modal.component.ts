@@ -13,7 +13,7 @@ import { BumpClickDirective } from '../../directives/bump-click.directive';
 import { Muscle } from '../../../core/models/muscle.model';
 import { MuscleMapService } from '../../../core/services/muscle-map.service';
 import { MuscleValue } from '../../../core/services/muscles-data';
-import { HydratedCategory } from '../../../core/services/exercise-category.service';
+import { HydratedExerciseCategory } from '../../../core/services/exercise-category.service';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 
 type ListItem = Exercise | { isHeader: true; label: string };
@@ -158,7 +158,7 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     selectedMuscleGroup = signal<Muscle | null>(null);
     sortMode = signal<'alpha' | 'lastUsed' | 'frequency'>('alpha');
 
-    categories$: Observable<HydratedCategory[]> = this.exerciseService.getUniqueCategories();
+    categories$: Observable<HydratedExerciseCategory[]> = this.exerciseService.getUniqueCategories();
     primaryMuscleGroups$: Observable<Muscle[]> = this.exerciseService.getUniquePrimaryMuscleGroups();
 
     // --- CORE LOGIC: Replaced with a powerful computed signal for processing ---
@@ -182,11 +182,14 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
         if (term) {
             const normalizedTerm = this.exerciseService.normalizeExerciseNameForSearch(term);
             exerciseList = exerciseList.filter(ex => {
-                // Also search in translated muscle names
+                // Also search in translated muscle names and English name
                 const primaryMuscleName = this.getMuscleNameById(ex.primaryMuscleGroup || '');
                 const muscleNames = (ex.muscleGroups || []).map(muscle => this.getMuscleNameById(muscle)).join(' ');
+                // ex.originalName is the English name (fallback to ex.name if not present)
+                const englishName = [ex._searchId, ex._searchName, ex.name].filter(Boolean).join(' ');
                 return normalizedTerm.split(' ').every(part =>
                     ex.name.toLowerCase().includes(part) ||
+                    englishName.toLowerCase().includes(part) ||
                     (ex.category?.toLowerCase().includes(part)) ||
                     (ex.description?.toLowerCase().includes(part)) ||
                     (primaryMuscleName?.toLowerCase().includes(part)) ||

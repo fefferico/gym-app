@@ -1388,7 +1388,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         exerciseId: exerciseFromLibrary.id,
         exerciseName: exerciseFromLibrary.name,
         sets: [baseSet],
-        type: 'standard',
         supersetId: null,
         supersetOrder: null,
       };
@@ -2278,7 +2277,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             // supersetRounds: is gone
             supersetType: exInput.supersetType || 'standard',
             emomTimeSeconds: exInput.emomTimeSeconds || null,
-            type: exInput.type || 'standard'
           };
         });
 
@@ -2575,7 +2573,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         exerciseId: newExercise.id,
         exerciseName: newExercise.name,
         sets: newExerciseSets,
-        type: 'standard',
         supersetId: null,
         supersetOrder: null,
       };
@@ -2709,7 +2706,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           supersetOrder: isSuperset ? exInput.supersetOrder : null,
           supersetType: isSuperset ? (exInput.supersetType || 'standard') : null,
           emomTimeSeconds: isSuperset && exInput.supersetType === 'emom' ? exInput.emomTimeSeconds : null,
-          type: exInput.type,
           section: sectionType ?? undefined, // <-- add this property if not present
         };
 
@@ -4026,6 +4022,15 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   private refreshFabMenuItems(): void {
     const isSave = this.isRoutineMode ? (!this.currentRoutineId ? false : true) : (this.isNewMode ? true : false);
+
+    const playRoutineAction = {
+        label: 'fab.start',
+        actionKey: 'start',
+        iconName: 'play',
+        cssClass: 'bg-blue-400 focus:ring-blue-600',
+        isPremium: false
+      };
+
     if (this.isEditableMode()) {
       this.fabMenuItems = [{
         label: 'fab.add_exercise',
@@ -4039,13 +4044,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         actionKey: 'save_routine',
         iconName: 'save',
         cssClass: 'bg-primary focus:ring-primary-light',
-        isPremium: false
-      },
-      {
-        label: 'fab.start',
-        actionKey: 'start',
-        iconName: 'play',
-        cssClass: 'bg-blue-400 focus:ring-blue-600',
         isPremium: false
       }
       ];
@@ -4096,6 +4094,16 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           iconName: 'magic-wand',
           cssClass: 'bg-purple-500 focus:ring-purple-400',
           isPremium: true
+        });
+      }
+
+      const routineId = this.liveFormAsRoutine()?.id || '';
+      // Only show playRoutineAction if the routine exists in storage (not just a temp/unsaved one)
+      if (routineId) {
+        this.workoutService.getRoutineById(routineId).pipe(take(1)).subscribe(routine => {
+          if (routine) {
+            this.fabMenuItems.push(playRoutineAction);
+          }
         });
       }
       // }
@@ -4216,7 +4224,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         //   iconName: 'trash',
         // });
         items.push({
-          label: 'Ungroup',
+          label: this.translate.instant('actionButtons.ungroup'),
           buttonClass: 'bg-purple-500 text-white hover:bg-purple-700',
           actionKey: 'ungroup',
           iconName: 'ungroup',
@@ -5744,6 +5752,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
     if (this.mode === BuilderMode.customProgramEntryBuilder) {
       return this.translate.instant('workoutBuilder.routineBuilder.saveCustomRoutineButton');
+    }
+    if (this.mode === BuilderMode.newFromLog){
+      return this.translate.instant('workoutBuilder.routineBuilder.saveButton');
     }
     return this.isNewMode
       ? this.translate.instant('workoutBuilder.logEntry.logButton')

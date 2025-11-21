@@ -492,7 +492,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         // This ensures the correct name is used for each exercise in an EMOM block.
         exerciseName: exerciseData.exerciseName ?? '',
         sets: [loggedSet],
-        type: loggedSet.type || 'standard',
         supersetId: exerciseData.supersetId || null,
         supersetOrder: exerciseData.supersetOrder ?? null,
         supersetType: exerciseData.supersetType || null,
@@ -636,7 +635,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
             fieldOrder: this.workoutUtilsService.getRepsAndWeightFields()
           };
         }) : [this.getFirstExerciseOfSuperset((loggedEx.supersetOrder || 0), loggedEx.supersetId, loggedExercises)],
-        type: (sessionExercise?.supersetId ?? 0) ? 'superset' : 'standard'
       };
       return newWorkoutEx;
     });
@@ -1854,7 +1852,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         supersetId: null,
         supersetOrder: null,
         sessionStatus: 'pending',
-        type: 'standard'
       };
 
 

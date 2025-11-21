@@ -59,7 +59,6 @@ export interface LoggedWorkoutExercise {
   supersetOrder?: number | null;
   supersetType?: 'standard' | 'emom' | null;
   emomTimeSeconds?: number | null;
-  type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | string; // More flexible
 }
 
 // Describes an entire completed workout session.

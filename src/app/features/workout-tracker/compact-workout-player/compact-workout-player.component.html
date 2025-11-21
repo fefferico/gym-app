@@ -206,7 +206,7 @@
             class="bg-gray-100 dark:bg-gray-700/50 pt-2 pb-1 px-1 border-t border-gray-200 dark:border-gray-700 rounded-b-md"
             [ngClass]="{' mb-8':!isSuperSet(exIndex)}">
 
-            <!-- SET INFO FOR ALL THE SETS - STANDARD EXERCISE -->
+            <!-- SET INFO FOR ALL THE SETS -->
             <div *ngIf="getExerciseSetsLength(exIndex) > 1" class="px-2 pb-2">
               <!-- Toggle Button -->
               <button (click)="toggleSetAllPanel(exIndex, $event)"
@@ -356,15 +356,15 @@
                         <ng-container *ngIf="getSetUniformValues(exIndex, setIndex) as values">
                           <span class="inline-flex items-center" *ngIf="values.reps">
                             <app-icon name="reps" class="h-4 w-4 mr-0.5 inline-block"></app-icon>
-                            {{ values.reps }}
+                            x{{ values.reps }}
                           </span>
                           <span class="inline-flex items-center" *ngIf="values.weight">
-                            <app-icon name="weight" class="h-5 w-5 mr-0.5 inline-block"></app-icon>
-                            {{ values.weight }}{{ unitsService.getWeightUnitSuffix() }}
+                            <app-icon [name]="values.weightIcon" class="h-5 w-5 mr-0.5 inline-block"></app-icon>
+                            {{ values.weight }}
                           </span>
                           <span class="inline-flex items-center" *ngIf="values.distance">
                             <app-icon name="distance" class="h-5 w-5 mr-0.5 inline-block"></app-icon>
-                            {{ values.distance }}{{ unitsService.getDistanceMeasureUnitSuffix() }}
+                            {{ values.distance }} {{ unitsService.getDistanceMeasureUnitSuffix() }}
                           </span>
                           <span class="inline-flex items-center"
                             *ngIf="values.rest && getRestTimerMode() !== restTimerModeEnum.Compact">
@@ -542,20 +542,7 @@
                       </button>
                     </div>
 
-                    <!-- Compact Rest Timer Progress Bar (per set, styled like timed set) STANDARD SET -->
-                    <div *ngIf="getRestTimerMode() === restTimerModeEnum.Compact && isRestTimerVisibleForSet(exIndex, setIndex)"
-                         class="relative flex items-center px-2 py-1 mt-2 transition-all">
-                      <div class="progress-bar-container w-full bg-gray-300 dark:bg-gray-700 rounded-full h-5 relative flex items-center">
-                        <div class="progress-bar bg-yellow-400 h-3 rounded-full my-1 mx-1"
-                             [style.width.%]="restTimerProgressForSet(exIndex, setIndex)">
-                        </div>
-                        <!-- Percentage label, centered absolutely -->
-                        <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
-                          {{ formatSecondsToTime(restTimerElapsedForSet(exIndex, setIndex)) }} / {{ formatSecondsToTime(getSetRestDuration(exIndex, setIndex)) }}
-                        </span>
-                      </div>
-                      <app-icon name="rest" class="h-6 w-6 text-yellow-600 ml-2" [strokeWidth]="2.5"></app-icon>
-                    </div>
+
 
 
                     <div *ngIf="isSetExpanded(exIndex, setIndex)">
@@ -681,6 +668,26 @@
                           {{ 'compactPlayer.allMetricMustBeValid' | translate}}
                         </p>
                       </div>
+                    </div>
+
+                    <!-- Compact Rest Timer Progress Bar (per set, styled like timed set) STANDARD SET -->
+                    <div #restTimerStandardProgressBar
+                      *ngIf="getRestTimerMode() === restTimerModeEnum.Compact && isRestTimerVisibleForSet(exIndex, setIndex)"
+                      class="relative flex items-center px-2 py-1 mt-2 transition-all">
+                      <app-icon  class="h-6 w-6 text-yellow-600 ml-2" [strokeWidth]="2.5"></app-icon>
+                      <div
+                        class="progress-bar-container w-full bg-gray-300 dark:bg-gray-700 rounded-full h-3 relative flex items-center">
+                        <div class="progress-bar bg-yellow-400 h-1.5 rounded-full my-1 mx-1"
+                          [style.width.%]="restTimerProgressForSet(exIndex, setIndex)">
+                        </div>
+                        <!-- Percentage label, centered absolutely -->
+                        <span
+                          class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
+                          {{ formatSecondsToTime(restTimerElapsedForSet(exIndex, setIndex)) }} / {{
+                          formatSecondsToTime(getSetRestDuration(exIndex, setIndex)) }}
+                        </span>
+                      </div>
+                      <app-icon name="rest" class="h-6 w-6 text-yellow-600 ml-2" [strokeWidth]="2.5"></app-icon>
                     </div>
                     <!-- END: Set Card Layout -->
 
@@ -825,15 +832,20 @@
                     </div> -->
 
                     <!-- Compact Rest Timer Progress Bar (per set, styled like timed set) SUPERSET -->
-                    <div *ngIf="getRestTimerMode() === restTimerModeEnum.Compact && isRestTimerVisibleForSet(exIndex, roundIndex)"
-                         class="relative flex items-center px-2 py-1 mt-2 transition-all">
-                      <div class="progress-bar-container w-full bg-gray-300 dark:bg-gray-700 rounded-full h-5 relative flex items-center">
-                        <div class="progress-bar bg-yellow-400 h-3 rounded-full my-1 mx-1"
-                             [style.width.%]="restTimerProgressForSet(exIndex, roundIndex)">
+                    <div
+                      *ngIf="getRestTimerMode() === restTimerModeEnum.Compact && isRestTimerVisibleForSet(exIndex, roundIndex)"
+                      class="relative flex items-center px-2 py-1 mt-2 transition-all">
+                      <app-icon  class="h-6 w-6 text-yellow-600 ml-2" [strokeWidth]="2.5"></app-icon>
+                      <div
+                        class="progress-bar-container w-full bg-gray-300 dark:bg-gray-700 rounded-full h-3 relative flex items-center">
+                        <div class="progress-bar bg-yellow-400 h-1.5 rounded-full my-1 mx-1"
+                          [style.width.%]="restTimerProgressForSet(exIndex, roundIndex)">
                         </div>
                         <!-- Percentage label, centered absolutely -->
-                        <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
-                          {{ formatSecondsToTime(restTimerElapsedForSet(exIndex, roundIndex)) }} / {{ formatSecondsToTime(getSetRestDuration(exIndex, roundIndex)) }}
+                        <span
+                          class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
+                          {{ formatSecondsToTime(restTimerElapsedForSet(exIndex, roundIndex)) }} / {{
+                          formatSecondsToTime(getSetRestDuration(exIndex, roundIndex)) }}
                         </span>
                       </div>
                       <app-icon name="rest" class="h-6 w-6 text-yellow-600 ml-2" [strokeWidth]="2.5"></app-icon>

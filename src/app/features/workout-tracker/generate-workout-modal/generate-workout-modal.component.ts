@@ -1,5 +1,5 @@
 // src/app/features/workout-routines/routine-list/generate-workout-modal/generate-workout-modal.component.ts
-import { Component, computed, EventEmitter, inject, Input, OnChanges, OnInit, Output, signal, SimpleChanges, effect, Inject, DOCUMENT } from '@angular/core';
+import { Component, computed, EventEmitter, inject, Input, OnChanges, OnInit, Output, signal, SimpleChanges, effect, Inject, DOCUMENT, input } from '@angular/core';
 import { CommonModule, TitleCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { combineLatest, firstValueFrom, map } from 'rxjs';
@@ -11,6 +11,9 @@ import { PersonalGymService } from '../../../core/services/personal-gym.service'
 import { TranslateModule } from '@ngx-translate/core'; // +++ IMPORT TRANSLATE MODULE
 import { MuscleMapService } from '../../../core/services/muscle-map.service';
 import { Muscle } from '../../../core/models/muscle.model';
+import { WorkoutCategoryService } from '../../../core/services/workout-category.service';
+import { WorkoutCategory } from '../../../core/models/workout-category.model';
+import { ExerciseCategoryService, HydratedExerciseCategory } from '../../../core/services/exercise-category.service';
 
 @Component({
     selector: 'app-generate-workout-modal',
@@ -20,12 +23,18 @@ import { Muscle } from '../../../core/models/muscle.model';
 })
 export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
     @Input() isOpen: boolean = false;
+    customPB = input<string>('');
     @Output() close = new EventEmitter<void>();
     @Output() generate = new EventEmitter<WorkoutGenerationOptions | 'quick'>();
 
     private exerciseService = inject(ExerciseService);
     private personalGymService = inject(PersonalGymService);
     private muscleMapService = inject(MuscleMapService);
+    private exerciseCategory = inject(ExerciseCategoryService);
+
+    categories = signal<HydratedExerciseCategory[]>([]);
+
+
     // --- START: SCROLL LOCK LOGIC ---
     constructor(@Inject(DOCUMENT) private document: Document) {
         effect(() => {
@@ -34,7 +43,7 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
             } else {
                 this.document.body.classList.remove('overflow-hidden');
             }
-        });
+        }); 
         effect((onCleanup) => {
             onCleanup(() => {
                 this.document.body.classList.remove('overflow-hidden');
@@ -67,7 +76,8 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
         avoidMuscles: [],
         usePersonalGym: true,
         equipment: [],
-        excludeEquipment: []
+        excludeEquipment: [],
+        // category: '', // <-- Add this line
     };
 
     async ngOnInit() {
@@ -81,15 +91,17 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
                     .map(id => muscleMap.get(typeof id === 'string' ? id : id.id))
                     // Filter out any potential undefined values if an ID has no match
                     .filter((muscle): muscle is Muscle => muscle !== undefined);
-                
+
                 // Sort the full muscle objects alphabetically by name (translation key)
                 return muscles.sort((a, b) => a.name.localeCompare(b.name));
             })
         );
-        
+
+        this.categories.set(this.exerciseCategory.getHydratedCategories());
+
         const muscles = await firstValueFrom(uniqueMuscles$);
         this.allMuscleGroups.set(muscles);
-        
+
         // (The rest of your ngOnInit logic for equipment remains the same)
         const equipment = await firstValueFrom(this.exerciseService.getUniqueEquipment());
         this.allAvailableEquipment.set(equipment);

@@ -16,7 +16,7 @@ import { EQUIPMENT_NORMALIZATION_MAP, EquipmentService, HydratedEquipment } from
 import { HydratedMuscle, MUSCLE_NORMALIZATION_MAP, MuscleMapService } from './muscle-map.service';
 import { MUSCLES_DATA, MuscleValue } from './muscles-data';
 import { EquipmentValue } from './equipment-data';
-import { EXERCISE_CATEGORY_NORMALIZATION_MAP, ExerciseCategoryService, HydratedCategory } from './exercise-category.service';
+import { EXERCISE_CATEGORY_NORMALIZATION_MAP, ExerciseCategoryService, HydratedExerciseCategory } from './exercise-category.service';
 import { toObservable } from '@angular/core/rxjs-interop';
 
 /**
@@ -75,7 +75,7 @@ export class ExerciseService {
   // New BehaviorSubject for loading state
   private isLoadingExercisesSubject = new BehaviorSubject<boolean>(true); // Start as true
   public isLoadingExercises$: Observable<boolean> = this.isLoadingExercisesSubject.asObservable();
-  protected exerciseCategories: HydratedCategory[];
+  protected exerciseCategories: HydratedExerciseCategory[];
   protected muscleGroupCategories: HydratedMuscle[];
 
   constructor() {
@@ -370,7 +370,7 @@ export class ExerciseService {
     );
   }
 
-  getUniqueCategories(): Observable<HydratedCategory[]> {
+  getUniqueCategories(): Observable<HydratedExerciseCategory[]> {
     return combineLatest([
       this.exercises$,
       this.exerciseCategoryService.hydratedCategories$
@@ -391,7 +391,7 @@ export class ExerciseService {
         // 2. Map those IDs to hydrated categories with translated labels
         return uniqueCategoryIds
           .map(id => hydratedCategories.find(cat => cat.id === id))
-          .filter((cat): cat is HydratedCategory => !!cat);
+          .filter((cat): cat is HydratedExerciseCategory => !!cat);
       })
     );
   }
@@ -930,6 +930,9 @@ export class ExerciseService {
 
         return {
           ...exercise,
+          _searchId: exercise.id,
+          // use the original english exercise name
+          _searchName: exercise.name.toLowerCase(),
           name: (!translatedName || translatedName === `${translationKey}.name`) ? exercise.name : translatedName,
           description: (!translatedDescription || translatedDescription === `${translationKey}.description`) ? exercise.description : translatedDescription,
         };

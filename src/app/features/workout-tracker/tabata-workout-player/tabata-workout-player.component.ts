@@ -534,7 +534,6 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
                 exerciseId: exerciseData.exerciseId,
                 exerciseName,
                 sets: [loggedSet],
-                type: loggedSet.type || 'standard',
                 supersetId: exerciseData.supersetId || null,
                 supersetOrder: exerciseData.supersetOrder !== null ? exerciseData.supersetOrder : null,
             };
@@ -1717,9 +1716,6 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
                         fieldOrder: this.workoutUtilsService.getRepsAndWeightFields()
                     };
                 }) : [this.getFirstExerciseOfSuperset((loggedEx.supersetOrder || 0), loggedEx.supersetId, loggedExercises)],
-                // TODO correct number of sets when converting a SUPERSET routine to a new one
-                type: (sessionExercise?.sets.length ?? 0) >= 1 ? 'superset' : 'standard'
-                // sessionStatus is NOT included here as it's session-specific
             };
             return newWorkoutEx;
         });

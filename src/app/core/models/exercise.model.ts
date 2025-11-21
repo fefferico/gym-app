@@ -49,6 +49,7 @@ export interface Exercise {
   isHidden?: boolean; // Flag to indicate if the exercise is hidden from the main list
   usageCount?: number;
 
+  _searchId?: string;
   _searchName?: string;
   _searchCategory?: string;
   _searchDescription?: string;

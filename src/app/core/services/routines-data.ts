@@ -58,7 +58,6 @@ export const ROUTINES_DATA: Routine[] = [
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
-                type: "standard"
             },
             {
                 "id": "bwa-ex2",
@@ -107,7 +106,6 @@ export const ROUTINES_DATA: Routine[] = [
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
-                type: "standard"
             },
             {
                 "id": "bwa-ex3",
@@ -156,7 +154,6 @@ export const ROUTINES_DATA: Routine[] = [
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
-                type: "standard"
             }
         ]
     },
@@ -213,7 +210,6 @@ export const ROUTINES_DATA: Routine[] = [
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
-                type: "standard"
             },
             {
                 "id": "bwb-ex2",
@@ -256,7 +252,6 @@ export const ROUTINES_DATA: Routine[] = [
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
-                type: "standard"
             },
             {
                 "id": "bwb-ex3",
@@ -305,7 +300,6 @@ export const ROUTINES_DATA: Routine[] = [
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
-                type: "standard"
             }
         ]
     }

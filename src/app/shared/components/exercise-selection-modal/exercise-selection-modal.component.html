@@ -63,7 +63,7 @@
                     <div *ngIf="!isShowingSimilarView()">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 text-left">{{
                             'exerciseSelectionModal.searchLabel' | translate }}</label>
-                        <input #exerciseSearchFied type="text" [placeholder]="searchPlaceholder()"
+                        <input #exerciseSearchFied type="text" placeholder="{{'exerciseSelectionModal.searchExerciseLabel' | translate}}"
                             [(ngModel)]="searchTerm" (keydown.enter)="onSearchEnter()"
                             class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200" />
                     </div>

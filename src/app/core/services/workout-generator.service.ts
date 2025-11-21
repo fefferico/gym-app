@@ -10,6 +10,7 @@ import { PersonalGymService } from './personal-gym.service';
 import { WorkoutService } from './workout.service'; // Import WorkoutService
 import { ToastService } from './toast.service';
 import { distanceToExact, durationToExact, repsNumberToExactRepsTarget, restToExact, weightToExact } from './workout-helper.service';
+import { HydratedExerciseCategory } from './exercise-category.service';
 
 // Interface for the detailed generation options
 export interface WorkoutGenerationOptions {
@@ -21,6 +22,7 @@ export interface WorkoutGenerationOptions {
     usePersonalGym: boolean;
     equipment: string[];
     excludeEquipment: string[];
+    exerciseCategory?: HydratedExerciseCategory;
 }
 
 @Injectable({
@@ -149,6 +151,11 @@ export class WorkoutGeneratorService {
     private async getSelectableExercises(options: WorkoutGenerationOptions): Promise<Exercise[]> {
         const allExercises = await firstValueFrom(this.exerciseService.getExercises());
         let availableExercises = allExercises.filter(ex => !ex.isHidden && ex.category !== 'stretching');
+
+        // --- Category filtering ---
+        if (options.exerciseCategory && options.exerciseCategory) {
+            availableExercises = availableExercises.filter(ex => ex.category === options.exerciseCategory?.id);
+        }
 
         // Determine equipment filter values, all lowercased for consistent comparison
         let equipmentFilterValues: string[] = [];
@@ -463,7 +470,6 @@ export class WorkoutGeneratorService {
             sets: sets,
             supersetId: null,
             supersetOrder: null,
-            type: 'standard'
         };
     }
 

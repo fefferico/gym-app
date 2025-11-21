@@ -267,7 +267,6 @@ export interface WorkoutExercise {
 
   workoutLogId?: string;
   sessionStatus?: 'pending' | 'skipped' | 'do_later' | 'completed' | 'started'; // For in-session tracking
-  type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | string; // More flexible
   category?: ExerciseCategory;
   section?: WorkoutSectionType | undefined
 }

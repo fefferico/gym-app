@@ -1405,7 +1405,8 @@
     [showSimilarButton]="true" [isShowingSimilarView]="isShowingSimilarInSwitchModal()" itemIconName="change"
     itemIconClass="text-green-500" (exerciseSelected)="handleExerciseSwitch($event)"
     (findSimilarClicked)="findAndShowSimilarExercises()" (backToSearchClicked)="onBackToSearchFromSimilar()"
-    (close)="closeSwitchExerciseModal()">
+    (close)="closeSwitchExerciseModal()"
+    [customPB]="context === 'modal' ? 'pb-32': ''">
 </app-exercise-selection-modal>
 
 <!-- NOTES MODAL -->
@@ -1436,7 +1437,8 @@
 </app-fab-menu>
 
 <app-generate-workout-modal [isOpen]="isGeneratorModalOpen()" (close)="isGeneratorModalOpen.set(false)"
-    (generate)="handleWorkoutGeneration($event)">
+    (generate)="handleWorkoutGeneration($event)"
+    [customPB]="context === 'modal' ? 'pb-32': ''">
 </app-generate-workout-modal>
 
 <div class="hidden p-2.5"></div>
