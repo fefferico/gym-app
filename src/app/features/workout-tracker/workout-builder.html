@@ -315,13 +315,13 @@
                         [@exerciseExit]
                         [style.zIndex]="isExerciseActionMenuVisible(exIndex) ? 50 : 'auto'"
                         [ngClass]="getExerciseCardClass(exerciseControl, exIndex)">
-                        <div *ngIf="(isEditableMode()) && selectedExerciseIndicesForSuperset().length >= 2 && exIndex === firstSelectedExerciseIndexForSuperset"
+                        <div *ngIf="(isEditableMode()) && selectedExerciseIndicesForSuperset().length >= 1 && exIndex === firstSelectedExerciseIndexForSuperset"
                             class="absolute left-1/2 -translate-x-1/2 z-20 flex space-x-2" style="top: -1.8rem;">
                             <!-- The 'flex' class ensures they are on a single line. -->
                             <!-- The 'space-x-2' adds a gap between them. Adjust as needed (e.g., space-x-4). -->
                             <!-- The 'left-1/2 -translate-x-1/2' on this div centers the entire group of buttons. -->
 
-                            <button *ngIf="canRemoveSelectedExercises()" type="button"
+                            <button *ngIf="canRemoveSelectedExercises() && selectedExerciseIndicesForSuperset().length >= 2" type="button"
                                 (click)="removeSelectedExercises()"
                                 class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow-lg min-w-[100px]">
                                 {{ 'workoutBuilder.superset.removeExercisesButton' | translate:{count:
@@ -329,7 +329,7 @@
                             </button>
 
                             <!-- NEW BUTTON: Put into section -->
-                             <button *ngIf="canRemoveSelectedExercises()" type="button"
+                             <button *ngIf="selectedExerciseIndicesForSuperset().length > 0" type="button"
                                 (click)="openSectionSelectionModal()"
                                 class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow-lg min-w-[100px] flex items-center justify-center">
                                 <app-icon name="bookmark" class="h-4 w-4 mr-1"></app-icon>
@@ -337,13 +337,13 @@
                             </button>
 
                             <!-- Only one of these two buttons will ever be displayed at a time -->
-                            <button *ngIf="!canUngroupSelectedExercises()" type="button"
+                            <button *ngIf="!canUngroupSelectedExercises() && selectedExerciseIndicesForSuperset().length >= 2" type="button"
                                 (click)="groupSelectedAsSuperset()"
                                 class="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow-lg min-w-[100px]">
                                 {{ 'workoutBuilder.superset.groupButton' | translate:{count:
                                 selectedExerciseIndicesForSuperset().length} }}
                             </button>
-                            <button *ngIf="canUngroupSelectedExercises()" type="button"
+                            <button *ngIf="canUngroupSelectedExercises() && selectedExerciseIndicesForSuperset().length >= 2" type="button"
                                 (click)="ungroupSuperset(exIndex)"
                                 class="bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow-lg min-w-[100px]">
                                 {{ 'workoutBuilder.superset.ungroupButton' | translate:{count:

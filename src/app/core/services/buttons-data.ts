@@ -27,6 +27,14 @@ export const jumpToExerciseBtn = {
     buttonClass: ' hover:bg-fuchsia-600 ',
 } as ActionMenuItem;
 
+export const sectionExerciseBtn = {
+    label: 'actionButtons.section',
+    actionKey: 'section',
+    iconName: `bookmark`,
+    iconClass: 'w-8 h-8 mr-2',
+    buttonClass: ' hover:bg-fuchsia-600 ',
+} as ActionMenuItem;
+
 export const switchExerciseBtn = {
     label: 'actionButtons.switch',
     actionKey: 'switchExercise',

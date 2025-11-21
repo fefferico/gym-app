@@ -58,7 +58,7 @@ import { AppSettingsService } from '../../../core/services/app-settings.service'
 import { TrainingProgram } from '../../../core/models/training-program.model';
 import { AlertButton, AlertInput } from '../../../core/models/alert.model';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { addExerciseBtn, addRoundToExerciseBtn, addSetToExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, calculatorBtn, createSuperSetBtn, exerciseNotesBtn, finishEarlyBtn, metricsBtn, openSessionPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeExerciseBtn, removeFromSuperSetBtn, removeRoundFromExerciseBtn, removeSetFromExerciseBtn, restBtn, resumeSessionBtn, sessionNotesBtn, setNotesBtn, switchExerciseBtn, timerBtn } from '../../../core/services/buttons-data';
+import { addExerciseBtn, addRoundToExerciseBtn, addSetToExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, calculatorBtn, createSuperSetBtn, exerciseNotesBtn, finishEarlyBtn, metricsBtn, openSessionPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeExerciseBtn, removeFromSuperSetBtn, removeRoundFromExerciseBtn, removeSetFromExerciseBtn, restBtn, resumeSessionBtn, sectionExerciseBtn, sessionNotesBtn, setNotesBtn, switchExerciseBtn, timerBtn } from '../../../core/services/buttons-data';
 import { mapExerciseTargetSetParamsToExerciseExecutedSetParams } from '../../../core/models/workout-mapper';
 import { ProgressiveOverloadService } from '../../../core/services/progressive-overload.service.ts';
 import { BarbellCalculatorModalComponent } from '../../../shared/components/barbell-calculator-modal/barbell-calculator-modal.component';
@@ -74,6 +74,7 @@ import { repsTargetAsString, repsTypeToReps, genRepsTypeFromRepsNumber, getDurat
 import { WorkoutUtilsService } from '../../../core/services/workout-utils.service';
 import { WorkoutSection } from '../../../core/models/workout-section.model';
 import { WorkoutSectionType } from '../../../core/models/workout-section-type.model';
+import { WorkoutSectionService } from '../../../core/services/workout-section.service';
 
 // Interface for saving the paused state
 
@@ -139,6 +140,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private injector = inject(Injector);
   private translate = inject(TranslateService);
+
+  private workoutSectionService = inject(WorkoutSectionService);
 
   availablePlayerRepSchemes: { type: RepsTargetType; label: string }[] = [];
 
@@ -1465,6 +1468,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       case 'add_set': this.addSet(exIndex); break;
       case 'exercise_notes': this.toggleExerciseNotes(exIndex); break;
       case 'remove_set': this.removeSet(exIndex, 0); break;
+      case 'section': this.addSectionExercise(exIndex); break;
       case 'add_warmup_set': this.addWarmupSet(exIndex); break;
       case 'remove': this.removeExercise(exIndex); break;
       case 'create_superset': this.openCreateSupersetModal(exIndex); break;
@@ -2317,6 +2321,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         data: { exIndex },
         overrideCssButtonClass: switchExerciseBtn.buttonClass + commonModalButtonClass
       };
+      const addSectionExerciseBtn = {
+        ...sectionExerciseBtn,
+        data: { exIndex },
+        overrideCssButtonClass: sectionExerciseBtn.buttonClass + commonModalButtonClass
+      }
       const currOpenPerformanceInsightsBtn = {
         ...openSessionPerformanceInsightsBtn,
         data: { exIndex },
@@ -2356,7 +2365,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
       let actionsArray: ActionMenuItem[] = [
         currOpenPerformanceInsightsBtn,
-        addExerciseNotesBtn
+        addExerciseNotesBtn,
+        addSectionExerciseBtn
       ];
 
       if (!this.isExercisePartiallyLogged(exercise) && !this.isExerciseFullyLogged(exercise) && !this.isSuperSet(exIndex)) {
@@ -6316,6 +6326,62 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   getPlannedSetId(exercise: WorkoutExercise, set: ExerciseTargetSetParams, roundIndex: number = 0): string {
     return exercise.supersetId ? `${set.id}-round-${roundIndex}` : set.id;
+  }
+
+  addSectionExercise(exIndex: number): void {
+    const routine = this.routine();
+    if (!routine) return;
+    const exercise = routine.exercises[exIndex];
+    this.workoutSectionService.addSectionToExerciseModal(exercise).then(updatedExercise => {
+      if (!updatedExercise) return;
+
+      this.routine.update(r => {
+        if (!r) return r;
+        let updatedSections = r.sections ? [...r.sections] : [];
+
+        // Remove the exercise from all sections
+        updatedSections = updatedSections.map(section => ({
+          ...section,
+          exercises: section.exercises.filter(ex => ex.id !== updatedExercise.id)
+        }));
+
+        // Remove any section that is now empty
+        updatedSections = updatedSections.filter(section => section.exercises.length > 0);
+
+        // Add to the new section
+        if (updatedExercise.section) {
+          let sectionIndex = updatedSections.findIndex(sec => sec.type === updatedExercise.section);
+          if (sectionIndex === -1) {
+            // Create new section if it doesn't exist
+            const newSection: WorkoutSection = {
+              type: updatedExercise.section,
+              id: uuidv4(),
+              titleI18nKey: this.translate.instant(`workoutSections.${updatedExercise.section}`),
+              exercises: [updatedExercise]
+            };
+            updatedSections.push(newSection);
+          } else {
+            // Add to existing section if not already present
+            const section = updatedSections[sectionIndex];
+            if (!section.exercises.some(ex => ex.id === updatedExercise.id)) {
+              updatedSections[sectionIndex] = {
+                ...section,
+                exercises: [...section.exercises, updatedExercise]
+              };
+            }
+          }
+        }
+
+        const newExercises = r.exercises.map((ex, idx) =>
+          idx === exIndex ? { ...ex, ...updatedExercise } : ex
+        );
+        return { ...r, exercises: newExercises, sections: updatedSections };
+      });
+
+      this.alignRestStartTimestampsFromLog();
+    }).catch(error => {
+      // handle any errors here
+    });
   }
 }
 
