@@ -2644,7 +2644,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       const line1 = exercise.exerciseName;
       const setIndex = exercise.sets.indexOf(plannedSet);
       const line2 = `Set ${setIndex + 1}/${exercise.sets.length}`;
-      
+
       // --- Historical (Volta precedente) ---
       let historicalLine = '';
       if (historicalSet) {
@@ -2666,16 +2666,16 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           parts.push(`${distanceValue} ${this.unitsService.getDistanceMeasureUnitSuffix()}`);
         }
         if (parts.length > 0) {
-            // Add date if available
-            let dateStr = '';
-            if (historicalSet?.timestamp) {
+          // Add date if available
+          let dateStr = '';
+          if (historicalSet?.timestamp) {
             const date = new Date(historicalSet.timestamp);
             dateStr = ` (${date.toLocaleDateString()})`;
-            }
-            historicalLine = `${this.translate.instant('restTimer.lastTime')}: ${parts.join(' | ')}${dateStr}`;
+          }
+          historicalLine = `${this.translate.instant('restTimer.lastTime')}: ${parts.join(' | ')}${dateStr}`;
         }
       }
-      
+
       // --- Next Set Target ---
       const targetParts: string[] = [];
       const repsDisplay = this.workoutUtilsService.getSetTargetDisplay(plannedSet, METRIC.reps);
@@ -2697,7 +2697,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       } else {
         targetLine = this.translate.instant('restTimer.noTarget');
       }
-      
+
       // --- Compose the final text ---
       // let nextUpHtml = `<div><span class="font-bold">${this.translate.instant('restTimer.nextUp')}</span></div>`;
       let nextUpHtml = ``;
@@ -2707,7 +2707,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       if (historicalLine) {
         nextUpHtml += `<div class="text-base font-normal opacity-80">${historicalLine}</div>`;
       }
-      
+
       this.restTimerNextUpText.set(nextUpHtml);
       // =================== END OF MODIFICATION ===================
     }
@@ -6608,6 +6608,16 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         }
       ]
     }).subscribe(res => console.log(res));
+  }
+
+  get orderedSections() {
+    const routine = this.routine?.();
+    if (!routine?.sections) return [];
+    return [...routine.sections].sort(
+      (a, b) =>
+        (WORKOUT_SECTION_TYPE_ORDER[a.type] ?? 99) -
+        (WORKOUT_SECTION_TYPE_ORDER[b.type] ?? 99)
+    );
   }
 }
 
