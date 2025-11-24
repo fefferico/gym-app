@@ -11,6 +11,7 @@ import { PlateType } from '../../../core/models/personal-gym.model';
 import { TooltipDirective } from '../../directives/tooltip.directive';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BumpClickDirective } from '../../directives/bump-click.directive';
+import { EquipmentCategory } from '../../../core/services/equipment-data';
 
 
 interface GymPlate {
@@ -212,7 +213,7 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
     let plates: Plate[];
     if (this.usePersonalGym() && this.isPremiumUser()) {
       plates = this.personalGymService.getDataForBackup()
-        .filter(eq => eq.category === 'Plate')
+        .filter(eq => eq.category === EquipmentCategory.plate)
         .map(eq => {
           const plateData = eq as GymPlate;
           return {
@@ -554,7 +555,7 @@ constructor(@Inject(DOCUMENT) private document: Document) {
       const personalEquipment = this.personalGymService.getDataForBackup();
 
       sourceBarbells = personalEquipment
-        .filter(eq => eq.category === 'Barbell')
+        .filter(eq => eq.category === EquipmentCategory.barbell)
         .map(eq => {
           const barData = eq as GymBarbell;
           return {
@@ -568,7 +569,7 @@ constructor(@Inject(DOCUMENT) private document: Document) {
         this.toastService.error(this.translate.instant('barbellCalculator.toasts.noBarbells', { unit: this.unit().toUpperCase() }), 5000, this.translate.instant('barbellCalculator.toasts.equipmentMissing'));
       } else {
         // Optional: Warn if there are no plates, but still proceed.
-        const hasPlates = personalEquipment.some(eq => eq.category === 'Plate');
+        const hasPlates = personalEquipment.some(eq => eq.category === EquipmentCategory.plate);
         if (!hasPlates) {
           this.toastService.info(this.translate.instant('barbellCalculator.toasts.noPlates'), 3000, this.translate.instant('barbellCalculator.toasts.headsUp'));
         }

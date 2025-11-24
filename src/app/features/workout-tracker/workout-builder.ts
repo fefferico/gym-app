@@ -55,6 +55,8 @@ import { WorkoutFormService } from '../../core/services/workout-form.service';
 import { WorkoutCategory } from '../../core/models/workout-category.model';
 import { WorkoutSectionType } from '../../core/models/workout-section-type.model';
 import { WorkoutSection } from '../../core/models/workout-section.model';
+import { LocationService } from '../../core/services/location.service';
+import { EXERCISE_CATEGORY_TYPES } from '../../core/models/exercise-category.model';
 
 export enum BuilderMode {
   routineBuilder = 'routineBuilder',
@@ -148,7 +150,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   protected workoutUtilsService = inject(WorkoutUtilsService);
   protected workoutCategoryService = inject(WorkoutCategoryService);
   protected workoutFormService = inject(WorkoutFormService);
-
+  protected locationService = inject(LocationService);
   protected isRoutineMode = false;
 
 
@@ -301,6 +303,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       programIdForLog: [''], // For selecting base program in manualLogEntry
       iterationIdForLog: [''], // For selecting base program iteration in manualLogEntry
       scheduledDayIdForLog: [''], // For selecting base program iteration in manualLogEntry
+      locationId: [''],
       exercises: this.fb.array([]), // Validated based on mode/goal
     });
 
@@ -1053,7 +1056,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         .map(ex => ({
           ...ex,
           _searchName: this.exerciseService.normalizeExerciseNameForSearch(ex.name).toLowerCase(),
-          _searchCategory: ex.category ? ex.category.toLowerCase() : '',
+          _searchCategory: ex.categories ? ex.categories.map(cat => cat.toString().toLowerCase()).join(', ') : '',
           _searchDescription: ex.description ? ex.description.toLowerCase() : '',
           _searchPrimaryMuscle: ex.primaryMuscleGroup ? ex.primaryMuscleGroup.toLowerCase() : ''
         }));
@@ -1185,7 +1188,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.builderForm.markAsDirty();
   }
 
-    private prefillRoutineFormFromLog(log: WorkoutLog): void {
+  private prefillRoutineFormFromLog(log: WorkoutLog): void {
     this.builderForm.patchValue({
       // Suggest a name for the new routine based on the log
       name: `${log.routineName || this.translate.instant('workoutBuilder.logEntry.adHocTitle')} - As Routine`,
@@ -1194,22 +1197,22 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // Try to find the original goal, otherwise default to 'custom'
       goal: this.availableRoutines.find(r => r.id === log.routineId)?.goal || 'custom',
     }, { emitEvent: false });
-  
+
     this.updateSanitizedDescription(log.notes || '');
-  
+
     this.exercisesFormArray.clear({ emitEvent: false });
-  
+
     log.exercises.forEach(loggedEx => {
       const newRoutineExercise = this.createRoutineExerciseFromLoggedExercise(loggedEx);
       this.exercisesFormArray.push(newRoutineExercise, { emitEvent: false });
     });
-  
+
     this.toggleFormState(false); // Enable the form for editing
     this.builderForm.markAsDirty(); // Mark as dirty since it's a new, unsaved routine
-    
+
     // +++ FIX: Force the form to update before mapping +++
     this.builderForm.updateValueAndValidity();
-    
+
     // Now map the form to routine - the exercises array should be populated
     this.loadedRoutine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
   }
@@ -1939,7 +1942,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       const exerciseName = exerciseControl.get('exerciseName')?.value;
       const exerciseId = exerciseControl.get('exerciseId')?.value;
       const baseExercise = this.availableExercises.find(ex => ex.id === exerciseId);
-      const isWeighted = baseExercise ? baseExercise.category !== 'cardio' : false;
+      const isWeighted = baseExercise ? !baseExercise.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.cardio) : false;
 
       const inputs: AlertInput[] = [
         {
@@ -2559,7 +2562,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         id: `custom-adhoc-ex-${slug}-${uuidv4()}`,
         name: exerciseName,
         description: description,
-        category: 'custom',
+        categories: [EXERCISE_CATEGORY_TYPES.custom],
         muscleGroups: [],
         primaryMuscleGroup: undefined,
         imageUrls: []
@@ -2625,6 +2628,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // --- START: ADD NEW MAPPED PROPERTIES ---
       primaryCategory: formValue.primaryCategory || undefined,
       secondaryCategory: formValue.secondaryCategory || undefined,
+      locationId: formValue.locationId || undefined,
       tags: tagsArray,
       // --- END: ADD NEW MAPPED PROPERTIES ---
 
@@ -3394,8 +3398,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // Here's a synchronous fallback using availableExercises if possible:
     if (!exerciseId) return false;
     const exerciseDetails = this.availableExercises.find(e => e.id === exerciseId);
-    if (exerciseDetails && exerciseDetails.category) {
-      return exerciseDetails.category === 'cardio';
+    if (exerciseDetails && exerciseDetails.categories) {
+      return exerciseDetails.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.cardio) !== undefined;
     }
     return false;
   }
@@ -4024,12 +4028,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const isSave = this.isRoutineMode ? (!this.currentRoutineId ? false : true) : (this.isNewMode ? true : false);
 
     const playRoutineAction = {
-        label: 'fab.start',
-        actionKey: 'start',
-        iconName: 'play',
-        cssClass: 'bg-blue-400 focus:ring-blue-600',
-        isPremium: false
-      };
+      label: 'fab.start',
+      actionKey: 'start',
+      iconName: 'play',
+      cssClass: 'bg-blue-400 focus:ring-blue-600',
+      isPremium: false
+    };
 
     if (this.isEditableMode()) {
       this.fabMenuItems = [{
@@ -5008,8 +5012,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return this.availableExercises.find(e => e.id === selectedExerciseId);
   }
 
-  isBodyweight = computed<boolean>(() => this.baseExercise()?.category === 'bodyweightCalisthenics');
-  isCardio = computed<boolean>(() => this.baseExercise()?.category === 'cardio');
+  isBodyweight = computed<boolean>(() => !!this.baseExercise()?.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.bodyweightCalisthenics));
+  isCardio = computed<boolean>(() => !!this.baseExercise()?.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.cardio));
 
 
   // Tracks which exercise's "Set All" panel is currently expanded.
@@ -5753,7 +5757,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (this.mode === BuilderMode.customProgramEntryBuilder) {
       return this.translate.instant('workoutBuilder.routineBuilder.saveCustomRoutineButton');
     }
-    if (this.mode === BuilderMode.newFromLog){
+    if (this.mode === BuilderMode.newFromLog) {
       return this.translate.instant('workoutBuilder.routineBuilder.saveButton');
     }
     return this.isNewMode
@@ -5975,6 +5979,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.selectedExerciseIndicesForMultipleRemoval.set([]);
       this.selectedExerciseIndicesForSuperset.set([]);
     }
+  }
+
+  getLocationLabel(): string {
+    const locationId = this.builderForm.get('locationId')?.value;
+    const location = this.locationService.allLocations().find(l => l.id === locationId);
+    return location ? location.label : '';
   }
 
 

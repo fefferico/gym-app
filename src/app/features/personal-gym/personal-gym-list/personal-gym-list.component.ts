@@ -6,7 +6,6 @@ import { PersonalGymService } from '../../../core/services/personal-gym.service'
 
 import {
   PersonalGymEquipment,
-  EquipmentCategory,
   FixedWeightEquipment,
   AdjustableWeightEquipment,
   WeightPlate,
@@ -24,6 +23,7 @@ import { deleteBtn, editBtn, hideBtn, unhideBtn, viewBtn } from '../../../core/s
 import { AppSettingsService } from '../../../core/services/app-settings.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
+import { EquipmentCategory } from '../../../core/services/equipment-data';
 
 @Component({
   selector: 'app-personal-gym-list',
@@ -96,10 +96,7 @@ export class PersonalGymListComponent implements OnInit {
   searchTerm = signal<string>('');
   selectedCategory = signal<EquipmentCategory | null>(null);
 
-  readonly categories: EquipmentCategory[] = [
-    'Dumbbell', 'Kettlebell', 'Plate', 'Barbell', 'Band', 'Machine',
-    'Accessory', 'Bag', 'Macebell', 'Club', 'Cardio', 'Custom'
-  ];
+  readonly categories: EquipmentCategory[] = Object.values(EquipmentCategory);
 
   filteredEquipment = computed(() => {
     let equipment = this.allEquipment();
@@ -178,15 +175,15 @@ export class PersonalGymListComponent implements OnInit {
   }
 
   isWeightPlate(item: PersonalGymEquipment): item is WeightPlate {
-    return item.category === 'Plate';
+    return item.category === EquipmentCategory.plate;
   }
 
   isBand(item: PersonalGymEquipment): item is ResistanceBand {
-    return item.category === 'Band';
+    return item.category === EquipmentCategory.band;
   }
 
   isCustom(item: PersonalGymEquipment): item is CustomEquipment {
-    return item.category === 'Custom';
+    return item.category === EquipmentCategory.custom;
   }
   // ==========================================================
   // END: TYPE GUARD HELPER FUNCTIONS

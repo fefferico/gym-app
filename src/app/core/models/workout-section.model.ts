@@ -13,6 +13,7 @@ export interface WorkoutSection {
   titleI18nKey: string;
   // Optional longer description
   descriptionI18nKey?: string;
+  order?: number;
 
   // The core feature: an array of exercises contained within this section
   exercises: WorkoutExercise[];

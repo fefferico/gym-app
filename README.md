@@ -35,7 +35,7 @@ FitTrackPro comes with a predefined list of over 20 activities across various ca
     *   Date, Start Time, and End Time
     *   Duration (calculated automatically)
     *   Perceived Intensity (Low, Medium, High)
-    *   Location (optional)
+    *   Location
     *   Distance and Calories Burned (where applicable)
     *   Personal notes
 *   **Manage Logs**: View detailed summaries of your logged activities and edit or delete them from your history.
@@ -125,7 +125,7 @@ For those who like to plan ahead, the Training Programs feature allows you to bu
 1.  **Set up your Profile**: Navigate to "Profile & Settings" to enter your username, measurements, and preferred units (kg/lbs).
 2.  **Explore the Exercise Library**: Familiarize yourself with the available exercises.
 3.  **Create a Routine**: Go to "My Routines" and build your first workout plan.
-4.  **Start a Program (Optional)**: If you have a long-term plan, create a Training Program and schedule your routines.
+4.  **Start a Program**: If you have a long-term plan, create a Training Program and schedule your routines.
 5.  **Start Tracking**: Go to the home screen and start your first scheduled workout, or pick any routine to start an ad-hoc session.
 
 ## Data Management

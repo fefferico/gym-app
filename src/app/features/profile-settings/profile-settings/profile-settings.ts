@@ -34,6 +34,7 @@ import { ActivityService } from '../../../core/services/activity.service';
 import { LanguageService } from '../../../core/services/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Sum } from '@tensorflow/tfjs-core';
+import { Exercise } from '../../../core/models/exercise.model';
 
 @Component({
   selector: 'app-profile-settings',
@@ -542,7 +543,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
             }
             if (version >= 4) this.progressiveOverloadService.replaceData(importedData.progressiveOverload);
             if (version >= 3) {
-              this.exerciseService.mergeData(importedData.exercises);
+              this.exerciseService.mergeData(importedData.exercises.filter((ex: Exercise)=>ex.isCustom));
               this.trainingProgramService.mergeData(importedData.programs);
             }
             if (version >= 2) this.appSettingsService.replaceData(importedData.appSettings);

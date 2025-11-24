@@ -14,6 +14,8 @@ import { SubscriptionService } from './subscription.service';
 import { ToastService } from './toast.service';
 import { ProgressiveOverloadService } from './progressive-overload.service.ts';
 import { mapLoggedWorkoutExerciseToWorkoutExercise } from '../models/workout-mapper';
+import e from 'express';
+import { EXERCISE_CATEGORY_TYPES } from '../models/exercise-category.model';
 
 @Injectable({
     providedIn: 'root'
@@ -363,12 +365,12 @@ export class WorkoutUtilsService {
 
         // Use the performed weight if it's a valid number (not null/undefined).
         // Otherwise, fall back to the target weight from the plan.
-        const displayWeight = (performedWeight != null) ? performedWeight : set.targetWeight;
+        const displayWeight = (performedWeight != null) ? this.getWeightValue(performedWeight) : this.getWeightValue(set.targetWeight);
 
         // --- The rest of the display logic now uses the prioritized 'displayWeight' ---
 
         // 1. Handle categories where weight is not applicable.
-        if (exercise?.category === 'cardio' || exercise?.category === 'stretching') {
+        if (exercise?.categories?.find(e => e === EXERCISE_CATEGORY_TYPES.cardio) || exercise?.categories?.find(e => e === EXERCISE_CATEGORY_TYPES.stretching)) {
             if (displayWeight != null && displayWeight > 0) {
                 return `${displayWeight} ${this.unitsService.getWeightUnitSuffix()}`;
             }
@@ -376,7 +378,7 @@ export class WorkoutUtilsService {
         }
 
         // 2. Handle bodyweightCalisthenics exercises.
-        if (exercise?.category === 'bodyweightCalisthenics') {
+        if (exercise?.categories?.find(e => e === EXERCISE_CATEGORY_TYPES.bodyweightCalisthenics)) {
             // If additional weight was used or targeted, display it.
             if (displayWeight != null && displayWeight > 0) {
                 return `${displayWeight} ${this.unitsService.getWeightUnitSuffix()}`;
@@ -570,7 +572,7 @@ export class WorkoutUtilsService {
      * @returns A promise that resolves with the updated Routine object, or null if cancelled.
      */
     public async promptAddField(routine: Routine | LoggedRoutine, exIndex: number, setIndex: number, isPlayer: boolean = false): Promise<Routine | null> {
-        const { hidden } = this.getFieldsForSet(routine, exIndex, setIndex);
+        const { visible, hidden } = this.getFieldsForSet(routine, exIndex, setIndex);
 
         if (hidden.length === 0) {
             this.toastService.info(this.translate.instant('toasts.allMetricsAdded'));
@@ -714,7 +716,6 @@ export class WorkoutUtilsService {
 
     public getFieldsForSet(routine: Routine, exIndex: number, setIndex: number): { visible: METRIC[], hidden: METRIC[] } {
         const allFields = this.getDefaultFields();
-        // As requested, this now uses the exercise-wide visibility check.
         const visibleCols = this.getVisibleSetColumns(routine, exIndex, setIndex);
 
         const visible = allFields.filter(field => visibleCols[field as keyof typeof visibleCols]);

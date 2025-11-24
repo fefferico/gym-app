@@ -106,7 +106,7 @@
               <div class="mb-4">
                 <span
                   class="px-3 py-1 text-xs font-semibold rounded-full bg-primary-light text-white dark:bg-primary-dark dark:text-primary-light capitalize">
-                  {{ ex.category }}
+                  {{ ex.categories }}
                 </span>
               </div>
 
@@ -243,7 +243,7 @@
                     <span>Set {{i + 1}}: <strong class="text-gray-800 dark:text-white">{{ formatSetDisplay(set)
                         }}</strong></span>
                     <!-- Hide 1RM for cardio sets -->
-                    <span *ngIf="ex.category !== 'cardio' && set.weightLogged && set.repsLogged"
+                    <span *ngIf="!hasCardioCategory() && set.weightLogged && set.repsLogged"
                       class="font-mono text-xs text-gray-500">
                       1RM: {{ (getWeightValue(set.weightLogged) ?? 0) * (36 / (37 - repsTargetRepsToReps(set.repsLogged))) | number:'1.0-1' }}
                     </span>
@@ -267,7 +267,7 @@
 
             <!-- <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4 px-4">{{ 'exerciseDetail.tabs.graphs' | translate }}</h2> -->
 
-            <ng-container *ngIf="ex.category !== 'cardio'">
+            <ng-container *ngIf="!hasCardioCategory()">
               <div>
                 <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">{{ 'exerciseDetail.charts.est1rmSeries'
                   | translate }}</h3>
@@ -299,7 +299,7 @@
             <!-- --- END: CONDITIONAL CHARTS FOR STRENGTH --- -->
           </div>
           <!-- --- START: CONDITIONAL CHARTS FOR CARDIO --- -->
-          <ng-container *ngIf="ex.category === 'cardio'">
+          <ng-container *ngIf="hasCardioCategory()">
             <div>
               <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">{{
                 'exerciseDetail.charts.maxDistanceTitle' | translate: { unit: unitService.getDistanceMeasureUnitSuffix()
@@ -351,7 +351,7 @@
             </ng-template>
 
             <!-- --- START: CONDITIONALLY HIDE REP RECORDS TABLE --- -->
-            <ng-container *ngIf="personalRecords().length > 0 && ex.category !== 'cardio'; else cardioRepRecords">
+            <ng-container *ngIf="personalRecords().length > 0 && !hasCardioCategory(); else cardioRepRecords">
               <div class="overflow-x-auto">
                 <table class="min-w-full text-sm text-left text-gray-500 dark:text-gray-400">
                   <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">

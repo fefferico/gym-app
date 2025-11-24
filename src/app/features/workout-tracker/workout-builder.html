@@ -16,7 +16,8 @@
         <div class="flex items-center space-x-2 flex-shrink-0">
             <!-- Wrapper for "More Actions" button and its dropdown -->
             <div *ngIf="liveFormAsRoutine() as routine">
-                <div *ngIf="routine.id && !isNewMode && mode !== BuilderMode.customProgramEntryBuilder" class="relative">
+                <div *ngIf="routine.id && !isNewMode && mode !== BuilderMode.customProgramEntryBuilder"
+                    class="relative">
                     <button appBumpClick (click)="toggleActions(routine.id, $event)"
                         class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
                         <app-icon name="menu-action" class="h-10 w-10"></app-icon>
@@ -124,6 +125,25 @@
                     <input type="text" id="secondaryCategory" formControlName="secondaryCategory"
                         [placeholder]="'workoutBuilder.routineBuilder.secondaryCategoryPlaceholder' | translate"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm text-gray-700 dark:bg-gray-600 dark:text-gray-200">
+                </div>
+
+                <div *ngIf="isEditableMode()">
+                    <label for="locationId" class="block text-m font-medium text-gray-700 dark:text-gray-200">
+                        {{ 'workoutBuilder.locationLabel' | translate }}
+                    </label>
+                    <select id="locationId" formControlName="locationId"
+                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 text-gray-700 dark:text-gray-200">
+                        <option value="">{{ 'workoutBuilder.locationPlaceholder' | translate }}</option>
+                        <option *ngFor="let loc of locationService.allLocations()" [value]="loc.id">
+                            {{ loc.label }}
+                        </option>
+                    </select>
+                </div>
+                <div *ngIf="!isEditableMode() && builderForm.get('locationId')?.value">
+                    <label class="block text-m text-gray-700 dark:text-gray-300">
+                        <span class="font-medium">{{ 'workoutBuilder.locationLabel' | translate }}: </span>
+                        {{ getLocationLabel() }}
+                    </label>
                 </div>
 
                 <!-- TAGS -->
@@ -311,8 +331,7 @@
                 formArrayName="exercises" class="exercise-list-container">
                 <ng-container *ngFor="let exerciseControl of exercisesFormArray.controls; let exIndex = index;">
                     <div class="relative group exercise-card-wrapper" #expandedExerciseCard appClickOutside
-                        (clickOutside)="closeExerciseActionMenu()"
-                        [@exerciseExit]
+                        (clickOutside)="closeExerciseActionMenu()" [@exerciseExit]
                         [style.zIndex]="isExerciseActionMenuVisible(exIndex) ? 50 : 'auto'"
                         [ngClass]="getExerciseCardClass(exerciseControl, exIndex)">
                         <div *ngIf="(isEditableMode()) && selectedExerciseIndicesForSuperset().length >= 1 && exIndex === firstSelectedExerciseIndexForSuperset"
@@ -321,15 +340,16 @@
                             <!-- The 'space-x-2' adds a gap between them. Adjust as needed (e.g., space-x-4). -->
                             <!-- The 'left-1/2 -translate-x-1/2' on this div centers the entire group of buttons. -->
 
-                            <button *ngIf="canRemoveSelectedExercises() && selectedExerciseIndicesForSuperset().length >= 2" type="button"
-                                (click)="removeSelectedExercises()"
+                            <button
+                                *ngIf="canRemoveSelectedExercises() && selectedExerciseIndicesForSuperset().length >= 2"
+                                type="button" (click)="removeSelectedExercises()"
                                 class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow-lg min-w-[100px]">
                                 {{ 'workoutBuilder.superset.removeExercisesButton' | translate:{count:
                                 selectedExerciseIndicesForMultipleRemoval().length} }}
                             </button>
 
                             <!-- NEW BUTTON: Put into section -->
-                             <button *ngIf="selectedExerciseIndicesForSuperset().length > 0" type="button"
+                            <button *ngIf="selectedExerciseIndicesForSuperset().length > 0" type="button"
                                 (click)="openSectionSelectionModal()"
                                 class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow-lg min-w-[100px] flex items-center justify-center">
                                 <app-icon name="bookmark" class="h-4 w-4 mr-1"></app-icon>
@@ -337,14 +357,16 @@
                             </button>
 
                             <!-- Only one of these two buttons will ever be displayed at a time -->
-                            <button *ngIf="!canUngroupSelectedExercises() && selectedExerciseIndicesForSuperset().length >= 2" type="button"
-                                (click)="groupSelectedAsSuperset()"
+                            <button
+                                *ngIf="!canUngroupSelectedExercises() && selectedExerciseIndicesForSuperset().length >= 2"
+                                type="button" (click)="groupSelectedAsSuperset()"
                                 class="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow-lg min-w-[100px]">
                                 {{ 'workoutBuilder.superset.groupButton' | translate:{count:
                                 selectedExerciseIndicesForSuperset().length} }}
                             </button>
-                            <button *ngIf="canUngroupSelectedExercises() && selectedExerciseIndicesForSuperset().length >= 2" type="button"
-                                (click)="ungroupSuperset(exIndex)"
+                            <button
+                                *ngIf="canUngroupSelectedExercises() && selectedExerciseIndicesForSuperset().length >= 2"
+                                type="button" (click)="ungroupSuperset(exIndex)"
                                 class="bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow-lg min-w-[100px]">
                                 {{ 'workoutBuilder.superset.ungroupButton' | translate:{count:
                                 selectedExerciseIndicesForSuperset().length} }}
@@ -360,14 +382,15 @@
                             [title]="isEditableMode() && !shouldShowExpandedExercise(exIndex)? ('workoutBuilder.exercise.dragToReorder' | translate) : ''">
 
                             <!-- NEW: SECTION BADGE -->
-                             <div *ngIf="getSectionBadgeInfo(exerciseControl) as sectionInfo" 
-                                  class="absolute -right-2 top-2 z-20 transform translate-x-1 -translate-y-5">
-                                <span class="text-[10px] uppercase font-black px-2 py-0.5 rounded-md text-white shadow-sm"
-                                      [ngStyle]="{'background-color': sectionInfo.color}">
+                            <div *ngIf="getSectionBadgeInfo(exerciseControl) as sectionInfo"
+                                class="absolute -right-2 top-2 z-20 transform translate-x-1 -translate-y-5">
+                                <span
+                                    class="text-[10px] uppercase font-black px-2 py-0.5 rounded-md text-white shadow-sm"
+                                    [ngStyle]="{'background-color': sectionInfo.color}">
                                     {{ sectionInfo.label }}
                                 </span>
-                             </div>
-                             
+                            </div>
+
                             <div #superSetControlPanel_Info
                                 *ngIf="isEditableMode() && isSuperSet(exIndex) && isFirstInSuperset(exIndex)"
                                 class="flex flex-col items-end space-y-2 flex-shrink-0 w-full sm:w-auto">
@@ -1405,8 +1428,7 @@
     [showSimilarButton]="true" [isShowingSimilarView]="isShowingSimilarInSwitchModal()" itemIconName="change"
     itemIconClass="text-green-500" (exerciseSelected)="handleExerciseSwitch($event)"
     (findSimilarClicked)="findAndShowSimilarExercises()" (backToSearchClicked)="onBackToSearchFromSimilar()"
-    (close)="closeSwitchExerciseModal()"
-    [customPB]="context === 'modal' ? 'pb-32': ''">
+    (close)="closeSwitchExerciseModal()" [customPB]="context === 'modal' ? 'pb-32': ''">
 </app-exercise-selection-modal>
 
 <!-- NOTES MODAL -->
@@ -1437,8 +1459,7 @@
 </app-fab-menu>
 
 <app-generate-workout-modal [isOpen]="isGeneratorModalOpen()" (close)="isGeneratorModalOpen.set(false)"
-    (generate)="handleWorkoutGeneration($event)"
-    [customPB]="context === 'modal' ? 'pb-32': ''">
+    (generate)="handleWorkoutGeneration($event)" [customPB]="context === 'modal' ? 'pb-32': ''">
 </app-generate-workout-modal>
 
 <div class="hidden p-2.5"></div>

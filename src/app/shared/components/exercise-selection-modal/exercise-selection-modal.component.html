@@ -1,5 +1,5 @@
 <div *ngIf="isOpen()" class="fixed inset-0 z-[70] flex flex-col bg-white dark:bg-gray-800 transition-opacity"
-     [ngClass]="customPB()">
+    [ngClass]="customPB()">
 
     <div (clickOutside)="onClose()"
         class="relative flex flex-col w-full h-full overflow-hidden text-left transition-all">
@@ -36,10 +36,11 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
                             'exerciseSelectionModal.categoryLabel' | translate }}</label>
-                        <select (change)="onCategoryChange($event)" [value]="selectedCategory() || ''"
+                        <select [(ngModel)]="selectedCategoryValue" (ngModelChange)="onCategoryChangeModel($event)"
                             class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200">
                             <option value="">{{ 'exerciseSelectionModal.allCategories' | translate }}</option>
-                            <option *ngFor="let cat of categories$ | async" [value]="cat.id">{{ cat.label | titlecase }}</option>
+                            <option *ngFor="let cat of categories$ | async" [value]="cat.id">{{ cat.name | titlecase }}
+                            </option>
                         </select>
                     </div>
                     <!-- Muscle Group -->
@@ -63,7 +64,8 @@
                     <div *ngIf="!isShowingSimilarView()">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 text-left">{{
                             'exerciseSelectionModal.searchLabel' | translate }}</label>
-                        <input #exerciseSearchFied type="text" placeholder="{{'exerciseSelectionModal.searchExerciseLabel' | translate}}"
+                        <input #exerciseSearchFied type="text"
+                            placeholder="{{'exerciseSelectionModal.searchExerciseLabel' | translate}}"
                             [(ngModel)]="searchTerm" (keydown.enter)="onSearchEnter()"
                             class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200" />
                     </div>
@@ -105,57 +107,79 @@
             </div>
         </div>
         <!-- +++ END: Filter Section +++ -->
+        <span *ngIf="getLastCategory()" class="flex px-4 font-semibold text-gray-700 dark:text-gray-200">
+            {{ 'exerciseSelectionModal.lastCategoryInfo' | translate:{
+            category: getCategoryLabel((categories$ | async), getLastCategory())
+            } }}
+        </span>
+
+        <div *ngIf="totalExerciseCount > 0" class="flex w-full justify-end text-sm text-gray-600 dark:text-gray-400 mb-2 px-4">
+            {{ 'exerciseList.showingCount' | translate:{count: filteredExerciseCount, total: totalExerciseCount} }}
+        </div>
 
         <!-- Scrollable Exercise List -->
         <div #scrollContainer class="flex-grow min-h-0 px-4 sm:px-6 py-2 overflow-y-auto custom-scrollbar">
             <ul class="space-y-1">
-                <ng-container *ngFor="let item of processedExercises(); let odd = odd; trackBy: trackByExerciseOrHeader">
+                <ng-container
+                    *ngFor="let exercise of processedExercises(); let odd = odd; trackBy: trackByExerciseOrHeader">
                     <!-- Case 1: Item is an Alphabetical Header -->
-                    <div *ngIf="!isExercise(item)"
+                    <div *ngIf="!isExercise(exercise)"
                         class="py-2 px-3 sticky top-0 bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-200 font-bold text-lg z-10">
-                        {{ item.label }}
+                        {{ exercise.label }}
                     </div>
 
                     <!-- Case 2: Item is an Exercise (Unchanged) -->
-                    <li appBumpClick *ngIf="isExercise(item)" (click)="onExerciseClicked(item)"
+                    <li appBumpClick *ngIf="isExercise(exercise)" (click)="onExerciseClicked(exercise)"
                         class="p-3 mx-1 rounded-md cursor-pointer transition-colors duration-150 ease-in-out flex justify-between items-center"
                         [ngClass]="{
-                            'border border-4 border-primary': isSelected(item),
-                            'bg-gray-200 dark:bg-gray-600': odd && !isSelected(item),
-                            'bg-gray-100 dark:bg-gray-500': !odd && !isSelected(item)
+                            'border border-4 border-primary': isSelected(exercise),
+                            'bg-gray-200 dark:bg-gray-600': odd && !isSelected(exercise),
+                            'bg-gray-100 dark:bg-gray-500': !odd && !isSelected(exercise)
                         }">
                         <div class="flex-grow">
-                            <span class="font-medium text-gray-800 dark:text-gray-200">{{ item.name }}</span>
-                            <span *ngIf="item.category" class="block text-xs text-gray-500 dark:text-gray-400">{{
-                                item.category | titlecase }} {{ item.primaryMuscleGroup ? (' - ' +
-                                item.primaryMuscleGroup | titlecase) : '' }}</span>
-                            <span *ngIf="item.isCustom || item.lastUsedAt || item.usageCount != null"
+                            <span class="font-medium text-gray-800 dark:text-gray-200">{{ exercise.name }}</span>
+                            @if (exercise.categories && exercise.primaryMuscleGroup?.name) {
+                            <span class="block text-xs text-gray-500 dark:text-gray-400">
+                                <!-- {{ item.categories | titlecase }} - {{ item.primaryMuscleGroup?.name | titlecase }} -->
+                            </span>
+                            } @else if (exercise.categories) {
+                            <span class="block text-xs text-gray-500 dark:text-gray-400">
+                                <!-- {{ item.categories | titlecase }} -->
+                            </span>
+                            } @else if (exercise.primaryMuscleGroup?.name) {
+                            <span class="block text-xs text-gray-500 dark:text-gray-400">
+                                {{ exercise.primaryMuscleGroup?.name | titlecase }}
+                            </span>
+                            }
+                            <span *ngIf="exercise.isCustom || exercise.lastUsedAt || exercise.usageCount != null"
                                 class="block text-xs text-gray-500 dark:text-gray-400 italic">
                                 [
-                                <ng-container *ngIf="item.isCustom">{{ 'exerciseSelectionModal.custom' | translate
+                                <ng-container *ngIf="exercise.isCustom">{{ 'exerciseSelectionModal.custom' | translate
                                     }}</ng-container>
 
                                 <!-- Separator 1 -->
-                                <ng-container *ngIf="item.isCustom && (item.usageCount != null || item.lastUsedAt)"> |
+                                <ng-container
+                                    *ngIf="exercise.isCustom && (exercise.usageCount != null || exercise.lastUsedAt)"> |
                                 </ng-container>
 
-                                <ng-container *ngIf="item.usageCount != null">{{ 'exerciseSelectionModal.count' |
-                                    translate:{count: item.usageCount} }}</ng-container>
+                                <ng-container *ngIf="exercise.usageCount != null">{{ 'exerciseSelectionModal.count' |
+                                    translate:{count: exercise.usageCount} }}</ng-container>
 
                                 <!-- Separator 2 -->
-                                <ng-container *ngIf="item.usageCount != null && item.lastUsedAt"> | </ng-container>
+                                <ng-container *ngIf="exercise.usageCount != null && exercise.lastUsedAt"> |
+                                </ng-container>
 
-                                <ng-container *ngIf="item.lastUsedAt">{{ 'exerciseSelectionModal.lastUsed' |
-                                    translate:{date: (item.lastUsedAt | date:'dd-MM-yy':'UTC')} }}</ng-container>
+                                <ng-container *ngIf="exercise.lastUsedAt">{{ 'exerciseSelectionModal.lastUsed' |
+                                    translate:{date: (exercise.lastUsedAt | date:'dd-MM-yy':'UTC')} }}</ng-container>
                                 ]
                             </span>
                         </div>
                         <ng-container *ngIf="isMultiSelect(); else singleSelectIcon">
-                            <span *ngIf="getSelectionIndex(item) as selIdx"
+                            <span *ngIf="getSelectionIndex(exercise) as selIdx"
                                 class="p-2 mx-1 inline-flex items-center justify-center rounded-full bg-primary text-white text-xs font-bold w-6 h-6">
                                 {{ selIdx }}
                             </span>
-                            <input type="checkbox" [checked]="isSelected(item)" (change)="toggleSelection(item)"
+                            <input type="checkbox" [checked]="isSelected(exercise)" (change)="toggleSelection(exercise)"
                                 (click)="$event.stopPropagation()"
                                 class="form-checkbox h-6 w-6 rounded-full flex-shrink-0 text-primary dark:text-primary-light bg-gray-200 dark:bg-gray-800 border-gray-400 dark:border-gray-500 focus:ring-primary-focus dark:focus:ring-primary-dark cursor-pointer">
                         </ng-container>
@@ -175,40 +199,37 @@
 
 
         <!-- Footer -->
-                <div
-          class="bg-gray-50 dark:bg-gray-800 px-4 py-2 flex justify-center sticky bottom-0">
-          <div class="flex flex-col sm:flex-row gap-2 w-full max-w-xs">
-            <!-- Multi-Select Confirm Button -->
-            <button *ngIf="isMultiSelect() && selectionCount() > 0" type="button" (click)="confirmSelection()"
-              [disabled]="selectionCount() === 0"
-              class="w-full rounded-md px-4 py-2 text-xl font-semibold text-white shadow-sm
+        <div class="bg-gray-50 dark:bg-gray-800 px-4 py-2 flex justify-center sticky bottom-0">
+            <div class="flex flex-col sm:flex-row gap-2 w-full max-w-xs">
+                <!-- Multi-Select Confirm Button -->
+                <button *ngIf="isMultiSelect() && selectionCount() > 0" type="button" (click)="confirmSelection()"
+                    [disabled]="selectionCount() === 0" class="w-full rounded-md px-4 py-2 text-xl font-semibold text-white shadow-sm
                      bg-primary hover:bg-primary-dark focus-visible:outline focus-visible:outline-2
                      focus-visible:outline-offset-2 focus-visible:outline-primary-focus
                      disabled:opacity-50 disabled:cursor-not-allowed mb-1 sm:mb-0">
-              <app-icon name="done" class="w-6 h-6 mr-2"></app-icon>
-              {{ 'exerciseSelectionModal.addSelected' | translate }} {{ selectionCount() > 0 ? '(' + selectionCount() + ')' : '' }}
-            </button>
-        
-            <!-- Create Custom Button -->
-            <button *ngIf="showCreateCustomLink() || (!processedExercises() || !processedExercises().length)"
-              type="button" (click)="onCreateCustom()"
-              class="w-full rounded-md px-4 py-2 text-lg font-semibold text-white shadow-sm
+                    <app-icon name="done" class="w-6 h-6 mr-2"></app-icon>
+                    {{ 'exerciseSelectionModal.addSelected' | translate }} {{ selectionCount() > 0 ? '(' +
+                    selectionCount() + ')' : '' }}
+                </button>
+
+                <!-- Create Custom Button -->
+                <button *ngIf="showCreateCustomLink() || (!processedExercises() || !processedExercises().length)"
+                    type="button" (click)="onCreateCustom()" class="w-full rounded-md px-4 py-2 text-lg font-semibold text-white shadow-sm
                      bg-green-500 hover:bg-green-700 focus-visible:outline focus-visible:outline-2
                      focus-visible:outline-offset-2 focus-visible:outline-primary-focus
                      disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
-                     <app-icon name="plus-circle" class="w-6 h-6 mr-2"></app-icon>
-              {{ 'exerciseSelectionModal.createCustom' | translate }}
-            </button>
-        
-            <!-- Cancel Button -->
-            <button type="button" (click)="onClose()"
-              class="w-full rounded-md bg-white dark:bg-gray-600 px-3 py-2 text-xl font-semibold
+                    <app-icon name="plus-circle" class="w-6 h-6 mr-2"></app-icon>
+                    {{ 'exerciseSelectionModal.createCustom' | translate }}
+                </button>
+
+                <!-- Cancel Button -->
+                <button type="button" (click)="onClose()" class="w-full rounded-md bg-white dark:bg-gray-600 px-3 py-2 text-xl font-semibold
                      text-gray-900 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300
                      dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500 flex items-center justify-center">
-              <app-icon name="cancel" class="w-6 h-6 mr-1"></app-icon>
-              {{ 'exerciseSelectionModal.cancel' | translate }}
-            </button>
-          </div>
+                    <app-icon name="cancel" class="w-6 h-6 mr-1"></app-icon>
+                    {{ 'exerciseSelectionModal.cancel' | translate }}
+                </button>
+            </div>
         </div>
     </div>
 </div>

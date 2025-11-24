@@ -218,8 +218,9 @@
                           (click)="openModal(item, $event)" [appTooltip]="exerciseInfoTooltipString"></app-icon>
                       </div>
                       <div *ngIf="!item.isExpanded" class="text-xs text-gray-500 dark:text-gray-400 truncate">
-                        <p *ngIf="item.baseExercise?.category" class="truncate">{{ item.baseExercise?.category |
-                          titlecase }}</p>
+                        <p class="truncate" *ngIf="checkIfCategoriesAreAvailable(item)">
+                          {{ (item?.baseExercise?.categories?.toString() ?? '') | titlecase }}
+                        </p>
                         <p *ngIf="checkIfDurationAvailable(item)">{{ 'logDetail.card.time' | translate }}:
                           {{getExerciseDurationLogged(item)}}</p>
                         <p>{{ 'logDetail.card.set' | translate }}: {{item.sets.length}} <span

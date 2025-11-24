@@ -3,7 +3,7 @@ import { CommonModule, TitleCasePipe, DatePipe, isPlatformBrowser, DecimalPipe }
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Observable, of, Subscription, forkJoin, map, take, tap, switchMap, combineLatest } from 'rxjs'; // Added Subscription, forkJoin
 import { Exercise } from '../../core/models/exercise.model';
-import { ExerciseService } from '../../core/services/exercise.service';
+import { ExerciseService, HydratedExercise } from '../../core/services/exercise.service';
 import { TrackingService, ExercisePerformanceDataPoint } from '../../core/services/tracking.service'; // Import new type
 import { LoggedSet, PersonalBestSet, WorkoutLog } from '../../core/models/workout-log.model';
 
@@ -22,19 +22,11 @@ import { WeightUnitPipe } from '../../shared/pipes/weight-unit-pipe';
 import { animate, group, query, style, transition, trigger } from '@angular/animations';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { EquipmentService } from '../../core/services/equipment.service';
-import { Muscle } from '../../core/models/muscle.model';
-import { Equipment } from '../../core/models/equipment.model';
 import { getDistanceValue, getDurationValue, getRepsValue, getWeightValue, repsTypeToReps } from '../../core/services/workout-helper.service';
 import { DistanceTarget, DurationTarget, RepsTarget, WeightTarget } from '../../core/models/workout.model';
 import { SafeUrlPipe } from '../../shared/directives/safeUrl.directive';
+import { EXERCISE_CATEGORY_TYPES } from '../../core/models/exercise-category.model';
 
-
-export interface HydratedExercise extends Omit<Exercise, 'primaryMuscleGroup' | 'muscleGroups' | 'equipmentNeeded'> {
-  primaryMuscleGroup?: Muscle;
-  muscleGroups: Muscle[];
-  equipmentNeeded: Equipment[];
-}
 
 type RepRecord = {
   reps: number;
@@ -56,7 +48,7 @@ type TopLevelRecord = {
   selector: 'app-exercise-detail',
   standalone: true,
   providers: [DecimalPipe, SafeUrlPipe],
-  imports: [CommonModule, RouterLink, DatePipe, NgxChartsModule, ActionMenuComponent, IconComponent, MuscleMapComponent, WeightUnitPipe, TranslateModule, SafeUrlPipe], // Added DatePipe, NgxChartsModule
+  imports: [CommonModule, RouterLink, DatePipe, NgxChartsModule, ActionMenuComponent, IconComponent, WeightUnitPipe, TranslateModule], // Added DatePipe, NgxChartsModule
   templateUrl: './exercise-detail.html',
   styleUrl: './exercise-detail.scss',
   animations: [
@@ -339,7 +331,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     // --- END: CORRECTED DATA LOADING PIPELINE ---
   }
 
-  // Chart click handler (optional)
+  // Chart click handler
   onProgressChartSelect(event: any): void {
     console.log('Progress chart item selected:', event);
     // Example: navigate to the specific workout log if logId is in event.extra
@@ -481,7 +473,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     const ex = this.exercise();
     const records: TopLevelRecord[] = [];
 
-    if (ex?.category === 'cardio') {
+    if (this.hasCardioCategory()) {
       const maxDist = pbs.find(p => p.pbType === 'Max Distance');
       const maxDur = pbs.find(p => p.pbType === 'Max Duration');
       if (maxDist) records.push({ label: this.translate.instant('exerciseDetail.records.maxDistance'), value: this.decimalPipe.transform(getDistanceValue(maxDist.distanceLogged), '1.0-2') ?? '0', unit: this.unitService.getDistanceMeasureUnitSuffix() });
@@ -548,7 +540,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     const exerciseId = this.exercise()?.id;
-    const isCardio = this.exercise()?.category === 'cardio';
+    const isCardio = this.exercise()?.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.cardio) !== undefined;
 
     // Strength Chart Series
     const est1rmSeries: ChartDataPoint[] = [];
@@ -741,5 +733,9 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
         description: translations[exercise.id]?.description || exercise.description,
       }))
     );
+  }
+
+  protected hasCardioCategory(): boolean {
+    return this.exercise()?.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.cardio) !== undefined;
   }
 }

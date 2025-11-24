@@ -802,7 +802,7 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
     this.changeDetectorRef.detectChanges(); // Ensure UI updates
   }
 
-  // --- VIDEO RECORDING (Optional) ---
+  // --- VIDEO RECORDING ---
   startRecording() {
     if (!this.videoStream) {
       this.addFeedback('warning', 'No video stream to record.');

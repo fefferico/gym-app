@@ -380,3 +380,15 @@ body {
 .radio-primary {
   accent-color: #e0460d; /* Replace with your primary color */
 }
+
+
+// MODAL
+/* --- Custom Dialog Backdrop --- */
+.app-modal-backdrop {
+  /* 
+    bg-gray-900/50 -> Dark dark background with 50% opacity 
+    backdrop-blur-sm -> Adds the glass/blur effect
+    transition-opacity -> smooth fade (handled by CDK animations usually, but good practice)
+  */
+  @apply bg-gray-900/50 backdrop-blur-sm dark:bg-black/70;
+}

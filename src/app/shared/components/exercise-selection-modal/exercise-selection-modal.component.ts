@@ -2,9 +2,9 @@ import { Component, computed, inject, input, model, Output, ViewChild, ElementRe
 import { CommonModule, TitleCasePipe, DatePipe, AsyncPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Exercise } from '../../../core/models/exercise.model';
-import { ExerciseService } from '../../../core/services/exercise.service';
+import { ExerciseService, HydratedExercise } from '../../../core/services/exercise.service';
 import { IconComponent } from '../icon/icon.component';
-import { combineLatest, Observable, Subscription, take } from 'rxjs';
+import { Observable, Subscription, take } from 'rxjs';
 import { ToastService } from '../../../core/services/toast.service';
 import { TrackingService } from '../../../core/services/tracking.service';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -15,8 +15,9 @@ import { MuscleMapService } from '../../../core/services/muscle-map.service';
 import { MuscleValue } from '../../../core/services/muscles-data';
 import { HydratedExerciseCategory } from '../../../core/services/exercise-category.service';
 import { ScrollingModule } from '@angular/cdk/scrolling';
+import { EXERCISE_CATEGORY_TYPES } from '../../../core/models/exercise-category.model';
 
-type ListItem = Exercise | { isHeader: true; label: string };
+type ListItem = HydratedExercise | { isHeader: true; label: string };
 
 @Component({
     selector: 'app-exercise-selection-modal',
@@ -35,6 +36,7 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     isMultiSelect = input<boolean>(false);
     isFocusInputOnStart = input<boolean>(false);
     customPB = input<string>('');
+    protected static lastSelectedCategory: EXERCISE_CATEGORY_TYPES | null = null;
 
     // --- OUTPUTS ---
     @Output() exerciseSelected = new EventEmitter<Exercise>(); // For single-select mode
@@ -48,15 +50,16 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['isOpen'] && changes['isOpen'].currentValue) {
-            if (this.isFocusInputOnStart()) {
-                this.checkForInputFocus();
+            if (ExerciseSelectionModalComponent.lastSelectedCategory) {
+                this.selectedCategory.set(ExerciseSelectionModalComponent.lastSelectedCategory);
+                this.selectedCategoryValue = ExerciseSelectionModalComponent.lastSelectedCategory;
+            } else {
+                this.selectedCategoryValue = "";
             }
-            // When the modal opens, reset filters to default
-            this.clearFilters(false);
         }
     }
 
-    private enrichedExercises = signal<Exercise[]>([]); // This will hold the exercises with usage counts
+    private enrichedExercises = signal<HydratedExercise[]>([]); // This will hold the exercises with usage counts
 
     private usageCounts = toSignal(this.trackingService.getExerciseUsageCounts(), {
         initialValue: new Map<string, number>()
@@ -68,6 +71,7 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     @ViewChild('scrollContainer') private scrollContainer!: ElementRef<HTMLDivElement>;
 
     private translatedExercises = signal<Exercise[]>([]);
+    hydratedExercises = signal<HydratedExercise[]>([]);
 
     constructor(@Inject(DOCUMENT) private document: Document) {
         // =================== START OF SNIPPET 2 ===================
@@ -76,10 +80,10 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
             const exercisesToTranslate = this.exercises(); // Dependency on the input signal
             if (exercisesToTranslate && exercisesToTranslate.length > 0) {
                 // Unsubscribing is handled by `take(1)`
-                this.exerciseService.getTranslatedExerciseList(exercisesToTranslate)
+                this.exerciseService.getHydratedExerciseList(exercisesToTranslate)
                     .pipe(take(1)) // Ensure the subscription auto-completes
-                    .subscribe(translated => {
-                        this.translatedExercises.set(translated);
+                    .subscribe(hydrated => {
+                        this.hydratedExercises.set(hydrated);
                     });
             } else {
                 this.translatedExercises.set([]); // Handle empty input
@@ -93,15 +97,15 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
         // Effect 2: Enrich the TRANSLATED exercises with usage counts.
         // This runs whenever the translated list or usage counts change.
         effect(() => {
-            const exercisesFromTranslation = this.translatedExercises(); // Dependency 1: The translated list
-            const usageMap = this.usageCounts();                       // Dependency 2: The usage count signal
+            const hydrated = this.hydratedExercises();
+            const usageMap = this.usageCounts();
 
-            const exercisesWithData = exercisesFromTranslation.map(ex => ({
+            const hydratedWithUsage = hydrated.map(ex => ({
                 ...ex,
                 usageCount: usageMap.get(ex.id) || 0
             }));
 
-            this.enrichedExercises.set(exercisesWithData);
+            this.enrichedExercises.set(hydratedWithUsage);
         });
         // =================== END OF SNIPPET 2 ===================
 
@@ -154,7 +158,8 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     searchTerm = model<string>('');
 
     isFilterAccordionOpen = signal(false);
-    selectedCategory = signal<string | null>(null);
+    public selectedCategoryValue: EXERCISE_CATEGORY_TYPES | string = "";
+    selectedCategory = signal<EXERCISE_CATEGORY_TYPES | string>("");
     selectedMuscleGroup = signal<Muscle | null>(null);
     sortMode = signal<'alpha' | 'lastUsed' | 'frequency'>('alpha');
 
@@ -166,31 +171,31 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
         const term = this.searchTerm()?.toLowerCase() ?? '';
         let exerciseList = this.enrichedExercises();
         const mode = this.sortMode();
-        const category = this.selectedCategory();
+        const category = this.selectedCategory() as string;
         const muscleGroup = this.selectedMuscleGroup();
 
         // 1. --- FILTERING (Unchanged) ---
-        if (category) {
-            exerciseList = exerciseList.filter(ex => ex.category === category);
+        if (category && category !== "") {
+            exerciseList = exerciseList.filter(ex => ex.categories?.some(cat => cat == category));
         }
         if (muscleGroup) {
             exerciseList = exerciseList.filter(ex =>
-                ex.primaryMuscleGroup === muscleGroup.id ||
-                (Array.isArray(ex.muscleGroups) && ex.muscleGroups.includes(muscleGroup.id))
+                (ex.primaryMuscleGroup && ex.primaryMuscleGroup.id === muscleGroup.id) ||
+                (Array.isArray(ex.muscleGroups) && ex.muscleGroups.some(muscle => muscle.id === muscleGroup.id))
             );
         }
         if (term) {
             const normalizedTerm = this.exerciseService.normalizeExerciseNameForSearch(term);
             exerciseList = exerciseList.filter(ex => {
                 // Also search in translated muscle names and English name
-                const primaryMuscleName = this.getMuscleNameById(ex.primaryMuscleGroup || '');
-                const muscleNames = (ex.muscleGroups || []).map(muscle => this.getMuscleNameById(muscle)).join(' ');
+                const primaryMuscleName = this.getMuscleNameById(ex.primaryMuscleGroup?.id || '');
+                const muscleNames = (ex.muscleGroups || []).map(muscle => this.getMuscleNameById(muscle.id)).join(' ');
                 // ex.originalName is the English name (fallback to ex.name if not present)
                 const englishName = [ex._searchId, ex._searchName, ex.name].filter(Boolean).join(' ');
                 return normalizedTerm.split(' ').every(part =>
                     ex.name.toLowerCase().includes(part) ||
                     englishName.toLowerCase().includes(part) ||
-                    (ex.category?.toLowerCase().includes(part)) ||
+                    (ex.categories?.some(cat => cat.toString().toLowerCase().includes(part))) ||
                     (ex.description?.toLowerCase().includes(part)) ||
                     (primaryMuscleName?.toLowerCase().includes(part)) ||
                     muscleNames.toLowerCase().includes(part)
@@ -214,7 +219,7 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     });
 
     // --- MODIFIED: This function now uses 'label' instead of 'letter' ---
-    private groupExercisesAlphabetically(exercises: Exercise[]): ListItem[] {
+    private groupExercisesAlphabetically(exercises: HydratedExercise[]): ListItem[] {
         if (exercises.length === 0) return [];
 
         const itemsWithHeaders: ListItem[] = [];
@@ -233,7 +238,7 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     }
 
     // +++ NEW: Function to group exercises by their usage count +++
-    private groupExercisesByFrequency(exercises: Exercise[]): ListItem[] {
+    private groupExercisesByFrequency(exercises: HydratedExercise[]): ListItem[] {
         if (exercises.length === 0) return [];
 
         const itemsWithHeaders: ListItem[] = [];
@@ -261,7 +266,7 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     }
 
     // +++ NEW: Type guard for the template to differentiate list items +++
-    isExercise(item: ListItem): item is Exercise {
+    isExercise(item: ListItem): item is HydratedExercise {
         return !(item as { isHeader: true }).isHeader;
     }
 
@@ -270,11 +275,16 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
      * In single-select mode, it emits and closes.
      * In multi-select mode, it toggles the selection.
      */
-    onExerciseClicked(exercise: Exercise): void {
+    onExerciseClicked(exercise: HydratedExercise): void {
         if (this.isMultiSelect()) {
             this.toggleSelection(exercise);
         } else {
-            this.exerciseSelected.emit(exercise);
+            const original = this.exercises().find(ex => ex.id === exercise.id);
+            if (original) {
+                // Store the category for next time
+                ExerciseSelectionModalComponent.lastSelectedCategory = original?.categories[0] ?? null;
+                this.exerciseSelected.emit(original);
+            }
             this.onClose();
         }
     }
@@ -282,21 +292,35 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     /**
     * Toggles an exercise's selection state in the selectedExerciseIds signal.
     */
-    toggleSelection(exercise: Exercise): void {
+    toggleSelection(exercise: HydratedExercise | Exercise): void {
         const currentIds = this.selectedExerciseIds();
+        let newIds: string[];
         if (currentIds.includes(exercise.id)) {
             // If already selected, remove it
-            this.selectedExerciseIds.set(currentIds.filter(id => id !== exercise.id));
+            newIds = currentIds.filter(id => id !== exercise.id);
         } else {
             // If not selected, add it
-            this.selectedExerciseIds.set([...currentIds, exercise.id]);
+            newIds = [...currentIds, exercise.id];
+        }
+        this.selectedExerciseIds.set(newIds);
+
+        // --- Remember category if only one exercise is selected ---
+        if (newIds.length === 1) {
+            const selected = this.exercises().find(ex => ex.id === newIds[0]);
+            if (selected) {
+                // If category is an object, use .id; if string, use as is
+                const cat = typeof selected.categories === 'object' && selected.categories !== null
+                    ? selected.categories
+                    : selected.categories ?? null;
+                ExerciseSelectionModalComponent.lastSelectedCategory = cat[0] ?? null;
+            }
         }
     }
 
     /**
      * Checks if an exercise is currently selected. Used to bind the checkbox state.
      */
-    isSelected(exercise: Exercise): boolean {
+    isSelected(exercise: Exercise | HydratedExercise): boolean {
         return this.selectedExerciseIds().includes(exercise.id);
     }
 
@@ -310,9 +334,9 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
             this.toastService.info(this.translate.instant('exerciseSelectionModal.toasts.noSelection'));
             return;
         }
-
-        const allExercises = this.enrichedExercises();
-        const selectedExercises = allExercises.filter(ex => selectedIds.includes(ex.id));
+        const selectedExercises = selectedIds
+            .map(id => this.exercises().find(ex => ex.id === id))
+            .filter((ex): ex is Exercise => !!ex);
 
         this.exercisesSelected.emit(selectedExercises);
         this.onClose();
@@ -335,7 +359,7 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     onSearchEnter(): void {
         const filteredList = this.processedExercises().filter(item => this.isExercise(item));
         if (filteredList.length === 1) {
-            this.onExerciseClicked(filteredList[0] as Exercise);
+            this.onExerciseClicked(filteredList[0]);
         }
     }
 
@@ -357,8 +381,12 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
         this.isFilterAccordionOpen.update(v => !v);
     }
 
-    onCategoryChange(event: Event): void {
-        this.selectedCategory.set((event.target as HTMLSelectElement).value || null);
+    onCategoryChangeModel(value: EXERCISE_CATEGORY_TYPES | null) {
+        this.selectedCategory.set(value || "");
+        this.selectedCategoryValue = value || "";
+        if (this.scrollContainer?.nativeElement) {
+            this.scrollContainer.nativeElement.scrollTop = 0;
+        }
     }
 
     onMuscleGroupChange(event: Event): void {
@@ -387,14 +415,18 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
      * Overrides the clear filters action to also clear selections.
      */
     clearFilters(showToast: boolean = true): void {
-        this.selectedCategory.set(null);
+        this.selectedCategory.set("");
         this.selectedMuscleGroup.set(null);
         this.searchTerm.set('');
         this.sortMode.set('alpha');
-        this.selectedExerciseIds.set([]); // Reset selection
+        ExerciseSelectionModalComponent.lastSelectedCategory = null;
         if (showToast) {
             this.toastService.info(this.translate.instant('exerciseSelectionModal.toasts.filtersCleared'));
         }
+        // Scroll to top after clearing filters
+        setTimeout(() => {
+            this.scrollContainer?.nativeElement?.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 0);
     }
 
     getMuscleNameById(id: string): string {
@@ -405,7 +437,7 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
         return this.translatedMuscles().find(m => m.id === id) || null;
     }
 
-    getSelectionIndex(item: Exercise): number | null {
+    getSelectionIndex(item: Exercise | HydratedExercise): number | null {
         if (!this.isMultiSelect()) return null;
         const selectedIds = this.selectedExerciseIds();
         const idx = selectedIds.findIndex(id => id === item.id);
@@ -414,10 +446,33 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
 
     trackByExerciseOrHeader(index: number, item: ListItem): string {
         // If it's a header, use its label; if it's an exercise, use its id
-        return (item as any).isHeader ? 'header-' + (item as any).label : 'exercise-' + (item as Exercise).id;
+        return (item as any).isHeader ? 'header-' + (item as any).label : 'exercise-' + (item as HydratedExercise).id;
     }
 
-        isMobileScreen(): boolean {
-      return window.innerWidth < 640; // or use your preferred breakpoint
+    isMobileScreen(): boolean {
+        return window.innerWidth < 640; // or use your preferred breakpoint
+    }
+
+    getCategoryLabel(categories: HydratedExerciseCategory[] | null, id: EXERCISE_CATEGORY_TYPES | null): string | null {
+        if (!categories || !id) return id ? String(id) : null;
+        const found = categories.find(c => c.id.toString() === id.toString());
+        if (!found) return id ? String(id) : null;
+        // If the label is a translation key, translate it
+        if (found.name && typeof found.name === 'string') {
+            return found.name;
+        }
+        return (typeof found.name === 'string' ? found.name : null) || (id ? String(id) : null);
+    }
+
+    getLastCategory(): EXERCISE_CATEGORY_TYPES | null {
+        return ExerciseSelectionModalComponent.lastSelectedCategory;
+    }
+
+    get filteredExerciseCount(): number {
+        return this.processedExercises().filter(item => this.isExercise(item)).length;
+    }
+
+    get totalExerciseCount(): number {
+        return this.hydratedExercises()?.length || 0;
     }
 }

@@ -29,8 +29,21 @@
           <select id="category-filter" (change)="onCategoryChange($event)" [value]="selectedCategory() || ''"
             class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
             <option value="">{{ 'exerciseList.filters.allCategories' | translate }}</option>
-            <option *ngFor="let category of categories" [value]="category.id">
-              {{ category.label | titlecase }}
+            <option *ngFor="let category of sortedCategories" [value]="category.id">
+              {{ category.name }}
+            </option>
+          </select>
+        </div>
+        <!-- Equipment Filter -->
+        <div>
+          <label for="equipment-filter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            {{ 'exerciseList.filters.equipmentLabel' | translate }}
+          </label>
+          <select id="equipment-filter" (change)="onEquipmentChange($event)" [value]="selectedEquipment() || ''"
+            class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
+            <option value="">{{ 'exerciseList.filters.allEquipment' | translate }}</option>
+            <option *ngFor="let equipment of hydratedEquipments | async" [value]="equipment.id">
+              {{ equipment.name | titlecase }}
             </option>
           </select>
         </div>
@@ -38,7 +51,8 @@
         <div>
           <label for="muscle-group-filter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
             'exerciseList.filters.muscleLabel' | translate }}</label>
-          <select id="muscle-group-filter" (change)="onMuscleGroupChange($event)" [value]="selectedMuscleGroup()?.id || ''"
+          <select id="muscle-group-filter" (change)="onMuscleGroupChange($event)"
+            [value]="selectedMuscleGroup()?.id || ''"
             class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
             <option value="">{{ 'exerciseList.filters.allMuscles' | translate }}</option>
             @for (group of primaryMuscleGroups$ | async; track group.name) {
@@ -115,17 +129,16 @@
           </div>
           <!-- End Badges -->
 
-          <p 
-            class="text-xs text-gray-500 font-semibold dark:text-gray-300 mb-2 gap-1 capitalize flex items-center">
+          <p class="text-xs text-gray-500 font-semibold dark:text-gray-300 mb-2 gap-1 capitalize flex items-center">
             <app-icon name="category" class="h-5 w-5"></app-icon>
             <span>{{
               'exerciseList.card.category' | translate }}:
             </span>
-            {{ exercise.categoryLabel | titlecase }}
+            {{ exercise.categoriesLabel | titlecase }}
           </p>
           <p *ngIf='exercise.equipmentNeeded'
             class="text-xs text-gray-500 font-semibold dark:text-gray-300 mb-2 gap-1 capitalize flex items-center">
-                        <app-icon name="dumbbell" class="h-5 w-5"></app-icon>
+            <app-icon name="dumbbell" class="h-5 w-5"></app-icon>
             <span>
               {{ 'exerciseList.card.equipment' | translate }}:
             </span>

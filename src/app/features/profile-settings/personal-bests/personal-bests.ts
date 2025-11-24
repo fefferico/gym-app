@@ -9,7 +9,7 @@ import { ExerciseService } from '../../../core/services/exercise.service';
 // Make sure PBHistoryInstance is exported from your model file and imported here if needed,
 // but for the function signature, a structural type is fine.
 import { PersonalBestSet, PBHistoryInstance } from '../../../core/models/workout-log.model';
-import { Exercise, EXERCISE_CATEGORIES } from '../../../core/models/exercise.model';
+import { Exercise } from '../../../core/models/exercise.model';
 import { UnitsService } from '../../../core/services/units.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { animate, state, style, transition, trigger } from '@angular/animations';
@@ -19,8 +19,8 @@ import { WorkoutService } from '../../../core/services/workout.service';
 import { getDistanceValue, getDurationValue, getWeightValue, repsTypeToReps } from '../../../core/services/workout-helper.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
-import { RepsTarget } from '../../../core/models/workout.model';
 import { WorkoutUtilsService } from '../../../core/services/workout-utils.service';
+import { EXERCISE_CATEGORY_TYPES } from '../../../core/models/exercise-category.model';
 
 
 // Interface to combine PB data with Exercise details
@@ -85,7 +85,7 @@ export class PersonalBestsComponent implements OnInit {
   private decimalPipe = new DecimalPipe('en-US');
 
   availableCategories = computed<string[]>(() => {
-    return [...EXERCISE_CATEGORIES].sort() as string[];
+    return Object.values(EXERCISE_CATEGORY_TYPES).sort() as string[];
   });
 
   availablePbTypes = computed<string[]>(() => {
@@ -117,7 +117,7 @@ export class PersonalBestsComponent implements OnInit {
             combinedList.push({
               ...pb,
               exerciseName: exerciseDetails.name,
-              exerciseCategory: exerciseDetails.category,
+              exerciseCategory: exerciseDetails.categories[0].toString(),
               primaryMuscleGroup: exerciseDetails.primaryMuscleGroup,
             });
           });

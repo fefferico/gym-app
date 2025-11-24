@@ -11,6 +11,7 @@ import { ProgressiveOverloadService } from './progressive-overload.service.ts';
 import { UserMeasurements } from '../models/user-profile.model';
 import { TranslateService } from '@ngx-translate/core';
 import { distanceToExact, getDistanceValue, getWeightValue, weightToExact } from './workout-helper.service';
+import { EquipmentCategory } from './equipment-data';
 
 @Injectable({
   providedIn: 'root'
@@ -69,10 +70,10 @@ export class DataConversionService {
     const gymEquipment = this.personalGymService.getDataForBackup();
     gymEquipment.forEach(item => {
       switch (item.category) {
-        case 'Dumbbell':
-        case 'Kettlebell':
-        case 'Macebell':
-        case 'Club':
+        case EquipmentCategory.dumbbell:
+        case EquipmentCategory.kettlebell:
+        case EquipmentCategory.macebell:
+        case EquipmentCategory.club:
           if (item.weightType === 'fixed' && item.weight != null) {
             item.weight = this.unitsService.convertWeight(item.weight, fromUnit, toUnit);
           } else if (item.weightType === 'adjustable') {
@@ -82,21 +83,21 @@ export class DataConversionService {
             if (item.increment != null) item.increment = this.unitsService.convertWeight(item.increment, fromUnit, toUnit);
           }
           break;
-        case 'Plate':
-        case 'Barbell':
+        case EquipmentCategory.plate:
+        case EquipmentCategory.barbell:
           if (item.weight != null) {
             item.weight = this.unitsService.convertWeight(item.weight, fromUnit, toUnit);
           }
           break;
-        case 'Bag':
+        case EquipmentCategory.bag:
           if (item.maxweight != null) item.maxweight = this.unitsService.convertWeight(item.maxweight, fromUnit, toUnit);
           if (item.currentWeightKg != null) item.currentWeightKg = this.unitsService.convertWeight(item.currentWeightKg, fromUnit, toUnit);
           break;
-        case 'Band':
+        case EquipmentCategory.band:
           // CORRECTED: Property is 'resistance' in the model
           if (item.resistance != null) item.resistance = this.unitsService.convertWeight(item.resistance, fromUnit, toUnit);
           break;
-        case 'Machine':
+        case EquipmentCategory.machine:
           // CORRECTED: Property is 'maxLoad' in the model
           if (item.maxLoad != null) item.maxLoad = this.unitsService.convertWeight(item.maxLoad, fromUnit, toUnit);
           break;
@@ -196,7 +197,7 @@ export class DataConversionService {
     const gymEquipment = this.personalGymService.getDataForBackup();
     gymEquipment.forEach(item => {
       // Currently, only ResistanceBands have a 'length' property.
-      if (item.category === 'Band' && item.length != null) {
+      if (item.category === EquipmentCategory.band && item.length != null) {
         item.length = this.unitsService.convertMeasure(item.length, fromUnit, toUnit);
       }
     });

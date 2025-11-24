@@ -43,6 +43,7 @@ export type MuscleValue =
   | 'gluteusMinimus'
   | 'glutes'
   | 'gracilis'
+  | 'groin'
   | 'hamstrings'
   | 'hipFlexors'
   | 'hips'
@@ -134,6 +135,7 @@ export const MUSCLES_DATA: Muscle[] = [
   { id: 'glutes', name: 'muscles.glutes', bodyPart: 'bodyParts.legs' },
   { id: 'gluteusMedius', name: 'muscles.gluteusMedius', bodyPart: 'bodyParts.legs' },
   { id: 'gluteusMinimus', name: 'muscles.gluteusMinimus', bodyPart: 'bodyParts.legs' },
+  { id: 'groin', name: 'muscles.groin', bodyPart: 'bodyParts.legs' },
   { id: 'calves', name: 'muscles.calves', bodyPart: 'bodyParts.legs' },
   { id: 'adductors', name: 'muscles.adductors', bodyPart: 'bodyParts.legs' },
   { id: 'abductors', name: 'muscles.abductors', bodyPart: 'bodyParts.legs' },
@@ -148,8 +150,8 @@ export const MUSCLES_DATA: Muscle[] = [
 
   // Chest
   { id: 'chest', name: 'muscles.chest', bodyPart: 'bodyParts.chest' },
-  { id: 'chestUpper', name: 'muscles.upperChest', bodyPart: 'bodyParts.chest' },
-  { id: 'chestLower', name: 'muscles.lowerChest', bodyPart: 'bodyParts.chest' },
+  { id: 'chestUpper', name: 'muscles.chestUpper', bodyPart: 'bodyParts.chest' },
+  { id: 'chestLower', name: 'muscles.chestLower', bodyPart: 'bodyParts.chest' },
   { id: 'serratusAnterior', name: 'muscles.serratusAnterior', bodyPart: 'bodyParts.chest' },
   { id: 'upperBody', name: 'muscles.upperBody', bodyPart: 'bodyParts.chest' },
 

@@ -11,15 +11,19 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div>
-        <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.categoryLabel' | translate }}</label>
+        <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+          'personalGym.form.categoryLabel' | translate }}</label>
         <select id="category" formControlName="category"
           class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           <option [ngValue]="null" disabled>{{ 'personalGym.form.categoryPlaceholder' | translate }}</option>
-          <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+          <option *ngFor="let cat of hydratedCategories" [value]="cat.id">
+            {{ cat.name }}
+          </option>
         </select>
       </div>
       <div>
-        <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.nameLabel' | translate }}</label>
+        <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+          'personalGym.form.nameLabel' | translate }}</label>
         <input type="text" id="name" formControlName="name"
           class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200"
           [placeholder]="'personalGym.form.namePlaceholder' | translate">
@@ -28,12 +32,14 @@
 
     <div class="grid grid-cols-2 gap-4">
       <div>
-        <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.quantityLabel' | translate }}</label>
+        <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+          'personalGym.form.quantityLabel' | translate }}</label>
         <input type="number" id="quantity" formControlName="quantity"
           class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
       </div>
       <div>
-        <label for="brand" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.brandLabel' | translate }}</label>
+        <label for="brand" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+          'personalGym.form.brandLabel' | translate }}</label>
         <input type="text" id="brand" formControlName="brand"
           class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
       </div>
@@ -44,35 +50,41 @@
 
       <!-- Dumbbell, Kettlebell, Macebell, Club -->
       <ng-container
-        *ngIf="['Dumbbell', 'Kettlebell', 'Macebell', 'Club'].includes(equipmentForm.get('category')?.value)">
+        *ngIf="[categoriesEnum.dumbbell, categoriesEnum.kettlebell, categoriesEnum.macebell, categoriesEnum.club].includes(equipmentForm.get('category')?.value)">
         <div class="space-y-4 pt-4 border-t dark:border-gray-600">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.weightTypeLabel' | translate }}</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+            'personalGym.form.weightTypeLabel' | translate }}</label>
           <div class="flex space-x-4">
             <label *ngFor="let wt of weightTypes" class="flex items-center">
               <input type="radio" [value]="wt" formControlName="weightType" class="form-radio">
-              <span class="text-gray-700 dark:text-gray-300 ml-2">{{ 'personalGym.form.weightTypes.' + wt | translate }}</span>
+              <span class="text-gray-700 dark:text-gray-300 ml-2">{{ 'personalGym.form.weightTypes.' + wt | translate
+                }}</span>
             </label>
           </div>
 
           <div *ngIf="equipmentForm.get('weightType')?.value === 'fixed'">
-            <label for="weight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.weightLabel' | translate }} ({{unitService.getWeightUnitSuffix()}})</label>
+            <label for="weight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+              'personalGym.form.weightLabel' | translate }} ({{unitService.getWeightUnitSuffix()}})</label>
             <input type="number" id="weight" formControlName="weight"
               class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           </div>
 
           <div *ngIf="equipmentForm.get('weightType')?.value === 'adjustable'" class="grid grid-cols-3 gap-4">
             <div>
-              <label for="minweight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.minWeightLabel' | translate }} ({{unitService.getWeightUnitSuffix()}})</label>
+              <label for="minweight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                'personalGym.form.minWeightLabel' | translate }} ({{unitService.getWeightUnitSuffix()}})</label>
               <input type="number" id="minweight" formControlName="minweight"
                 class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
             </div>
             <div>
-              <label for="maxweight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.maxWeightLabel' | translate }} ({{unitService.getWeightUnitSuffix()}})</label>
+              <label for="maxweight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                'personalGym.form.maxWeightLabel' | translate }} ({{unitService.getWeightUnitSuffix()}})</label>
               <input type="number" id="maxweight" formControlName="maxweight"
                 class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
             </div>
             <div>
-              <label for="increment" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.stepLabel' | translate }} ({{unitService.getWeightUnitSuffix()}})</label>
+              <label for="increment" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                'personalGym.form.stepLabel' | translate }} ({{unitService.getWeightUnitSuffix()}})</label>
               <input type="number" id="increment" formControlName="increment"
                 class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
             </div>
@@ -80,15 +92,17 @@
         </div>
       </ng-container>
 
-      <ng-container *ngSwitchCase="'Plate'">
+      <ng-container *ngSwitchCase="categoriesEnum.plate">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6 pt-4 border-t dark:border-gray-600">
           <div>
-            <label for="weight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.weightLabel' | translate }} ({{unitService.getWeightUnitSuffix()}})</label>
+            <label for="weight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+              'personalGym.form.weightLabel' | translate }} ({{unitService.getWeightUnitSuffix()}})</label>
             <input type="number" id="weight" formControlName="weight"
               class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           </div>
           <div class="flex items-center justify-between sm:mt-7">
-            <label for="isOlympic" class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.isOlympicLabel' | translate }}</label>
+            <label for="isOlympic" class="text-sm font-medium text-gray-700 dark:text-gray-300">{{
+              'personalGym.form.isOlympicLabel' | translate }}</label>
             <label class="toggle-switch">
               <input type="checkbox" id="isOlympic" formControlName="isOlympic">
               <span class="slider round"></span>
@@ -97,8 +111,10 @@
           <div>
             <label for="color" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
               {{ 'personalGym.form.colorLabel' | translate }}
-              <span *ngIf="equipmentForm.get('isOlympic')?.value" class="text-xs text-gray-500">{{ 'personalGym.form.colorAutomatic' | translate }}</span>
-              <span *ngIf="!equipmentForm.get('isOlympic')?.value" class="text-xs text-gray-500">{{ 'personalGym.form.colorCustom' | translate }}</span>
+              <span *ngIf="equipmentForm.get('isOlympic')?.value" class="text-xs text-gray-500">{{
+                'personalGym.form.colorAutomatic' | translate }}</span>
+              <span *ngIf="!equipmentForm.get('isOlympic')?.value" class="text-xs text-gray-500">{{
+                'personalGym.form.colorCustom' | translate }}</span>
             </label>
             <div class="flex items-center space-x-2 mt-1">
               <input type="color" formControlName="color"
@@ -110,87 +126,103 @@
         </div>
       </ng-container>
 
-      <ng-container *ngSwitchCase="'Barbell'">
+      <ng-container *ngSwitchCase="categoriesEnum.barbell">
         <div class="grid grid-cols-2 gap-4 pt-4 border-t dark:border-gray-600">
           <div>
-            <label for="weight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.barWeightLabel' | translate }} ({{unitService.getWeightUnitSuffix()}})</label>
+            <label for="weight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+              'personalGym.form.barWeightLabel' | translate }} ({{unitService.getWeightUnitSuffix()}})</label>
             <input type="number" id="weight" formControlName="weight"
               class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           </div>
           <div>
-            <label for="barType" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.barTypeLabel' | translate }}</label>
+            <label for="barType" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+              'personalGym.form.barTypeLabel' | translate }}</label>
             <select id="barType" formControlName="barType"
               class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
-              <option *ngFor="let bt of barTypes" [value]="bt">{{ 'personalGym.form.barTypes.' + bt | translate }}</option>
+              <option *ngFor="let bt of barTypes" [value]="bt">{{ 'personalGym.form.barTypes.' + bt | translate }}
+              </option>
             </select>
           </div>
         </div>
       </ng-container>
 
-      <ng-container *ngSwitchCase="'Band'">
+      <ng-container *ngSwitchCase="categoriesEnum.band">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t dark:border-gray-600">
           <div>
-            <label for="bandType" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.bandTypeLabel' | translate }}</label>
+            <label for="bandType" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+              'personalGym.form.bandTypeLabel' | translate }}</label>
             <select id="bandType" formControlName="bandType"
               class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
-              <option *ngFor="let bt of bandTypes" [value]="bt">{{ 'personalGym.form.bandTypes.' + bt | translate }}</option>
+              <option *ngFor="let bt of bandTypes" [value]="bt">{{ 'personalGym.form.bandTypes.' + bt | translate }}
+              </option>
             </select>
           </div>
           <div>
-            <label for="resistanceLevel" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.resistanceLevelLabel' | translate }}</label>
+            <label for="resistanceLevel" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+              'personalGym.form.resistanceLevelLabel' | translate }}</label>
             <select id="resistanceLevel" formControlName="resistanceLevel"
               class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
-              <option *ngFor="let level of resistanceLevels" [value]="level">{{ 'personalGym.form.resistanceLevels.' + level | translate }}</option>
+              <option *ngFor="let level of resistanceLevels" [value]="level">{{ 'personalGym.form.resistanceLevels.' +
+                level | translate }}</option>
             </select>
           </div>
           <div>
-            <label for="resistance" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.resistanceLabel' | translate }} ({{unitService.getWeightUnitSuffix()}})</label>
+            <label for="resistance" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+              'personalGym.form.resistanceLabel' | translate }} ({{unitService.getWeightUnitSuffix()}})</label>
             <input type="number" id="resistance" formControlName="resistance"
               class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           </div>
           <div>
-            <label for="color" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.colorLabel' | translate }} (Optional)</label>
+            <label for="color" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+              'personalGym.form.colorLabel' | translate }}</label>
             <input type="text" id="color" formControlName="color"
               class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           </div>
           <div>
-            <label for="length" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.lengthLabel' | translate }} ({{unitService.getMeasureUnitSuffix()}})</label>
+            <label for="length" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+              'personalGym.form.lengthLabel' | translate }} ({{unitService.getMeasureUnitSuffix()}})</label>
             <input type="number" id="length" formControlName="length"
               class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           </div>
         </div>
       </ng-container>
 
-      <ng-container *ngSwitchCase="'Machine'">
+      <ng-container *ngSwitchCase="categoriesEnum.machine">
         <div class="grid grid-cols-2 gap-4 pt-4 border-t dark:border-gray-600">
           <div>
-            <label for="loadType" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.loadTypeLabel' | translate }}</label>
+            <label for="loadType" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+              'personalGym.form.loadTypeLabel' | translate }}</label>
             <select id="loadType" formControlName="loadType"
               class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
-              <option *ngFor="let lt of machineLoadTypes" [value]="lt">{{ 'personalGym.form.machineLoadTypes.' + lt | translate }}</option>
+              <option *ngFor="let lt of machineLoadTypes" [value]="lt">{{ 'personalGym.form.machineLoadTypes.' + lt |
+                translate }}</option>
             </select>
           </div>
           <div>
-            <label for="maxLoad" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.maxLoadLabel' | translate }} ({{unitService.getWeightUnitSuffix()}})</label>
+            <label for="maxLoad" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+              'personalGym.form.maxLoadLabel' | translate }} ({{unitService.getWeightUnitSuffix()}})</label>
             <input type="number" id="maxLoad" formControlName="maxLoad"
               class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           </div>
         </div>
       </ng-container>
 
-      <ng-container *ngSwitchCase="'Custom'">
+      <ng-container *ngSwitchCase="categoriesEnum.custom">
         <div class="space-y-4 pt-4 border-t dark:border-gray-600">
           <div>
-            <label for="customCategoryName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.customTypeLabel' | translate }}</label>
+            <label for="customCategoryName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+              'personalGym.form.customTypeLabel' | translate }}</label>
             <input type="text" id="customCategoryName" formControlName="customCategoryName"
               class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200"
               [placeholder]="'personalGym.form.customTypePlaceholder' | translate">
           </div>
           <div formArrayName="properties" class="space-y-3">
-            <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.customPropsLabel' | translate }}</h3>
+            <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.customPropsLabel' |
+              translate }}</h3>
             <div *ngFor="let prop of customProperties.controls; let i = index" [formGroupName]="i"
               class="flex items-center space-x-2">
-              <input type="text" formControlName="key" class="input-field flex-1" [placeholder]="'personalGym.form.propKeyPlaceholder' | translate">
+              <input type="text" formControlName="key" class="input-field flex-1"
+                [placeholder]="'personalGym.form.propKeyPlaceholder' | translate">
               <input type="text" formControlName="value" class="input-field flex-1"
                 [placeholder]="('personalGym.form.propValuePlaceholder' | translate) + ' ' + unitService.getWeightUnitSuffix()">
               <button type="button" (click)="removeCustomProperty(i)"
@@ -198,7 +230,8 @@
                 <app-icon name="trash" class="w-5 h-5"></app-icon>
               </button>
             </div>
-            <button type="button" (click)="addCustomProperty()" class="text-sm text-primary hover:underline">{{ 'personalGym.form.addProperty' | translate }}</button>
+            <button type="button" (click)="addCustomProperty()" class="text-sm text-primary hover:underline">{{
+              'personalGym.form.addProperty' | translate }}</button>
           </div>
         </div>
       </ng-container>
@@ -206,7 +239,8 @@
 
     <!-- Notes -->
     <div>
-      <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'personalGym.form.notesLabel' | translate }}</label>
+      <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+        'personalGym.form.notesLabel' | translate }}</label>
       <textarea id="notes" formControlName="notes" rows="3"
         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200"></textarea>
     </div>

@@ -83,7 +83,7 @@ type EnrichedHistoryListItem = HistoryListItem & {
 @Component({
   selector: 'app-history-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, TitleCasePipe, FormsModule, ReactiveFormsModule, ActionMenuComponent, PressDirective, IconComponent, FabMenuComponent, TranslateModule, BumpClickDirective],
+  imports: [CommonModule, DatePipe, FormsModule, ReactiveFormsModule, ActionMenuComponent, PressDirective, IconComponent, FabMenuComponent, TranslateModule, BumpClickDirective],
   templateUrl: './history-list.html',
   styleUrl: './history-list.scss',
   providers: [DecimalPipe],

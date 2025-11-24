@@ -36,6 +36,7 @@ import { SessionOverviewModalComponent } from '../session-overview-modal/session
 import { BarbellCalculatorModalComponent } from '../../../shared/components/barbell-calculator-modal/barbell-calculator-modal.component';
 import { repsTypeToReps, genRepsTypeFromRepsNumber, repsTargetAsString, weightToExact, restToExact, getWeightValue, getRestValue, getDurationValue, durationToExact, distanceToExact, getDistanceValue } from '../../../core/services/workout-helper.service';
 import { WorkoutUtilsService } from '../../../core/services/workout-utils.service';
+import { EXERCISE_CATEGORY_TYPES } from '../../../core/models/exercise-category.model';
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -146,7 +147,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     term = this.exerciseService.normalizeExerciseNameForSearch(term);
     return this.availableExercises.filter(ex =>
       ex.name.toLowerCase().includes(term) ||
-      (ex.category && ex.category.toLowerCase().includes(term)) ||
+      (ex.categories && ex.categories.toString().toLowerCase().includes(term)) ||
       (ex.description && ex.description.toLowerCase().includes(term)) ||
       (ex.primaryMuscleGroup && ex.primaryMuscleGroup.toLowerCase().includes(term))
     );
@@ -1420,7 +1421,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
   private loadBaseExerciseAndPBs(exerciseId: string): void {
     if (exerciseId.startsWith('custom-exercise-')) {
-      this.currentBaseExercise.set({ id: exerciseId, name: this.activeSetInfo()?.exerciseData.exerciseName || 'Custom Exercise', category: 'custom', description: '', iconName: 'custom-exercise', muscleGroups: [], primaryMuscleGroup: undefined, equipment: undefined, imageUrls: [] });
+      this.currentBaseExercise.set({ id: exerciseId, name: this.activeSetInfo()?.exerciseData.exerciseName || 'Custom Exercise', categories: [EXERCISE_CATEGORY_TYPES.custom], description: '', iconName: 'custom-exercise', muscleGroups: [], primaryMuscleGroup: undefined, equipment: undefined, imageUrls: [] });
       this.exercisePBs.set([]);
       return;
     }
@@ -2098,7 +2099,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
     // check wheter has been done at least on exercise before this one
     const hasPreviousExercises = this.currentWorkoutLogExercises().length > 0;
-    const kbRelated = hasPreviousExercises && selectedExercise.category === 'kettlebells';
+    const kbRelated = hasPreviousExercises && selectedExercise.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.kettlebells) === EXERCISE_CATEGORY_TYPES.kettlebells;
     // if so and it's a kettlebell related exercise, it will suggest same weight and reps as the last one
     const lastEx = this.currentWorkoutLogExercises().length > 0 ? this.currentWorkoutLogExercises()[this.currentWorkoutLogExercises().length - 1] : null;
     const lastExSet = lastEx ? lastEx.sets[lastEx.sets.length - 1] : null;
@@ -2123,7 +2124,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const newWorkoutExercise: Exercise = {
       id: `custom-adhoc-ex-${uuidv4()}`,
       name: 'Custom exercise',
-      description: '', category: 'bodyweightCalisthenics', muscleGroups: [], primaryMuscleGroup: undefined, imageUrls: []
+      description: '', categories: [EXERCISE_CATEGORY_TYPES.bodyweightCalisthenics], muscleGroups: [], primaryMuscleGroup: undefined, imageUrls: []
     };
     this.selectExerciseToAddFromModal(newWorkoutExercise);
   }
@@ -4192,7 +4193,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     term = this.exerciseService.normalizeExerciseNameForSearch(term);
     return this.availableExercises.filter(ex =>
       ex.name.toLowerCase().includes(term) ||
-      (ex.category && ex.category.toLowerCase().includes(term)) ||
+      (ex.categories && ex.categories.toString().toLowerCase().includes(term)) ||
       (ex.description && ex.description.toLowerCase().includes(term)) ||
       (ex.primaryMuscleGroup && ex.primaryMuscleGroup.toLowerCase().includes(term))
     );
@@ -4885,5 +4886,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
     getDistanceValue(distance: DistanceTarget | undefined): number {
     return getDistanceValue(distance);
+  }
+
+  isCardio(exercise: WorkoutExercise | Exercise | undefined): boolean {
+    if (!exercise) return false;
+    return !!exercise.categories?.find(cat=> cat === EXERCISE_CATEGORY_TYPES.cardio);
   }
 }

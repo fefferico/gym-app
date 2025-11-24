@@ -58,8 +58,13 @@
                 <select id="exerciseId" formControlName="exerciseId"
                   class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-gray-200">
                   <option value="">{{ 'historyList.filters.anyExercise' | translate }}</option>
-                  <option *ngFor="let ex of availableExercisesForFilter$ | async" [value]="ex.id">{{ ex.name }} ({{
-                    ex.category | titlecase }})</option>
+                  <option *ngFor="let ex of availableExercisesForFilter$ | async" [value]="ex.id">
+                    {{ ex.name }}
+                    <ng-container *ngIf="ex.categories && ex.categories.length > 0; else noCat">
+                      ({{ ex.categories[0] }})
+                    </ng-container>
+                    <ng-template #noCat> (—) </ng-template>
+                  </option>
                 </select>
               </div>
               <div class="lg:col-span-1">

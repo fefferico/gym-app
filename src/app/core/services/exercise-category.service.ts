@@ -1,11 +1,11 @@
 import { Injectable, inject, Signal, signal, computed } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { EXERCISE_CATEGORIES_DATA } from './exercise-categories-data';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { EXERCISE_CATEGORY_TYPES } from '../models/exercise-category.model';
 
 export interface HydratedExerciseCategory {
-  id: string;
-  label: string;
+  id: EXERCISE_CATEGORY_TYPES;
+  name: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -27,11 +27,11 @@ export class ExerciseCategoryService {
 
   // Loads translations for all categories
   private loadTranslations() {
-    const keys = EXERCISE_CATEGORIES_DATA.map(id => `categories.${id}`);
+    const keys = Object.values(EXERCISE_CATEGORY_TYPES).map(id => `categories.${id}`);
     this.translate.get(keys).subscribe(translations => {
-      const hydrated = EXERCISE_CATEGORIES_DATA.map(id => ({
-        id,
-        label: translations[`categories.${id}`] || id
+      const hydrated = Object.values(EXERCISE_CATEGORY_TYPES).map(id => ({
+        id: id as EXERCISE_CATEGORY_TYPES,
+        name: translations[`categories.${id}`] || id
       }));
       this.hydratedCategories.set(hydrated);
     });
@@ -43,12 +43,12 @@ export class ExerciseCategoryService {
   }
 
   // Returns all canonical category IDs
-  getAllCategories(): string[] {
-    return EXERCISE_CATEGORIES_DATA;
+  getAllCategories(): EXERCISE_CATEGORY_TYPES[] {
+    return Object.values(EXERCISE_CATEGORY_TYPES) as EXERCISE_CATEGORY_TYPES[];
   }
 
   // Returns a single hydrated category by ID
-  getCategoryById(id: string): HydratedExerciseCategory | undefined {
+  getCategoryById(id: EXERCISE_CATEGORY_TYPES): HydratedExerciseCategory | undefined {
     return this.hydratedCategories().find(cat => cat.id === id);
   }
 }
@@ -56,9 +56,10 @@ export class ExerciseCategoryService {
 export const EXERCISE_CATEGORY_NORMALIZATION_MAP: Record<string, string> = (() => {
   // You can expand this with all your canonical categories and aliases
   const map: Record<string, string> = {};
-const canonicalCategories = EXERCISE_CATEGORIES_DATA;
+const canonicalCategories = Object.values(EXERCISE_CATEGORY_TYPES);
   canonicalCategories.forEach(cat => {
-    map[cat.toLowerCase().trim()] = cat;
+    const catStr = String(cat);
+    map[catStr.toLowerCase().trim()] = catStr;
   });
   // Add legacy/display/alias mappings
   map['bodyweightCalisthenics'] = 'bodyweightCalisthenics';

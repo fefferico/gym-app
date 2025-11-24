@@ -20,7 +20,6 @@ import { deleteBtn, editBtn, hideBtn, unhideBtn, viewBtn } from '../../core/serv
 import { TrackingService } from '../../core/services/tracking.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Muscle } from '../../core/models/muscle.model';
-import { EXERCISE_CATEGORIES_DATA } from '../../core/services/exercise-categories-data';
 import { ExerciseCategoryService, HydratedExerciseCategory } from '../../core/services/exercise-category.service';
 import { MuscleMapService } from '../../core/services/muscle-map.service';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -117,6 +116,7 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
 
   primaryMuscleGroups$: Observable<Muscle[]> | undefined;
   selectedCategory = signal<string | null>(null);
+  selectedEquipment = signal<string | null>(null);
   selectedMuscleGroup = signal<Muscle | null>(null);
   searchTerm = signal<string>('');
   allExercises = signal<Exercise[]>([]);
@@ -139,7 +139,11 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
     ]).pipe(
       map(([exercises, categories, muscles, equipments]) =>
         exercises.map(ex => {
-          const categoryObj = categories.find(cat => cat.id === ex.category);
+          // const categoryObj = categories.find(cat => 
+          //   Array.isArray(ex.categories) 
+          //     ? ex.categories.map(String).includes(cat.id.toString()) 
+          //     : cat.id.toString() === ex.categories.toString()
+          // );
           const muscleObj = muscles.find(muscle => muscle.id === ex.primaryMuscleGroup?.id);
           const equipmentArray = [
             ...new Set(
@@ -151,7 +155,8 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
 
           return {
             ...ex,
-            categoryLabel: categoryObj?.label || ex.category,
+            categories: ex.categories,
+            categoriesLabel: ex.categoryLabels.join(', '),
             muscleGroupLabel: muscleObj?.name || ex.primaryMuscleGroup,
             equipmentLabel: equipmentArray.join(', ')
           };
@@ -175,7 +180,15 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
 
     const category = this.selectedCategory();
     if (category) {
-      exercises = exercises.filter(ex => ex.category === category);
+      exercises = exercises.filter(ex => ex.categories.filter(cat => cat.toString() === category).length > 0);
+    }
+    const equipment = this.selectedEquipment();
+    if (equipment) {
+      exercises = exercises.filter(ex =>
+        Array.isArray(ex.equipmentNeeded)
+          ? ex.equipmentNeeded.some(eq => eq.id === equipment)
+          : ex.equipmentNeeded === equipment
+      );
     }
     const muscleGroup = this.selectedMuscleGroup();
     if (muscleGroup) {
@@ -192,7 +205,7 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
         const searchable = [
           englishName,
           ex.name,
-          ex.category,
+          ex.categories,
           ex.description || ''
         ].join(' ').toLowerCase();
         return words.every(word => searchable.includes(word));
@@ -200,13 +213,13 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
     }
 
     return exercises.map(ex => {
-      const categoryObj = this.categories.find(cat => cat.id === ex.category);
+      // const categoryObj = this.categories.find(cat => cat.id.toString() === ex.categories);
       const muscleGroupObj = this.muscleGroupService.getHydratedMuscles().find(mg => mg.id === ex.primaryMuscleGroup?.id);
 
       return {
         ...ex,
         iconName: this.exerciseService.determineExerciseIcon(this.exerciseService.mapHydratedExerciseToExercise(ex), ex?.name),
-        categoryLabel: categoryObj?.label || ex.category,
+        categoryLabel: ex.categories,
         muscleGroupLabel: muscleGroupObj?.name || ex.primaryMuscleGroup?.name
       };
     });
@@ -255,6 +268,11 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
     this.selectedCategory.set(target.value || null);
   }
 
+  onEquipmentChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    this.selectedEquipment.set(target.value || null);
+  }
+
   onMuscleGroupChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
     if (!target.value || !this.primaryMuscleGroups$) {
@@ -284,6 +302,9 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
     if (muscleGroupSelect) muscleGroupSelect.value = '';
     const searchInput = document.getElementById('search-term') as HTMLInputElement;
     if (searchInput) searchInput.value = '';
+    this.selectedEquipment.set(null);
+    const equipmentSelect = document.getElementById('equipment-filter') as HTMLSelectElement;
+    if (equipmentSelect) equipmentSelect.value = '';
   }
 
   goToExerciseDetails(id: string): void {
@@ -463,16 +484,20 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
 
       const translatedList = this.staticExercises.map(ex => {
         // Find the hydrated category for this exercise
-        const categoryObj = hydratedCategories.find(cat => cat.id === ex.category);
+        // const categoryObj = hydratedCategories.find(cat =>
+        //   Array.isArray(ex.categories)
+        //     ? ex.categories.includes(cat.id.toString())
+        //     : cat.id.toString() === ex.categories
+        // );
         const muscleGroupObj = hydratedMuscleGroups.find(mg => mg.id === ex.primaryMuscleGroup);
 
         return {
           ...ex,
           name: translations[ex.id]?.name || ex.name,
           description: translations[ex.id]?.description || ex.description,
-          categoryLabel: categoryObj?.label || ex.category, // fallback to ID if not found
-          muscleGroupLabel: muscleGroupObj?.name || ex.primaryMuscleGroup // fallback to ID if not found
-        } as Exercise & { categoryLabel: string, muscleGroupLabel: string };
+          categories: ex.categories, // fallback to ID if not found
+          muscleGroupLabels: muscleGroupObj?.name || ex.primaryMuscleGroup // fallback to ID if not found
+        } as Exercise & { categoryLabels: string, muscleGroupLabels: string };
       });
 
       this.allExercises.set(translatedList);
@@ -482,5 +507,13 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     // Unsubscribe to prevent memory leaks
     this.langChangeSub?.unsubscribe();
+  }
+
+  get sortedCategories() {
+    // If categories is an observable or signal, resolve it accordingly
+    const categories = Array.isArray(this.categories) ? this.categories : [];
+    return [...categories].sort((a, b) =>
+      this.translate.instant(a.name).localeCompare(this.translate.instant(b.name))
+    );
   }
 }

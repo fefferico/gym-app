@@ -6,14 +6,12 @@ import { combineLatest, firstValueFrom, map } from 'rxjs';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { WorkoutGenerationOptions } from '../../../core/services/workout-generator.service';
 import { ExerciseService } from '../../../core/services/exercise.service';
-import { Equipment } from '../../../core/models/equipment.model';
 import { PersonalGymService } from '../../../core/services/personal-gym.service';
 import { TranslateModule } from '@ngx-translate/core'; // +++ IMPORT TRANSLATE MODULE
 import { MuscleMapService } from '../../../core/services/muscle-map.service';
 import { Muscle } from '../../../core/models/muscle.model';
-import { WorkoutCategoryService } from '../../../core/services/workout-category.service';
-import { WorkoutCategory } from '../../../core/models/workout-category.model';
 import { ExerciseCategoryService, HydratedExerciseCategory } from '../../../core/services/exercise-category.service';
+import { Equipment } from '../../../core/services/equipment-data';
 
 @Component({
     selector: 'app-generate-workout-modal',
@@ -107,7 +105,7 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
         this.allAvailableEquipment.set(equipment);
 
         const personalGymEquipment = await firstValueFrom(this.personalGymService.getAllEquipment());
-        this.allPersonalGymEquipment.set(personalGymEquipment.map((eq: Equipment) => eq.category));
+        this.allPersonalGymEquipment.set(personalGymEquipment.flatMap((eq: Equipment) => eq.name));
 
         this.updateEquipmentFromPersonalGym();
         // --- END: REPLACEMENT FOR ngOnInit LOGIC ---

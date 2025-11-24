@@ -1,7 +1,9 @@
 // src/app/core/models/workout.model.ts
 
 import { MuscleValue } from "../services/muscles-data";
-import { Exercise, ExerciseCategory } from "./exercise.model";
+import { EXERCISE_CATEGORY_TYPES, ExerciseCategory } from "./exercise-category.model";
+import { Exercise } from "./exercise.model";
+import { WorkoutLocation } from "./location.model";
 import { LastPerformanceSummary, LoggedSet, LoggedWorkoutExercise } from "./workout-log.model";
 import { WorkoutSectionType } from "./workout-section-type.model";
 import { WorkoutSection } from "./workout-section.model";
@@ -267,7 +269,7 @@ export interface WorkoutExercise {
 
   workoutLogId?: string;
   sessionStatus?: 'pending' | 'skipped' | 'do_later' | 'completed' | 'started'; // For in-session tracking
-  category?: ExerciseCategory;
+  categories?: EXERCISE_CATEGORY_TYPES[];
   section?: WorkoutSectionType | undefined
 }
 
@@ -306,6 +308,7 @@ export interface Routine {
   secondaryCategory?: string; // For sub-categories, or even a different categorization axis
   tags?: string[]; // A flexible way to add specific labels like "Bodyweight", "HIIT", "Dumbbells", "Yoga" etc.
   // ==========================
+  locationId?: string;
   sections?: WorkoutSection[];
 }
 
@@ -355,6 +358,7 @@ export interface PausedWorkoutState {
   isTabataMode?: boolean;
   tabataCurrentIntervalIndex?: number;
   tabataTimeRemainingOnPause?: number;
+  performanceInputValues?: { [key: string]: Partial<ExerciseCurrentExecutionSetParams> }
 }
 
 export enum SessionState {

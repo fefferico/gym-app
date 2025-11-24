@@ -13963,7 +13963,7 @@
         "Core"
       ],
       "equipmentNeeded": [
-        "Kettlebell (optional)"
+        "Kettlebell"
       ],
       "imageUrls": []
     },
@@ -14062,7 +14062,7 @@
       "equipmentNeeded": [
         "Barbell",
         "Bench",
-        "Rack (optional but recommended)"
+        "Rack"
       ],
       "imageUrls": [
         "assets/images/exercises/barbell-bench-press_1.jpg",
@@ -14083,7 +14083,7 @@
       ],
       "equipmentNeeded": [
         "Barbell",
-        "EZ-Curl Bar (optional)"
+        "EZ-Curl Bar"
       ],
       "imageUrls": [
         "assets/images/exercises/barbell-bicep-curl_1.jpg",
@@ -14151,7 +14151,7 @@
       ],
       "equipmentNeeded": [
         "Barbell",
-        "Rack (optional)"
+        "Rack"
       ],
       "imageUrls": [
         "assets/images/exercises/barbell-good-morning_1.jpg",
@@ -14172,7 +14172,7 @@
       "equipmentNeeded": [
         "Barbell",
         "Bench",
-        "Padding (optional)"
+        "Padding"
       ],
       "imageUrls": [
         "assets/images/exercises/barbell-hip-thrust_1.jpg",
@@ -14237,7 +14237,7 @@
       "equipmentNeeded": [
         "Barbell",
         "Bench",
-        "EZ-Curl Bar (recommended)"
+        "EZ-Curl Bar"
       ],
       "imageUrls": [],
       "usageCount": 0
@@ -14534,7 +14534,7 @@
         "Brachialis"
       ],
       "equipmentNeeded": [
-        "Cable Machine",
+        "cableMachine",
         "Straight Bar or D-Handles"
       ],
       "imageUrls": [
@@ -14555,7 +14555,7 @@
         "Rotator Cuff"
       ],
       "equipmentNeeded": [
-        "Cable Machine",
+        "cableMachine",
         "Rope Attachment"
       ],
       "imageUrls": [
@@ -14594,7 +14594,7 @@
         "Shoulders (Medial)"
       ],
       "equipmentNeeded": [
-        "Cable Machine",
+        "cableMachine",
         "D-Handle"
       ],
       "imageUrls": [
@@ -14612,7 +14612,7 @@
         "Triceps (Long Head)"
       ],
       "equipmentNeeded": [
-        "Cable Machine",
+        "cableMachine",
         "Rope Attachment"
       ],
       "imageUrls": [
@@ -14673,7 +14673,7 @@
         "Biceps"
       ],
       "equipmentNeeded": [
-        "Cable Machine"
+        "cableMachine"
       ],
       "imageUrls": [
         "assets/images/exercises/cable-seated-row_1.jpg"
@@ -14690,7 +14690,7 @@
         "Shoulders (stabilizers)"
       ],
       "equipmentNeeded": [
-        "Cable Machine",
+        "cableMachine",
         "D-Handle"
       ],
       "imageUrls": [
@@ -14708,7 +14708,7 @@
         "Triceps"
       ],
       "equipmentNeeded": [
-        "Cable Machine",
+        "cableMachine",
         "Rope Attachment or Straight/V-Bar"
       ],
       "imageUrls": [
@@ -14730,7 +14730,7 @@
         "Back"
       ],
       "equipmentNeeded": [
-        "Cable Machine",
+        "cableMachine",
         "D-Handle or Rope"
       ],
       "imageUrls": [
@@ -14885,7 +14885,7 @@
       "id": "rehab-clamshells",
       "name": "Clamshells",
       "description": "An isolation exercise that targets the gluteus medius, a key muscle for hip stability and pelvic alignment. Often used to address knee pain and lower back issues.",
-      "category": "rehabilitation/strengthening",
+      "category": "rehabilitationMobility",
       "primaryMuscleGroup": "Glutes (Medius)",
       "muscleGroups": [
         "Glutes (Medius)",
@@ -16346,7 +16346,7 @@
       ],
       "equipmentNeeded": [
         "Dumbbells",
-        "Bench (optional)"
+        "Bench"
       ],
       "imageUrls": [
         "assets/images/exercises/db-shoulder-press_1.jpg",
@@ -17712,7 +17712,7 @@
       ],
       "equipmentNeeded": [
         "Kettlebell",
-        "Mat (optional)"
+        "Mat"
       ],
       "imageUrls": [
         "assets/images/exercises/kb-half-kneeling-halo_1.jpg",
@@ -17734,7 +17734,7 @@
       ],
       "equipmentNeeded": [
         "Kettlebell",
-        "Mat (optional)"
+        "Mat"
       ],
       "imageUrls": [
         "assets/images/exercises/kb-half-kneeling-press_1.jpg",
@@ -17839,7 +17839,7 @@
       ],
       "equipmentNeeded": [
         "Kettlebell",
-        "Box (optional)"
+        "Box"
       ],
       "imageUrls": [
         "assets/images/exercises/kb-jefferson-curl_1.jpg",
@@ -17939,7 +17939,7 @@
       ],
       "equipmentNeeded": [
         "Kettlebell",
-        "Bench (optional)"
+        "Bench"
       ],
       "imageUrls": [
         "assets/images/exercises/kb-lying-triceps-ext_1.jpg",
@@ -18174,7 +18174,7 @@
     {
       "id": "kettlebell-russian-twist",
       "name": "Kettlebell Russian Twist",
-      "description": "A core exercise targeting the obliques and rectus abdominis, performed by sitting with knees bent and feet off the ground (optional), twisting the torso from side to side while holding a kettlebell.",
+      "description": "A core exercise targeting the obliques and rectus abdominis, performed by sitting with knees bent and feet off the ground, twisting the torso from side to side while holding a kettlebell.",
       "category": "kettlebells",
       "primaryMuscleGroup": "Core (Obliques)",
       "muscleGroups": [
@@ -18838,7 +18838,7 @@
       ],
       "equipmentNeeded": [
         "Kettlebell",
-        "Mat (optional)"
+        "Mat"
       ],
       "imageUrls": [
         "assets/images/exercises/kb-tall-kneeling-press_1.jpg",
@@ -19435,7 +19435,7 @@
       ],
       "equipmentNeeded": [
         "Barbell",
-        "Rack (optional)"
+        "Rack"
       ],
       "imageUrls": [
         "assets/images/exercises/overhead-press-barbell_1.jpg",
@@ -19810,7 +19810,7 @@
       ],
       "equipmentNeeded": [
         "Resistance Band",
-        "Anchor Point (optional)"
+        "Anchor Point"
       ],
       "imageUrls": [
         "assets/images/exercises/band-chest-press_1.jpg",
@@ -19909,7 +19909,7 @@
       ],
       "equipmentNeeded": [
         "Resistance Band",
-        "Anchor Point (optional)"
+        "Anchor Point"
       ],
       "imageUrls": [
         "assets/images/exercises/band-row_1.jpg",
@@ -19946,7 +19946,7 @@
       ],
       "equipmentNeeded": [
         "Resistance Band",
-        "Anchor Point (optional)"
+        "Anchor Point"
       ],
       "imageUrls": [
         "assets/images/exercises/band-tricep-pushdown_1.jpg",
@@ -20093,7 +20093,7 @@
         "Cardiovascular System"
       ],
       "equipmentNeeded": [
-        "Treadmill (optional)"
+        "Treadmill"
       ],
       "imageUrls": [
         "assets/images/cardio/running_1.jpg",
@@ -20223,7 +20223,7 @@
         "Traps (Middle)"
       ],
       "equipmentNeeded": [
-        "Resistance Band (optional)"
+        "Resistance Band"
       ],
       "imageUrls": [
         "assets/images/rehab/scapular-retraction_1.jpg"
@@ -20309,7 +20309,7 @@
       "id": "rehab-shoulder-external-rotation-banded",
       "name": "Shoulder External Rotation (Banded)",
       "description": "An essential exercise to strengthen the rotator cuff muscles, which are critical for shoulder stability and preventing injuries.",
-      "category": "rehabilitation/strengthening",
+      "category": "rehabilitationMobility",
       "primaryMuscleGroup": "Shoulders (stabilizers)",
       "muscleGroups": [
         "Shoulders (Rotator Cuff - Infraspinatus, Teres Minor)"
@@ -20662,7 +20662,7 @@
         "Core"
       ],
       "equipmentNeeded": [
-        "Sturdy surface for support (optional)"
+        "Sturdy surface for support"
       ],
       "imageUrls": [
         "assets/images/rehab/single-leg-stance_1.jpg"
@@ -20811,7 +20811,7 @@
       ],
       "equipmentNeeded": [
         "Calf Raise Machine",
-        "Dumbbells (optional)"
+        "Dumbbells"
       ],
       "imageUrls": [],
       "lastUsedAt": "2025-10-24T07:00:45.942Z"
@@ -20839,7 +20839,7 @@
       "id": "rehab-straight-leg-raise",
       "name": "Straight Leg Raise",
       "description": "A basic strengthening exercise for the quadriceps and hip flexors that can be performed without bending a potentially injured or painful knee.",
-      "category": "rehabilitation/strengthening",
+      "category": "rehabilitationMobility",
       "primaryMuscleGroup": "Quadriceps",
       "muscleGroups": [
         "Quadriceps",
@@ -20963,7 +20963,7 @@
       "id": "rehab-towel-scrunches",
       "name": "Towel Scrunches",
       "description": "An exercise to strengthen the intrinsic muscles of the foot, which can help with conditions like plantar fasciitis and improve arch support.",
-      "category": "rehabilitation/strengthening",
+      "category": "rehabilitationMobility",
       "primaryMuscleGroup": "Feet",
       "muscleGroups": [
         "Intrinsic Foot Muscles"
@@ -21195,7 +21195,7 @@
       "id": "rehab-wall-push-up",
       "name": "Wall Push-up",
       "description": "An introductory push-up variation that reduces the load on the shoulders, wrists, and chest. It's an excellent way to begin rebuilding upper body strength safely.",
-      "category": "rehabilitation/strengthening",
+      "category": "rehabilitationMobility",
       "primaryMuscleGroup": "Chest",
       "muscleGroups": [
         "Chest",
@@ -21229,7 +21229,7 @@
       "id": "rehab-wall-sit-isometric",
       "name": "Wall Sit (Isometric)",
       "description": "An isometric exercise to build endurance in the quadriceps, glutes, and hamstrings without requiring movement through a painful range of motion.",
-      "category": "rehabilitation/strengthening",
+      "category": "rehabilitationMobility",
       "primaryMuscleGroup": "Quadriceps",
       "muscleGroups": [
         "Quadriceps",

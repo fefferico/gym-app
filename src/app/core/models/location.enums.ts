@@ -1,0 +1,61 @@
+export enum LocationCategory {
+  RESIDENTIAL = 'RESIDENTIAL',
+  COMMERCIAL = 'COMMERCIAL',
+  OUTDOOR = 'OUTDOOR',
+  TRAVEL = 'TRAVEL',
+  CORPORATE = 'CORPORATE',
+  AQUATIC = 'AQUATIC',
+  OTHER = 'OTHER'
+}
+
+export enum SpecificLocation {
+  // Residential
+  LIVING_ROOM = 'LIVING_ROOM',
+  BEDROOM = 'BEDROOM',
+  GARAGE_GYM = 'GARAGE_GYM',
+  BALCONY = 'BALCONY',
+  BACKYARD = 'BACKYARD',
+  DRIVEWAY = 'DRIVEWAY',
+
+  // Commercial
+  COMMERCIAL_GYM = 'COMMERCIAL_GYM',
+  BOUTIQUE_STUDIO = 'BOUTIQUE_STUDIO',
+  CROSSFIT_BOX = 'CROSSFIT_BOX',
+  DOJO = 'DOJO',
+
+  // Outdoor
+  PUBLIC_PARK = 'PUBLIC_PARK',
+  CALISTHENICS_PARK = 'CALISTHENICS_PARK',
+  PLAYGROUND = 'PLAYGROUND',
+  RUNNING_TRACK = 'RUNNING_TRACK',
+  TRAIL = 'TRAIL',
+  BEACH = 'BEACH',
+
+  // Travel
+  HOTEL_ROOM = 'HOTEL_ROOM',
+  HOTEL_GYM = 'HOTEL_GYM',
+  AIRPORT = 'AIRPORT',
+
+  // Corporate
+  OFFICE_CUBICLE = 'OFFICE_CUBICLE',
+  OFFICE_GYM = 'OFFICE_GYM',
+
+  // Aquatic
+  INDOOR_POOL = 'INDOOR_POOL',
+  OUTDOOR_POOL = 'OUTDOOR_POOL',
+  OPEN_WATER = 'OPEN_WATER'
+}
+
+export enum SurfaceType {
+  SOFT = 'SOFT',       // Grass, Carpet, Sand
+  HARD = 'HARD',       // Concrete, Tile, Wood
+  RUBBER = 'RUBBER',   // Gym floor, Track
+  UNEVEN = 'UNEVEN',   // Trail
+  WATER = 'WATER'
+}
+
+export enum SpaceSize {
+  TIGHT = 'TIGHT',     // Yoga mat only
+  MODERATE = 'MODERATE', // 2x2m to 4x4m
+  OPEN = 'OPEN'        // Field, Gym floor
+}

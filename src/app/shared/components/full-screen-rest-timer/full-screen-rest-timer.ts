@@ -233,11 +233,14 @@ export class FullScreenRestTimerComponent implements OnDestroy, AfterViewInit {
 
   private playCountdownSound(currentRemaining: number): void {
     if (
-      this.appSettingsService.enableTimerCountdownSound() &&
-      currentRemaining <= this.appSettingsService.countdownSoundSeconds()
+      this.appSettingsService.enableTimerCountdownSound()
     ) {
       const wholeSeconds = Math.ceil(currentRemaining);
-      if (this.lastBeepSecond !== wholeSeconds && wholeSeconds > 0) {
+      if (
+        this.lastBeepSecond !== wholeSeconds &&
+        wholeSeconds > 0 &&
+        wholeSeconds <= this.appSettingsService.countdownSoundSeconds()
+      ) {
         this.audioService.playSound(AUDIO_TYPES.countdown);
         this.lastBeepSecond = wholeSeconds;
       }

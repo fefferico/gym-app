@@ -22,6 +22,7 @@ import { AppSettingsService } from '../../../core/services/app-settings.service'
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { durationToExact, genRepsTypeFromRepsNumber, getDurationValue, getRestValue, restToExact, weightToExact } from '../../../core/services/workout-helper.service';
 import { WorkoutUtilsService } from '../../../core/services/workout-utils.service';
+import { EXERCISE_CATEGORY_TYPES } from '../../../core/models/exercise-category.model';
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -1282,7 +1283,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
 
     private loadBaseExerciseAndPBs(exerciseId: string): void {
         if (exerciseId.startsWith('custom-exercise-')) {
-            this.currentBaseExercise.set({ id: exerciseId, name: this.activeSetInfo()?.exerciseData.exerciseName || 'Custom Exercise', category: 'custom', description: '', iconName: 'custom-exercise', muscleGroups: [], primaryMuscleGroup: undefined, equipment: undefined, imageUrls: [] });
+            this.currentBaseExercise.set({ id: exerciseId, name: this.activeSetInfo()?.exerciseData.exerciseName || 'Custom Exercise', categories: [EXERCISE_CATEGORY_TYPES.custom], description: '', iconName: 'custom-exercise', muscleGroups: [], primaryMuscleGroup: undefined, equipment: undefined, imageUrls: [] });
             this.exercisePBs.set([]);
             return;
         }

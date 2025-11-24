@@ -130,7 +130,11 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     const routines = this.allRoutinesForList();
     const goals = new Set<string>();
     routines.forEach(r => { if (r.goal) goals.add(r.goal) });
-    return Array.from(goals).sort();
+    // Sort by translated string
+    return Array.from(goals).sort((a, b) =>
+      this.translate.instant('workoutBuilder.goals.' + this.removeSpaceFromGoalName(a))
+        .localeCompare(this.translate.instant('workoutBuilder.goals.' + this.removeSpaceFromGoalName(b)))
+    );
   });
 
   uniqueRoutineMuscleGroups = computed<string[]>(() => {
@@ -140,59 +144,61 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       const fullEx = this.allExercisesMap.get(ex.exerciseId);
       if (fullEx?.primaryMuscleGroup) muscles.add(fullEx.primaryMuscleGroup);
     }));
-    return Array.from(muscles).sort();
+    // Sort by translated string
+    return Array.from(muscles).sort((a, b) =>
+      this.translate.instant('muscles.' + this.removeSpaceFromMuscleName(a))
+        .localeCompare(this.translate.instant('muscles.' + this.removeSpaceFromMuscleName(b)))
+    );
   });
 
-equipmentTranslations: Record<string, string> = {};
-uniqueRoutineEquipments = computed<{ key: string, label: string }[]>(() => {
-  const routines = this.allRoutinesForList();
-  const equipments = new Set<string>();
-  routines.forEach(r => r.exercises.forEach((ex: WorkoutExercise) => {
-    const fullEx = this.allExercisesMap.get(ex.exerciseId);
-    fullEx?.equipmentNeeded?.forEach(eqRaw => {
-      if (!eqRaw) return;
-      const eqKey = EQUIPMENT_NORMALIZATION_MAP[eqRaw.toLowerCase().trim()] || eqRaw.toLowerCase().trim();
-      equipments.add(eqKey);
-    });
-  }));
-  return Array.from(equipments)
-    .map(key => ({
-      key,
-      label: this.equipmentTranslations[key] || key
-    }))
-    .sort((a, b) => a.label.localeCompare(b.label));
-});
+  equipmentTranslations: Record<string, string> = {};
+  uniqueRoutineEquipments = computed<{ key: string, label: string }[]>(() => {
+    const routines = this.allRoutinesForList();
+    const equipments = new Set<string>();
+    routines.forEach(r => r.exercises.forEach((ex: WorkoutExercise) => {
+      const fullEx = this.allExercisesMap.get(ex.exerciseId);
+      fullEx?.equipmentNeeded?.forEach(eqRaw => {
+        if (!eqRaw) return;
+        const eqKey = EQUIPMENT_NORMALIZATION_MAP[eqRaw.toLowerCase().trim()] || eqRaw.toLowerCase().trim();
+        equipments.add(eqKey);
+      });
+    }));
+    return Array.from(equipments)
+      .map(key => ({
+        key,
+        label: this.equipmentTranslations[key] || key
+      }))
+      .sort((a, b) =>
+        (a.label && b.label)
+          ? this.translate.instant(a.label).localeCompare(this.translate.instant(b.label))
+          : a.label.localeCompare(b.label)
+      );
+  });
 
-  uniquePrimaryCategories = computed<string[]>(() => {
+  uniquePrimaryCategories = computed<{ id: string, name: string }[]>(() => {
     const routines = this.allRoutinesForList();
     const categories = this.categories();
 
-    // 1. Create a Map for efficient, O(1) average time lookups.
+    // Map for efficient lookup: id -> name
     const categoryNameMap = new Map<string, string>(
       categories.map(cat => [cat.id, cat.name])
     );
 
-    // 2. Pluck all the 'primaryCategory' IDs from the routines.
-    //    This results in an array of type: (string | undefined)[]
-    const usedCategoryIdsWithUndefineds = routines.map(r => r.primaryCategory);
+    // Collect all used primaryCategory IDs
+    const usedCategoryIds = routines
+      .map(r => r.primaryCategory)
+      .filter((id): id is string => !!id);
 
-    // 3. Use a valid type predicate to filter out undefined values.
-    //    The type is now a clean: string[]
-    const usedCategoryIds = usedCategoryIdsWithUndefineds.filter((id): id is string => !!id);
+    // Get unique IDs
+    const uniqueIds = Array.from(new Set(usedCategoryIds));
 
-    // 4. Use a Set to get only the unique IDs.
-    const uniqueIds = new Set(usedCategoryIds);
-
-    // 5. Map the unique IDs back to their translated names.
-    //    Since map.get() can return undefined, the type is now: (string | undefined)[]
-    const namesWithUndefineds = Array.from(uniqueIds).map(id => categoryNameMap.get(id));
-
-    // 6. Use the type predicate again to filter out any potential misses from the map.
-    //    The type is now a clean, final: string[]
-    const names = namesWithUndefineds.filter((name): name is string => !!name);
-
-    // 7. Sort the final array of names alphabetically.
-    return names.sort((a, b) => a.localeCompare(b));
+    // Map to array of { id, name }
+    return uniqueIds
+      .map(id => ({
+        id,
+        name: categoryNameMap.get(id) || id
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
   });
 
   uniqueRoutineColors = computed<string[]>(() => {
@@ -384,12 +390,12 @@ uniqueRoutineEquipments = computed<{ key: string, label: string }[]>(() => {
     });
 
     // Fetch all equipment translations once
-  this.equipmentService.getTranslatedEquipment().pipe(take(1)).subscribe(translatedEquipments => {
-    this.equipmentTranslations = {};
-    translatedEquipments.forEach(eq => {
-      this.equipmentTranslations[eq.id] = eq.name;
+    this.equipmentService.getTranslatedEquipment().pipe(take(1)).subscribe(translatedEquipments => {
+      this.equipmentTranslations = {};
+      translatedEquipments.forEach(eq => {
+        this.equipmentTranslations[eq.id] = eq.name;
+      });
     });
-  });
 
     // This observable is for the template's async pipe if needed for loading states, before filtering kicks in.
     this.routines$ = this.workoutService.routines$;
@@ -872,13 +878,13 @@ uniqueRoutineEquipments = computed<{ key: string, label: string }[]>(() => {
 
   toggleActions(routineId: string, event: MouseEvent): void {
     event.stopPropagation();
-  
+
     // Fast path: If already open for this routine, close it
     if (this.activeRoutineIdActions() === routineId) {
       this.activeRoutineIdActions.set(null);
       return;
     }
-  
+
     // Only check for disabled/premium if opening
     const clickedRoutine = this.allRoutinesForList().find(routine => routine.id === routineId);
     if (clickedRoutine?.isDisabled) {
@@ -888,7 +894,7 @@ uniqueRoutineEquipments = computed<{ key: string, label: string }[]>(() => {
         return;
       }
     }
-  
+
     this.activeRoutineIdActions.set(routineId);
   }
 
@@ -1316,5 +1322,8 @@ uniqueRoutineEquipments = computed<{ key: string, label: string }[]>(() => {
     return muscle.replace(/\s+(.)/g, (_, char) => char.toUpperCase()).replace(/\s+/g, '');
   }
 
+  preventScroll(event: MouseEvent) {
+    event.preventDefault();
+  }
 
 }

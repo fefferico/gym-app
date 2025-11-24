@@ -81,6 +81,11 @@
           <div class="relative flex-1 border-r border-gray-300 dark:border-gray-600 last:border-r-0">
             <!-- Background (unfilled) -->
             <div class="absolute inset-0 bg-gray-200 dark:bg-gray-700"></div>
+            <!-- Centered percentage -->
+            <span
+              class="absolute inset-0 z-10 flex items-center justify-center text-[10px] font-bold text-white pointer-events-none">
+              {{ sectionProgress(section, currentWorkoutLog()) | number:'1.0-0' }}%
+            </span>
             <!-- Foreground (progress fill) -->
             <div class="h-3 transition-all duration-300 absolute top-1 bottom-0 rounded-full"
               [style.width.%]="sectionProgress(section, currentWorkoutLog())"
@@ -93,8 +98,8 @@
       <!-- Section Names Row -->
       <div class="flex w-full text-[10px] font-semibold text-gray-600 dark:text-gray-300 mt-1 px-1">
         <ng-container *ngFor="let section of routine()?.sections">
-          <div class="flex-1 flex justify-center items-center">
-            <span class="inline-flex px-2 py-0.5 text-white rounded-full"
+          <div class="flex-1 flex flex-col justify-center items-center">
+            <span class="inline-flex px-2 py-0.5 text-white rounded-full mb-0.5"
               [style.background]="getSectionProgressColor(section)">
               {{ section.titleI18nKey | translate }}
             </span>
@@ -333,11 +338,11 @@
                         {{ getSetSummary(exIndex, setIndex) }}
                         <div class="flex flex-col">
                           <ng-container *ngIf="!isSetCompleted(exIndex, setIndex)">
-                            <span *ngIf="setIndex === findFirstIncompleteSetIndex(exIndex)"
+                            <!-- <span *ngIf="setIndex === findFirstIncompleteSetIndex(exIndex)"
                               class="w-fit inline-flex items-center gap-1 rounded-full bg-yellow-100 dark:bg-yellow-900/70 px-2 py-1 text-xs font-medium text-yellow-800 dark:text-yellow-300 animate-pulse">
                               <app-icon name="target" class="h-4 w-4"></app-icon>
                               {{ 'compactPlayer.nextUp' | translate }}
-                            </span>
+                            </span> -->
                             <span *ngIf="setIndex !== findFirstIncompleteSetIndex(exIndex)"
                               class="w-fit inline-flex items-center gap-1 rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400">
                               {{ 'compactPlayer.pending' | translate }}
@@ -374,11 +379,11 @@
                         </ng-container>
                         <div class="flex flex-col">
                           <ng-container *ngIf="!isSetCompleted(exIndex, setIndex)">
-                            <span *ngIf="setIndex === findFirstIncompleteSetIndex(exIndex)"
+                            <!-- <span *ngIf="setIndex === findFirstIncompleteSetIndex(exIndex)"
                               class="w-fit inline-flex items-center gap-1 rounded-full bg-yellow-100 dark:bg-yellow-900/70 px-2 py-1 text-xs font-medium text-yellow-800 dark:text-yellow-300 animate-pulse">
                               <app-icon name="target" class="h-4 w-4"></app-icon>
                               {{ 'compactPlayer.nextUp' | translate }}
-                            </span>
+                            </span> -->
                             <span *ngIf="setIndex !== findFirstIncompleteSetIndex(exIndex)"
                               class="w-fit inline-flex items-center gap-1 rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400">
                               {{ 'compactPlayer.pending' | translate }}
@@ -443,9 +448,9 @@
 
                       <!-- Action Menu Component - DROPDOW -->
                       <app-action-menu
-                        [isVisible]="activeSetActionMenuKey() === (exIndex + '-' + setIndex) && getMenuMode() !== 'compact'"
+                        [isVisible]="activeSetActionMenuKey() === getSetOrderId(exIndex,setIndex) && getMenuMode() !== 'compact'"
                         [modalTitle]="''" [displayMode]="getMenuMode()"
-                        [items]="setActionItemsMap().get(exIndex + '-' + setIndex) || []"
+                        [items]="setActionItemsMap().get(getSetOrderId(exIndex,setIndex)) || []"
                         (itemClick)="handleSetActionMenuItemClick($event)" (closeMenu)="closeSetActionMenu()">
                       </app-action-menu>
 
@@ -502,9 +507,10 @@
 
                     </div>
 
-                    <div *ngIf="activeSetActionMenuKey() === (exIndex + '-' + setIndex) && getMenuMode() === 'compact'">
+                    <div
+                      *ngIf="activeSetActionMenuKey() === getSetOrderId(exIndex,setIndex) && getMenuMode() === 'compact'">
                       <app-action-menu [isVisible]="true" [modalTitle]="''" [displayMode]="'compact'"
-                        [items]="setActionItemsMap().get(exIndex + '-' + setIndex) || []"
+                        [items]="setActionItemsMap().get(getSetOrderId(exIndex,setIndex)) || []"
                         (itemClick)="handleSetActionMenuItemClick($event)"
                         (closeMenu)="activeSetActionMenuKey.set(null)">
                       </app-action-menu>
@@ -548,7 +554,7 @@
                     <div *ngIf="isSetExpanded(exIndex, setIndex)">
 
                       <!-- Set ADD/REMOVE METRICS - STANDARD SET -->
-                      <div #metricsSectionStandard [attr.data-metrics-section]="exIndex + '-' + setIndex"
+                      <div #metricsSectionStandard [attr.data-metrics-section]="getSetOrderId(exIndex,setIndex)"
                         class="flex-shrink-0 flex flex-col items-center justify-center gap-1">
                         <div *ngIf="!isSetCompleted(exIndex, setIndex) && isMetricsSectionExpanded(exIndex, setIndex)"
                           class="flex items-center">
@@ -574,10 +580,10 @@
                         </div>
                         <div *ngIf="getSetType(exIndex, setIndex)" class="flex justify-start w-full">
                           <div class="w-full px-1">
-                            <label [for]="'setType-exp-' + exIndex + '-' + setIndex"
+                            <label [for]="'setType-exp-' + getSetOrderId(exIndex,setIndex)"
                               class="block text-s font-medium text-gray-600 dark:text-gray-400">{{
                               'workoutBuilder.set.type' | translate }}</label>
-                            <select [id]="'setType-exp-' + exIndex + '-' + setIndex"
+                            <select [id]="'setType-exp-' + getSetOrderId(exIndex,setIndex)"
                               [disabled]="isSetCompleted(exIndex, setIndex)" [ngModel]="getSetType(exIndex, setIndex)"
                               (ngModelChange)="updateSetType(exIndex, setIndex, $event)"
                               class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed"
@@ -590,7 +596,7 @@
                       </div>
 
                       <!-- Inputs Grid -->
-                      <div [class]="getFieldsForSet(exIndex, setIndex, true).visible.length === 1 ?
+                      <div [class]="getSetFieldOrderNoRest(exIndex, setIndex)?.length === 1 ?
                         'flex justify-center'
                         : 'grid gap-x-4 gap-y-2 p-1 grid-cols-2'"
                         [class.disabled-div-lower-opacity]="isSetCompleted(exIndex, setIndex)">
@@ -636,14 +642,6 @@
                           </div>
                         </ng-container>
                       </div>
-                      <!-- Set Notes Textarea (if visible) -->
-                      <!-- <div appBumpClick *ngIf="expandedSetNotes() === (exIndex + '-' + setIndex)" class="px-2 pb-1"
-                        [attr.data-notes-section]="exIndex + '-' + setIndex">
-                        <textarea [ngModel]="getInitialInputValue(exIndex, setIndex, 'notes')"
-                          (change)="updateSetData(exIndex, setIndex, 0, 'notes', $event)"
-                          [placeholder]="'compactPlayer.setNotesPlaceholder' | translate"
-                          class="w-full text-xs bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-400 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
-                      </div> -->
                       <!-- LOWER EXPANDED SET COMPLETE BUTTON -->
                       <div class="flex flex-col items-center text-center py-2">
                         <div class="">
@@ -674,7 +672,7 @@
                     <div #restTimerStandardProgressBar
                       *ngIf="getRestTimerMode() === restTimerModeEnum.Compact && isRestTimerVisibleForSet(exIndex, setIndex)"
                       class="relative flex items-center px-2 py-1 mt-2 transition-all">
-                      <app-icon  class="h-6 w-6 text-yellow-600 ml-2" [strokeWidth]="2.5"></app-icon>
+                      <app-icon class="h-6 w-6 text-yellow-600 ml-2" [strokeWidth]="2.5"></app-icon>
                       <div
                         class="progress-bar-container w-full bg-gray-300 dark:bg-gray-700 rounded-full h-3 relative flex items-center">
                         <div class="progress-bar bg-yellow-400 h-1.5 rounded-full my-1 mx-1"
@@ -739,11 +737,11 @@
                               {{ getSupersetRoundSummary(exIndex, roundIndex) }}
                               <div (click)="$event.stopPropagation()">
                                 <ng-container *ngIf="!isRoundCompleted(exIndex, roundIndex)">
-                                  <span *ngIf="roundIndex === findFirstIncompleteRoundIndex(exIndex)"
+                                  <!-- <span *ngIf="roundIndex === findFirstIncompleteRoundIndex(exIndex)"
                                     class="inline-flex items-center gap-1 rounded-full bg-yellow-100 dark:bg-yellow-900/70 px-2 py-1 text-xs font-medium text-yellow-800 dark:text-yellow-300 animate-pulse">
                                     <app-icon name="target" class="h-4 w-4"></app-icon>
                                     {{ 'compactPlayer.nextUp' | translate }}
-                                  </span>
+                                  </span> -->
                                   <span *ngIf="roundIndex !== findFirstIncompleteRoundIndex(exIndex)"
                                     class="inline-flex items-center gap-1 rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400">
                                     {{ 'compactPlayer.pending' | translate }}
@@ -806,36 +804,28 @@
 
                         <!-- SUPER SET ACTION MENU -->
                         <app-action-menu
-                          [isVisible]="activeSetActionMenuKey() === (exIndex + '-' + roundIndex) && getMenuMode() !== 'compact'"
+                          [isVisible]="activeSetActionMenuKey() === getSetOrderId(exIndex,roundIndex) && getMenuMode() !== 'compact'"
                           [modalTitle]="''" [displayMode]="getMenuMode()"
-                          [items]="setActionItemsMap().get(exIndex + '-' + roundIndex) || []"
+                          [items]="setActionItemsMap().get(getSetOrderId(exIndex,roundIndex)) || []"
                           (itemClick)="handleSetActionMenuItemClick($event)" (closeMenu)="closeSetActionMenu()">
                         </app-action-menu>
                       </div>
                     </div>
 
                     <div
-                      *ngIf="activeSetActionMenuKey() === (exIndex + '-' + roundIndex) && getMenuMode() === 'compact'">
+                      *ngIf="activeSetActionMenuKey() === getSetOrderId(exIndex,roundIndex) && getMenuMode() === 'compact'">
                       <app-action-menu [isVisible]="true" [modalTitle]="''" [displayMode]="'compact'"
-                        [items]="setActionItemsMap().get(exIndex + '-' + roundIndex) || []"
+                        [items]="setActionItemsMap().get(getSetOrderId(exIndex,roundIndex)) || []"
                         (itemClick)="handleSetActionMenuItemClick($event)"
                         (closeMenu)="activeSetActionMenuKey.set(null)">
                       </app-action-menu>
                     </div>
-                    <!-- Set Notes Textarea (if visible) -->
-                    <!-- <div *ngIf="expandedSetNotes() === (exIndex + '-' + roundIndex)" class="px-2 pb-1"
-                      [attr.data-notes-section]="exIndex + '-' + roundIndex">
-                      <textarea [ngModel]="getInitialInputValue(exIndex, roundIndex, 'notes')"
-                        (change)="updateSetData(exIndex, roundIndex, 0,'notes', $event)"
-                        [placeholder]="'compactPlayer.roundNotesPlaceholder' | translate"
-                        class="w-full text-xs bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-400 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
-                    </div> -->
 
                     <!-- Compact Rest Timer Progress Bar (per set, styled like timed set) SUPERSET -->
                     <div
                       *ngIf="getRestTimerMode() === restTimerModeEnum.Compact && isRestTimerVisibleForSet(exIndex, roundIndex)"
                       class="relative flex items-center px-2 py-1 mt-2 transition-all">
-                      <app-icon  class="h-6 w-6 text-yellow-600 ml-2" [strokeWidth]="2.5"></app-icon>
+                      <app-icon class="h-6 w-6 text-yellow-600 ml-2" [strokeWidth]="2.5"></app-icon>
                       <div
                         class="progress-bar-container w-full bg-gray-300 dark:bg-gray-700 rounded-full h-3 relative flex items-center">
                         <div class="progress-bar bg-yellow-400 h-1.5 rounded-full my-1 mx-1"
@@ -1031,6 +1021,10 @@
         <app-icon name="done" class="h-6 w-6"></app-icon>
         <span>{{ 'compactPlayer.finish' | translate }}</span>
       </button>
+      <!-- <button appBumpClick (click)="addExerciseLog()"
+        class="flex items-center justify-center space-x-2 bg-green-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        <span>PROVA</span>
+      </button> -->
 
     </div>
   </div>
@@ -1287,7 +1281,7 @@
       <div class="relative flex flex-col flex-grow">
         <!-- Input Field -->
         <div class="flex items-center justify-center bg-gray-300 dark:bg-gray-700">
-          <input [id]="field + '-' + 'input'  + '-' + exIndex + '-' + setIndex"
+          <input [id]="field + '-' + 'input'  + '-' + getSetOrderId(exIndex, setIndex)"
             [type]="(field === metricEnum.duration || field === metricEnum.rest || field === metricEnum.reps || field === metricEnum.weight) ? 'text' : 'number'"
             [ngModel]="getMetricInputValue()(exIndex, setIndex, field)"
             (ngModelChange)="setMetricInputValue(exIndex, setIndex, field, $event)"

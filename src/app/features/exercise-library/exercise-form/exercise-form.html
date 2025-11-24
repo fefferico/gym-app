@@ -12,28 +12,57 @@
 
     <!-- Name -->
     <div>
-      <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'exerciseForm.labels.name' | translate }}</label>
-      <input type="text" id="name" formControlName="name" class="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+      <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'exerciseForm.labels.name'
+        | translate }}</label>
+      <input type="text" id="name" formControlName="name"
+        class="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
     </div>
 
     <!-- Description -->
     <div>
-      <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'exerciseForm.labels.description' | translate }}</label>
-      <textarea id="description" formControlName="description" rows="3" class="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"></textarea>
+      <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+        'exerciseForm.labels.description' | translate }}</label>
+      <textarea id="description" formControlName="description" rows="3"
+        class="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"></textarea>
     </div>
 
-    <!-- Category -->
-    <div>
-      <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'exerciseForm.labels.category' | translate }}</label>
-      <select id="category" formControlName="category" class="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-        <option *ngFor="let cat of categories" [value]="cat">{{ 'equipment.categories.' + cat | translate }}</option>
-      </select>
+    <!-- Categories (Chip UI) -->
+    <div class="relative">
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        {{ 'exerciseForm.labels.category' | translate }}
+      </label>
+      <div *ngIf="selectedCategories.length > 0"
+        class="mt-2 flex flex-wrap gap-2 p-2 border rounded-md min-h-[42px] dark:border-gray-600">
+        <span *ngFor="let cat of selectedCategories; let i = index"
+          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-primary-light text-white">
+          {{ ('categories.' + cat) | translate }}
+          <button type="button" (click)="removeCategory(i)"
+            class="flex-shrink-0 ml-1.5 p-0.5 rounded-full inline-flex items-center justify-center hover:bg-white/20">
+            <app-icon name="cancel" class="h-4 w-4"></app-icon>
+          </button>
+        </span>
+      </div>
+      <input type="text"
+       [formControl]="categorySearchCtrl"
+       placeholder="{{ 'exerciseForm.placeholders.searchCategories' | translate }}"
+       (focus)="onCategoryInputFocus()"
+       (blur)="onCategoryInputBlur()"
+       class="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600">
+      <ul *ngIf="filteredCategories.length > 0"
+        class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-900 shadow-lg max-h-60 rounded-md overflow-auto border dark:border-gray-600">
+        <li *ngFor="let cat of filteredCategories" (mousedown)="selectCategory(cat)"
+          class="text-gray-900 dark:text-gray-200 cursor-pointer select-none relative py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-700">
+          {{ ('categories.' + cat) | translate }}
+        </li>
+      </ul>
     </div>
 
     <!-- Primary Muscle Group -->
     <div>
-      <label for="primaryMuscleGroup" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'exerciseForm.labels.primaryMuscle' | translate }}</label>
-      <select id="primaryMuscleGroup" formControlName="primaryMuscleGroup" class="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+      <label for="primaryMuscleGroup" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+        'exerciseForm.labels.primaryMuscle' | translate }}</label>
+      <select id="primaryMuscleGroup" formControlName="primaryMuscleGroup"
+        class="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
         <option value="">{{ 'exerciseForm.placeholders.selectPrimary' | translate }}</option>
         <option *ngFor="let muscle of allMuscles()" [value]="muscle.id">{{ muscle.name }}</option>
       </select>
@@ -41,18 +70,26 @@
 
     <!-- Other Muscle Groups -->
     <div class="relative">
-      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'exerciseForm.labels.otherMuscles' | translate }}</label>
-      <div *ngIf="getFormArray('muscleGroups').controls.length > 0" class="mt-2 flex flex-wrap gap-2 p-2 border rounded-md min-h-[42px] dark:border-gray-600">
-        <span *ngFor="let control of getFormArray('muscleGroups').controls; let i = index" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-primary-light text-white">
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'exerciseForm.labels.otherMuscles' |
+        translate }}</label>
+      <div *ngIf="getFormArray('muscleGroups').controls.length > 0"
+        class="mt-2 flex flex-wrap gap-2 p-2 border rounded-md min-h-[42px] dark:border-gray-600">
+        <span *ngFor="let control of getFormArray('muscleGroups').controls; let i = index"
+          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-primary-light text-white">
           {{ getMuscleNameById(control.value) | translate }}
-          <button type="button" (click)="removeMuscle(i)" class="flex-shrink-0 ml-1.5 p-0.5 rounded-full inline-flex items-center justify-center hover:bg-white/20">
+          <button type="button" (click)="removeMuscle(i)"
+            class="flex-shrink-0 ml-1.5 p-0.5 rounded-full inline-flex items-center justify-center hover:bg-white/20">
             <app-icon name="cancel" class="h-4 w-4"></app-icon>
           </button>
         </span>
       </div>
-      <input type="text" [formControl]="muscleSearchCtrl" placeholder="{{ 'exerciseForm.placeholders.searchMuscles' | translate }}" (blur)="hideSuggestions()" class="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600">
-      <ul *ngIf="filteredMuscles().length > 0" class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-900 shadow-lg max-h-60 rounded-md overflow-auto border dark:border-gray-600">
-        <li *ngFor="let muscle of filteredMuscles(); let i = index" (mousedown)="selectMuscle(muscle)" class="text-gray-900 dark:text-gray-200 cursor-pointer select-none relative py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-700">
+      <input type="text" [formControl]="muscleSearchCtrl"
+        placeholder="{{ 'exerciseForm.placeholders.searchMuscles' | translate }}" (blur)="hideSuggestions()"
+        class="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600">
+      <ul *ngIf="filteredMuscles().length > 0"
+        class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-900 shadow-lg max-h-60 rounded-md overflow-auto border dark:border-gray-600">
+        <li *ngFor="let muscle of filteredMuscles(); let i = index" (mousedown)="selectMuscle(muscle)"
+          class="text-gray-900 dark:text-gray-200 cursor-pointer select-none relative py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-700">
           {{ muscle.name }}
         </li>
       </ul>
@@ -60,18 +97,26 @@
 
     <!-- Equipment Needed -->
     <div class="relative">
-      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'exerciseForm.labels.equipment' | translate }}</label>
-      <div *ngIf="getFormArray('equipmentNeeded').controls.length > 0" class="mt-2 flex flex-wrap gap-2 p-2 border rounded-md min-h-[42px] dark:border-gray-600">
-        <span *ngFor="let control of getFormArray('equipmentNeeded').controls; let i = index" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'exerciseForm.labels.equipment' |
+        translate }}</label>
+      <div *ngIf="getFormArray('equipmentNeeded').controls.length > 0"
+        class="mt-2 flex flex-wrap gap-2 p-2 border rounded-md min-h-[42px] dark:border-gray-600">
+        <span *ngFor="let control of getFormArray('equipmentNeeded').controls; let i = index"
+          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
           {{ getEquipmentNameById(control.value) | translate }}
-          <button type="button" (click)="removeEquipment(i)" class="flex-shrink-0 ml-1.5 p-0.5 rounded-full inline-flex items-center justify-center hover:bg-white/20">
+          <button type="button" (click)="removeEquipment(i)"
+            class="flex-shrink-0 ml-1.5 p-0.5 rounded-full inline-flex items-center justify-center hover:bg-white/20">
             <app-icon name="cancel"></app-icon>
           </button>
         </span>
       </div>
-      <input type="text" [formControl]="equipmentSearchCtrl" placeholder="{{ 'exerciseForm.placeholders.searchEquipment' | translate }}" (blur)="hideSuggestions()" class="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600">
-      <ul *ngIf="filteredEquipment().length > 0" class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-900 shadow-lg max-h-60 rounded-md overflow-auto border dark:border-gray-600">
-        <li *ngFor="let equipment of filteredEquipment()" (mousedown)="selectEquipment(equipment)" class="text-gray-900 dark:text-gray-200 cursor-pointer select-none relative py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-700">
+      <input type="text" [formControl]="equipmentSearchCtrl"
+        placeholder="{{ 'exerciseForm.placeholders.searchEquipment' | translate }}" (blur)="hideSuggestions()"
+        class="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600">
+      <ul *ngIf="filteredEquipment().length > 0"
+        class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-900 shadow-lg max-h-60 rounded-md overflow-auto border dark:border-gray-600">
+        <li *ngFor="let equipment of filteredEquipment()" (mousedown)="selectEquipment(equipment)"
+          class="text-gray-900 dark:text-gray-200 cursor-pointer select-none relative py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-700">
           {{ equipment.name }}
         </li>
       </ul>
@@ -79,18 +124,25 @@
 
     <!-- Video URL & Notes -->
     <div>
-      <label for="videoUrl" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'exerciseForm.labels.videoUrl' | translate }}</label>
-      <input type="url" id="videoUrl" formControlName="videoUrl" class="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600">
+      <label for="videoUrl" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+        'exerciseForm.labels.videoUrl' | translate }}</label>
+      <input type="url" id="videoUrl" formControlName="videoUrl"
+        class="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600">
     </div>
     <div>
-      <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'exerciseForm.labels.notes' | translate }}</label>
-      <textarea id="notes" formControlName="notes" rows="3" class="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"></textarea>
+      <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+        'exerciseForm.labels.notes' | translate }}</label>
+      <textarea id="notes" formControlName="notes" rows="3"
+        class="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"></textarea>
     </div>
 
     <!-- Buttons -->
     <div class="pt-6 flex justify-end space-x-3">
-      <a routerLink="/library" class="px-4 py-2 border rounded-md shadow-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500">{{ 'exerciseForm.buttons.cancel' | translate }}</a>
-      <button type="submit" [disabled]="exerciseForm.invalid" class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm font-medium text-white bg-primary hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed">
+      <a routerLink="/library"
+        class="px-4 py-2 border rounded-md shadow-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500">{{
+        'exerciseForm.buttons.cancel' | translate }}</a>
+      <button type="submit" [disabled]="exerciseForm.invalid"
+        class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm font-medium text-white bg-primary hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed">
         <app-icon *ngIf="isEditMode()" name="save" class="h-5 w-5 mr-2"></app-icon>
         <app-icon *ngIf="!isEditMode()" name="plus-circle" class="h-5 w-5 mr-2"></app-icon>
         {{ (isEditMode() ? 'exerciseForm.buttons.update' : 'exerciseForm.buttons.add') | translate }}

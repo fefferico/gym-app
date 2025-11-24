@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Exercise, ExerciseCategory } from '../models/exercise.model';
+import { Exercise } from '../models/exercise.model';
 import { Routine, WorkoutExercise, ExerciseTargetSetParams, METRIC, RepsTargetType } from '../models/workout.model';
 import { ExerciseService } from './exercise.service';
 import { PersonalGymService } from './personal-gym.service';
@@ -11,6 +11,7 @@ import { WorkoutService } from './workout.service'; // Import WorkoutService
 import { ToastService } from './toast.service';
 import { distanceToExact, durationToExact, repsNumberToExactRepsTarget, restToExact, weightToExact } from './workout-helper.service';
 import { HydratedExerciseCategory } from './exercise-category.service';
+import { EXERCISE_CATEGORY_TYPES } from '../models/exercise-category.model';
 
 // Interface for the detailed generation options
 export interface WorkoutGenerationOptions {
@@ -150,11 +151,11 @@ export class WorkoutGeneratorService {
 
     private async getSelectableExercises(options: WorkoutGenerationOptions): Promise<Exercise[]> {
         const allExercises = await firstValueFrom(this.exerciseService.getExercises());
-        let availableExercises = allExercises.filter(ex => !ex.isHidden && ex.category !== 'stretching');
+        let availableExercises = allExercises.filter(ex => !ex.isHidden && !ex.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.stretching) === undefined);
 
         // --- Category filtering ---
         if (options.exerciseCategory && options.exerciseCategory) {
-            availableExercises = availableExercises.filter(ex => ex.category === options.exerciseCategory?.id);
+            availableExercises = availableExercises.filter(ex => ex.categories.find(cat => cat === options.exerciseCategory?.id) !== undefined);
         }
 
         // Determine equipment filter values, all lowercased for consistent comparison
@@ -170,7 +171,7 @@ export class WorkoutGeneratorService {
         if (equipmentFilterValues.length > 0) {
             availableExercises = availableExercises.filter(ex => {
                 // Always include exercises that don't require any specific equipment
-                if (ex.category === 'bodyweightCalisthenics' || (!ex.equipment && (!ex.equipmentNeeded || ex.equipmentNeeded.length === 0))) {
+                if (ex.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.bodyweightCalisthenics) !== undefined || (!ex.equipment && (!ex.equipmentNeeded || ex.equipmentNeeded.length === 0))) {
                     return true;
                 }
 
@@ -252,7 +253,7 @@ export class WorkoutGeneratorService {
         // This inherently respects all exclusions applied by getSelectableExercises.
         const equipmentGoals = new Set<string>();
         allValidExercises.forEach(ex => {
-            if (ex.equipment && ex.category !== 'bodyweightCalisthenics') {
+            if (ex.equipment && ex.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.bodyweightCalisthenics) === undefined) {
                 equipmentGoals.add(ex.equipment.toLowerCase());
             }
             // Also consider the equipmentNeeded array if it exists
@@ -382,13 +383,13 @@ export class WorkoutGeneratorService {
         let templateSet: Partial<ExerciseTargetSetParams> = {};
 
         // =================== START OF NEW LOGIC ===================
-        if (exercise.category === 'cardio') {
+        if (exercise.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.cardio) !== undefined) {
             templateSet = {
                 fieldOrder: [METRIC.duration, METRIC.distance, METRIC.rest],
                 targetDuration: durationToExact(duration),
                 targetDistance: distanceToExact(1),
             };
-        } else if (exercise.category === 'bodyweightCalisthenics') {
+        } else if (exercise.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.bodyweightCalisthenics) !== undefined) {
             templateSet = {
                 fieldOrder: [METRIC.reps, METRIC.rest],
                 targetReps: { type: RepsTargetType.range, min: repRange.min, max: repRange.max },
@@ -432,7 +433,7 @@ export class WorkoutGeneratorService {
         let sets: ExerciseTargetSetParams[];
         const numSets = 3;
 
-        if (exercise.category === 'cardio') {
+        if (exercise.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.cardio) !== undefined) {
             // Cardio exercises get duration and distance
             sets = Array.from({ length: numSets }, () => ({
                 id: uuidv4(),
@@ -442,7 +443,7 @@ export class WorkoutGeneratorService {
                 targetDistance: distanceToExact(1),   // Default to 1 km/mi
                 targetRest: restToExact(90),
             }));
-        } else if (exercise.category === 'bodyweightCalisthenics') {
+        } else if (exercise.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.bodyweightCalisthenics) !== undefined) {
             // Bodyweight exercises get reps but no weight
             sets = Array.from({ length: numSets }, () => ({
                 id: uuidv4(),

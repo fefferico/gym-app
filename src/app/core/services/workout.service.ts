@@ -805,7 +805,7 @@ export class WorkoutService {
       metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.targetDuration'), name: METRIC.duration, type: 'number', value: 60, attributes: { min: 0, required: true } });
     }
     if (fieldOrder.includes(METRIC.rest)) {
-      metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.rest'), name: METRIC.rest, type: 'number', value: 60, attributes: { min: 1, required: true } });
+      metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.rest'), name: METRIC.rest, type: 'number', value: 60, attributes: { min: 0, required: true } });
     }
 
     const exerciseParams = [...baseParams, ...metricInputs];

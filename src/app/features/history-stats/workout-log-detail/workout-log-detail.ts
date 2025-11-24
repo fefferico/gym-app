@@ -442,6 +442,10 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     return /\d/.test(result) ? result : '0';
   }
 
+  checkIfCategoriesAreAvailable(loggedEx: DisplayLoggedExercise): boolean {
+    return Array.isArray(loggedEx?.baseExercise?.categories) && loggedEx.baseExercise.categories.length > 0;
+  }
+
   checkIfDurationAvailable(loggedEx: LoggedWorkoutExercise): boolean {
     return this.workoutUtilsService.checkIfMetricIsVisible(loggedEx, METRIC.duration, true);
   }

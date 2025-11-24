@@ -19,6 +19,8 @@ export type EquipmentValue =
     | "battleRopes"
     | "bench"
     | "bicycle"
+    | "boards"
+    | "blocks"
     | "bodyweight"
     | "bosuBall"
     | "box"
@@ -85,6 +87,7 @@ export type EquipmentValue =
     | "padding"
     | "plates"
     | "plyoBox"
+    | "platform"
     | "powerRackSquatRack"
     | "preacherCurlBench"
     | "prowlerSled"
@@ -106,6 +109,7 @@ export type EquipmentValue =
     | "skierg"
     | "slamBall"
     | "sledgehammer"
+    | "slingshot"
     | "smithMachine"
     | "stabilityBall"
     | "stairClimber"
@@ -138,642 +142,680 @@ export type EquipmentValue =
     | "yogaMat"
     | "yoke";
 
-export const EQUIPMENT_DATA = [
+export enum EquipmentCategory {
+    'dumbbell' = 'dumbbell',
+    'kettlebell' = 'kettlebell',
+    'plate' = 'plate',
+    'barbell' = 'barbell',
+    'functionalBodyweight' = 'functionalBodyweight',
+    'band' = 'band',
+    'machine' = 'machine',
+    'benchesRacks' = 'benchesRacks',
+    'accessory' = 'accessory',
+    'freeWeights' = 'freeWeights',
+    'bag' = 'bag',
+    'macebell' = 'macebell',
+    'club' = 'club',
+    'cardio' = 'cardio',
+    'custom' = 'custom',
+    'other' = 'other',
+    'general' = 'general'
+};
+
+export interface Equipment {
+    id: EquipmentValue,
+    name: string,
+    categories: EquipmentCategory[]
+}
+
+export const EQUIPMENT_DATA: Equipment[] = [
     {
         "id": "table",
         "name": "Table",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "wall",
         "name": "Wall",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "bar",
         "name": "Bar",
-        "category": "Free Weights"
+        "categories": [EquipmentCategory.freeWeights]
     },
     {
         "id": "abdominalCrunchMachine",
         "name": "Abdominal Crunch Machine",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "abRollerCoaster",
         "name": "Ab Roller Coaster",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "abWheel",
         "name": "Ab Wheel",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "adjustableBench",
         "name": "Adjustable Bench",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "aerobicStepper",
         "name": "Aerobic Stepper",
-        "category": "Cardio"
+        "categories": [EquipmentCategory.cardio]
     },
     {
         "id": "airBike",
         "name": "Air Bike (Assault/Echo)",
-        "category": "Cardio"
+        "categories": [EquipmentCategory.cardio]
     },
     {
         "id": "anchorPoint",
         "name": "Anchor Point",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "ankleWeights",
         "name": "Ankle Weights",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "armBlaster",
         "name": "Arm Blaster",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "atlasStone",
         "name": "Atlas Stone",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "axelBar",
         "name": "Axel Bar (Thick Bar)",
-        "category": "Free Weights"
+        "categories": [EquipmentCategory.freeWeights]
     },
     {
         "id": "backExtensionMachine",
         "name": "Back Extension Machine",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "barbell",
         "name": "Barbell",
-        "category": "Free Weights"
+        "categories": [EquipmentCategory.freeWeights]
     },
     {
         "id": "battleRopes",
         "name": "Battle Ropes",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "bench",
         "name": "Bench",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "bicycle",
         "name": "Bicycle (Outdoor)",
-        "category": "Cardio"
+        "categories": [EquipmentCategory.cardio]
+    },
+    {
+        "id": "blocks",
+        "name": "Blocks",
+        "categories": [EquipmentCategory.functionalBodyweight]
+    },
+    {
+        "id": "boards",
+        "name": "Boards",
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "bosuBall",
         "name": "Bosu Ball",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "bumperPlates",
         "name": "Bumper Plates",
-        "category": "Free Weights"
+        "categories": [EquipmentCategory.freeWeights]
     },
     {
         "id": "cableMachine",
         "name": "Cable Machine",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "calfRaiseMachine",
         "name": "Calf Raise Machine",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "camberedBar",
         "name": "Cambered Bar",
-        "category": "Free Weights"
+        "categories": [EquipmentCategory.freeWeights]
     },
     {
         "id": "captainsOfCrushGrippers",
         "name": "Captains of Crush Grippers",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "chains",
         "name": "Chains",
-        "category": "Free Weights"
+        "categories": [EquipmentCategory.freeWeights]
     },
     {
         "id": "chalk",
         "name": "Chalk",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "chestPressMachine",
         "name": "Chest Press Machine",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "inclineChestPressMachine",
         "name": "Incline Chest Press Machine",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "circusDumbbell",
         "name": "Circus Dumbbell",
-        "category": "Free Weights"
+        "categories": [EquipmentCategory.freeWeights]
     },
     {
         "id": "climbingRope",
         "name": "Climbing Rope",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "dHandle",
         "name": "D-Handle / Stirrup Handle",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "declineBench",
         "name": "Decline Bench",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "dipBelt",
         "name": "Dip Belt",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "dipStation",
         "name": "Dip Station / Parallel Bars",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "doorway",
         "name": "Doorway",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "dumbbell",
         "name": "Dumbbell",
-        "category": "Free Weights"
-    },
-    {
-        "id": "ellipticalTrainer",
-        "name": "Elliptical Trainer",
-        "category": "Cardio"
+        "categories": [EquipmentCategory.freeWeights]
     },
     {
         "id": "ezCurlBar",
         "name": "EZ-Curl Bar",
-        "category": "Free Weights"
+        "categories": [EquipmentCategory.freeWeights]
     },
     {
         "id": "farmersWalkHandles",
         "name": "Farmer's Walk Handles",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "fatGripz",
         "name": "Fat Gripz",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "flatBench",
         "name": "Flat Bench",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "foamRoller",
         "name": "Foam Roller",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "ghd",
         "name": "GHD (Glute-Ham Developer)",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "gymnasticRing",
         "name": "Gymnastic Rings",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "hackSquatMachine",
         "name": "Hack Squat Machine",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "harnessStraps",
         "name": "Harness / Straps",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "headHarness",
         "name": "Head Harness (Neck Training)",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "hexBar",
         "name": "Hex Bar (Trap Bar)",
-        "category": "Free Weights"
+        "categories": [EquipmentCategory.freeWeights]
     },
     {
         "id": "hipAbductionMachine",
         "name": "Hip Abduction Machine",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "hipAdductionMachine",
         "name": "Hip Adduction Machine",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "hyperextensionBench",
         "name": "Hyperextension Bench",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "inclineBench",
         "name": "Incline Bench",
-        "category": "Benches & Racks"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "inversionTable",
         "name": "Inversion Table",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "jumpRope",
         "name": "Jump Rope",
-        "category": "Cardio"
+        "categories": [EquipmentCategory.cardio]
     },
     {
         "id": "keg",
         "name": "Keg",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "kettlebell",
         "name": "Kettlebell",
-        "category": "Free Weights"
+        "categories": [EquipmentCategory.freeWeights]
     },
     {
         "id": "lacrosseMassageBall",
         "name": "Lacrosse Ball / Massage Ball",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "landmineAttachment",
         "name": "Landmine Attachment",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "largeTire",
         "name": "Large Tire",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "latPulldownMachine",
         "name": "Lat Pulldown Machine",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "legCurlMachine",
         "name": "Leg Curl Machine",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "lyingLegCurlMachine",
         "name": "Lying Leg Curl Machine",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "legExtensionMachine",
         "name": "Leg Extension Machine",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "legPressMachine",
         "name": "Leg Press Machine",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "liftingBelt",
         "name": "Lifting Belt",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "logBar",
         "name": "Log Bar",
-        "category": "Free Weights"
+        "categories": [EquipmentCategory.freeWeights]
     },
     {
         "id": "medicineBall",
         "name": "Medicine Ball",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "miniBands",
         "name": "Mini Bands (Hip Circles)",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "parallettes",
         "name": "Parallettes",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "pegboard",
         "name": "Pegboard",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "pecDeckMachine",
         "name": "Pec Deck Machine",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "pilatesReformer",
         "name": "Pilates Reformer",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "plyoBox",
         "name": "Plyo Box / Platform",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
+    },
+    {
+        "id": "platform",
+        "name": "Platform",
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "box",
         "name": "Box",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "powerRackSquatRack",
         "name": "Power Rack / Squat Rack",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "preacherCurlBench",
         "name": "Preacher Curl Bench",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "prowlerSled",
         "name": "Prowler Sled",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "pullUpBar",
         "name": "Pull-up Bar",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "resistanceBandLoop",
         "name": "Resistance Band (Loop)",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "resistanceBandsHandles",
         "name": "Resistance Bands (with Handles)",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "reverseHyperextensionMachine",
         "name": "Reverse Hyperextension Machine",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "ropeAttachmentCables",
         "name": "Rope Attachment (for cables)",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "rowerErg",
         "name": "Rower (Erg)",
-        "category": "Cardio"
+        "categories": [EquipmentCategory.cardio]
     },
     {
         "id": "safetySquatBar",
         "name": "Safety Squat Bar",
-        "category": "Free Weights"
+        "categories": [EquipmentCategory.freeWeights]
     },
     {
         "id": "sandbag",
         "name": "Sandbag",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "seatedCalfRaiseMachine",
         "name": "Seated Calf Raise Machine",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "seatedRowMachine",
         "name": "Seated Row Machine",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "shoulderPressMachine",
         "name": "Shoulder Press Machine",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "skierg",
         "name": "SkiErg",
-        "category": "Cardio"
+        "categories": [EquipmentCategory.cardio]
     },
     {
         "id": "slamBall",
         "name": "Slam Ball",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "sledgehammer",
         "name": "Sledgehammer",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
+    },
+    {
+        "id": "slingshot",
+        "name": "Slingshot",
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "smithMachine",
         "name": "Smith Machine",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "stabilityBall",
         "name": "Stability Ball (Swiss Ball)",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "stairClimber",
         "name": "Stair Climber / StairMaster",
-        "category": "Cardio"
+        "categories": [EquipmentCategory.cardio]
     },
     {
         "id": "stationaryBike",
         "name": "Stationary Bike",
-        "category": "Cardio"
+        "categories": [EquipmentCategory.cardio]
     },
     {
-        "id": "macebell",
+        "id": "maceBell",
         "name": "Mace Bell",
-        "category": "Free Weights"
+        "categories": [EquipmentCategory.freeWeights]
     },
     {
         "id": "steelClub",
         "name": "Steel Club",
-        "category": "Free Weights"
+        "categories": [EquipmentCategory.freeWeights]
     },
     {
         "id": "steelMace",
         "name": "Steel Mace",
-        "category": "Free Weights"
+        "categories": [EquipmentCategory.freeWeights]
     },
     {
         "id": "stretchingStrap",
         "name": "Stretching Strap",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "suspensionTrainer",
         "name": "Suspension Trainer (TRX)",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "swissBar",
         "name": "Swiss Bar (Multi-Grip Bar)",
-        "category": "Free Weights"
+        "categories": [EquipmentCategory.freeWeights]
     },
     {
         "id": "tBarRowMachine",
         "name": "T-Bar Row Machine",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "theraBand",
         "name": "TheraBand",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "towel",
         "name": "Towel",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "treadmill",
         "name": "Treadmill",
-        "category": "Cardio"
+        "categories": [EquipmentCategory.cardio]
     },
     {
         "id": "vBarHandle",
         "name": "V-Bar Handle (for cables)",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "vibrationPlate",
         "name": "Vibration Plate",
-        "category": "Machines"
+        "categories": [EquipmentCategory.machine]
     },
     {
         "id": "wallBall",
         "name": "Wall Ball",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
     {
         "id": "weightPlates",
         "name": "Weight Plates",
-        "category": "Free Weights"
+        "categories": [EquipmentCategory.freeWeights]
     },
     {
         "id": "weightReleasers",
         "name": "Weight Releasers",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "weightVest",
         "name": "Weight Vest",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "wristRoller",
         "name": "Wrist Roller",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "wristWraps",
         "name": "Wrist Wraps",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "yogaBlock",
         "name": "Yoga Block",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "yogaMat",
         "name": "Yoga Mat",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "mat",
         "name": "Mat",
-        "category": "Accessories"
+        "categories": [EquipmentCategory.accessory]
     },
     {
         "id": "yoke",
         "name": "Yoke",
-        "category": "Functional & Bodyweight"
+        "categories": [EquipmentCategory.functionalBodyweight]
     },
 
     // Free Weights
-    { id: 'ezCurlBar', name: 'EZ-Curl Bar', category: 'Free Weights' },
+    { id: 'ezCurlBar', name: 'EZ-Curl Bar', categories: [EquipmentCategory.freeWeights] },
 
     // Machines
-    { id: 'machine', name: 'Machine', category: 'Machines' },
-    { id: 'cableMachine', name: 'Cable Machine', category: 'Machines' },
-    { id: 'abductorMachine', name: 'Abductor Machine', category: 'Machines' },
-    { id: 'adductorMachine', name: 'Adductor Machine', category: 'Machines' },
-    { id: 'pecDeckMachine', name: 'Pec Deck Machine', category: 'Machines' },
-    { id: 'chestPressMachine', name: 'Chest Press Machine', category: 'Machines' },
-    { id: 'inclineChestPressMachine', name: 'Incline Chest Press Machine', category: 'Machines' },
-    { id: 'latPulldownMachine', name: 'Lat Pulldown Machine', category: 'Machines' },
-    { id: 'seatedRowMachine', name: 'Seated Row Machine', category: 'Machines' },
-    { id: 'legPressMachine', name: 'Leg Press Machine', category: 'Machines' },
-    { id: 'legExtensionMachine', name: 'Leg Extension Machine', category: 'Machines' },
-    { id: 'legCurlMachine', name: 'Leg Curl Machine', category: 'Machines' },
-    { id: 'shoulderPressMachine', name: 'Shoulder Press Machine', category: 'Machines' },
-    { id: 'reversePecDeckMachine', name: 'Reverse Pec Deck Machine', category: 'Machines' },
-    { id: 'calfRaiseMachine', name: 'Calf Raise Machine', category: 'Machines' },
-    { id: 'hackSquatMachine', name: 'Hack Squat Machine', category: 'Machines' },
-    { id: 'seatedCalfRaiseMachine', name: 'Seated Calf Raise Machine', category: 'Machines' },
-    { id: 'abdominalCrunchMachine', name: 'Abdominal Crunch Machine', category: 'Machines' },
-    { id: 'hyperextensionMachine', name: 'Hyperextension Machine', category: 'Machines' },
-    { id: 'treadmill', name: 'Treadmill', category: 'Machines' },
-    { id: 'stationaryBike', name: 'Stationary Bike', category: 'Machines' },
-    { id: 'ellipticalTrainer', name: 'Elliptical Trainer', category: 'Machines' },
-    { id: 'stairClimbingMachine', name: 'Stair Climbing Machine', category: 'Machines' },
+    { id: 'machine', name: 'Machine', categories: [EquipmentCategory.machine] },
+    { id: 'cableMachine', name: 'Cable Machine', categories: [EquipmentCategory.machine] },
+    { id: 'abductorMachine', name: 'Abductor Machine', categories: [EquipmentCategory.machine] },
+    { id: 'adductorMachine', name: 'Adductor Machine', categories: [EquipmentCategory.machine] },
+    { id: 'pecDeckMachine', name: 'Pec Deck Machine', categories: [EquipmentCategory.machine] },
+    { id: 'chestPressMachine', name: 'Chest Press Machine', categories: [EquipmentCategory.machine] },
+    { id: 'inclineChestPressMachine', name: 'Incline Chest Press Machine', categories: [EquipmentCategory.machine] },
+    { id: 'latPulldownMachine', name: 'Lat Pulldown Machine', categories: [EquipmentCategory.machine] },
+    { id: 'seatedRowMachine', name: 'Seated Row Machine', categories: [EquipmentCategory.machine] },
+    { id: 'legPressMachine', name: 'Leg Press Machine', categories: [EquipmentCategory.machine] },
+    { id: 'legExtensionMachine', name: 'Leg Extension Machine', categories: [EquipmentCategory.machine] },
+    { id: 'legCurlMachine', name: 'Leg Curl Machine', categories: [EquipmentCategory.machine] },
+    { id: 'shoulderPressMachine', name: 'Shoulder Press Machine', categories: [EquipmentCategory.machine] },
+    { id: 'reversePecDeckMachine', name: 'Reverse Pec Deck Machine', categories: [EquipmentCategory.machine] },
+    { id: 'calfRaiseMachine', name: 'Calf Raise Machine', categories: [EquipmentCategory.machine] },
+    { id: 'hackSquatMachine', name: 'Hack Squat Machine', categories: [EquipmentCategory.machine] },
+    { id: 'seatedCalfRaiseMachine', name: 'Seated Calf Raise Machine', categories: [EquipmentCategory.machine] },
+    { id: 'abdominalCrunchMachine', name: 'Abdominal Crunch Machine', categories: [EquipmentCategory.machine] },
+    { id: 'hyperextensionMachine', name: 'Hyperextension Machine', categories: [EquipmentCategory.machine] },
+    { id: 'treadmill', name: 'Treadmill', categories: [EquipmentCategory.machine] },
+    { id: 'stationaryBike', name: 'Stationary Bike', categories: [EquipmentCategory.machine] },
+    { id: 'ellipticalTrainer', name: 'Elliptical Trainer', categories: [EquipmentCategory.machine] },
+    { id: 'stairClimbingMachine', name: 'Stair Climbing Machine', categories: [EquipmentCategory.machine] },
 
     // Bodyweight & Calisthenics
-    { id: 'bodyweight', name: 'Bodyweight', category: 'Bodyweight' },
+    { id: 'bodyweight', name: 'Bodyweight', categories: [EquipmentCategory.functionalBodyweight] },
 
     // Benches & Racks
-    { id: 'bench', name: 'Bench', category: 'Benches & Racks' },
-    { id: 'rack', name: 'Rack / Squat Rack', category: 'Benches & Racks' },
-
+    { id: 'bench', name: 'Bench', categories: [EquipmentCategory.benchesRacks] },
+    { id: 'rack', name: 'Rack / Squat Rack', categories: [EquipmentCategory.benchesRacks] },
     // Accessories
-    { id: 'medicineBall', name: 'Medicine Ball / Slam Ball', category: 'Accessories' },
-    { id: 'padding', name: 'Padding', category: 'Accessories' },
-
+    { id: 'medicineBall', name: 'Medicine Ball / Slam Ball', categories: [EquipmentCategory.accessory] },
+    { id: 'padding', name: 'Padding', categories: [EquipmentCategory.accessory] },
     // Strongman & Other
-    { id: 'bulgarianBag', name: 'Bulgarian Bag', category: 'Other' },
-    { id: 'indianClubs', name: 'Indian Clubs', category: 'Other' },
-    { id: 'vipr', name: 'ViPR', category: 'Other' },
-
+    { id: 'bulgarianBag', name: 'Bulgarian Bag', categories: [EquipmentCategory.other] },
+    { id: 'indianClub', name: 'Indian Clubs', categories: [EquipmentCategory.other] },
+    { id: 'vipr', name: 'ViPR', categories: [EquipmentCategory.other] },
     // General
-    { id: 'stairs', name: 'Stairs', category: 'General' }
+    { id: 'stairs', name: 'Stairs', categories: [EquipmentCategory.general] }
 ]

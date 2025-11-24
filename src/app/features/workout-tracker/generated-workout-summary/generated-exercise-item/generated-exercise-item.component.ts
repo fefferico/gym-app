@@ -15,6 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { TranslateModule } from '@ngx-translate/core';
 import { weightToExact } from '../../../../core/services/workout-helper.service';
 import { WorkoutUtilsService } from '../../../../core/services/workout-utils.service';
+import { EXERCISE_CATEGORY_TYPES } from '../../../../core/models/exercise-category.model';
 
 @Component({
     selector: 'app-generated-exercise-item',
@@ -79,8 +80,8 @@ export class GeneratedExerciseItemComponent implements OnInit {
     ngOnInit(): void { }
 
 
-    isBodyweight = computed<boolean>(() => this.baseExercise()?.category === 'bodyweightCalisthenics');
-    isCardio = computed<boolean>(() => this.baseExercise()?.category === 'cardio');
+    isBodyweight = computed<boolean>(() => this.baseExercise()?.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.bodyweightCalisthenics) === EXERCISE_CATEGORY_TYPES.bodyweightCalisthenics);
+    isCardio = computed<boolean>(() => this.baseExercise()?.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.cardio) === EXERCISE_CATEGORY_TYPES.cardio);
 
     roundInfo = computed(() => {
         const ex = this.exercise();

@@ -1,38 +1,13 @@
 import { EquipmentValue } from "../services/equipment-data";
 import { MuscleValue } from "../services/muscles-data";
-import { Equipment } from "./equipment.model";
-import { Muscle } from "./muscle.model";
-
-// src/app/core/models/exercise.model.ts
-export const EXERCISE_CATEGORIES = [
-  'bodyweightCalisthenics',
-  'rehabilitationMobility',
-  'yogaPilates',
-  'powerlifting',
-  'olympicWeightlifting',
-  'crossfit',
-  'dumbbells',
-  'kettlebells',
-  'strength',
-  'barbells',
-  'machines',
-  'cables',
-  'bands',
-  'cardio',
-  'stretching',
-  'plyometrics',
-  'strongman',
-  'custom',
-  'other',
-] as const;
-
-export type ExerciseCategory = typeof EXERCISE_CATEGORIES[number];
+import { EXERCISE_CATEGORY_TYPES } from "./exercise-category.model";
 
 export interface Exercise {
   id: string; // Unique identifier (e.g., UUID or a slug like 'push-up')
   name: string;
   description: string;
-  category: ExerciseCategory;
+  categories: EXERCISE_CATEGORY_TYPES[];
+  categoriesLabel?: string; // translated category labels
   muscleGroups: MuscleValue[]; // e.g., ['Chest', 'Triceps', 'Shoulders (Anterior)']
   primaryMuscleGroup?: MuscleValue; // For easier filtering/display
   equipmentNeeded?: EquipmentValue[]; // e.g., ['Dumbbells', 'Bench'] or empty for bodyweight

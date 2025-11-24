@@ -37,6 +37,7 @@ import { WorkoutUtilsService } from '../../../core/services/workout-utils.servic
 import { UnitsService } from '../../../core/services/units.service';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
 import { ShatterableDirective } from '../../../animations/shatterable.directive';
+import { EXERCISE_CATEGORY_TYPES } from '../../../core/models/exercise-category.model';
 
 interface DayOption {
     value: number;
@@ -111,7 +112,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     availableRoutines: Routine[] = [];
     modalSearchTerm = signal('');
     private targetScheduleIndexForRoutine: number | null = null; // To know which schedule day to update
-    private targetIndicesForRoutine: { weekIndex?: number, dayIndex: number } | null = null;
+    protected targetIndicesForRoutine: { weekIndex?: number, dayIndex: number } | null = null;
 
     // Day options for dropdown
     dayOfWeekOptions: DayOption[] = [
@@ -655,7 +656,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         }
 
         this.expandedWeekIds.set(new Set()); // Collapse all weeks
-        this.expandedDayIds.set(new Set());  // (Optional) Collapse all days too
+        this.expandedDayIds.set(new Set());  // Collapse all days too
     }
 
     createScheduledDayGroup(day?: Partial<ScheduledRoutineDay>): FormGroup {
@@ -872,7 +873,6 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         this.scheduleFormArray.updateValueAndValidity();
     }
 
-    // --- MODIFIED: Signature and logic updated ---
     openRoutineSelectionModal(scheduleIndexOrWeekIndex: number, dayIndex?: number): void {
         if (this.isViewMode) return;
         if (dayIndex !== undefined) { // Linear mode
@@ -1701,7 +1701,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         term = this.exerciseService.normalizeExerciseNameForSearch(term);
         return this.availableExercises.filter(ex =>
             ex.name.toLowerCase().includes(term) ||
-            (ex.category && ex.category.toLowerCase().includes(term)) ||
+            (ex.categories && ex.categories.map(cat => cat.toString().toLowerCase()).join(', ').includes(term)) ||
             (ex.description && ex.description.toLowerCase().includes(term)) ||
             (ex.primaryMuscleGroup && ex.primaryMuscleGroup.toLowerCase().includes(term))
         );
@@ -1712,8 +1712,8 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         // Here's a synchronous fallback using availableExercises if possible:
         if (!exerciseId) return false;
         const exerciseDetails = this.availableExercises.find(e => e.id === exerciseId);
-        if (exerciseDetails && exerciseDetails.category) {
-            return exerciseDetails.category === 'cardio';
+        if (exerciseDetails && exerciseDetails.categories) {
+            return exerciseDetails.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.cardio) !== undefined;
         }
         return false;
     }
@@ -1773,7 +1773,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 id: `custom-adhoc-ex-${slug}-${uuidv4()}`,
                 name: exerciseName,
                 description: description,
-                category: 'custom',
+                categories: [EXERCISE_CATEGORY_TYPES.custom],
                 muscleGroups: [],
                 primaryMuscleGroup: undefined,
                 imageUrls: []
@@ -2210,6 +2210,24 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         const cacheKey = `0-${routineIndex}`;
         this.temporaryCustomRoutines.set(cacheKey, routines[routineIndex % routines.length]);
     }
+
+    get chosenRoutineForModal(): Routine | null {
+        // For cycled: use targetScheduleIndexForRoutine, for linear: use targetIndicesForRoutine
+        if (this.targetIndicesForRoutine) {
+            const { weekIndex, dayIndex } = this.targetIndicesForRoutine;
+            let routineId: string | undefined;
+            if (weekIndex !== undefined) {
+                routineId = this.getWeekScheduleDayControl(weekIndex, dayIndex).get('routineId')?.value;
+            } else {
+                routineId = this.scheduleFormArray.at(dayIndex).get('routineId')?.value;
+            }
+            return this.availableRoutines.find(r => r.id === routineId) || null;
+        }
+        return null;
+    }
+
+    // Add this property to your component
+    routineModalDayContext: { weekIndex?: number, dayIndex: number } | null = null;
 }
 
 

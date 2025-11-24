@@ -11,13 +11,13 @@ import { WorkoutExercise } from '../models/workout.model';
 import { ToastService } from './toast.service';
 import { TranslateService } from '@ngx-translate/core';
 import { Muscle } from '../models/muscle.model';
-import { Equipment } from '../models/equipment.model';
 import { EQUIPMENT_NORMALIZATION_MAP, EquipmentService, HydratedEquipment } from './equipment.service';
 import { HydratedMuscle, MUSCLE_NORMALIZATION_MAP, MuscleMapService } from './muscle-map.service';
 import { MUSCLES_DATA, MuscleValue } from './muscles-data';
 import { EquipmentValue } from './equipment-data';
 import { EXERCISE_CATEGORY_NORMALIZATION_MAP, ExerciseCategoryService, HydratedExerciseCategory } from './exercise-category.service';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { EXERCISE_CATEGORY_TYPES, ExerciseCategory } from '../models/exercise-category.model';
 
 /**
  * Maps standardized muscle group names to the unique IDs of the paths in muscle-anatomy.svg.
@@ -51,6 +51,9 @@ export interface HydratedExercise extends Omit<Exercise, 'primaryMuscleGroup' | 
   primaryMuscleGroup?: Muscle;
   muscleGroups: Muscle[];
   equipmentNeeded: HydratedEquipment[];
+  categories: EXERCISE_CATEGORY_TYPES[]; // category ids
+  hydratedCategories?: HydratedExerciseCategory[]; // hydrated category objects
+  categoryLabels: string[]; // translated labels
 }
 
 @Injectable({
@@ -263,7 +266,9 @@ export class ExerciseService {
 
     const newExercise: Exercise = {
       description: '',
-      category: 'custom',
+      categories: Array.isArray(exerciseData.categories)
+        ? exerciseData.categories || []
+        : [exerciseData.categories ?? EXERCISE_CATEGORY_TYPES.other], // fallback for legacy
       muscleGroups: [],
       primaryMuscleGroup: undefined,
       imageUrls: [],
@@ -272,7 +277,6 @@ export class ExerciseService {
       id: exerciseData.id || uuidv4(),
       isCustom: true,
       isHidden: false,
-      // --- NEW: Set timestamps on creation ---
       createdAt: now,
       updatedAt: now,
       lastUsedAt: undefined // A new exercise has not been used yet
@@ -358,9 +362,9 @@ export class ExerciseService {
       this.isLoadingExercisesSubject.next(false);
     }
   }
-  getExercisesByCategory(category: string): Observable<Exercise[]> {
+  getExercisesByCategory(category: EXERCISE_CATEGORY_TYPES): Observable<Exercise[]> {
     return this.exercises$.pipe(
-      map(exercises => exercises.filter(ex => ex.category === category))
+      map(exercises => exercises.filter(ex => ex.categories?.some(cat => cat === category)))
     );
   }
 
@@ -376,21 +380,18 @@ export class ExerciseService {
       this.exerciseCategoryService.hydratedCategories$
     ]).pipe(
       map(([exercises, hydratedCategories]) => {
-        // 1. Collect unique, normalized category IDs from exercises
         const uniqueCategoryIds = [
           ...new Set(
-            exercises
-              .map(ex =>
-                EXERCISE_CATEGORY_NORMALIZATION_MAP[ex.category?.toLowerCase().trim() || ''] ||
-                ex.category?.toLowerCase().trim()
+            exercises.flatMap(ex =>
+              (ex.categories || []).map(cat =>
+                EXERCISE_CATEGORY_NORMALIZATION_MAP[cat.toString().toLowerCase().trim() || ''] || cat.toString().toLowerCase().trim()
               )
-              .filter((cat): cat is string => !!cat)
+            ).filter((cat): cat is string => !!cat)
           )
         ].sort();
 
-        // 2. Map those IDs to hydrated categories with translated labels
         return uniqueCategoryIds
-          .map(id => hydratedCategories.find(cat => cat.id === id))
+          .map(id => hydratedCategories.find(cat => cat.id.toString() === id))
           .filter((cat): cat is HydratedExerciseCategory => !!cat);
       })
     );
@@ -534,13 +535,34 @@ export class ExerciseService {
     if (nameLower.includes('run') || nameLower.includes('cardio') || nameLower.includes('tapis') || nameLower.includes('jog')) return 'cardio';
     if (nameLower.includes('resistance band')) return 'resistanceBand';
 
-    if (baseExercise?.category) {
-      const categoryLower = baseExercise.category.toLowerCase();
-      if (categoryLower === 'strength' || categoryLower === 'powerlifting' || categoryLower === 'olympic weightlifting') {
-        if (nameLower.includes('squat') || nameLower.includes('deadlift') || nameLower.includes('bench')) return 'barbell';
+    if (baseExercise?.categories) {
+      // Support both string and array for categories
+      const categoriesArray = Array.isArray(baseExercise.categories)
+        ? baseExercise.categories
+        : [baseExercise.categories];
+      const categoriesLower = categoriesArray.map(cat => (cat.toString() || '').toLowerCase()).join(' ');
+
+      if (
+        categoriesLower.includes('strength') ||
+        categoriesLower.includes('powerlifting') ||
+        categoriesLower.includes('olympic weightlifting')
+      ) {
+        if (
+          nameLower.includes('squat') ||
+          nameLower.includes('deadlift') ||
+          nameLower.includes('bench')
+        ) {
+          return 'barbell';
+        }
       }
-      if (categoryLower === 'cardio') return 'cardio';
-      if (categoryLower === 'calisthenics' || categoryLower === 'plyometrics' || categoryLower === 'bodyweightCalisthenics') return 'bodyweightCalisthenics'; // Added bodyweight category check
+      if (categoriesLower.includes('cardio')) return 'cardio';
+      if (
+        categoriesLower.includes('calisthenics') ||
+        categoriesLower.includes('plyometrics') ||
+        categoriesLower.includes('bodyweightcalisthenics')
+      ) {
+        return 'bodyweightCalisthenics';
+      }
     }
     return 'default-exercise';
   }
@@ -610,7 +632,8 @@ export class ExerciseService {
 
   /** Returns the current list of programs for backup */
   public getDataForBackup(): Exercise[] {
-    return this.exercisesSubject.getValue(); // Get current value from BehaviorSubject
+    // Only export custom exercises
+    return this.exercisesSubject.getValue().filter(ex => ex.isCustom);
   }
 
   /**
@@ -631,8 +654,6 @@ export class ExerciseService {
       return;
     }
 
-    // +++ START of new merge logic +++
-
     // 2. Get current state
     const currentExercises = this.exercisesSubject.getValue();
 
@@ -645,11 +666,29 @@ export class ExerciseService {
     let addedCount = 0;
 
     // 4. Iterate over the imported exercises and merge them into the map
-    newExercises.forEach(importedExercise => {
+    newExercises.forEach((importedExercise: any) => {
       if (!importedExercise.id || !importedExercise.name) {
         // Skip invalid entries in the import file
         console.warn('Skipping invalid exercise during import:', importedExercise);
         return;
+      }
+
+      // --- Handle legacy "category" field ---
+      if (!importedExercise.categories && importedExercise.category) {
+        importedExercise.categories = Array.isArray(importedExercise.category)
+          ? importedExercise.category
+          : [importedExercise.category];
+        // Optionally delete the old field
+        delete importedExercise.category;
+      }
+
+      // --- Handle legacy "equipmentNeeded" field ---
+      if (!importedExercise.equipmentNeeded && importedExercise.equipment) {
+        importedExercise.equipmentNeeded = Array.isArray(importedExercise.equipment)
+          ? importedExercise.equipment
+          : [importedExercise.equipment];
+        // Optionally delete the old field
+        delete importedExercise.equipment;
       }
 
       if (exerciseMap.has(importedExercise.id)) {
@@ -850,7 +889,7 @@ export class ExerciseService {
   /**
    * --- NEW METHOD ---
    * Scans all exercises and returns a sorted list of unique equipment names.
-   * It cleans up the equipment names by removing suffixes like (optional) and standardizing common names.
+   * It cleans up the equipment names by removing suffixes like and standardizing common names.
    * @returns An Observable emitting a string array of unique equipment.
    */
   getUniqueEquipment(): Observable<string[]> {
@@ -863,7 +902,7 @@ export class ExerciseService {
             // remove noise from equipment string
             // and reduce any KB-relates exercise to just 'Kettlebell'
             const altIndex = equip.indexOf(' (alternative)');
-            const optIndex = equip.indexOf(' (optional)');
+            const optIndex = equip.indexOf('');
             const dbIndex = equip.indexOf('Dumbbells');
             const dbsIndex = equip.indexOf('Dumbbell(s)');
             const kbIndex = equip.indexOf('Kettlebells');
@@ -935,6 +974,8 @@ export class ExerciseService {
           _searchName: exercise.name.toLowerCase(),
           name: (!translatedName || translatedName === `${translationKey}.name`) ? exercise.name : translatedName,
           description: (!translatedDescription || translatedDescription === `${translationKey}.description`) ? exercise.description : translatedDescription,
+          // equipmentNeeded should remain as in the original exercise object
+          equipmentNeeded: exercise.equipmentNeeded,
         };
       })
     );
@@ -980,14 +1021,11 @@ export class ExerciseService {
         const equipmentMap = new Map(equipments.map(eq => [eq.id, eq]));
         const categoryMap = new Map(categories.map(cat => [cat.id, cat]));
 
-        return exercises.map(ex => {
+        const hydrated = exercises.map(ex => {
           // Hydrate primary muscle group
           const normalizedPrimary = ex.primaryMuscleGroup
             ? MUSCLE_NORMALIZATION_MAP[ex.primaryMuscleGroup.toLowerCase().trim()] || ex.primaryMuscleGroup.toLowerCase().trim()
             : undefined;
-          if (normalizedPrimary?.includes('flexors')) {
-            console.log("here muscle");
-          }
           const primaryMuscleGroup = normalizedPrimary ? musclesMap.get(normalizedPrimary) : undefined;
 
           // Hydrate muscle groups
@@ -1008,20 +1046,26 @@ export class ExerciseService {
             .filter((eq): eq is HydratedEquipment => !!eq);
 
           // Hydrate category
-          const normalizedCategory = ex.category
-            ? EXERCISE_CATEGORY_NORMALIZATION_MAP[ex.category.toLowerCase().trim()] || ex.category.toLowerCase().trim()
-            : undefined;
-          const hydratedCategory = normalizedCategory ? categoryMap.get(normalizedCategory) : undefined;
+          const hydratedCategories: HydratedExerciseCategory[] = (ex.categories || [])
+            .map(cat =>
+              categoryMap.get(cat)
+            )
+            .filter((cat): cat is HydratedExerciseCategory => !!cat);
 
           return {
             ...ex,
+            _searchId: ex.id,
+            // use the original english exercise name
+            _searchName: ex.name.toLowerCase(),
             primaryMuscleGroup,
             muscleGroups,
             equipmentNeeded,
-            category: (hydratedCategory?.id || ex.category) as HydratedExercise['category'],
-            categoryLabel: hydratedCategory?.label || ex.category
+            categories: (ex.categories || []) as EXERCISE_CATEGORY_TYPES[], // keep as ids
+            categoryLabels: hydratedCategories.map(cat => cat.name)
           };
         });
+        // --- Sort by translated name ---
+        return hydrated.sort((a, b) => a.name.localeCompare(b.name));
       })
     );
   }
@@ -1044,7 +1088,8 @@ export class ExerciseService {
           switchMap(translatedExercise =>
             combineLatest([
               this.muscleMapService.musclesMap$,
-              this.equipmentService.getTranslatedEquipment()
+              this.equipmentService.getTranslatedEquipment(),
+              this.exerciseCategoryService.getHydratedCategories(),
             ]).pipe(
               map(([musclesMap, translatedEquipments]) => {
                 // Build a map for fast lookup
@@ -1071,15 +1116,16 @@ export class ExerciseService {
                   .map(eqRaw => {
                     if (!eqRaw) return undefined;
                     const eqKey = EQUIPMENT_NORMALIZATION_MAP[eqRaw.toLowerCase().trim()] || eqRaw.toLowerCase().trim();
-                    return translatedEquipmentMap.get(eqKey);
-                  })
-                  .filter((eq): eq is HydratedEquipment => !!eq);
+                    return translatedEquipmentMap.get(eqKey as EquipmentValue);
+                  });
 
                 return {
                   ...translatedExercise,
                   primaryMuscleGroup,
                   muscleGroups,
-                  equipmentNeeded
+                  equipmentNeeded: (equipmentNeeded || []) as HydratedEquipment[],
+                  categories: (translatedExercise.categories || []) as EXERCISE_CATEGORY_TYPES[],
+                  categoryLabels: translatedExercise.categories.map(cat => cat.toString())
                 };
               })
             )
@@ -1100,17 +1146,79 @@ export class ExerciseService {
   }
 
 
+  /**
+ * Hydrates and translates a custom list of Exercise objects.
+ * @param exercises The array of Exercise objects to hydrate.
+ * @returns An Observable emitting an array of HydratedExercise objects.
+ */
+  public getHydratedExerciseList(exercises: Exercise[]): Observable<HydratedExercise[]> {
+    if (!exercises || exercises.length === 0) {
+      return of([]);
+    }
 
-}
-const EXERCISE_NORMALIZATION_MAP: Record<string, string> = (() => {
-  const map: Record<string, string> = {};
-  for (const ex of EXERCISES_DATA) {
-    map[ex.id.toLowerCase().trim()] = ex.id;
-    map[ex.name.toLowerCase().trim()] = ex.id;
-    // Add more aliases if needed
+    return combineLatest([
+      this.getTranslatedExerciseList(exercises), // Observable<Exercise[]>
+      this.muscleMapService.musclesMap$,
+      this.equipmentService.hydratedEquipments$,
+      this.exerciseCategoryService.hydratedCategories$
+    ]).pipe(
+      map(([translatedExercises, musclesMap, equipments, categories]) => {
+        const equipmentMap = new Map(equipments.map(eq => [eq.id, eq]));
+        const categoryMap = new Map(categories.map(cat => [cat.id, cat]));
+
+        const hydrated = translatedExercises.map(ex => {
+          // Hydrate primary muscle group
+          const normalizedPrimary = ex.primaryMuscleGroup
+            ? MUSCLE_NORMALIZATION_MAP[ex.primaryMuscleGroup.toLowerCase().trim()] || ex.primaryMuscleGroup.toLowerCase().trim()
+            : undefined;
+          const primaryMuscleGroup = normalizedPrimary ? musclesMap.get(normalizedPrimary) : undefined;
+
+          // Hydrate muscle groups
+          const muscleGroups = (ex.muscleGroups || [])
+            .map(muscleId => {
+              const normId = MUSCLE_NORMALIZATION_MAP[muscleId.toLowerCase().trim()] || muscleId.toLowerCase().trim();
+              return musclesMap.get(normId);
+            })
+            .filter((m): m is Muscle => !!m);
+
+          // Hydrate equipment
+          const equipmentNeeded = (ex.equipmentNeeded || [])
+            .map(eqRaw => {
+              if (!eqRaw) return undefined;
+              const eqKey = EQUIPMENT_NORMALIZATION_MAP[eqRaw.toLowerCase().trim()] || eqRaw.toLowerCase().trim();
+              return equipmentMap.get(eqKey as EquipmentValue);
+            })
+            .filter((eq): eq is HydratedEquipment => !!eq);
+
+          // Hydrate all categories
+          const hydratedCategories: HydratedExerciseCategory[] = (ex.categories || [])
+            .map(cat => {
+              const hydratedCat = categoryMap.get(cat);
+              return hydratedCat
+                ? { id: hydratedCat.id, name: hydratedCat.name }
+                : undefined;
+            })
+            .filter((cat): cat is HydratedExerciseCategory => !!cat);
+
+          return {
+            ...ex,
+            _searchId: ex.id,
+            _searchName: ex.name.toLowerCase(),
+            primaryMuscleGroup,
+            muscleGroups,
+            equipmentNeeded,
+            categories: (ex.categories || []) as EXERCISE_CATEGORY_TYPES[], // keep as ids
+            hydratedCategories,
+            categoryLabels: hydratedCategories.map(cat => cat.name.toString())
+          };
+        });
+        // --- Sort by translated name ---
+        return hydrated.sort((a, b) => a.name.localeCompare(b.name));
+      })
+    );
   }
-  return map;
-})();
+}
+
 
 
 

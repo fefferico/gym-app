@@ -5,33 +5,36 @@ import { Observable, of } from 'rxjs';
 import { map, shareReplay, switchMap } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 
-import { Equipment } from '../models/equipment.model';
-import { EQUIPMENT_DATA, EquipmentValue } from './equipment-data';
+import { Equipment, EQUIPMENT_DATA, EquipmentCategory, EquipmentValue } from './equipment-data';
 import { toObservable } from '@angular/core/rxjs-interop';
-import { EXERCISE_CATEGORIES_DATA } from './exercise-categories-data';
 
 export interface HydratedEquipment {
   id: EquipmentValue;
   name: string;
-  category: string;
+  categories: string[];
+}
+
+export interface HydratedEquipmentCategory {
+  id: EquipmentCategory;
+  name: string;
 }
 
 // Build a map: legacyNameOrId (lowercase, trimmed) => canonicalId
 export const EQUIPMENT_NORMALIZATION_MAP: Record<string, string> = (() => {
   const map: Record<string, string> = {};
   for (const eq of EQUIPMENT_DATA) {
-    const kebabId = eq.id.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-    map[kebabId] = kebabId;
-    map[eq.id.toLowerCase().trim()] = kebabId;
+    const camelId = eq.id.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+    map[camelId] = camelId;
+    map[eq.id.toLowerCase().trim()] = camelId;
     if (eq.name) {
-      map[eq.name.toLowerCase().trim()] = kebabId;
+      map[eq.name.toLowerCase().trim()] = camelId;
     }
   }
 
   // --- Custom/legacy mappings ---
-  map['hyperextension bench/machine'] = 'hyperextension-bench'; // or 'hyperextension-machine' if that's your canonical id
-  map['hyperextension bench'] = 'hyperextension-bench';
-  map['hyperextension machine'] = 'hyperextension-machine';
+  map['hyperextension bench/machine'] = 'hyperextensionBench'; // or 'hyperextensionMachine' if that's your canonical id
+  map['hyperextension bench'] = 'hyperextensionBench';
+  map['hyperextension machine'] = 'hyperextensionMachine';
   // Add more as needed...
 
   return map;
@@ -42,6 +45,12 @@ function toKebabCase(str: string): string {
     .replace(/([a-z])([A-Z])/g, '$1-$2')
     .replace(/[\s_]+/g, '-')
     .toLowerCase();
+}
+
+function toCamelCase(str: string): string {
+  return str
+    .replace(/[-_\s]+(.)?/g, (_, c) => c ? c.toUpperCase() : '')
+    .replace(/^(.)/, (m) => m.toLowerCase());
 }
 
 /**
@@ -92,10 +101,12 @@ export class EquipmentService {
 
         return this.translate.stream(translationKeys).pipe(
           map(translations => {
-            return equipment.map(eq => ({
-              ...eq,
-              name: translations[`equipments.${eq.id}`] || eq.id
-            }));
+            return equipment
+              .map(eq => ({
+                ...eq,
+                name: translations[`equipments.${eq.id}`] || eq.id
+              }))
+              .sort((a, b) => a.name.localeCompare(b.name));
           })
         );
       }),
@@ -119,29 +130,37 @@ export class EquipmentService {
   private hydratedEquipments = signal<HydratedEquipment[]>([]);
   hydratedEquipments$ = toObservable(this.hydratedEquipments);
 
+  private hydratedEquipmentCategories = signal<string[]>([]);
+  hydratedEquipmentCategories$ = toObservable(this.hydratedEquipmentCategories);
+
   // Loads translations for all equipments
-private loadTranslations() {
-  const equipmentKeys = EQUIPMENT_DATA.map(eq => `equipments.${eq.id}`);
-  // Filter out nulls so categoryKeys is string[]
-  const categoryKeys = EQUIPMENT_DATA
-    .map(eq => eq.category ? `categories.${eq.category}` : null)
-    .filter((key): key is string => !!key);
+  private loadTranslations() {
+    const equipmentKeys = EQUIPMENT_DATA.map(eq => `equipments.${eq.id}`);
+    // Filter out nulls so categoryKeys is string[]
+    const categoryKeys = EQUIPMENT_DATA
+      .map(eq => eq.categories ? eq.categories.map(cat => `categories.${cat}`) : null)
+      .filter((key): key is string[] => !!key);
 
-  const allKeys = [...equipmentKeys, ...categoryKeys];
+    const allKeys = [...equipmentKeys, ...categoryKeys.flat()];
 
-  this.translate.get(allKeys).subscribe(translations => {
-    const hydrated = EQUIPMENT_DATA.map(eq => ({
-      id: eq.id as EquipmentValue,
-      name: translations[`equipments.${eq.id}`] || eq.id,
-      category: eq.category ? translations[`categories.${eq.category}`] || eq.category : ''
-    }));
-    this.hydratedEquipments.set(hydrated);
-  });
-}
+    this.translate.get(allKeys).subscribe(translations => {
+      const hydrated = EQUIPMENT_DATA.map(eq => ({
+        id: eq.id as EquipmentValue,
+        name: translations[`equipments.${eq.id}`] || eq.id,
+        categories: eq.categories ? eq.categories.map(cat => translations[`categories.${cat}`] || cat) : []
+      }));
+      this.hydratedEquipments.set(hydrated);
+    });
+  }
 
   // Returns all hydrated categories
-  getHydratedCategories(): HydratedEquipment[] {
-    return this.hydratedEquipments();
+  getEquipmentHydratedCategories(): HydratedEquipmentCategory[] {
+    return Object.values(EquipmentCategory)
+      .map((catId): HydratedEquipmentCategory => ({
+        id: catId,
+        name: this.translate.instant(`equipments.categories.${catId}`) || catId
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
   }
 
   // Returns all canonical equipment IDs

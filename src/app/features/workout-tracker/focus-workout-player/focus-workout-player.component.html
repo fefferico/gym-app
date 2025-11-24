@@ -246,7 +246,7 @@
               </div>
 
               <div
-                *ngIf="csf['actualReps'] && activeSet.setData.targetReps !== undefined && activeSetInfo()?.baseExerciseInfo?.category !== 'cardio'">
+                *ngIf="csf['actualReps'] && activeSet.setData.targetReps !== undefined && isCardio(activeSetInfo()?.baseExerciseInfo)">
                 <label
                   class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center mb-1">Reps
                   <span *ngIf="getSetTargetDisplay(activeSet.setData, metricEnum.reps) as target" class="normal-case">
@@ -318,7 +318,7 @@
               <div class="mt-5" *ngIf="showNotes()">
                 <label for="setNotes" appPress (shortPress)="showNotes.set(!showNotes())"
                   class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center mb-1">Set
-                  Notes (Optional)</label>
+                  Notes</label>
                 <textarea id="setNotes" formControlName="setNotes" rows="1" [disabled]="getDisabled()"
                   class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-800 dark:text-gray-200 text-m disabled:opacity-60"
                   placeholder="e.g., felt good, struggled on last rep..."></textarea>

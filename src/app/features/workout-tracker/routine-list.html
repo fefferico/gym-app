@@ -13,9 +13,8 @@
 
     <main>
         <!-- Filter Accordion Section for Routines -->
-        <div id="filter-accordion"
-            class="overflow-y-auto transition-all duration-500 ease-in-out rounded-md scrollbar-thin scrollbar-thumb-primary scrollbar-track-gray-200 dark:scrollbar-track-gray-800"
-            [style.maxHeight]="isFilterAccordionOpen() ? '600px' : '0px'" [class.mb-6]="isFilterAccordionOpen()"
+        <div id="filter-accordion" class="overflow-y-auto transition-all duration-500 ease-in-out rounded-md"
+            [style.maxHeight]="isFilterAccordionOpen() ? '2000px' : '0px'" [class.mb-6]="isFilterAccordionOpen()"
             [ngClass]="{ '!overflow-visible relative z-20': isColorFilterOpen() }">
             <div class="p-4 bg-white dark:bg-gray-700 rounded-md shadow-md border dark:border-gray-600 mt-2">
                 <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">{{ 'routineList.filters.title' |
@@ -38,7 +37,8 @@
                             [value]="selectedRoutineGoal() || ''"
                             class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
                             <option value="">{{ 'routineList.filters.anyGoal' | translate }}</option>
-                            <option *ngFor="let goal of uniqueRoutineGoals()" [value]="goal">{{ goal | titlecase }}
+                            <option *ngFor="let goal of uniqueRoutineGoals()" [value]="goal">
+                                {{ ('workoutBuilder.goals.' + removeSpaceFromGoalName(goal)) | translate | titlecase }}
                             </option>
                         </select>
                     </div>
@@ -50,8 +50,9 @@
                             [value]="selectedRoutineMuscleGroup() || ''"
                             class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
                             <option value="">{{ 'routineList.filters.anyMuscle' | translate }}</option>
-                            <option *ngFor="let muscle of uniqueRoutineMuscleGroups()" [value]="muscle">{{ muscle |
-                                titlecase }}</option>
+                            <option *ngFor="let muscle of uniqueRoutineMuscleGroups()" [value]="muscle">
+                                {{ 'muscles.' + removeSpaceFromMuscleName(muscle) | translate | titlecase }}
+                            </option>
                         </select>
                     </div>
                     <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 md:border-none">
@@ -102,12 +103,13 @@
                     <div #colorFilterContainer class="relative">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
                             'routineList.filters.colorLabel' | translate }}</label>
-                        <button (click)="toggleColorFilterDropdown()" [disabled]="uniqueRoutineColors().length === 0"
+                        <button (click)="toggleColorFilterDropdown(); $event.stopPropagation();"
+                            (mousedown)="preventScroll($event)" [disabled]="uniqueRoutineColors().length === 0"
                             class="relative w-full cursor-pointer rounded-md bg-white dark:bg-gray-600 py-2 pl-3 pr-10 text-left border border-gray-300 dark:border-gray-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light disabled:opacity-50 disabled:cursor-not-allowed">
 
                             <!-- Display selected color -->
                             <ng-container *ngIf="selectedColorFilter() as selectedColor; else anyColor">
-                                <span class="flex items-center gap-x-2">
+                                <span class="flex items-center gap-x-2 text-black dark:text-white">
                                     <span class="inline-block h-4 w-4 rounded-full"
                                         [style.background-color]="selectedColor"></span>
                                     <span class="block truncate">{{ selectedColor }}</span>
@@ -161,8 +163,7 @@
                                         'bg-primary text-white focus:ring-primary-dark': selectedEquipment().includes(equipment.key),
                                         'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 focus:ring-gray-400': !selectedEquipment().includes(equipment.key)
                                       }">
-                            {{ equipment.label }}
-                        </button>
+                            {{ equipment.label | translate }} </button>
                     </div>
                 </div>
                 <div class="mt-4 flex justify-between items-center">
@@ -199,13 +200,13 @@
                 </button>
 
                 <!-- Dynamic Category Chips -->
-                <button *ngFor="let category of uniquePrimaryCategories()" (click)="selectPrimaryCategory(category)"
+                <button *ngFor="let category of uniquePrimaryCategories()" (click)="selectPrimaryCategory(category.id)"
                     class="px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-200 ease-in-out whitespace-nowrap flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
                     [ngClass]="{
-                            'bg-primary text-white focus:ring-primary-dark': selectedPrimaryCategory() === category,
-                            'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 focus:ring-gray-400': selectedPrimaryCategory() !== category
+                            'bg-primary text-white focus:ring-primary-dark': selectedPrimaryCategory() === category.id,
+                            'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 focus:ring-gray-400': selectedPrimaryCategory() !== category.id
                         }">
-                    {{ category }}
+                    {{ category.name }}
                 </button>
             </div>
         </div>
@@ -225,13 +226,6 @@
                     [style.zIndex]="areActionsVisible(routine.id) ? 50 : 'auto'">
 
                     <div class="p-3 h-full" [ngClass]="{'text-primary dark:text-primary-light': !routine.cardColor}">
-                        <!-- 
-                            =================== START OF CORRECTION ===================
-                            The title and the menu are now inside a single flex container.
-                            This ensures they are perfectly aligned with each other.
-                            The 'absolute' positioning on the menu's parent has been removed.
-                            The 'pr-8' padding on the h2 has been removed as it's no longer needed.
-                        -->
                         <div class="flex justify-between items-start mb-1.5">
                             <h2 class="text-lg font-semibold" [title]="routine.name">{{ routine.name }}</h2>
 
@@ -264,7 +258,6 @@
                                 </app-action-menu>
                             </div>
                         </div>
-                        <!-- =================== END OF CORRECTION =================== -->
 
                         <p *ngIf="routine.description" [innerHTML]="updateSanitizedDescription(routine.description)"
                             class="mb-2 line-clamp-2 text-sm sm:text-xs" [ngClass]="getCardTextColor(routine)"
@@ -309,12 +302,6 @@
                                 {{ 'muscles.'+removeSpaceFromMuscleName(muscle) | translate | titlecase }}
                             </button>
                         </div>
-                        <!-- 
-                            =================== START OF CORRECTION ===================
-                            This <ng-container> uses the traditional *ngIf syntax with 'as'
-                            to create a local variable 'routineInfo'. This is the backwards-compatible
-                            way to achieve the same optimization as the new '@if' block.
-                        -->
                         <ng-container *ngIf="lastLoggedRoutineInfo()[routine.id] as routineInfo">
 
                             <!-- Case 1: The routine HAS been performed. We use the 'else' block for the other case. -->
@@ -360,7 +347,6 @@
                             </div>
 
                         </ng-container>
-                        <!-- =================== END OF CORRECTION =================== -->
 
                         <div class="flex my-2 text-sm sm:text-xs text-gray-500 dark:text-gray-300">
                             <div *ngIf="routine.isHidden" (click)="toggleOnlyHiddenRoutines($event)" appPress

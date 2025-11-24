@@ -8,8 +8,8 @@ import { StorageService } from './storage.service';
 import { ToastService } from './toast.service';
 import { AlertService } from './alert.service';
 import { PersonalGymEquipment } from '../models/personal-gym.model';
-import { Equipment } from '../models/equipment.model';
 import { TranslateService } from '@ngx-translate/core';
+import { Equipment } from './equipment-data';
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +19,6 @@ export class PersonalGymService {
   private toastService = inject(ToastService);
   private alertService = inject(AlertService);
   private translate = inject(TranslateService);
-
   private readonly PERSONAL_GYM_STORAGE_KEY = 'fitTrackPro_personalGym';
 
   // --- State Management ---
@@ -73,6 +72,11 @@ export class PersonalGymService {
     return this.equipment$.pipe(
       map(equipmentList => equipmentList.find(item => item.id === id))
     );
+  }
+
+  getTranslatedEquipmentName(equipment: Equipment): string {
+    const translated = this.translate.instant(equipment.id);
+    return translated !== equipment.name ? translated : equipment.name;
   }
 
   /**

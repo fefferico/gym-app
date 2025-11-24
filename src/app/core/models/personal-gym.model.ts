@@ -1,16 +1,16 @@
 // src/app/core/models/personal-gym.model.ts
 
+import { Equipment, EquipmentCategory, EquipmentValue } from "../services/equipment-data";
+
 // --- ENUMS AND TYPES (Unchanged) ---
-export type EquipmentCategory =
-  | 'Dumbbell' | 'Kettlebell' | 'Plate' | 'Barbell' | 'Band' | 'Machine'
-  | 'Accessory' | 'Bag' | 'Macebell' | 'Club' | 'Cardio' | 'Custom';
+
 export type WeightType = 'fixed' | 'adjustable';
 export type BandType = 'loop' | 'mini-loop' | 'handled' | 'therapy';
 export type MachineLoadType = 'stack' | 'plate-loaded' | 'bodyweight';
 
 // --- BASE INTERFACE (Unchanged) ---
-export interface BaseEquipment {
-  id: string;
+export interface BaseEquipment extends Equipment {
+  id: EquipmentValue;
   category: EquipmentCategory;
   name: string;
   quantity: number;
@@ -28,13 +28,13 @@ export interface BaseEquipment {
 // --- SPECIFIC, UNAMBIGUOUS INTERFACES ---
 
 export interface FixedWeightEquipment extends BaseEquipment {
-  category: 'Dumbbell' | 'Kettlebell' | 'Macebell' | 'Club';
+  category: EquipmentCategory.dumbbell | EquipmentCategory.kettlebell | EquipmentCategory.macebell | EquipmentCategory.club;
   weightType: 'fixed';
   weight: number;
 }
 
 export interface AdjustableWeightEquipment extends BaseEquipment {
-  category: 'Dumbbell' | 'Kettlebell' | 'Macebell' | 'Club';
+  category: EquipmentCategory.dumbbell | EquipmentCategory.kettlebell | EquipmentCategory.macebell | EquipmentCategory.club;
   weightType: 'adjustable';
   minweight: number;
   maxweight: number;
@@ -44,27 +44,27 @@ export interface AdjustableWeightEquipment extends BaseEquipment {
 export type PlateType = 'bumper' | 'iron' | 'standard' | 'olympic';
 
 export interface WeightPlate extends BaseEquipment {
-  category: 'Plate';
+  category: EquipmentCategory.plate;
   weight: number;
   type: PlateType;
   color: string;
 }
 
 export interface Barbell extends BaseEquipment {
-  category: 'Barbell';
+  category: EquipmentCategory.barbell;
   weight: number;
   barType?: 'olympic' | 'standard' | 'ez-curl' | 'hex' | 'swiss' | 'custom';
 }
 
 export interface Sandbag extends BaseEquipment {
-  category: 'Bag';
+  category: EquipmentCategory.bag;
   maxweight: number;
   isFilled: boolean;
   currentWeightKg?: number;
 }
 
 export interface ResistanceBand extends BaseEquipment {
-  category: 'Band';
+  category: EquipmentCategory.band;
   bandType: BandType;
   resistanceLevel?: 'extra-light' | 'light' | 'medium' | 'heavy' | 'extra-heavy';
   resistance?: number;
@@ -73,22 +73,22 @@ export interface ResistanceBand extends BaseEquipment {
 }
 
 export interface Machine extends BaseEquipment {
-  category: 'Machine';
+  category: EquipmentCategory.machine;
   loadType: MachineLoadType;
   maxLoad?: number;
 }
 
 export interface Accessory extends BaseEquipment {
-  category: 'Accessory';
+  category: EquipmentCategory.accessory;
   isAdjustable?: boolean;
 }
 
 export interface CardioEquipment extends BaseEquipment {
-  category: 'Cardio';
+  category: EquipmentCategory.cardio;
 }
 
 export interface CustomEquipment extends BaseEquipment {
-  category: 'Custom';
+  category: EquipmentCategory.custom;
   customCategoryName: string;
   properties: {
     key: string;

@@ -9,7 +9,6 @@ import { combineLatest, of, Subscription } from 'rxjs';
 import { PersonalGymService } from '../../../core/services/personal-gym.service';
 import { ToastService } from '../../../core/services/toast.service';
 import {
-  EquipmentCategory,
   WeightType,
   BandType,
   MachineLoadType,
@@ -18,6 +17,8 @@ import {
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { UnitsService } from '../../../core/services/units.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { EquipmentCategory as EquipmentCategoryEnum } from '../../../core/services/equipment-data';
+import { EquipmentService } from '../../../core/services/equipment.service';
 
 @Component({
   selector: 'app-personal-gym-form',
@@ -30,26 +31,25 @@ export class PersonalGymFormComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private personalGymService = inject(PersonalGymService);
+  protected equipmentService = inject(EquipmentService);
   private toastService = inject(ToastService);
   unitService = inject(UnitsService);
-    private translate = inject(TranslateService);
+  private translate = inject(TranslateService);
 
   equipmentForm!: FormGroup;
   isEditMode = signal(false);
   editingEquipmentId: string | null = null;
 
-pageTitle = computed(() => 
-    this.isEditMode() 
-      ? this.translate.instant('personalGym.form.editTitle') 
+  pageTitle = computed(() =>
+    this.isEditMode()
+      ? this.translate.instant('personalGym.form.editTitle')
       : this.translate.instant('personalGym.form.addTitle')
   );
 
   private subscriptions = new Subscription();
-
-  readonly categories: EquipmentCategory[] = [
-    'Dumbbell', 'Kettlebell', 'Plate', 'Barbell', 'Band', 'Machine',
-    'Accessory', 'Bag', 'Macebell', 'Club', 'Cardio', 'Custom'
-  ];
+  hydratedCategories = this.equipmentService.getEquipmentHydratedCategories();  
+  protected categoriesEnum = EquipmentCategoryEnum;
+  readonly categories: EquipmentCategoryEnum[] = Object.values(EquipmentCategoryEnum);
   readonly weightTypes: WeightType[] = ['fixed', 'adjustable'];
   readonly bandTypes: BandType[] = ['loop', 'mini-loop', 'handled', 'therapy'];
   readonly machineLoadTypes: MachineLoadType[] = ['stack', 'plate-loaded', 'bodyweight'];
@@ -68,7 +68,7 @@ pageTitle = computed(() =>
   constructor() {
     this.equipmentForm = this.fb.group({
       name: ['', Validators.required],
-      category: [null as EquipmentCategory | null, Validators.required],
+      category: [null as EquipmentCategoryEnum | null, Validators.required],
       quantity: [1, [Validators.required, Validators.min(1)]],
       brand: [''],
       notes: [''],
@@ -98,31 +98,25 @@ pageTitle = computed(() =>
       this.updateFormForCategory(category);
     });
     this.subscriptions.add(categorySub!);
-
-    // ** THE FIX for dangling subscriptions **: 
-    // We only need one subscription that listens to weightType changes.
-    // However, the weightType control itself is dynamic. We must handle this carefully.
-    // Instead of subscribing here, the logic to add/remove controls will be handled synchronously.
-    // The previous implementation was buggy. Let's simplify.
   }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
   }
 
-  private updateFormForCategory(category: EquipmentCategory | null): void {
+  private updateFormForCategory(category: EquipmentCategoryEnum | null): void {
     const dynamicControls = [
       'weightType', 'weight', 'minweight', 'maxweight', 'increment',
       'barType', 'bandType', 'resistanceLevel', 'resistance', 'color', 'length',
-      'loadType', 'maxLoad', 'customCategoryName', 'properties', 'isOlympic' // +++ Add isOlympic
+      'loadType', 'maxLoad', 'customCategoryName', 'properties', 'isOlympic'
     ];
     dynamicControls.forEach(ctrl => this.removeControl(ctrl));
 
     switch (category) {
-      case 'Dumbbell': // ... same as before
-      case 'Kettlebell':
-      case 'Macebell':
-      case 'Club':
+      case EquipmentCategoryEnum.dumbbell:
+      case EquipmentCategoryEnum.kettlebell:
+      case EquipmentCategoryEnum.macebell:
+      case EquipmentCategoryEnum.club:
         this.addControl('weightType', 'fixed', Validators.required);
         if (!this.subscriptions.closed) {
           const weightTypeSub = this.equipmentForm.get('weightType')?.valueChanges.subscribe(wt => {
@@ -133,31 +127,29 @@ pageTitle = computed(() =>
         this.updateFormForWeightType('fixed');
         break;
 
-      // +++ START: Modified Plate and Barbell cases
-      case 'Plate':
+      case EquipmentCategoryEnum.plate:
         this.addControl('weight', null, [Validators.required, Validators.min(0)]);
         this.addControl('isOlympic', true); // Default to true
         this.addControl('color', this.getOlympicPlateColor(0)); // Default color
         this.setupPlateColorSubscription();
         break;
-      case 'Barbell':
+      case EquipmentCategoryEnum.barbell:
         this.addControl('weight', null, [Validators.required, Validators.min(0)]);
         this.addControl('barType', 'olympic');
         break;
-      // +++ END: Modified cases
 
-      case 'Band':
+      case EquipmentCategoryEnum.band:
         this.addControl('bandType', 'loop', Validators.required);
         this.addControl('resistanceLevel', 'medium');
         this.addControl('resistance', null, [Validators.min(0)]);
         this.addControl('color', '');
         this.addControl('length', null, [Validators.min(0)]);
         break;
-      case 'Machine':
+      case EquipmentCategoryEnum.machine:
         this.addControl('loadType', 'stack', Validators.required);
         this.addControl('maxLoad', null, Validators.min(0));
         break;
-      case 'Custom':
+      case EquipmentCategoryEnum.custom:
         this.addControl('customCategoryName', '', Validators.required);
         this.addControl('properties', this.fb.array([]));
         break;
@@ -180,14 +172,13 @@ pageTitle = computed(() =>
   }
 
   private patchFormForEditing(equipment: PersonalGymEquipment): void {
-    // ** THE FIX for the race condition **:
     // 1. Synchronously build the form's structure based on the category.
     this.updateFormForCategory(equipment.category);
 
     // 2. NOW that all controls exist, patch their values.
     this.equipmentForm.patchValue(equipment);
 
-    if (equipment.category === 'Custom') {
+    if (equipment.category === EquipmentCategoryEnum.custom) {
       const propertiesArray = this.equipmentForm.get('properties') as FormArray;
       propertiesArray.clear();
       equipment.properties.forEach(prop => {
@@ -262,7 +253,6 @@ pageTitle = computed(() =>
     }
   }
 
-  // +++ NEW: Helper to get the standard color based on weight and unit
   private getOlympicPlateColor(weight: number): string {
     const unit = this.unitService.getWeightUnitSuffix();
     const colorMap = unit === 'kg' ? this.OLYMPIC_COLORS_KG : this.OLYMPIC_COLORS_LB;
