@@ -1034,9 +1034,11 @@
     "collapse": "RIDUCI",
     "ungroup": "SEPARA",
     "makeEmom": "RENDI EMOM",
-    "timer": "TIMER"
+    "timer": "TIMER",
+    "section": "Sezione"
   },
   "exerciseSelectionModal": {
+    "lastCategoryInfo": "Mostrando esercizi dalla tua ultima categoria selezionata: {{category}}",
     "filtersTitle": "Filtri e Ordinamento",
     "categoryLabel": "Categoria",
     "allCategories": "Tutte le Categorie",
@@ -1055,7 +1057,7 @@
     "clearFilters": "Pulisci Filtri",
     "custom": "Personalizzati",
     "count": "Risultati: {{count}}",
-    "lastUsed": "Ultimo uso: {{date}}",
+    "lastUsed": "Ultima sessione: {{date}}",
     "noSimilar": "Nessun esercizio simile trovato.",
     "noMatches": "Nessun esercizio corrisponde ai tuoi filtri.",
     "createCustom": "CREA UN NUOVO ESERCIZIO...",
@@ -1072,6 +1074,8 @@
     "addSelected": "Aggiungi selezionato/i"
   },
   "workoutBuilder": {
+    "locationLabel": "Luogo",
+    "locationPlaceholder": "Seleziona luogo",
     "wizard": {
       "templateOrBlankTitle": "Scegli un Modello",
       "templateOrBlankMsg": "Vuoi iniziare da un modello o creare una scheda personalizzata?",
@@ -1617,6 +1621,7 @@
       "addDay": "AGGIUNGI GIORNO",
       "dayNamePlaceholder": "es., Giorno di Spinta",
       "dayOfWeekLabel": "Giorno della Settimana",
+      "dayNameLabel": "Giorno",
       "cycleDayLabel": "Numero Giorno del Ciclo",
       "dayRequired": "Il giorno è obbligatorio.",
       "routineLabel": "Scheda",
@@ -1651,6 +1656,10 @@
       "saveChanges": "SALVA MODIFICHE"
     },
     "modal": {
+      "currentSelectedRoutine": "Scheda selezionata attuale",
+      "selectingFor": "Selezionando scheda per",
+      "week": "Settimana",
+      "day": "Giorno",
       "selectRoutineTitle": "Seleziona una Scheda",
       "searchPlaceholder": "Cerca schede...",
       "noMatches": "Nessuna scheda corrisponde alla tua ricerca",
@@ -1803,6 +1812,8 @@
   "restTimer": {
     "nextUp": "Prossimo",
     "lastTime": "Volta precedente",
+    "target": "Target",
+    "noTarget": "Nessun target",
     "skip": "Salta",
     "switchToStopwatch": "Passa al cronometro",
     "switchToTimer": "Passa al timer",
@@ -2254,7 +2265,7 @@
     "sandbag": "Sandbag",
     "bulgarianBag": "Bulgarian Bag",
     "steelMace": "Steel Mace / Macebell",
-    "steelClubs": "Steel Clubs / Clubbell",
+    "steelClub": "Steel Clubs / Clubbell",
     "indianClub": "indianClub",
     "vipr": "ViPR",
     "doorway": "Stipite della Porta",
@@ -2689,6 +2700,8 @@
     "loading": "Caricamento esercizi...",
     "backToTop": "Torna su",
     "filters": {
+      "equipmentLabel": "Attrezzatura",
+      "allEquipment": "Tutta l'Attrezzatura",
       "title": "Filtra Esercizi",
       "categoryLabel": "Categoria",
       "allCategories": "Tutte le Categorie",
@@ -2762,7 +2775,8 @@
     "placeholders": {
       "selectPrimary": "Seleziona Muscolo Primario",
       "searchMuscles": "Cerca per aggiungere muscoli...",
-      "searchEquipment": "Cerca o aggiungi attrezzatura..."
+      "searchEquipment": "Cerca o aggiungi attrezzatura...",
+      "searchCategories": "Cerca categorie..."
     },
     "buttons": {
       "cancel": "Annulla",

@@ -1,0 +1,41 @@
+{
+  "LOCATIONS": {
+    "LABEL": "Posizione",
+    "SELECT_PLACEHOLDER": "Dove ti alleni oggi?",
+    "CATEGORY": {
+      "RESIDENTIAL": "Casa / Residenziale",
+      "COMMERCIAL": "Palestre e Strutture",
+      "OUTDOOR": "All'aperto",
+      "TRAVEL": "In Viaggio",
+      "CORPORATE": "Ufficio / Lavoro",
+      "AQUATIC": "Piscina e Acqua",
+      "OTHER": "Altro"
+    },
+    "SPECIFIC": {
+      "LIVING_ROOM": "Soggiorno / Salotto",
+      "BEDROOM": "Camera da letto",
+      "GARAGE_GYM": "Palestra in Garage / Taverna",
+      "BACKYARD": "Giardino Privato",
+      "BALCONY": "Balcone / Terrazzo",
+      "DRIVEWAY": "Vialetto",
+      "COMMERCIAL_GYM": "Palestra Commerciale",
+      "CROSSFIT_BOX": "Box CrossFit",
+      "BOUTIQUE_STUDIO": "Studio Yoga / Pilates",
+      "DOJO": "Dojo Arti Marziali",
+      "PUBLIC_PARK": "Parco Pubblico (Erba)",
+      "CALISTHENICS_PARK": "Parco Calisthenics (Sbarre)",
+      "PLAYGROUND": "Parco Giochi",
+      "RUNNING_TRACK": "Pista d'Atletica",
+      "TRAIL": "Sentiero / Bosco",
+      "BEACH": "Spiaggia / Sabbia",
+      "HOTEL_ROOM": "Camera d'Albergo",
+      "HOTEL_GYM": "Palestra dell'Hotel",
+      "AIRPORT": "Aeroporto",
+      "OFFICE_CUBICLE": "Scrivania / Ufficio",
+      "OFFICE_GYM": "Palestra Aziendale",
+      "INDOOR_POOL": "Piscina Coperta",
+      "OUTDOOR_POOL": "Piscina Scoperta",
+      "OPEN_WATER": "Acque Libere (Lago/Mare)"
+    }
+  }
+}
