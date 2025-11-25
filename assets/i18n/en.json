@@ -106,7 +106,9 @@
     "weightToolkitTitle": "Weight toolkit",
     "weightToolkitDescription": "An all-in-one lifting toolkit. Instantly calculate plate math, percentages, 1RM, RPE, and official powerlifting scores",
     "exerciseLibraryTitle": "Exercise Library",
-    "exerciseLibraryDescription": "Browse and search a comprehensive library of exercises and complexes"
+    "exerciseLibraryDescription": "Browse and search a comprehensive library of exercises and complexes",
+    "clockTitle": "Clock",
+    "clockDescription": "A simple and functional clock for your workout"
   },
   "settings": {
     "title": "Profile & Settings",
@@ -2875,5 +2877,32 @@
     "Cardio": "Cardio",
     "Finisher": "Finisher",
     "CoolDown": "CoolDown"
+  },
+  "workoutSection": {
+    "assignToSectionTitle": "Assign to Section",
+    "assignToSectionDescription": "Select a section for the selected exercises:",
+    "assignToSectionLabel": "Section",
+    "assignToSectionNone": "None (Remove from Section)",
+    "assignToSectionAction": "Assign",
+    "sectionLabels": {
+      "WarmUp": "Warm Up",
+      "MainLift": "Main Lift",
+      "Cardio": "Cardio",
+      "Finisher": "Finisher",
+      "CoolDown": "Cool Down"
+    }
+  },
+  "timerCenter": {
+    "openButton": "Open Timer Center",
+    "title": "Timer Center",
+    "timer": "Timer",
+    "stopwatch": "Stopwatch",
+    "duration": "Duration",
+    "savePreferred": "Save as Preferred",
+    "start": "Start",
+    "stop": "Stop",
+    "reset": "Reset",
+    "addCustom": "Add Custom",
+    "modeLabel": "Mode"
   }
 }

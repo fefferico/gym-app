@@ -58,7 +58,9 @@
     "weightToolkitTitle": "Toolkit Pesi",
     "weightToolkitDescription": "Un toolkit completo per il sollevamento. Calcola dischi, percentuali, 1RM, RPE e punteggi ufficiali.",
     "exerciseLibraryTitle": "Biblioteca Esercizi",
-    "exerciseLibraryDescription": "Sfoglia la libreria degli esercizi e dei complex"
+    "exerciseLibraryDescription": "Sfoglia la libreria degli esercizi e dei complex",
+    "clockTitle": "Orologio",
+    "clockDescription": "Un orologio semplice e funzionale per il tuo allenamento"
   },
   "settings": {
     "title": "Profilo & Impostazioni",
@@ -2878,5 +2880,32 @@
     "Cardio": "Cardio",
     "Finisher": "Finisher",
     "CoolDown": "Defaticamento"
+  },
+  "workoutSection": {
+    "assignToSectionTitle": "Assegna alla sezione",
+    "assignToSectionDescription": "Seleziona una sezione per gli esercizi selezionati:",
+    "assignToSectionLabel": "Sezione",
+    "assignToSectionNone": "Nessuna (Rimuovi dalla sezione)",
+    "assignToSectionAction": "Assegna",
+    "sectionLabels": {
+      "WarmUp": "Riscaldamento",
+      "MainLift": "Esercizio principale",
+      "Cardio": "Cardio",
+      "Finisher": "Finisher",
+      "CoolDown": "Defaticamento"
+    }
+  },
+  "timerCenter": {
+    "openButton": "Apri Centro Timer",
+    "title": "Centro Timer",
+    "timer": "Timer",
+    "stopwatch": "Cronometro",
+    "duration": "Durata",
+    "savePreferred": "Salva come Preferito",
+    "start": "Avvia",
+    "stop": "Ferma",
+    "reset": "Reimposta",
+    "addCustom": "Aggiungi Personalizzato",
+      "modeLabel": "Modalità"
   }
 }
