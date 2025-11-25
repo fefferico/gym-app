@@ -2,6 +2,7 @@ import { Injectable } from "@angular/core";
 
 export enum AUDIO_TYPES {
   "countdown" = 'countdown',
+  "tick" = 'tick',
   "end" = 'end',
   "error" = 'error',
   "correct" = 'correct',
@@ -299,6 +300,26 @@ export class AudioService {
         osc2.start(now);
         osc2.stop(now + whistleDur);
         break;
+      case AUDIO_TYPES.tick: {
+        // Mechanical clock tick: sharp, short, high-pitched
+        oscillator.type = 'square'; // Sharper than sine
+        const tickDuration = 0.018; // 18ms, very short
+
+        // Start at 3500Hz, drop to 800Hz very quickly
+        oscillator.frequency.setValueAtTime(3500, now);
+        oscillator.frequency.exponentialRampToValueAtTime(800, now + tickDuration);
+
+        // Fast volume envelope
+        gainNode.gain.setValueAtTime(1, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, now + tickDuration);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioCtx.destination);
+
+        oscillator.start(now);
+        oscillator.stop(now + tickDuration);
+        break;
+      }
     }
   }
 
@@ -393,7 +414,7 @@ export class AudioService {
 
     // --- Volume (Gain) Envelope ---
     // A fast attack and a slightly longer decay to let the sound ring out a little.
-    gainNode.gain.setValueAtTime(0.7, now); // Start at a decent volume
+    gainNode.gain.setValueAtTime(0.8, now); // Start at a decent volume
     gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.2); // Fade out over 200ms
 
     // --- Connect Audio Graph and Play ---

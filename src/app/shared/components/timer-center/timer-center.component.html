@@ -1,0 +1,134 @@
+<!-- <button (click)="open()"
+    class="mb-2 bg-primary text-white px-4 py-2 rounded-md shadow hover:bg-primary-dark transition flex items-center">
+    <app-icon name="clock" class="w-5 h-5 mr-2"></app-icon>
+    {{ 'timerCenter.openButton' | translate }}
+</button> -->
+
+<div *ngIf="isOpen" class="fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+    <div [ngClass]="{
+      'w-full h-full max-w-none max-h-none rounded-none': fullscreen,
+      'bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 max-w-md w-full': !fullscreen
+    }" class="relative">
+        <!-- Close button -->
+        <button (click)="onClose()"
+            class="absolute top-2 right-2 text-gray-400 hover:text-gray-700 dark:hover:text-white text-2xl focus:outline-none">
+            <app-icon name="cancel" class="h-6 w-6"></app-icon>
+        </button>
+        <!-- Timer Center Content -->
+        <div class="p-6 flex flex-col items-center" [ngClass]="{ 'h-full': fullscreen }">
+            <h2
+                class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100 text-center w-full flex items-center justify-center">
+                <app-icon name="clock" class="w-7 h-7 text-primary inline-block mr-2"></app-icon>
+                {{ 'timerCenter.title' | translate }}
+            </h2>
+
+            <!-- Timer/Stopwatch Toggle Switch -->
+            <div class="flex items-center justify-between w-full mb-6">
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {{ 'timerCenter.modeLabel' | translate }}
+                </p>
+                <div class="relative w-44 flex rounded-lg bg-gray-200 dark:bg-gray-600 p-1">
+                    <div class="absolute top-1 bottom-1 bg-primary rounded-md shadow transition-all duration-300 ease-in-out"
+                        [ngClass]="{
+                            'left-1 right-1/2': timer.state().mode === 'timer',
+                            'left-1/2 right-1': timer.state().mode === 'stopwatch'
+                        }"></div>
+                    <button type="button" (click)="setMode('timer')"
+                        class="no-global-style relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
+                        [ngClass]="{'text-white': timer.state().mode === 'timer', 'text-gray-700 dark:text-gray-300': timer.state().mode !== 'timer'}">
+                        {{ 'timerCenter.timer' | translate }}
+                    </button>
+                    <button type="button" (click)="setMode('stopwatch')"
+                        class="no-global-style relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
+                        [ngClass]="{'text-white': timer.state().mode === 'stopwatch', 'text-gray-700 dark:text-gray-300': timer.state().mode !== 'stopwatch'}">
+                        {{ 'timerCenter.stopwatch' | translate }}
+                    </button>
+                </div>
+            </div>
+
+            <!-- CIRCLE TIMER (Timer Mode Only) -->
+            <div class="flex flex-col items-center justify-center w-full mb-4">
+                <div class="relative w-48 h-48 flex items-center justify-center" *ngIf="timer.state().mode === 'timer'">
+                    <svg class="absolute inset-0 transform -rotate-90" viewBox="0 0 200 200">
+                        <circle cx="100" cy="100" r="90" fill="transparent" stroke="rgba(0,0,0,0.08)"
+                            stroke-width="18" />
+                        <circle cx="100" cy="100" r="90" fill="transparent" stroke="currentColor" class="text-yellow-400"
+                            stroke-width="12" [attr.stroke-dasharray]="circleCircumference"
+                            [attr.stroke-dashoffset]="strokeDashoffset" stroke-linecap="round" />
+                    </svg>
+                    <div class="flex flex-col items-center justify-center text-center">
+                        <div
+                            class="text-5xl font-bold font-mono tabular-nums tracking-tighter text-yellow-800 dark:text-yellow-400">
+                            {{ timer.state().remaining | number:'1.0-0' }}<span class="text-2xl opacity-60"> s</span>
+                        </div>
+                        <div
+                            class="mt-1 text-base font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-300">
+                            {{ 'timerCenter.timer' | translate }}
+                        </div>
+                    </div>
+                </div>
+                <!-- Stopwatch Display -->
+                <div *ngIf="timer.state().mode === 'stopwatch'"
+                    class="flex flex-col items-center justify-center w-full">
+                    <div
+                        class="text-5xl font-bold font-mono tabular-nums tracking-tighter text-yellow-800 dark:text-yellow-400">
+                        {{ timer.state().remaining | number:'1.1-1' }}<span class="text-2xl opacity-60"> s</span>
+                    </div>
+                    <div
+                        class="mt-1 text-base font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-300">
+                        {{ 'timerCenter.stopwatch' | translate }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timer Controls -->
+            <div *ngIf="timer.state().mode === 'timer'" class="mb-6 w-full flex flex-col items-center gap-2">
+                <label for="duration-select" class="text-sm font-medium text-gray-700 dark:text-gray-300 self-start">
+                    {{ 'timerCenter.duration' | translate }}
+                </label>
+                <div class="flex flex-col sm:flex-row items-center gap-2 w-full justify-between">
+                    <select id="duration-select" [(ngModel)]="timer.state().duration"
+                        (ngModelChange)="setDuration(+($event))"
+                        class="px-2 py-1 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 w-full sm:w-40">
+                        <option *ngFor="let d of timer.state().preferredCountdowns" [ngValue]="d">
+                            {{ d }}s
+                        </option>
+                    </select>
+                    <button (click)="saveCurrentAsPreferred()"
+                        class="px-2 py-1 rounded bg-primary text-white text-xs font-semibold shadow hover:bg-primary-dark transition w-full sm:w-auto">
+                        {{ 'timerCenter.savePreferred' | translate }}
+                    </button>
+                </div>
+                <!-- Custom timer input -->
+                <div class="flex flex-col sm:flex-row items-center gap-2 w-full mt-2 justify-between">
+                    <input type="number" min="1" [(ngModel)]="customTimerValue" placeholder="Custom (s)"
+                        class="px-2 py-1 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 w-full sm:w-40" />
+                    <button (click)="addCustomTimer()"
+                        [disabled]="!customTimerValue || timer.state().preferredCountdowns.includes(customTimerValue)"
+                        class="px-2 py-1 rounded bg-green-500 text-white text-xs font-semibold shadow hover:bg-green-600 transition disabled:opacity-50 w-full sm:w-auto">
+                        {{ 'timerCenter.addCustom' | translate }}
+                    </button>
+                </div>
+            </div>
+
+            <!-- Start/Stop/Reset Controls -->
+            <div class="mb-6 flex justify-center gap-4 w-full">
+                <button (click)="start()" [disabled]="timer.state().running"
+                    class="flex items-center px-4 py-2 rounded-md bg-green-500 hover:bg-green-600 text-white font-semibold shadow disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto">
+                    <app-icon name="play"></app-icon>
+                    {{ 'timerCenter.start' | translate }}
+                </button>
+                <button (click)="pause()" [disabled]="!timer.state().running"
+                    class="flex items-center px-4 py-2 rounded-md bg-yellow-500 hover:bg-yellow-600 text-white font-semibold shadow disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto">
+                    <app-icon name="pause"></app-icon>
+                    {{ 'timerCenter.stop' | translate }}
+                </button>
+                <button (click)="timer.reset()"
+                    class="flex items-center px-4 py-2 rounded-md bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold shadow hover:bg-gray-400 dark:hover:bg-gray-500 w-full sm:w-auto">
+                    <app-icon name="restore"></app-icon>
+                    {{ 'timerCenter.reset' | translate }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

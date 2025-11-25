@@ -1,0 +1,50 @@
+:host {
+    display: block;
+}
+
+// button:not(.no-global-style) {
+//     @apply px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 transition-colors;
+//     margin-right: 0.5rem;
+
+//     &:hover {
+//         @apply bg-primary text-white;
+//     }
+
+//     &:disabled {
+//         @apply opacity-50 cursor-not-allowed;
+//     }
+// }
+
+h2 {
+    @apply text-center;
+}
+
+.modal-overlay {
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40;
+}
+
+.modal-content {
+    @apply relative bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full p-4;
+}
+
+.close-btn {
+    @apply absolute top-2 right-2 text-gray-500 hover:text-gray-900 dark:hover:text-white text-2xl;
+}
+
+@media (max-width: 640px) {
+    .modal-content {
+        @apply max-w-full rounded-none;
+    }
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 20px;
+    backdrop-filter: blur(10px);
+    z-index: 1050;
+}

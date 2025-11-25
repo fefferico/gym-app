@@ -201,6 +201,19 @@
           </p>
         </div>
       </button>
+      <button appBumpClick (click)="openClockComponent()"
+        class="flex items-start block px-2 py-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow dark:hover:bg-gray-600 hover:bg-gray-200">
+        <div class="flex flex-col items-start text-center">
+          <div class="flex items-center py-2">
+            <app-icon name="stopwatch" class="w-14 h-14 mr-2 text-purple-500"></app-icon>
+            <h3 class="text-md font-semibold text-gray-800 dark:text-gray-100 text-left">{{
+              'quickActions.clockTitle' | translate }}</h3>
+          </div>
+          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">{{
+            'quickActions.clockDescription' | translate }}
+          </p>
+        </div>
+      </button>
       <button appBumpClick (click)="navigateToExerciseLibrary()"
         class="flex items-start block px-2 py-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow dark:hover:bg-gray-600 hover:bg-gray-200">
         <div class="flex flex-col items-start text-center">
@@ -231,3 +244,7 @@
 <div class="modal-overlay" *ngIf="isCalculatorModalVisible">
   <app-barbell-calculator-modal (close)="closeCalculatorModal()"></app-barbell-calculator-modal>
 </div>
+<div class="modal-overlay" *ngIf="isClockComponentVisible">
+  <app-timer-center [isOpen]="isClockComponentVisible" (close)="closeClockComponent()" [fullscreen]="true"></app-timer-center>
+</div>
+

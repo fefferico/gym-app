@@ -6618,11 +6618,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   get orderedSections() {
     const routine = this.routine?.();
     if (!routine?.sections) return [];
-    return [...routine.sections].sort(
-      (a, b) =>
-        (WORKOUT_SECTION_TYPE_ORDER[a.type] ?? 99) -
-        (WORKOUT_SECTION_TYPE_ORDER[b.type] ?? 99)
-    );
+    return [...routine.sections]
+      .filter(section => section.type !== WorkoutSectionType.NONE)
+      .sort(
+        (a, b) =>
+          (WORKOUT_SECTION_TYPE_ORDER[a.type] ?? 99) -
+          (WORKOUT_SECTION_TYPE_ORDER[b.type] ?? 99)
+      );
   }
 
   getIconPath(exIndex: number): string {

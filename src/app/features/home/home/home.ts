@@ -19,12 +19,14 @@ import { BumpClickDirective } from '../../../shared/directives/bump-click.direct
 import { ShatterableDirective } from '../../../animations/shatterable.directive';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { AUDIO_TYPES, AudioService } from '../../../core/services/audio.service';
+import { TimerService } from '../../../core/services/timer.service';
+import { TimerCenterComponent } from '../../../shared/components/timer-center/timer-center.component';
 
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, TodaysWorkoutComponent, IconComponent, BarbellCalculatorModalComponent, TranslateModule, BumpClickDirective, ShatterableDirective], // Added DatePipe
+  imports: [CommonModule, TodaysWorkoutComponent, IconComponent, BarbellCalculatorModalComponent, TranslateModule, BumpClickDirective, ShatterableDirective, TimerCenterComponent], // Added DatePipe
   templateUrl: './home.html',
   styleUrls: ['./home.scss'],
   animations: [
@@ -47,6 +49,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   protected subscriptionService = inject(SubscriptionService);
   private translate = inject(TranslateService);
   protected audioService = inject(AudioService);
+  protected timer = inject(TimerService);
 
   userName = computed(() => this.userProfileService.username() || this.translate.instant('user.defaultName'));
 
@@ -272,11 +275,19 @@ export class HomeComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.isCalculatorModalVisible = true;
     }, this.bumpTimeOut);
-
   }
-
   closeCalculatorModal(): void {
     this.isCalculatorModalVisible = false;
+  }
+
+  isClockComponentVisible: boolean = false;
+  openClockComponent(): void {
+    setTimeout(() => {
+      this.isClockComponentVisible = true;
+    }, this.bumpTimeOut);
+  }
+  closeClockComponent(): void {
+    this.isClockComponentVisible = false;
   }
 
   navigateToExerciseLibrary(): void {

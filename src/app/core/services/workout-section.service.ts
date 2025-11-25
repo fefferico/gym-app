@@ -4,6 +4,7 @@ import { WorkoutSection } from '../models/workout-section.model';
 import { WorkoutSectionType } from '../models/workout-section-type.model';
 import { AlertService } from './alert.service';
 import { WorkoutExercise } from '../models/workout.model';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
     providedIn: 'root'
@@ -14,6 +15,7 @@ export class WorkoutSectionService {
     selectedSection$ = this.selectedSectionSubject.asObservable();
 
     private alertService = inject(AlertService);
+    private translate = inject(TranslateService);
 
     // Select a section
     selectSection(section: WorkoutSection) {
@@ -38,22 +40,22 @@ export class WorkoutSectionService {
 
     async addSectionToExerciseModal(exercise: WorkoutExercise): Promise<WorkoutExercise | null> {
         const sectionOptions = Object.values(WorkoutSectionType).map(type => ({
-            label: type === WorkoutSectionType.NONE ? 'None (Remove from Section)' : this.getSectionColorAndLabel(type).label,
+            label: type === WorkoutSectionType.NONE ? this.translate.instant('workoutSection.assignToSectionNone') : this.getSectionColorAndLabel(type).label,
             value: type
         }));
 
         const result = await this.alertService.showPromptDialog(
-            'Assign to Section',
-            'Select a section for the selected exercises:',
+            this.translate.instant('workoutSection.assignToSectionTitle'),
+            this.translate.instant('workoutSection.assignToSectionDescription'),
             [{
                 name: 'sectionType',
                 type: 'select',
-                label: 'Section',
-                value: 'none',
+                label: this.translate.instant('workoutSection.assignToSectionLabel'),
+                placeholder: this.translate.instant('workoutSection.assignToSectionNone'),
                 options: sectionOptions,
                 required: true
             }],
-            'Assign'
+            this.translate.instant('workoutSection.assignToSectionAction')
         );
 
         if (!result) {
@@ -78,11 +80,11 @@ export class WorkoutSectionService {
      */
     private getSectionColorAndLabel(type: WorkoutSectionType): { label: string, color: string } {
         switch (type) {
-            case WorkoutSectionType.WARM_UP: return { label: 'Warm Up', color: '#f59e0b' }; // Amber-500
-            case WorkoutSectionType.MAIN_LIFT: return { label: 'Main Lift', color: '#ef4444' }; // Red-500
-            case WorkoutSectionType.CARDIO: return { label: 'Cardio', color: '#3b82f6' }; // Blue-500
-            case WorkoutSectionType.FINISHER: return { label: 'Finisher', color: '#a855f7' }; // Purple-500
-            case WorkoutSectionType.COOL_DOWN: return { label: 'Cool Down', color: '#10b981' }; // Emerald-500
+            case WorkoutSectionType.WARM_UP: return { label: this.translate.instant('workoutSection.sectionLabels.WarmUp'), color: '#f59e0b' }; // Amber-500
+            case WorkoutSectionType.MAIN_LIFT: return { label: this.translate.instant('workoutSection.sectionLabels.MainLift'), color: '#ef4444' }; // Red-500
+            case WorkoutSectionType.CARDIO: return { label: this.translate.instant('workoutSection.sectionLabels.Cardio'), color: '#3b82f6' }; // Blue-500
+            case WorkoutSectionType.FINISHER: return { label: this.translate.instant('workoutSection.sectionLabels.Finisher'), color: '#a855f7' }; // Purple-500
+            case WorkoutSectionType.COOL_DOWN: return { label: this.translate.instant('workoutSection.sectionLabels.CoolDown'), color: '#10b981' }; // Emerald-500
             default: return { label: type, color: '#6b7280' }; // Gray-500
         }
     }
