@@ -343,7 +343,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       case WorkoutSectionType.CARDIO: return '#3b82f6'; // blue-500
       case WorkoutSectionType.FINISHER: return '#a855f7'; // purple-500
       case WorkoutSectionType.COOL_DOWN: return '#10b981'; // emerald-500
-      default: return '#6b7280'; // gray-500
+      // default: return '#6b7280'; // gray-500
+      default: return ''; // gray-500
     }
   }
 
@@ -6618,6 +6619,16 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         (WORKOUT_SECTION_TYPE_ORDER[a.type] ?? 99) -
         (WORKOUT_SECTION_TYPE_ORDER[b.type] ?? 99)
     );
+  }
+
+  getIconPath(exIndex: number): string {
+    // Optimization: Use the already loaded availableExercises array to avoid async calls
+    const routine = this.routine();
+    if (!routine || !routine.exercises || !routine.exercises.length || !routine.exercises[exIndex]) return '';
+    const exerciseId = routine.exercises[exIndex].exerciseId;
+    const baseExercise = this.availableExercises.find(ex => ex.id === exerciseId);
+    if (!baseExercise) return '';
+    return this.exerciseService.getIconPath(baseExercise.iconName);
   }
 }
 

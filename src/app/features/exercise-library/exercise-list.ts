@@ -218,7 +218,7 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
 
       return {
         ...ex,
-        iconName: this.exerciseService.determineExerciseIcon(this.exerciseService.mapHydratedExerciseToExercise(ex), ex?.name),
+        iconName: this.exerciseService.determineExerciseIcon(this.exerciseService.mapHydratedExerciseToExercise(ex), ex?._searchName),
         categoryLabel: ex.categories,
         muscleGroupLabel: muscleGroupObj?.name || ex.primaryMuscleGroup?.name
       };

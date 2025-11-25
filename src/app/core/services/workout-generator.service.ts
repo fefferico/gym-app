@@ -10,7 +10,6 @@ import { PersonalGymService } from './personal-gym.service';
 import { WorkoutService } from './workout.service'; // Import WorkoutService
 import { ToastService } from './toast.service';
 import { distanceToExact, durationToExact, repsNumberToExactRepsTarget, restToExact, weightToExact } from './workout-helper.service';
-import { HydratedExerciseCategory } from './exercise-category.service';
 import { EXERCISE_CATEGORY_TYPES } from '../models/exercise-category.model';
 
 // Interface for the detailed generation options
@@ -23,7 +22,7 @@ export interface WorkoutGenerationOptions {
     usePersonalGym: boolean;
     equipment: string[];
     excludeEquipment: string[];
-    exerciseCategory?: HydratedExerciseCategory;
+    exerciseCategory?: EXERCISE_CATEGORY_TYPES | string;
 }
 
 @Injectable({
@@ -151,11 +150,11 @@ export class WorkoutGeneratorService {
 
     private async getSelectableExercises(options: WorkoutGenerationOptions): Promise<Exercise[]> {
         const allExercises = await firstValueFrom(this.exerciseService.getExercises());
-        let availableExercises = allExercises.filter(ex => !ex.isHidden && !ex.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.stretching) === undefined);
+        let availableExercises = allExercises.filter(ex => !ex.isHidden && !ex.categories.some(cat => cat === EXERCISE_CATEGORY_TYPES.stretching));
 
         // --- Category filtering ---
         if (options.exerciseCategory && options.exerciseCategory) {
-            availableExercises = availableExercises.filter(ex => ex.categories.find(cat => cat === options.exerciseCategory?.id) !== undefined);
+            availableExercises = availableExercises.filter(ex => ex.categories.some(cat => cat === options.exerciseCategory));
         }
 
         // Determine equipment filter values, all lowercased for consistent comparison

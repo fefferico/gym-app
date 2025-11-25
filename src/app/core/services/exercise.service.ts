@@ -480,8 +480,8 @@ export class ExerciseService {
     );
   }
 
-  determineExerciseIcon(baseExercise: Exercise | null, exerciseName: string): string {
-    const nameLower = exerciseName.toLowerCase();
+  determineExerciseIcon(baseExercise: Exercise | null, exerciseName: string | undefined): string {
+    const nameLower = exerciseName?.toLowerCase() || '';
 
     if (baseExercise && (baseExercise.equipment || baseExercise.equipmentNeeded)) {
       // Prefer equipmentNeeded if present, else fallback to equipment
@@ -532,6 +532,10 @@ export class ExerciseService {
     if (nameLower.includes('curl') && nameLower.includes('dumbbell')) return 'dumbbell';
     if (nameLower.includes('machine') || nameLower.includes('cable')) return 'machine';
     if (nameLower.includes('body') || nameLower.includes('none')) return 'bodyweightCalisthenics';
+    if (nameLower.includes('rope')) return 'rope';
+    if (nameLower.includes('bag') || nameLower.includes('sandbag')) return 'sandbag';
+    if (nameLower.includes('cycling') || nameLower.includes('bike')) return 'cycling';
+    if (nameLower.includes('treadmill') || nameLower.includes('tapis') || nameLower.includes('elliptical')) return 'treadmill';
     if (nameLower.includes('run') || nameLower.includes('cardio') || nameLower.includes('tapis') || nameLower.includes('jog')) return 'cardio';
     if (nameLower.includes('resistance band')) return 'resistanceBand';
 
@@ -633,7 +637,7 @@ export class ExerciseService {
   /** Returns the current list of programs for backup */
   public getDataForBackup(): Exercise[] {
     // Only export custom exercises
-    return this.exercisesSubject.getValue().filter(ex => ex.isCustom);
+    return this.exercisesSubject.getValue().filter(ex => ex.isCustom || ex.createdAt || ex.updatedAt);
   }
 
   /**
@@ -972,6 +976,7 @@ export class ExerciseService {
           _searchId: exercise.id,
           // use the original english exercise name
           _searchName: exercise.name.toLowerCase(),
+          iconName: this.determineExerciseIcon(exercise, exercise?._searchName),
           name: (!translatedName || translatedName === `${translationKey}.name`) ? exercise.name : translatedName,
           description: (!translatedDescription || translatedDescription === `${translationKey}.description`) ? exercise.description : translatedDescription,
           // equipmentNeeded should remain as in the original exercise object
@@ -1054,9 +1059,9 @@ export class ExerciseService {
 
           return {
             ...ex,
-            _searchId: ex.id,
+            // _searchId: ex.id, already set in getTranslatedExercise
             // use the original english exercise name
-            _searchName: ex.name.toLowerCase(),
+            // _searchName: ex.name.toLowerCase(),, already set in getTranslatedExercise
             primaryMuscleGroup,
             muscleGroups,
             equipmentNeeded,

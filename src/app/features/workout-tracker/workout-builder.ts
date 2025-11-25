@@ -608,16 +608,16 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         if (this.isRoutineMode && goalValue === 'tabata') {
           const exercises = this.exercisesFormArray.controls as FormGroup[];
           if (exercises.length < 2) {
-            this.toastService.warning('Tabata routines require at least 2 exercises. Please add more exercises first.', 5000);
+            this.toastService.warning(this.translate.instant('workoutBuilder.toasts.tabataSizeError'), 5000);
             this.builderForm.get('goal')?.setValue(this.previousGoalValue, { emitEvent: false });
             return;
           }
 
           const confirm = await this.alertService.showConfirm(
-            'Convert to Tabata?',
-            'This will convert all exercises into a single superset. Each round will be set to 20 seconds of work and 10 seconds of rest. Are you sure?',
-            'Convert',
-            'Cancel'
+             this.translate.instant('workoutBuilder.alerts.tabataConvertTitle'),
+            this.translate.instant('workoutBuilder.alerts.tabataConvertMessage'),
+            this.translate.instant('workoutBuilder.alerts.convert'),
+            this.translate.instant('common.cancel')
           );
 
           if (!confirm || !confirm.data) {
@@ -658,7 +658,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
               type: 'superset'
             }, { emitEvent: false });
           });
-          this.toastService.info("Routine converted to Tabata format.");
+          this.toastService.info( this.translate.instant('workoutBuilder.toasts.tabataConverted'));
 
         } else if (this.isRoutineMode && this.builderForm.get('goal')?.value !== 'tabata') {
           const firstExercise = this.exercisesFormArray.at(0) as FormGroup;
@@ -670,7 +670,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
                 type: 'standard'
               }, { emitEvent: false });
             });
-            this.toastService.info("Tabata grouping removed.", 3000);
+            this.toastService.info(this.translate.instant('workoutBuilder.toasts.tabataRemoved'), 3000);
           }
         }
         this.exercisesFormArray.updateValueAndValidity();
@@ -691,8 +691,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     });
     this.subscriptions.add(roundsSub);
   }
-
-  // START: Added methods to retrieve program data
 
   retrieveProgramRoutines(programId: string): ScheduledRoutineDay[] {
     const program = this.availablePrograms.find(p => p.id === programId);
@@ -831,7 +829,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     dateCtrl?.clearValidators();
     startTimeCtrl?.clearValidators();
     endTimeCtrl?.clearValidators();
-    // durationCtrl?.clearValidators();
 
 
     if (this.isRoutineMode) {
@@ -842,7 +839,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       dateCtrl?.setValidators(Validators.required);
       startTimeCtrl?.setValidators(Validators.required);
       endTimeCtrl?.setValidators(Validators.required);
-      // durationCtrl?.setValidators([Validators.required, Validators.min(1)]);
       this.builderForm.get('exercises')?.setValidators(Validators.required); // Exercises always required for a log
     }
     this.builderForm.updateValueAndValidity({ emitEvent: false });
@@ -858,7 +854,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         this.builderForm.get('workoutDate')?.disable({ emitEvent: false });
         this.builderForm.get('startTime')?.disable({ emitEvent: false });
         this.builderForm.get('endTime')?.disable({ emitEvent: false });
-        // this.builderForm.get('durationMinutes')?.disable({ emitEvent: false });
         this.builderForm.get('overallNotesLog')?.disable({ emitEvent: false });
         this.builderForm.get('routineIdForLog')?.disable({ emitEvent: false });
         this.builderForm.get('programIdForLog')?.disable({ emitEvent: false });
@@ -866,7 +861,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         this.builderForm.get('scheduledDayIdForLog')?.disable({ emitEvent: false });
       } else { // manualLogEntry
         // Name field is used for WorkoutLog's title, so it should be enabled or prefilled
-        // this.builderForm.get('name')?.enable({ emitEvent: false });
         this.builderForm.get('description')?.disable({ emitEvent: false });
         this.builderForm.get('goal')?.disable({ emitEvent: false });
 
@@ -881,10 +875,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             this.builderForm.get('iterationIdForLog')?.enable();
             this.builderForm.get('scheduledDayIdForLog')?.enable();
           }
-
           this.builderForm.get('workoutDate')?.disable();
         }
-
       }
     }
   }
@@ -898,10 +890,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       const program = this.availablePrograms.find(p => p.id === this.currentProgramId);
       const routine = this.availableRoutines.find(p => p.id === this.currentRoutineId);
       if (program) {
-        return `Log for Program: ${program.name} - Routine: ${routine?.name || 'Ad-hoc'}`;
+        return this.translate.instant('workoutBuilder.logEntry.logForProgramTitle', { programName: program.name, routineName: routine?.name || 'Ad-hoc' })
       }
     }
-    return 'Ad-hoc Workout';
+    return this.translate.instant('workoutBuilder.logEntry.adHocTitle')
   }
 
   get exercisesFormArray(): FormArray {
@@ -1255,41 +1247,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return exerciseFg;
   }
 
-  private createRangeValidator(): ValidatorFn {
-    return (control: AbstractControl): ValidationErrors | null => {
-      if (!(control instanceof FormGroup)) return null;
-
-      // List all possible target fields that can have a range
-      const targetFields = [
-        'targetReps',
-        'targetDuration',
-        'targetRest',
-        'targetWeight',
-        'targetDistance'
-      ];
-
-      targetFields.forEach(field => {
-        const targetControl = control.get(field);
-        const value = targetControl?.value;
-        if (value && typeof value === 'object' && value.type === 'range') {
-          // Handle different property names for range types
-          let min = value.min ?? value.minSeconds;
-          let max = value.max ?? value.maxSeconds;
-
-          if (min != null && max != null && max < min) {
-            targetControl.setErrors({ min: true });
-          } else if (targetControl?.hasError('min')) {
-            const { min, ...errors } = targetControl.errors || {};
-            targetControl.setErrors(Object.keys(errors).length > 0 ? errors : null);
-          }
-        }
-      });
-
-      // This validator sets errors on controls, so it doesn't need to return an error for the group itself.
-      return null;
-    };
-  }
-
   private scrollExpandedExerciseIntoView(): void {
     const path = this.expandedExercisePath();
     if (path) {
@@ -1327,18 +1284,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         }
       }
     }
-  }
-
-  private scrollIntoView(): void {
-    // scroll the new exercise into view
-    setTimeout(() => {
-      // Get the last exercise FormGroup and try to scroll its DOM element into view if available
-      const lastExerciseIndex = this.exercisesFormArray.length - 1;
-      const lastExerciseElem = this.expandedSetElements.get(lastExerciseIndex)?.nativeElement;
-      if (lastExerciseElem) {
-        lastExerciseElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 2000);
   }
 
   openExerciseSelectionModal(): void {
@@ -1540,10 +1485,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // Check if it's the last round for this exercise group
       if (setsArray.length === 1) {
         const confirm = await this.alertService.showConfirm(
-          'Remove Last Round?',
-          'This will remove the exercise from the superset. Are you sure?',
-          'Remove Exercise',
-          'Cancel'
+          this.translate.instant('workoutBuilder.alerts.removeLastRoundTitle'),
+          this.translate.instant('workoutBuilder.alerts.removeLastRoundMessage'),
+          this.translate.instant('common.confirm'),
+          this.translate.instant('common.cancel')
         );
 
         if (confirm && confirm.data) {

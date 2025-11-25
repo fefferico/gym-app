@@ -1055,7 +1055,8 @@ export const EXERCISES_DATA: Exercise[] = [
     "primaryMuscleGroup": "quadriceps",
     "muscleGroups": ["quadriceps", "hamstrings", "glutes", "calves", "cardio"],
     "equipmentNeeded": ["bicycle", "stationaryBike"],
-    "imageUrls": ["assets/images/cardio/cycling_1.jpg", "assets/images/cardio/stationary-bike_1.jpg"]
+    "imageUrls": ["assets/images/cardio/cycling_1.jpg", "assets/images/cardio/stationary-bike_1.jpg"],
+    "iconName": "cycling"
   },
   {
     "id": "jump-rope",

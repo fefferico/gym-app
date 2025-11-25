@@ -1,5 +1,5 @@
 <div *ngIf="isOpen" class="fixed inset-0 z-[100] flex flex-col bg-gray-100 dark:bg-gray-800" (click)="close.emit()"
-     [ngClass]="customPB()">
+    [ngClass]="customPB()">
     <div class="w-full h-full flex flex-col" (click)="$event.stopPropagation()">
 
         <!-- Header -->
@@ -41,14 +41,15 @@
                 </div>
 
                 <!-- Workout Category -->
-<div>
-  <label class="block text-sm font-medium dark:text-gray-100">Exercise Category</label>
-  <select [(ngModel)]="options.exerciseCategory"
-          class="block w-full p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200">
-    <option [ngValue]="null">Any</option>
-    <option *ngFor="let cat of categories()" [ngValue]="cat">{{ cat.name }}</option>
-  </select>
-</div>
+                <div>
+                    <label class="block text-sm font-medium dark:text-gray-100">{{'exerciseList.filters.categoryLabel' |
+                        translate}}</label>
+                    <select [(ngModel)]="options.exerciseCategory"
+                        class="block w-full p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200">
+                        <option [ngValue]="''">{{'exerciseList.filters.allCategories' | translate}}</option>
+                        <option *ngFor="let cat of categories()" [ngValue]="cat.id">{{ cat.name }}</option>
+                    </select>
+                </div>
 
                 <!-- Split -->
                 <div class="md:col-span-2">
@@ -125,7 +126,7 @@
                     <div *ngIf="!options.usePersonalGym; else usePersonalGymSection"
                         class="md:col-span-2 text-black dark:text-gray-200 relative">
                         <label class="block text-sm font-medium dark:text-gray-100 my-1">Exclude Equipment
-                           </label>
+                        </label>
                         <!-- Search Input Textbox -->
                         <input type="text" [(ngModel)]="excludeEquipmentSearchTerm"
                             placeholder="Search equipment to exclude..."
@@ -166,7 +167,7 @@
                 </div>
                 <ng-template #usePersonalGymSection class="md:col-span-2 text-black dark:text-gray-200 relative">
                     <label class="block text-sm font-medium dark:text-gray-100 my-1">Exclude personal gym equipment
-                       </label>
+                    </label>
                     <div *ngIf="options.excludeEquipment.length > 0"
                         class="p-2 border rounded-md mb-2 min-h-[40px] bg-white dark:bg-gray-800 flex flex-wrap gap-2">
                         <p *ngIf="options.excludeEquipment.length === 0"
@@ -199,7 +200,8 @@
             </div>
         </div>
 
-        <footer class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-700 sticky bottom-0">
+        <footer
+            class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-700 sticky bottom-0">
             <div class="flex flex-col sm:flex-row sm:justify-end sm:space-x-4 space-y-3 sm:space-y-0">
                 <!-- Secondary Action: Surprise Me -->
                 <button (click)="generateQuick()" type="button"

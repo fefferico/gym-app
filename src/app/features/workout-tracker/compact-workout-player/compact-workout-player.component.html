@@ -143,7 +143,7 @@
                   <app-icon name="reorder" class="h-6 w-6 text-gray-400"></app-icon>
                 </div>
                 <h2 #exerciseHeader
-                  class="max-w-[75vw] sm:max-w-[350px] text-md font-semibold text-gray-800 dark:text-gray-100 break-words">
+                  class="flex items-center max-w-[75vw] sm:max-w-[350px] text-md font-semibold text-gray-800 dark:text-gray-100 break-words">
                   <ng-container *ngIf="isSuperSet(exIndex); else standardHeader">
                     <span [ngClass]="{ 'text-white inline-flex flex-col items-start': true }">
                       <span class="w-fit rounded-full px-2"
@@ -153,28 +153,38 @@
                     </span>
                   </ng-container>
                   <ng-template #standardHeader>
-                    <span [ngStyle]="{ background: getSectionProgressColor(getSectionForExercise(exIndex)) }"
+                    <!-- <span [ngStyle]="{ background: getSectionProgressColor(getSectionForExercise(exIndex)) }"
                       [ngClass]="{ 'text-white px-3 w-fit rounded-full inline-flex': true }">
                       {{ getExerciseDisplayIndex(exIndex) }}
-                    </span>
-                    - {{ exercise.exerciseName }}
+                    </span> -->
+                    <span class="flex items-center px-1 rounded-md p-1"
+                      [ngStyle]="{ background: getSectionProgressColor(getSectionForExercise(exIndex)) }"
+                    >
+                      <img *ngIf="exercise" [src]="getIconPath(exIndex)"
+                        class="w-7 h-7 sm:w-8 sm:h-8 object-contain mr-2 mt-0.5 sm:mt-1 filter dark:invert">
+                      {{ exercise.exerciseName }}</span>
                   </ng-template>
                 </h2>
               </div>
-              <div class="px-5 flex items-center text-black dark:text-gray-400 text-sm"
+              <div class="px-5 py-1 flex items-center text-black dark:text-gray-400 text-sm"
                 *ngIf="expandedExerciseIndex() !== exIndex">
                 {{ (isSuperSet(exIndex) ? 'compactPlayer.rounds' : 'compactPlayer.sets') | translate }}: {{
                 getExerciseTotalLoggedSets(exIndex) + '/' +
                 getExerciseTotalSets(exIndex)}}
+                <ng-container *ngIf="getExerciseTotalSets(exIndex) > 0">
+                  <app-icon
+                  *ngIf="getExerciseTotalLoggedSets(exIndex) === getExerciseTotalSets(exIndex)"
+                  name="done"
+                  class="w-5 h-5 text-green-500 ml-1"
+                  ></app-icon>
+                  <app-icon
+                  *ngIf="getExerciseTotalLoggedSets(exIndex) > 0 && getExerciseTotalLoggedSets(exIndex) < getExerciseTotalSets(exIndex)"
+                  name="target"
+                  class="h-4 w-4 text-yellow-500 ml-1"
+                  ></app-icon>
+                </ng-container>
               </div>
             </div>
-            <!-- Exercise Notes Textarea -->
-            <!-- <div *ngIf="expandedExerciseNotes() === (exIndex)" class="flex py-2 w-full">
-              <textarea [ngModel]="getInitialExerciseNoteInputValue(exIndex)"
-                (change)="updateExerciseNotes(exIndex, $event)"
-                [placeholder]="'compactPlayer.notesPlaceholder' | translate"
-                class="w-full text-xs bg-inherit dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
-            </div> -->
 
             <!-- Action Menu Container -->
             <div class="absolute top-2 right-2 z-60" appClickOutside (clickOutside)="closeExerciseActionMenu()">

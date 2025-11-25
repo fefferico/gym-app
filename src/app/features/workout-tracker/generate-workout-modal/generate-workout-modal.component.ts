@@ -75,7 +75,7 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
         usePersonalGym: true,
         equipment: [],
         excludeEquipment: [],
-        // category: '', // <-- Add this line
+        exerciseCategory: ''
     };
 
     async ngOnInit() {

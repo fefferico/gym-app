@@ -108,8 +108,7 @@
         <div class="p-3 cursor-pointer">
           <div class="flex items-start mb-1.5">
             <img *ngIf="exercise" [src]="getIconPath(exercise.iconName)" [alt]="exercise.name + ' icon'"
-              class="w-7 h-7 sm:w-8 sm:h-8 object-contain mr-2 mt-0.5 sm:mt-1"
-              [ngClass]="{'filter dark:invert': exercise.iconName !== 'default-exercise'}">
+              class="w-7 h-7 sm:w-8 sm:h-8 object-contain mr-2 mt-0.5 sm:mt-1 filter dark:invert">
             <h2 class="text-lg sm:text-xl font-semibold text-primary dark:text-primary-light flex-grow pr-8"
               [title]="exercise.name">{{ exercise.name }}</h2>
           </div>
