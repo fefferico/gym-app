@@ -525,6 +525,7 @@ export class ExerciseService {
     if (nameLower.includes('kettlebell')) return 'kettlebell';
     if (nameLower.includes('squat') && nameLower.includes('barbell')) return 'barbell';
     if (nameLower.includes('squat') && !nameLower.includes('barbell') && !nameLower.includes('dumbbell')) return 'bodyweightCalisthenics';
+    if (nameLower.includes('band')) return 'resistanceBand';
     if (nameLower.includes('deadlift')) return 'barbell';
     if (nameLower.includes('bench press')) return 'barbell';
     if (nameLower.includes('row') && (nameLower.includes('barbell') || !nameLower.includes('dumbbell'))) return 'barbell';
@@ -537,7 +538,6 @@ export class ExerciseService {
     if (nameLower.includes('cycling') || nameLower.includes('bike')) return 'cycling';
     if (nameLower.includes('treadmill') || nameLower.includes('tapis') || nameLower.includes('elliptical')) return 'treadmill';
     if (nameLower.includes('run') || nameLower.includes('cardio') || nameLower.includes('tapis') || nameLower.includes('jog')) return 'cardio';
-    if (nameLower.includes('resistance band')) return 'resistanceBand';
 
     if (baseExercise?.categories) {
       // Support both string and array for categories

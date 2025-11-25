@@ -23,6 +23,8 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { durationToExact, genRepsTypeFromRepsNumber, getDurationValue, getRestValue, restToExact, weightToExact } from '../../../core/services/workout-helper.service';
 import { WorkoutUtilsService } from '../../../core/services/workout-utils.service';
 import { EXERCISE_CATEGORY_TYPES } from '../../../core/models/exercise-category.model';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { WORKOUT_CATEGORY_DATA } from '../../../core/services/workout-category-data';
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -38,6 +40,7 @@ export interface HIITInterval {
     type: 'prepare' | 'work' | 'rest';
     duration: number;
     exerciseName?: string;
+    exerciseId?: string;
     totalIntervals: number;
     currentIntervalNumber: number;
 }
@@ -45,7 +48,7 @@ export interface HIITInterval {
 @Component({
     selector: 'app-tabata-player',
     standalone: true,
-    imports: [CommonModule, DecimalPipe, PressDirective, IconComponent],
+    imports: [CommonModule, DecimalPipe, PressDirective, IconComponent, TranslateModule],
     templateUrl: './tabata-workout-player.component.html',
     styleUrl: './tabata-workout-player.component.scss',
 })
@@ -62,6 +65,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
     protected alertService = inject(AlertService);
     private cdr = inject(ChangeDetectorRef);
     private fb = inject(FormBuilder);
+    private translate = inject(TranslateService);
 
     protected appSettingsService = inject(AppSettingsService);
     private platformId = inject(PLATFORM_ID);
@@ -148,22 +152,15 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
     }
 
     constructor() {
-
         this.initializeCurrentSetForm();
         effect(() => {
-            const index = this.currentTabataIntervalIndex();
-            if (this.intervalListItems && this.intervalListItems.length > index) {
-                const activeItemElement = this.intervalListItems.toArray()[index].nativeElement;
-                activeItemElement.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start',
-                });
-            }
+            this.scrollCurrentSetIntoView();
         });
     }
 
     async ngOnInit(): Promise<void> {
         const pausedState = this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
+        this.loadAvailableExercises();
 
         const hasPausedSessionOnInit = await this.checkForPausedSession(false);
         if (hasPausedSessionOnInit) {
@@ -192,7 +189,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             plannedSetId: `${setData.id}-round-${this.currentBlockRound()}`,
             exerciseId: exerciseData.exerciseId,
             type: 'tabata', // Use a specific type for easy filtering later
-            repsLogged: {type: RepsTargetType.exact, value: 0}, // Not tracked in this mode
+            repsLogged: { type: RepsTargetType.exact, value: 0 }, // Not tracked in this mode
             weightLogged: weightToExact(0),   // Not tracked in this mode
             durationLogged: setData.targetDuration || durationToExact(0), // Log the planned work duration
             timestamp: new Date().toISOString(),
@@ -738,7 +735,8 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             notes: sessionRoutineValue?.notes,
             programId: sessionProgramValue,
             scheduledDayId: sessionScheduledDayProgramValue,
-            iterationId: iterationId
+            iterationId: iterationId,
+            goal: 'tabata'
         };
 
         const fixedLog = await this.checkWorkoutTimingValidity(finalLog); // Ensure start time is valid before proceeding
@@ -1290,7 +1288,8 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         this.currentBaseExercise.set(undefined);
         this.exercisePBs.set([]);
         this.exerciseService.getExerciseById(exerciseId).subscribe(ex => {
-            this.currentBaseExercise.set(ex ? { ...ex, iconName: this.exerciseService.determineExerciseIcon(ex, ex?.name) } : null);
+            this.currentBaseExercise.set(ex ? { ...ex, iconName: '' } : null);
+            // this.currentBaseExercise.set(ex ? { ...ex, iconName: this.exerciseService.determineExerciseIcon(ex, ex?.name) } : null);
         });
         this.trackingService.getAllPersonalBestsForExercise(exerciseId).pipe(take(1)).subscribe(pbs => this.exercisePBs.set(pbs));
     }
@@ -1340,56 +1339,43 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         this.tabataIntervalMap = []; // The map now stores [exerciseIndex, setIndex, roundNumber]
 
         // 1. Add "Prepare" interval
-        intervals.push({ type: 'prepare', duration: 10, exerciseName: 'Get Ready' });
+        intervals.push({ type: 'prepare', duration: 10, exerciseName: this.translate.instant('tabataPlayer.getReady'), exerciseId: 'flame' });
         this.tabataIntervalMap.push([0, 0, 1]);
 
-        // 2. Main loop now iterates through exercise BLOCKS
-        let exerciseIndex = 0;
-        while (exerciseIndex < routine.exercises.length) {
-            const currentExercise = routine.exercises[exerciseIndex];
-            const totalRoundsForBlock = this.getRoundsForExerciseBlock(exerciseIndex, routine);
-            const isSuperset = !!currentExercise.supersetId;
-            const supersetSize = isSuperset ? (currentExercise.sets.length ?? 1) : 1;
+        // 2. Main loop: iterate by round, then by exercise in the superset
+        const exercises = routine.exercises;
+        const numRounds = exercises[0]?.sets.length ?? 1; // Assumes all exercises have the same number of sets
 
-            // Loop for the number of rounds for this specific block
-            for (let round = 1; round <= totalRoundsForBlock; round++) {
-                // Loop through all exercises within this block (will be 1 for standard exercises)
-                for (let i = 0; i < supersetSize; i++) {
-                    const blockExerciseIndex = exerciseIndex + i;
-                    const blockExercise = routine.exercises[blockExerciseIndex];
-                    if (!blockExercise) continue; // Safety check
+        for (let round = 0; round < numRounds; round++) {
+            for (let exIdx = 0; exIdx < exercises.length; exIdx++) {
+                const exercise = exercises[exIdx];
+                const set = exercise.sets[round];
+                if (!set) continue;
 
-                    const isLastRound = round === totalRoundsForBlock;
+                // Work interval
+                intervals.push({
+                    type: 'work',
+                    duration: getDurationValue(set.targetDuration) || 40,
+                    exerciseName: exercise.exerciseName,
+                    exerciseId: exercise.exerciseId
+                });
+                this.tabataIntervalMap.push([exIdx, round, round + 1]);
 
-                    blockExercise.sets.forEach((set, setIndex) => {
-                        // A. Add the "Work" interval for the current round
+                // Add rest after each work interval except the last one of the last round
+                const isLastExercise = exIdx === exercises.length - 1;
+                const isLastRound = round === numRounds - 1;
+                if (!(isLastExercise && isLastRound)) {
+                    if (set.targetRest && getRestValue(set.targetRest) > 0) {
                         intervals.push({
-                            type: 'work',
-                            duration: getDurationValue(set.targetDuration) || 40,
-                            exerciseName: blockExercise.exerciseName
+                            type: 'rest',
+                            duration: getRestValue(set.targetRest) || 20,
+                            exerciseName: this.translate.instant('tabataPlayer.rest'),
+                            exerciseId: exercise.exerciseId
                         });
-                        this.tabataIntervalMap.push([blockExerciseIndex, setIndex, round]);
-
-                        // B. Conditionally add the "Rest" interval
-                        const isLastExerciseOfEntireWorkout = blockExerciseIndex === routine.exercises.length - 1;
-                        const isLastSetOfBlockExercise = setIndex === blockExercise.sets.length - 1;
-
-                        // Don't add rest after the absolute final work interval of the entire workout
-                        if (!(isLastRound && isLastExerciseOfEntireWorkout && isLastSetOfBlockExercise)) {
-                            if (set.targetRest && getRestValue(set.targetRest) > 0) {
-                                intervals.push({
-                                    type: 'rest',
-                                    duration: getRestValue(set.targetRest) || 20,
-                                    exerciseName: 'Rest'
-                                });
-                                this.tabataIntervalMap.push([blockExerciseIndex, setIndex, round]);
-                            }
-                        }
-                    });
+                        this.tabataIntervalMap.push([exIdx, round, round + 1]);
+                    }
                 }
             }
-            // Move the main index to the start of the next block
-            exerciseIndex += supersetSize;
         }
 
 
@@ -1415,6 +1401,9 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         } else {
             this.startCurrentTabataInterval();
         }
+
+        // --- Scroll to the first interval after view updates ---
+        setTimeout(() => this.scrollCurrentSetIntoView(), 0);
     }
 
     private setPlayerStateFromTabataIndex(tabataIndex: number): void {
@@ -1487,8 +1476,8 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
 
         this.tabataTimerSub = timer(0, 1000)
             .pipe(
-                take(interval.duration + 1), // Keep your existing take()
-                takeUntil(this.destroy$)      // Add this line
+                take(initialTime + 1), // <-- only the remaining seconds!
+                takeUntil(this.destroy$)
             ).subscribe({
                 next: () => {
                     this.tabataTimeRemaining.update(t => t - 1);
@@ -1538,19 +1527,20 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
     /**
      * Toggles the pause state for the Tabata player.
      */
+    private pausedTabataTimeRemaining: number | null = null;
     toggleTabataPause(): void {
         if (this.sessionState() === SessionState.Playing) {
-            // Pausing
             this.sessionState.set(SessionState.Paused);
             if (this.tabataTimerSub) this.tabataTimerSub.unsubscribe();
-            if (this.timerSub) this.timerSub.unsubscribe(); // Pause overall timer too
+            if (this.timerSub) this.timerSub.unsubscribe();
             this.sessionTimerElapsedSecondsBeforePause += Math.floor((Date.now() - this.workoutStartTime) / 1000);
+            this.pausedTabataTimeRemaining = this.tabataTimeRemaining(); // <-- store remaining time
         } else if (this.sessionState() === SessionState.Paused) {
-            // Resuming
             this.sessionState.set(SessionState.Playing);
-            this.workoutStartTime = Date.now(); // Reset start time for delta calculation
-            this.startSessionTimer(); // Resume overall timer
-            this.startCurrentTabataInterval(); // Resume interval timer
+            this.workoutStartTime = Date.now();
+            this.startSessionTimer();
+            this.startCurrentTabataInterval(this.pausedTabataTimeRemaining ?? undefined); // <-- use stored time
+            this.pausedTabataTimeRemaining = null; // clear after use
         }
     }
 
@@ -1905,6 +1895,81 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
                 console.error('Failed to unlock screen orientation:', error);
             }
         }
+    }
+
+    scrollCurrentSetIntoView(): void {
+        const index = this.currentTabataIntervalIndex();
+        if (this.intervalListItems && this.intervalListItems.length > index) {
+            const activeItemElement = this.intervalListItems.toArray()[index].nativeElement;
+            activeItemElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+            });
+        }
+    }
+
+    checkIfCurrentSetIsOutOfView(): boolean {
+        const index = this.currentTabataIntervalIndex();
+        if (!this.intervalListItems || this.intervalListItems.length <= index) {
+            return false;
+        }
+        const activeItemElement = this.intervalListItems.toArray()[index].nativeElement;
+        const bounding = activeItemElement.getBoundingClientRect();
+        const viewHeight = window.innerHeight || document.documentElement.clientHeight;
+        // Check if the element is outside the viewport
+        return (
+            bounding.top < 0 ||
+            bounding.bottom > viewHeight
+        );
+    }
+
+    getIconPath(exerciseId: string | undefined): string {
+        // Get the current interval object from the tabataIntervals signal
+        const currentState = this.tabataIntervals()[this.currentTabataIntervalIndex()];
+        let currentIntervalType: string | undefined = currentState?.type;
+        switch (currentIntervalType) {
+            case 'prepare':
+            case 'rest':
+                return this.exerciseService.getIconPath(currentIntervalType);
+                break;
+            default: {
+                // Optimization: Use the already loaded availableExercises array to avoid async calls
+                const routine = this.routine();
+                if (!exerciseId || !routine || !routine.exercises || !routine.exercises.length || !routine.exercises.find(e => e.exerciseId === exerciseId)) return this.exerciseService.getIconPath('');
+                const exercise = routine.exercises.find(e => e.exerciseId === exerciseId);
+                if (!exercise) return this.exerciseService.getIconPath('');
+                const baseExercise = this.availableExercises.find(ex => ex.id === exercise?.exerciseId);
+                if (!baseExercise) return this.exerciseService.getIconPath('');
+                return this.exerciseService.getIconPath(baseExercise.iconName);
+            }
+                break;
+        }
+    }
+
+    availableExercises: Exercise[] = [];
+    private loadAvailableExercises(): void {
+        this.exerciseService.getExercises().pipe(
+            take(1),
+            // Use switchMap to chain the translation call after fetching the base list
+            switchMap(exercises => this.exerciseService.getTranslatedExerciseList(exercises))
+        ).subscribe(translatedExercises => {
+            // Now, the exercises in the list have their translated names
+            this.availableExercises = translatedExercises.filter(ex => !ex.isHidden);
+        });
+    }
+
+    get currentRoundExerciseProgress(): { done: number, total: number } {
+        const intervals = this.tabataIntervals();
+        const currentIdx = this.currentTabataIntervalIndex();
+        const currentRound = this.currentBlockRound();
+        // Use tabataIntervalMap to get the round for each interval
+        const roundWorkIntervals = intervals
+            .map((interval, idx) => ({ interval, idx, round: this.tabataIntervalMap[idx]?.[2] }))
+            .filter(obj => obj.round === currentRound && obj.interval.type === 'work');
+        const total = roundWorkIntervals.length;
+        // Count how many have been completed (index less than current)
+        const done = roundWorkIntervals.filter(obj => obj.idx < currentIdx).length;
+        return { done, total };
     }
 
 

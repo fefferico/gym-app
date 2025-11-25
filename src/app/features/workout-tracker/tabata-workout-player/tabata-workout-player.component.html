@@ -7,7 +7,7 @@
     whenever the sessionState signal is 'paused'.
   -->
   <div class="tabata-player" [ngClass]="{'animate-flash': sessionState() === 'paused'}">
-    <ng-container *ngIf="currentTabataInterval() as interval">
+    <ng-container *ngIf="currentTabataInterval() as interval;">
 
       <!-- Background with transition -->
       <div class="fixed inset-0 transition-all duration-700 ease-in-out" [ngClass]="{
@@ -17,7 +17,7 @@
        }"></div>
 
       <!-- Main Layout Container: This flex column fills the entire screen -->
-      <div class="relative z-10 flex flex-col h-screen text-white p-4 font-sans">
+      <div class="relative z-10 flex flex-col h-screen text-white py-4 px-1 font-sans">
 
         <!-- Header (Fixed Height) -->
         <header class="flex justify-between items-center w-full px-4 flex-shrink-0 mt-2">
@@ -29,7 +29,7 @@
           </button>
 
           <div class="text-sm font-medium bg-black/20 px-3 py-1 rounded-full">
-            Session time: {{ sessionTimerDisplay() }}
+            {{ 'tabataPlayer.elapsedTime' | translate }}: {{ sessionTimerDisplay() }}
           </div>
 
           <!-- Pause/Resume Button -->
@@ -41,7 +41,7 @@
         </header>
 
         <!-- Main Content (Grows to fill space and clips overflow) -->
-        <div class="flex-grow flex flex-col items-center justify-center text-center overflow-hidden py-2">
+        <div class="flex-grow flex flex-col items-center justify-start text-center overflow-hidden py-2">
 
           <!-- Timer & Info (This part is centered but cannot cause page scroll) -->
           <main class="w-full flex flex-col items-center justify-start">
@@ -49,18 +49,51 @@
               class="text-2xl md:text-3xl font-semibold mb-2 text-shadow-md bg-black/20 px-4 py-1 rounded-full">
               Round {{ currentBlockRound() }} / {{ totalBlockRounds() }}
             </div>
+            <!-- Exercise progress in current round -->
+            <!-- <div *ngIf="currentRoundExerciseProgress.total > 0"
+              class="text-lg font-medium mb-2 bg-black/10 px-3 py-1 rounded-full">
+              {{ currentRoundExerciseProgress.done }} / {{ currentRoundExerciseProgress.total }}
+              {{ 'tabataPlayer.roundProgression' | translate }}
+            </div> -->
+            <div *ngIf="currentRoundExerciseProgress.total > 0" class="w-full max-w-xs mb-2">
+              <span class="flex justify-center text-white font-mono font-semibold text-md mb-1">
+                {{ 'tabataPlayer.roundProgression' | translate }}
+              </span>
+              <div
+                class="progress-bar-container w-full bg-gray-300 rounded-full h-5 relative flex items-center">
+                <div class="progress-bar bg-primary h-3 rounded-full my-1 mx-1 transition-all duration-300"
+                  [style.width.%]="(currentRoundExerciseProgress.done / currentRoundExerciseProgress.total) * 100">
+                </div>
+                <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white" [ngClass]="{
+                    'text-black': (currentRoundExerciseProgress.done / currentRoundExerciseProgress.total) <= 0.45,
+                    'text-white': (currentRoundExerciseProgress.done / currentRoundExerciseProgress.total) > 0.45
+                  }">
+                  {{ currentRoundExerciseProgress.done }} / {{ currentRoundExerciseProgress.total }}
+                  ({{ (currentRoundExerciseProgress.done / currentRoundExerciseProgress.total * 100) | number:'1.0-0'
+                  }}%)
+                </span>
+              </div>
+            </div>
             <h1 class="text-[250px] md:text-[450px] font-bold tabular-nums leading-none tracking-tighter text-shadow-lg"
               [class.animate-pulse]="tabataTimeRemaining() <= 3 && tabataTimeRemaining() > 0">
               {{ tabataTimeRemaining() >= 0 ? (tabataTimeRemaining() | number: '2.0-0') : '00' }}
             </h1>
-            <p class="text-2xl md:text-3xl font-semibold capitalize mt-2 text-shadow">
-              {{ interval.exerciseName || interval.type }}
+            <p class="text-[30px] md:text-[50px] font-semibold capitalize py-2 text-shadow flex items-center">
+              <img [src]="getIconPath(interval?.exerciseId)"
+                class="w-8 h-8 object-contain mr-1 mt-0.5 sm:mt-1 filter dark:invert">
+              {{ interval.exerciseName || ('tabataPlayer.intervalType.'+interval.type | translate) }}
             </p>
           </main>
 
+          <!-- Scroll to current set button -->
+          <!-- <button *ngIf="checkIfCurrentSetIsOutOfView()" type="button" (click)="scrollCurrentSetIntoView()"
+            class="mb-2 px-4 py-2 rounded bg-primary text-white font-semibold shadow hover:bg-primary-dark transition">
+            {{ 'tabataPlayer.scrollToCurrentSet' | translate }}
+          </button> -->
+
           <!-- Interval List (This container scrolls internally) -->
-          <div class="w-full max-w-md flex-shrink-0 max-h-48 overflow-y-auto mb-2 px-2
-              scrollbar-thin scrollbar-thumb-primary scrollbar-track-white/20">
+          <div class="w-full max-w-md flex-grow max-h-80 overflow-y-auto mb-2 px-2
+            scrollbar-thin scrollbar-thumb-primary scrollbar-track-white/20">
             <ul class="space-y-0">
               <li #intervalListItem *ngFor="let item of tabataIntervals(); let i = index"
                 class="text-lg px-2 py-0 transition-all duration-300 ease-in-out">
@@ -69,8 +102,9 @@
                      'text-white/60 opacity-80': i !== currentTabataIntervalIndex()
                    }">
                   <span class="font-mono w-8 text-right mr-2">{{ item.currentIntervalNumber }}</span>
-                  <span class="capitalize font-medium">{{ item.type }}: {{ item.duration }}s</span>
-                  <span *ngIf="item.type === 'work'" class="ml-2 font-light truncate">{{ item.exerciseName }}</span>
+                  <span class="capitalize font-medium">{{ ('tabataPlayer.intervalType.'+item.type) | translate }}: {{
+                    item.duration }}s</span>
+                  <span *ngIf="item.type === 'work'" class="ml-2 text-left font-light">{{ item.exerciseName }}</span>
                 </div>
               </li>
             </ul>
@@ -109,10 +143,13 @@
   }
 
   @keyframes flash-background {
+
     /* The animation will cycle between full opacity and 70% opacity */
-    0%, 100% {
+    0%,
+    100% {
       opacity: 1;
     }
+
     50% {
       opacity: 0.7;
     }

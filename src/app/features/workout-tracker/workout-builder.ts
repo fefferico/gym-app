@@ -363,6 +363,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   categories = toSignal(this.workoutCategoryService.getTranslatedCategories(), { initialValue: [] });
+  private isRevertingGoal = false;
   ngOnInit(): void {
     console.log('WorkoutBuilderComponent mode:', this.mode, 'context:', this.context);
     window.scrollTo(0, 0);
@@ -589,9 +590,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
 
     const goalSub = this.builderForm.get('goal')?.valueChanges
-      .pipe(distinctUntilChanged())
       .subscribe(async (goalValue: any) => {
-        if (this.previousGoalValue && this.previousGoalValue === 'tabata') {
+        if (this.isRevertingGoal) {
+          this.isRevertingGoal = false;
           return;
         }
 
@@ -602,19 +603,19 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           while (this.exercisesFormArray.length) this.exercisesFormArray.removeAt(0);
           this.exercisesFormArray.clearValidators();
         }
-        // --- NEW/MODIFIED: Tabata and Post-Tabata Logic ---
         const exercises = this.exercisesFormArray.controls as FormGroup[];
-        // --- START OF CORRECTION ---
+
+        // TABATA LOGIC
         if (this.isRoutineMode && goalValue === 'tabata') {
-          const exercises = this.exercisesFormArray.controls as FormGroup[];
           if (exercises.length < 2) {
             this.toastService.warning(this.translate.instant('workoutBuilder.toasts.tabataSizeError'), 5000);
-            this.builderForm.get('goal')?.setValue(this.previousGoalValue, { emitEvent: false });
+            this.isRevertingGoal = true;
+            this.builderForm.get('goal')?.setValue(this.previousGoalValue, { emitEvent: true });
             return;
           }
 
           const confirm = await this.alertService.showConfirm(
-             this.translate.instant('workoutBuilder.alerts.tabataConvertTitle'),
+            this.translate.instant('workoutBuilder.alerts.tabataConvertTitle'),
             this.translate.instant('workoutBuilder.alerts.tabataConvertMessage'),
             this.translate.instant('workoutBuilder.alerts.convert'),
             this.translate.instant('common.cancel')
@@ -622,45 +623,19 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
           if (!confirm || !confirm.data) {
             // User cancelled, so revert the change and stop processing
-            this.builderForm.get('goal')?.setValue(this.previousGoalValue, { emitEvent: false });
+            this.isRevertingGoal = true;
+            this.builderForm.get('goal')?.setValue(this.previousGoalValue, { emitEvent: true });
             return;
           }
 
-          // User confirmed, now proceed with the conversion
-          const newSupersetId = uuidv4();
-          exercises.forEach((exerciseControl, index) => {
-            const setsArray = exerciseControl.get('sets') as FormArray;
-            // Standardize to a single set which represents the work interval
-            while (setsArray.length > 1) {
-              setsArray.removeAt(1);
-            }
-            if (setsArray.length === 0) {
-              const defaultSet: ExerciseTargetSetParams = {
-                id: uuidv4(), type: 'standard', targetRest: restToExact(10), targetDuration: durationToExact(20),
-                fieldOrder: [METRIC.weight, METRIC.reps]
-              };
-              setsArray.push(this.workoutFormService.createSetFormGroup(defaultSet, false));
-            }
-            // Enforce Tabata timings
-            setsArray.at(0).patchValue({
-              targetDuration: 20,
-              targetRest: 10,
-              targetReps: null,
-              targetWeight: null,
-              targetDistance: null,
-              targetTempo: null
-            }, { emitEvent: false });
-
-            exerciseControl.patchValue({
-              supersetId: newSupersetId,
-              supersetOrder: index,
-              supersetType: 'standard', // Tabata is a type of standard superset in this structure
-              type: 'superset'
-            }, { emitEvent: false });
-          });
-          this.toastService.info( this.translate.instant('workoutBuilder.toasts.tabataConverted'));
-
-        } else if (this.isRoutineMode && this.builderForm.get('goal')?.value !== 'tabata') {
+          if (!this.enforceTabataSuperset()) {
+            this.isRevertingGoal = true;
+            this.builderForm.get('goal')?.setValue(this.previousGoalValue, { emitEvent: true });
+            return;
+          }
+          this.toastService.info(this.translate.instant('workoutBuilder.toasts.tabataConverted'));
+        }
+        else if (this.isRoutineMode && this.builderForm.get('goal')?.value !== 'tabata') {
           const firstExercise = this.exercisesFormArray.at(0) as FormGroup;
           if (firstExercise && firstExercise.get('supersetId')?.value && firstExercise.get('sets')?.value?.length === this.exercisesFormArray.length) {
             this.exercisesFormArray.controls.forEach(exerciseControl => {
@@ -674,7 +649,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           }
         }
         this.exercisesFormArray.updateValueAndValidity();
+        this.previousGoalValue = goalValue;
       });
+
     this.subscriptions.add(goalSub);
 
     const descSub = this.builderForm.get('description')?.valueChanges.subscribe(value => {
@@ -2040,42 +2017,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // --- NEW: TABATA VALIDATION BLOCK ---
     const formValueForValidation = this.builderForm.getRawValue();
     if (this.isRoutineMode && formValueForValidation.goal === 'tabata') {
-      const exercises = this.exercisesFormArray.controls as FormGroup[];
-
-      if (exercises.length >= 2) {
-        const firstSupersetId = exercises[0].get('supersetId')?.value;
-        const numSetsInFirst = (exercises[0].get('sets') as FormArray).length;
-
-        // 1. All exercises must be in the same, single superset
-        if (!firstSupersetId || !exercises.every(ex => ex.get('supersetId')?.value === firstSupersetId)) {
-          this.toastService.error(this.translate.instant('workoutBuilder.toasts.tabataValidationError1'), 0, this.translate.instant('workoutBuilder.toasts.validationErrorTitle'));
-          this.spinnerService.hide();
-          return;
-        }
-
-        // 2. All exercises must have the same number of sets (rounds)
-        if (!exercises.every(ex => (ex.get('sets') as FormArray).length === numSetsInFirst)) {
-          this.toastService.error(this.translate.instant('workoutBuilder.toasts.tabataValidationError2'), 0, this.translate.instant('workoutBuilder.toasts.validationErrorTitle'));
-          this.spinnerService.hide();
-          return;
-        }
-
-        // 3. ENFORCE Tabata values on all sets before saving to fix any manual edits
-        this.exercisesFormArray.controls.forEach(exControl => {
-          const setsArray = exControl.get('sets') as FormArray;
-          setsArray.controls.forEach(setControl => {
-            setControl.patchValue({
-              targetDuration: 20,
-              targetRest: 10,
-              targetReps: null,
-              targetWeight: null,
-              targetDistance: null,
-            }, { emitEvent: false });
-          });
-        });
-
-      } else {
-        this.toastService.error(this.translate.instant('workoutBuilder.toasts.tabataSizeError'), 0, this.translate.instant('workoutBuilder.toasts.validationErrorTitle'));
+      if (!this.enforceTabataSuperset()) {
         this.spinnerService.hide();
         return;
       }
@@ -5930,6 +5872,85 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const locationId = this.builderForm.get('locationId')?.value;
     const location = this.locationService.allLocations().find(l => l.id === locationId);
     return location ? location.label : '';
+  }
+
+  private enforceTabataSuperset(): boolean {
+    const exercises = this.exercisesFormArray.controls as FormGroup[];
+
+    if (exercises.length < 2) {
+      this.toastService.warning(this.translate.instant('workoutBuilder.toasts.tabataSizeError'), 5000);
+      return false;
+    }
+
+    // Assign a new supersetId if needed
+    const newSupersetId = uuidv4();
+
+    // Standardize sets and enforce Tabata values
+    let numRounds = 0;
+    if (exercises[0].get('supersetId')?.value) {
+      numRounds = exercises[0].get('sets')?.value.length;
+    }
+    exercises.forEach((exerciseControl, index) => {
+      const setsArray = exerciseControl.get('sets') as FormArray;
+      // Standardize to a single set if needed
+      while (setsArray.length > 1) {
+        setsArray.removeAt(1);
+      }
+      if (setsArray.length === 0) {
+        setsArray.push(this.fb.group({
+          targetDuration: 20,
+          targetRest: 10,
+          targetReps: null,
+          targetWeight: null,
+          targetDistance: null,
+        }));
+      }
+      setsArray.at(0).patchValue({
+        targetDuration: 20,
+        targetRest: 10,
+        targetReps: null,
+        targetWeight: null,
+        targetDistance: null,
+        targetTempo: null
+      }, { emitEvent: false });
+
+      exerciseControl.patchValue({
+        supersetId: newSupersetId,
+        supersetOrder: index,
+        supersetType: 'standard',
+        type: 'superset'
+      }, { emitEvent: false });
+
+      numRounds = (setsArray.length > numRounds) ? setsArray.length : numRounds;
+    });
+
+    // Ensure all exercises have the same number of sets
+    exercises.forEach(exerciseControl => {
+      const setsArray = exerciseControl.get('sets') as FormArray;
+      while (setsArray.length < numRounds) {
+        setsArray.push(this.fb.group({
+          targetDuration: 20,
+          targetRest: 10,
+          targetReps: null,
+          targetWeight: null,
+          targetDistance: null,
+        }));
+      }
+      while (setsArray.length > numRounds) {
+        setsArray.removeAt(setsArray.length - 1);
+      }
+      setsArray.controls.forEach(setControl => {
+        setControl.patchValue({
+          targetDuration: 20,
+          targetRest: 10,
+          targetReps: null,
+          targetWeight: null,
+          targetDistance: null,
+        }, { emitEvent: false });
+      });
+    });
+
+    return true;
   }
 
 

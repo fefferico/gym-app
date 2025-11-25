@@ -47,13 +47,29 @@
             </p>
           </div>
         </div>
+
+        <div class="flex items-center text-md text-gray-600 dark:text-gray-400 mt-1 gap-x-2" *ngIf="log.goal">
+          <app-icon name="goal" class="h-7 w-7 mr-1"></app-icon>
+          <span class="ml-1">
+            {{ 'logDetail.goal' | translate }}: {{ log.goal | titlecase }}
+          </span>
+        </div>
+
+        <!-- <div class="flex items-center text-md text-gray-600 dark:text-gray-400 mt-1 gap-x-2" *ngIf="log.category">
+          <app-icon name="category" class="h-7 w-7 mr-1"></app-icon>
+          <span class="ml-1">
+            {{ 'logDetail.category' | translate }}: {{ log.category | titlecase }}
+          </span>
+        </div> -->
+
         <div class="flex items-center text-md text-gray-600 dark:text-gray-400 mt-1 gap-x-2">
           <app-icon name="muscle" class="h-7 w-7"></app-icon>
           <span class="ml-1"> {{ 'logDetail.exercises' | translate }}: {{ log.exercises.length }}</span>
         </div>
         <div class="flex items-center text-md text-gray-600 dark:text-gray-400 mt-1 gap-x-2">
           <app-icon name="clock" class="h-7 w-7 mr-1"></app-icon>
-          <span *ngIf="log.durationSeconds">{{ 'logDetail.duration' | translate }}: {{ secondsToDateTime(log.durationSeconds) | date:'HH:mm:ss'
+          <span *ngIf="log.durationSeconds">{{ 'logDetail.duration' | translate }}: {{
+            secondsToDateTime(log.durationSeconds) | date:'HH:mm:ss'
             }}</span>
           <span *ngIf="!log.durationSeconds">{{ 'logDetail.duration' | translate }}: {{ 'logDetail.durationMinutes' |
             translate:{minutes: log.durationMinutes} }}</span>
@@ -167,12 +183,10 @@
                       <div class="flex items-center min-w-0">
                         <div class="flex-shrink-0 mr-2 w-10 h-10 flex items-center justify-center">
                           <img *ngIf="loggedEx.iconName" [src]="getIconPath(loggedEx.iconName)"
-                            [alt]="loggedEx.exerciseName + ' icon'"
-                            class="w-8 h-8 object-contain filter dark:brightness-200 dark:contrast-150">
+                            [alt]="loggedEx.exerciseName + ' icon'" class="w-8 h-8 object-contain filter dark:invert">
                         </div>
                         <div class="min-w-0 flex-grow">
-                          <h5 class="font-semibold text-gray-800 dark:text-gray-200 truncate"
-                            [title]="loggedEx.exerciseName">
+                          <h5 class="font-semibold text-gray-800 dark:text-gray-200" [title]="loggedEx.exerciseName">
                             {{ loggedEx.exerciseName }}
                           </h5>
                           <div class="text-xs font-normal text-gray-500 dark:text-gray-400 leading-tight">
@@ -182,13 +196,10 @@
                         </div>
                         <div *ngIf="loggedEx.sets.length > 0; else noSetData"
                           class="text-sm text-gray-700 dark:text-gray-200 font-semibold ml-auto text-right flex-shrink-0">
-                          {{ workoutUtilsService.getRepsValue(loggedEx.sets[0].repsLogged) || '-' }} reps
-                          <span *ngIf="loggedEx.sets[0].weightLogged != null"
-                            class="font-normal text-gray-600 dark:text-gray-400">
-                            @ {{ getWeightValue(loggedEx.sets[0].weightLogged) | weightUnit:'1.0-2' }}
-                          </span>
+                          {{ getTabataSetInfo(loggedEx.sets[0]) }}
                         </div>
-                        <ng-template #noSetData><span class="text-gray-400 text-sm ml-auto">{{ 'logDetail.card.noSetData'
+                        <ng-template #noSetData><span class="text-gray-400 text-sm ml-auto">{{
+                            'logDetail.card.noSetData'
                             | translate }}</span></ng-template>
                       </div>
                     </div>
@@ -229,9 +240,9 @@
                         <p *ngIf="checkIfWeightAvailable(item)">{{ 'logDetail.card.weight' | translate }}
                           ({{unitService.getWeightUnitSuffix()}}):
                           {{getExerciseWeightLogged(item)}}</p>
-                          <p *ngIf="checkIfDistanceAvailable(item)">{{ 'logDetail.card.distance' | translate }}
-                            ({{unitService.getDistanceMeasureUnitSuffix()}}):
-                            {{getExerciseDistanceLogged(item)}}</p>
+                        <p *ngIf="checkIfDistanceAvailable(item)">{{ 'logDetail.card.distance' | translate }}
+                          ({{unitService.getDistanceMeasureUnitSuffix()}}):
+                          {{getExerciseDistanceLogged(item)}}</p>
                       </div>
                     </div>
                   </div>
@@ -279,36 +290,37 @@
                         [title]="'logDetail.card.pbTooltip' | translate:{types: getPersonalBestTypesForSet(set, item.exerciseId).join('\n')}">
                         <span
                           class="p-1 text-xs font-semibold rounded-full bg-primary-dark text-white dark:text-amber-100 flex items-center">
-                           <app-icon name="pb" class="h-5 w-5"></app-icon>
+                          <app-icon name="pb" class="h-5 w-5"></app-icon>
                         </span>
                       </div>
                     </div>
                     <!-- Reps -->
                     <div *ngIf="checkIfRepsAvailable(item)"><strong [ngClass]="checkTextClass(set, metricEnum.reps)"
-                        [class.cursor-pointer]="true"
-                        (click)="showComparisonModal(set, metricEnum.reps)">{{ workoutUtilsService.repsTargetAsString(set.repsLogged) || '-' }}</strong></div>
+                        [class.cursor-pointer]="true" (click)="showComparisonModal(set, metricEnum.reps)">{{
+                        workoutUtilsService.repsTargetAsString(set.repsLogged) || '-' }}</strong></div>
 
                     <!-- Weight -->
                     <div *ngIf="checkIfWeightAvailable(item)"><strong [ngClass]="checkTextClass(set, metricEnum.weight)"
-                        [class.cursor-pointer]="true"
-                        (click)="showComparisonModal(set, metricEnum.weight)">{{ workoutUtilsService.weightTargetAsString(set.weightLogged) || '-' }}</strong></div>
+                        [class.cursor-pointer]="true" (click)="showComparisonModal(set, metricEnum.weight)">{{
+                        workoutUtilsService.weightTargetAsString(set.weightLogged) || '-' }}</strong></div>
 
                     <!-- Distance +++ -->
                     <div *ngIf="checkIfDistanceAvailable(item)">
-                      <strong [ngClass]="checkTextClass(set, metricEnum.distance)"
-                        [class.cursor-pointer]="true"
-                        (click)="showComparisonModal(set, metricEnum.distance)">{{ workoutUtilsService.distanceTargetAsString(set.distanceLogged) || '-' }}</strong>
+                      <strong [ngClass]="checkTextClass(set, metricEnum.distance)" [class.cursor-pointer]="true"
+                        (click)="showComparisonModal(set, metricEnum.distance)">{{
+                        workoutUtilsService.distanceTargetAsString(set.distanceLogged) || '-' }}</strong>
                     </div>
 
                     <!-- Time -->
-                    <div *ngIf="checkIfDurationAvailable(item)"><strong [ngClass]="checkTextClass(set, metricEnum.duration)"
-                        [class.cursor-pointer]="true"
-                        (click)="showComparisonModal(set, metricEnum.duration)">{{ workoutUtilsService.durationTargetAsString(set.durationLogged) || '-' }}</strong></div>
+                    <div *ngIf="checkIfDurationAvailable(item)"><strong
+                        [ngClass]="checkTextClass(set, metricEnum.duration)" [class.cursor-pointer]="true"
+                        (click)="showComparisonModal(set, metricEnum.duration)">{{
+                        workoutUtilsService.durationTargetAsString(set.durationLogged) || '-' }}</strong></div>
 
                     <!-- Rest -->
-                    <div><strong [ngClass]="checkTextClass(set, metricEnum.rest)"
-                        [class.cursor-pointer]="true"
-                        (click)="showComparisonModal(set, metricEnum.rest)">{{ workoutUtilsService.restTargetAsString(set.restLogged) || '-' }}</strong></div>
+                    <div><strong [ngClass]="checkTextClass(set, metricEnum.rest)" [class.cursor-pointer]="true"
+                        (click)="showComparisonModal(set, metricEnum.rest)">{{
+                        workoutUtilsService.restTargetAsString(set.restLogged) || '-' }}</strong></div>
 
                     <!-- Notes -->
                     <div *ngIf="set.notes" class="cursor-pointer dark:text-white">
@@ -369,8 +381,7 @@
 </app-modal>
 
 <!-- EXERCISE MODAL -->
-<app-modal *ngIf="isExerciseDetailModalOpen() as exercise" [isOpen]="!!exercise"
-  [forceFullScreen]="true"
+<app-modal *ngIf="isExerciseDetailModalOpen() as exercise" [isOpen]="!!exercise" [forceFullScreen]="true"
   (isOpenChange)="isExerciseDetailModalOpen.set(false)">
   <header class="px-4 pb-1 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
     <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100">{{ exerciseDetailsName }}</h2>
@@ -402,8 +413,8 @@
           <span>{{ data.performedValue }}</span>
 
           <!-- Success Icon -->
-          <app-icon *ngIf="getComparisonStatus(data.performedValue, data.targetValue) === 'success'"
-            name="done" class="w-7 h-7 text-green-500"></app-icon>
+          <app-icon *ngIf="getComparisonStatus(data.performedValue, data.targetValue) === 'success'" name="done"
+            class="w-7 h-7 text-green-500"></app-icon>
           <!-- Failure Icon -->
           <app-icon *ngIf="getComparisonStatus(data.performedValue, data.targetValue) === 'failure'" name="test_fail"
             class="w-7 h-7 text-red-500"></app-icon>

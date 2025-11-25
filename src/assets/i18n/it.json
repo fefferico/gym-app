@@ -2906,6 +2906,23 @@
     "stop": "Ferma",
     "reset": "Reimposta",
     "addCustom": "Aggiungi Personalizzato",
-      "modeLabel": "Modalità"
+    "modeLabel": "Modalità"
+  },
+  "tabataPlayer": {
+    "rest": "Recupero",
+    "getReady": "Preparati",
+    "elapsedTime": "Tempo Trascorso",
+    "scrollToCurrentSet": "Torna all'esercizio corrente",
+    "roundProgression": "Progressione round",
+    "intervalType": {
+      "prepare": "Preparati",
+      "work": "Lavoro",
+      "rest": "Recupero"
+    },
+    "alerts": {
+      "resume": "Riprendi",
+      "discard": "Scarta",
+      "quitTitle": "Abbandona Allenamento"
+    }
   }
 }

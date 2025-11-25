@@ -20,19 +20,46 @@ export enum AUDIO_TYPES {
   providedIn: 'root'
 })
 export class AudioService {
+  private _lastTickTime: number = 0;
   private audioCtx: AudioContext | null = null;
+  private _userInteracted = false;
 
-  constructor() { }
+  constructor() {
+    // Listen for first user interaction to unlock audio context
+    window.addEventListener('pointerdown', this._unlockAudioContext, { once: true });
+    window.addEventListener('keydown', this._unlockAudioContext, { once: true });
+  }
+
+  private _unlockAudioContext = () => {
+    this.initializeAudioContext();
+    if (this.audioCtx && this.audioCtx.state === 'suspended') {
+      this.audioCtx.resume();
+    }
+    this._userInteracted = true;
+  };
 
   async playSound(type: AUDIO_TYPES): Promise<void> {
     this.initializeAudioContext();
     if (!this.audioCtx) return;
 
+    // If user interacts via a UI event that triggers playSound, set _userInteracted
+    if (!this._userInteracted) {
+      this._userInteracted = true;
+    }
+
+    // Ensure AudioContext is resumed before playing
     if (this.audioCtx.state === 'suspended') {
-      this.audioCtx.resume();
+      try {
+        await this.audioCtx.resume();
+      } catch (e) {
+        // Resume may fail if not in user gesture
+        return;
+      }
     }
 
     const now = this.audioCtx.currentTime;
+
+    // Always create new nodes per sound
     const oscillator = this.audioCtx.createOscillator();
     const gainNode = this.audioCtx.createGain();
     const masterGain = this.audioCtx.createGain();
@@ -45,74 +72,16 @@ export class AudioService {
 
     switch (type) {
       case AUDIO_TYPES.countdown:
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(880, now);
-        gainNode.gain.setValueAtTime(2, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
-
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioCtx.destination);
-        oscillator.start(now);
-        oscillator.stop(now + 0.15);
+        this.playCountdownSound();
         break;
       case AUDIO_TYPES.end:
-        masterGain.gain.setValueAtTime(0.8, now);
-        masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.0);
-
-        osc1.type = 'sine';
-        osc1.frequency.setValueAtTime(110, now);
-
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(220, now);
-
-        osc3.type = 'sine';
-        osc3.frequency.setValueAtTime(330, now);
-
-        osc1.connect(masterGain);
-        osc2.connect(masterGain);
-        osc3.connect(masterGain);
-        masterGain.connect(this.audioCtx.destination);
-
-        osc1.start(now);
-        osc1.stop(now + 2.0);
-        osc2.start(now);
-        osc2.stop(now + 2.0);
-        osc3.start(now);
-        osc3.stop(now + 2.0);
+        this.playEndSound();
         break;
       case AUDIO_TYPES.error:
-        oscillator.type = 'sawtooth';
-        oscillator.frequency.setValueAtTime(600, now);
-        oscillator.frequency.linearRampToValueAtTime(300, now + 0.25);
-        gainNode.gain.setValueAtTime(0.4, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
-
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioCtx.destination);
-        oscillator.start(now);
-        oscillator.stop(now + 0.25);
+        this.playErrorSound();
         break;
       case AUDIO_TYPES.correct:
-        gainNode.gain.setValueAtTime(0.5, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.7);
-
-        osc1.type = 'sine';
-        osc1.frequency.setValueAtTime(784, now);
-
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(1568, now);
-
-        overtoneGain.gain.setValueAtTime(0.5, now);
-
-        osc1.connect(gainNode);
-        osc2.connect(overtoneGain);
-        overtoneGain.connect(gainNode);
-        gainNode.connect(this.audioCtx.destination);
-
-        osc1.start(now);
-        osc1.stop(now + 0.7);
-        osc2.start(now);
-        osc2.stop(now + 0.7);
+        this.playCorrectSound();
         break;
       case AUDIO_TYPES.untoggle:
         gainNode.gain.setValueAtTime(0.3, now);
@@ -301,23 +270,7 @@ export class AudioService {
         osc2.stop(now + whistleDur);
         break;
       case AUDIO_TYPES.tick: {
-        // Mechanical clock tick: sharp, short, high-pitched
-        oscillator.type = 'square'; // Sharper than sine
-        const tickDuration = 0.018; // 18ms, very short
-
-        // Start at 3500Hz, drop to 800Hz very quickly
-        oscillator.frequency.setValueAtTime(3500, now);
-        oscillator.frequency.exponentialRampToValueAtTime(800, now + tickDuration);
-
-        // Fast volume envelope
-        gainNode.gain.setValueAtTime(1, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, now + tickDuration);
-
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioCtx.destination);
-
-        oscillator.start(now);
-        oscillator.stop(now + tickDuration);
+        this.playTickSound();
         break;
       }
     }
@@ -383,8 +336,6 @@ export class AudioService {
     });
   }
 
-  // You can place this in a shared audio utility file or directly in your component/service
-
   /**
    * Plays a "pop" or "bloop" sound that matches the provided audio sample.
    * This sound is characterized by a single, pure tone with a very rapid
@@ -423,6 +374,160 @@ export class AudioService {
 
     oscillator.start(now);
     oscillator.stop(now + 0.25); // Stop the oscillator after the sound has faded
+  }
+
+  /**
+ * Plays a mechanical clock tick: sharp, short, high-pitched.
+ */
+  playTickSound(): void {
+    this.initializeAudioContext();
+    if (!this.audioCtx) return;
+
+    const now = this.audioCtx.currentTime;
+
+    const oscillator = this.audioCtx.createOscillator();
+    const gainNode = this.audioCtx.createGain();
+
+    oscillator.type = 'square'; // Sharper than sine
+    const tickDuration = 0.018; // 18ms, very short
+
+    // Start at 3500Hz, drop to 800Hz very quickly
+    oscillator.frequency.setValueAtTime(3500, now);
+    oscillator.frequency.exponentialRampToValueAtTime(800, now + tickDuration);
+
+    // Always reset gain to 0 before ramping up
+    gainNode.gain.setValueAtTime(0, now);
+    gainNode.gain.linearRampToValueAtTime(1, now + 0.001); // Fast attack
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + tickDuration); // Decay
+
+    oscillator.connect(gainNode);
+    gainNode.connect(this.audioCtx.destination);
+
+    oscillator.start(now);
+    oscillator.stop(now + tickDuration);
+  }
+
+  /**
+ * Plays a short, high-pitched countdown beep.
+ */
+  playCountdownSound(): void {
+    this.initializeAudioContext();
+    if (!this.audioCtx) return;
+
+    const now = this.audioCtx.currentTime;
+    const oscillator = this.audioCtx.createOscillator();
+    const gainNode = this.audioCtx.createGain();
+
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(880, now);
+
+    gainNode.gain.setValueAtTime(0, now);
+    gainNode.gain.linearRampToValueAtTime(1, now + 0.001);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(this.audioCtx.destination);
+
+    oscillator.start(now);
+    oscillator.stop(now + 0.15);
+  }
+
+  /**
+   * Plays a multi-tone "end" sound.
+   */
+  playEndSound(): void {
+    this.initializeAudioContext();
+    if (!this.audioCtx) return;
+
+    const now = this.audioCtx.currentTime;
+    const masterGain = this.audioCtx.createGain();
+    masterGain.gain.setValueAtTime(0.8, now);
+    masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.0);
+
+    const osc1 = this.audioCtx.createOscillator();
+    const osc2 = this.audioCtx.createOscillator();
+    const osc3 = this.audioCtx.createOscillator();
+
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(110, now);
+
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(220, now);
+
+    osc3.type = 'sine';
+    osc3.frequency.setValueAtTime(330, now);
+
+    osc1.connect(masterGain);
+    osc2.connect(masterGain);
+    osc3.connect(masterGain);
+    masterGain.connect(this.audioCtx.destination);
+
+    osc1.start(now);
+    osc1.stop(now + 2.0);
+    osc2.start(now);
+    osc2.stop(now + 2.0);
+    osc3.start(now);
+    osc3.stop(now + 2.0);
+  }
+
+  /**
+   * Plays a short error sound.
+   */
+  playErrorSound(): void {
+    this.initializeAudioContext();
+    if (!this.audioCtx) return;
+
+    const now = this.audioCtx.currentTime;
+    const oscillator = this.audioCtx.createOscillator();
+    const gainNode = this.audioCtx.createGain();
+
+    oscillator.type = 'sawtooth';
+    oscillator.frequency.setValueAtTime(600, now);
+    oscillator.frequency.linearRampToValueAtTime(300, now + 0.25);
+
+    gainNode.gain.setValueAtTime(0.4, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(this.audioCtx.destination);
+
+    oscillator.start(now);
+    oscillator.stop(now + 0.25);
+  }
+
+  /**
+   * Plays a short correct/confirmation sound.
+   */
+  playCorrectSound(): void {
+    this.initializeAudioContext();
+    if (!this.audioCtx) return;
+
+    const now = this.audioCtx.currentTime;
+    const osc1 = this.audioCtx.createOscillator();
+    const osc2 = this.audioCtx.createOscillator();
+    const gainNode = this.audioCtx.createGain();
+    const overtoneGain = this.audioCtx.createGain();
+
+    gainNode.gain.setValueAtTime(0.5, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.7);
+
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(784, now);
+
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(1568, now);
+
+    overtoneGain.gain.setValueAtTime(0.5, now);
+
+    osc1.connect(gainNode);
+    osc2.connect(overtoneGain);
+    overtoneGain.connect(gainNode);
+    gainNode.connect(this.audioCtx.destination);
+
+    osc1.start(now);
+    osc1.stop(now + 0.7);
+    osc2.start(now);
+    osc2.stop(now + 0.7);
   }
 
 }

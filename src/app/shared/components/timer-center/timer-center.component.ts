@@ -38,10 +38,7 @@ export class TimerCenterComponent {
     open() {
         this.isOpen = true;
     }
-    onClose() {
-        this.isOpen = false;
-        this.close.emit();
-    }
+
 
     setMode(mode: 'timer' | 'stopwatch') {
         this.timer.setMode(mode);
@@ -69,29 +66,39 @@ export class TimerCenterComponent {
 
     private lastTickSecond: number | null = null;
 
-    private tick() {
-        if (!this.timer.state().running) return;
+
+    private timerInterval: any = null;
+    private tick(first = false) {
+        if (!this.timer.state().running) {
+            this.clearInterval();
+            return;
+        }
         if (this.timer.state().mode === 'timer') {
-            const elapsed = (Date.now() - (this.timer.state().startTimestamp || 0)) / 1000;
+            const now = Date.now();
+            const elapsed = (now - (this.timer.state().startTimestamp || 0)) / 1000;
             const remaining = Math.max(0, this.timer.state().duration - elapsed);
             this.timer.updateState({ remaining });
 
-            const currentSecond = Math.floor(remaining);
+            const currentSecond = Math.ceil(remaining); // Use ceil for more intuitive countdown
             if (remaining > 0) {
                 if (this.lastTickSecond !== currentSecond) {
                     const countdownSettings = this.appSettingsService.getSettings().countdownSoundSeconds;
                     if (
                         countdownSettings &&
-                        currentSecond > 0 &&
+                        currentSecond >= 1 &&
                         currentSecond <= countdownSettings
                     ) {
                         this.audioService.playSound(AUDIO_TYPES.countdown);
-                    } else {
-                        this.audioService.playSound(AUDIO_TYPES.tick);
+                    } else if (currentSecond > 0) {
+                        this.audioService.playSound(AUDIO_TYPES.pop);
                     }
                     this.lastTickSecond = currentSecond;
                 }
-                setTimeout(() => this.tick(), 100);
+                // Calculate ms until next full second
+                const msToNextSecond = first
+                    ? (1000 - (now % 1000))
+                    : 1000;
+                this.timerInterval = setTimeout(() => this.tick(), msToNextSecond);
             } else {
                 this.pause();
                 this.audioService.playSound(AUDIO_TYPES.end);
@@ -101,12 +108,26 @@ export class TimerCenterComponent {
             // Stopwatch mode: increment remaining
             const elapsed = (Date.now() - (this.timer.state().startTimestamp || 0)) / 1000;
             this.timer.updateState({ remaining: elapsed });
-            setTimeout(() => this.tick(), 100);
+            this.timerInterval = setTimeout(() => this.tick(), 100);
+        }
+    }
+
+    private clearInterval() {
+        if (this.timerInterval) {
+            clearTimeout(this.timerInterval);
+            this.timerInterval = null;
         }
     }
 
     pause() {
         this.timer.stop();
+        this.clearInterval();
+    }
+
+    onClose() {
+        this.isOpen = false;
+        this.close.emit();
+        this.clearInterval();
     }
 
     start() {
@@ -127,9 +148,13 @@ export class TimerCenterComponent {
                 remaining: duration
             });
         }
-        this.tick(); // <-- Start the timer loop!
+        this.startInterval();
     }
 
+    private startInterval() {
+        this.clearInterval();
+        this.tick(true); // Run immediately, align to next second
+    }
 
     readonly circleRadius = 90;
     readonly circleCircumference = 2 * Math.PI * this.circleRadius;

@@ -2904,5 +2904,22 @@
     "reset": "Reset",
     "addCustom": "Add Custom",
     "modeLabel": "Mode"
+  },
+  "tabataPlayer": {
+    "rest": "Rest",
+    "getReady": "Get ready",
+    "elapsedTime": "Elapsed Time",
+    "scrollToCurrentSet": "Scroll to Current Set",
+    "roundProgression": "Round progression",
+    "intervalType": {
+      "prepare": "Prepare",
+      "work": "Work",
+      "rest": "Rest"
+    },
+    "alerts": {
+      "resume": "Resume",
+      "discard": "Discard",
+      "quitTitle": "Quit Workout"
+    }
   }
 }
