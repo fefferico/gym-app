@@ -258,7 +258,8 @@
     "actionCompleted": "Operazione completata",
     "invalidData": "Dati errati",
     "ok": "OK",
-    "removed": "rimosso"
+    "removed": "rimosso",
+    "confirm": "Conferma"
   },
   "toasts": {
     "statusUpdated": "Stato Aggiornato",
@@ -1931,24 +1932,24 @@
       "mensOlympic": "Bilanciere Olimpico Maschile",
       "womensOlympic": "Bilanciere Olimpico Femminile",
       "standardGym": "Bilanciere Standard da Palestra",
-      "ezCurl": "Bilanciere EZ (o Sagomato)",
-      "tricep": "Bilanciere per Tricipiti (Hammer)",
-      "trapHex": "Trap Bar / Quadra Bar",
-      "olympic120": "Bilanciere Olimpico 120cm",
-      "olympic152": "Bilanciere Olimpico 152cm",
-      "olympic182": "Bilanciere Olimpico 182cm",
-      "olympic186": "Bilanciere Olimpico 186cm",
-      "olympic219": "Bilanciere Olimpico 219cm",
-      "olympic47in": "Bilanciere Olimpico 47.24in",
-      "olympic60in": "Bilanciere Olimpico 59.84in",
-      "olympic72in": "Bilanciere Olimpico 71.65in",
-      "olympic73in": "Bilanciere Olimpico 73.23in",
-      "olympic86in": "Bilanciere Olimpico 86.22in"
+      "ezCurl": "Bilanciere EZ-Curl",
+      "tricep": "Bilanciere per Tricipiti",
+      "trapHex": "Trap/Hex Bar",
+      "olympic120": "Bilanciere Olimpico (120cm)",
+      "olympic152": "Bilanciere Olimpico (152cm)",
+      "olympic182": "Bilanciere Olimpico (182cm)",
+      "olympic186": "Bilanciere Olimpico (186cm)",
+      "olympic219": "Bilanciere Olimpico (219cm)",
+      "olympic47in": "Bilanciere Olimpico (47in)",
+      "olympic60in": "Bilanciere Olimpico (60in)",
+      "olympic72in": "Bilanciere Olimpico (72in)",
+      "olympic73in": "Bilanciere Olimpico (73in)",
+      "olympic86in": "Bilanciere Olimpico (86in)"
     },
     "collars": {
-      "none": "Senza Collari",
-      "spring": "Molle",
-      "lockjaw": "Collari a Bloccaggio / Professionali",
+      "none": "Senza Ferma Dischi",
+      "spring": "Molle Ferma Dischi",
+      "lockjaw": "Collari Lock-Jaw",
       "competition": "Collari da Competizione"
     }
   },
@@ -2105,32 +2106,6 @@
       "confirm": "Conferma",
       "doSomething": "Esegui Azione",
       "doNothing": "Nessuna Azione"
-    }
-  },
-  "barbellData": {
-    "barbells": {
-      "mensOlympic": "Bilanciere Olimpico Maschile",
-      "womensOlympic": "Bilanciere Olimpico Femminile",
-      "standardGym": "Bilanciere Standard da Palestra",
-      "ezCurl": "Bilanciere EZ-Curl",
-      "tricep": "Bilanciere per Tricipiti",
-      "trapHex": "Trap/Hex Bar",
-      "olympic120": "Bilanciere Olimpico (120cm)",
-      "olympic152": "Bilanciere Olimpico (152cm)",
-      "olympic182": "Bilanciere Olimpico (182cm)",
-      "olympic186": "Bilanciere Olimpico (186cm)",
-      "olympic219": "Bilanciere Olimpico (219cm)",
-      "olympic47in": "Bilanciere Olimpico (47in)",
-      "olympic60in": "Bilanciere Olimpico (60in)",
-      "olympic72in": "Bilanciere Olimpico (72in)",
-      "olympic73in": "Bilanciere Olimpico (73in)",
-      "olympic86in": "Bilanciere Olimpico (86in)"
-    },
-    "collars": {
-      "none": "Senza Ferma Dischi",
-      "spring": "Molle Ferma Dischi",
-      "lockjaw": "Collari Lock-Jaw",
-      "competition": "Collari da Competizione"
     }
   },
   "dataConversionService": {

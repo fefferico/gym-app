@@ -306,7 +306,8 @@
     "actionCompleted": "Action completed",
     "invalidData": "Invalid data",
     "ok": "OK",
-    "removed": "removed"
+    "removed": "removed",
+    "confirm": "Confirm"
   },
   "toasts": {
     "statusUpdated": "Status Updated",
