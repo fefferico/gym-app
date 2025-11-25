@@ -77,6 +77,7 @@ import { WORKOUT_SECTION_TYPE_ORDER, WorkoutSectionType } from '../../../core/mo
 import { WorkoutSectionService } from '../../../core/services/workout-section.service';
 import { ModalService } from '../../../core/services/modal.service';
 import { EXERCISE_CATEGORY_TYPES } from '../../../core/models/exercise-category.model';
+import { ThemeService } from '../../../core/services/theme.service';
 
 // Interface for saving the paused state
 
@@ -143,6 +144,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private injector = inject(Injector);
   private translate = inject(TranslateService);
+  private themeService = inject(ThemeService);
 
   private workoutSectionService = inject(WorkoutSectionService);
 
@@ -344,7 +346,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       case WorkoutSectionType.FINISHER: return '#a855f7'; // purple-500
       case WorkoutSectionType.COOL_DOWN: return '#10b981'; // emerald-500
       // default: return '#6b7280'; // gray-500
-      default: return ''; // gray-500
+      default: return 'white gray-500'; // gray-500
     }
   }
 
@@ -3221,6 +3223,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       });
 
       this.savePausedSessionState(); // Persist the changes
+      this._prefillPerformanceInputs();
     }
   }
 
@@ -6629,6 +6632,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const baseExercise = this.availableExercises.find(ex => ex.id === exerciseId);
     if (!baseExercise) return '';
     return this.exerciseService.getIconPath(baseExercise.iconName);
+  }
+
+  isDarkTheme() {
+    // Implement the logic to determine if the current theme is dark
+    // This is a placeholder implementation
+    return this.themeService.isDarkTheme();
   }
 }
 

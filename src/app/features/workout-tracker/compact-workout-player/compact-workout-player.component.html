@@ -64,7 +64,10 @@
       <div
         class="progress-bar-container w-full bg-gray-300 dark:bg-gray-700 rounded-full h-5 relative flex items-center">
         <div class="progress-bar bg-primary h-3 rounded-full my-1 mx-1" [style.width.%]="workoutProgress()"></div>
-        <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
+        <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white" [ngClass]="{
+                'text-black': !isDarkTheme() && workoutProgress() <= 45,
+                'text-white': isDarkTheme() || workoutProgress() > 45
+              }">
           {{ workoutProgress() | number:'1.0-0' }}%
         </span>
       </div>
@@ -83,7 +86,11 @@
             <div class="absolute inset-0 bg-gray-200 dark:bg-gray-700"></div>
             <!-- Centered percentage -->
             <span
-              class="absolute inset-0 z-10 flex items-center justify-center text-[10px] font-bold text-white pointer-events-none">
+              class="absolute inset-0 z-10 flex items-center justify-center text-[10px] font-bold pointer-events-none"
+              [ngClass]="{
+                'text-black': !isDarkTheme() && sectionProgress(section, currentWorkoutLog()) <= 45,
+                'text-white': isDarkTheme() || sectionProgress(section, currentWorkoutLog()) > 45
+              }">
               {{ sectionProgress(section, currentWorkoutLog()) | number:'1.0-0' }}%
             </span>
             <!-- Foreground (progress fill) -->
@@ -119,7 +126,8 @@
         <!-- Exercise Card -->
         <div #exerciseCard cdkDrag *ngIf="!exercise.supersetId || isSupersetStart(exIndex)"
           class="transition-all duration-300 relative" [ngClass]="getExerciseClasses(exercise, exIndex)"
-          [style.zIndex]="areActionsVisible(exIndex) ? 50 : 'auto'" [attr.data-exercise-index]="exIndex">
+          [style.zIndex]="areActionsVisible(exIndex) ? 50 : 'auto'" [attr.data-exercise-index]="exIndex"
+          [ngStyle]="{ border: '3px solid ' + getSectionProgressColor(getSectionForExercise(exIndex)) }">
 
           <!-- Ghost element for drop placeholder -->
           <div *cdkDragPlaceholder></div>
@@ -145,9 +153,10 @@
                 <h2 #exerciseHeader
                   class="flex items-center max-w-[75vw] sm:max-w-[350px] text-md font-semibold text-gray-800 dark:text-gray-100 break-words">
                   <ng-container *ngIf="isSuperSet(exIndex); else standardHeader">
-                    <span [ngClass]="{ 'text-white inline-flex flex-col items-start': true }">
-                      <span class="w-fit rounded-full px-2"
-                        [ngStyle]="{ background: getSectionProgressColor(getSectionForExercise(exIndex)) }">{{
+                    <span [ngClass]="{ 'dark:text-white inline-flex flex-col items-start': true }">
+                      <span class="w-fit rounded-full">
+                        <!-- [ngStyle]="{ background: getSectionProgressColor(getSectionForExercise(exIndex)) }" -->
+                        {{
                         getExerciseDisplayIndex(exIndex) }}</span>
                       <span style="white-space: pre-line;">{{ getSupersetDisplayName(exercise.supersetId!) }}</span>
                     </span>
@@ -157,9 +166,8 @@
                       [ngClass]="{ 'text-white px-3 w-fit rounded-full inline-flex': true }">
                       {{ getExerciseDisplayIndex(exIndex) }}
                     </span> -->
-                    <span class="flex items-center px-1 rounded-md p-1"
-                      [ngStyle]="{ background: getSectionProgressColor(getSectionForExercise(exIndex)) }"
-                    >
+                    <span class="flex items-center px-1 rounded-md p-1">
+                      <!-- [ngStyle]="{ background: getSectionProgressColor(getSectionForExercise(exIndex)) }" -->
                       <img *ngIf="exercise" [src]="getIconPath(exIndex)"
                         class="w-7 h-7 sm:w-8 sm:h-8 object-contain mr-2 mt-0.5 sm:mt-1 filter dark:invert">
                       {{ exercise.exerciseName }}</span>
@@ -172,16 +180,11 @@
                 getExerciseTotalLoggedSets(exIndex) + '/' +
                 getExerciseTotalSets(exIndex)}}
                 <ng-container *ngIf="getExerciseTotalSets(exIndex) > 0">
+                  <app-icon *ngIf="getExerciseTotalLoggedSets(exIndex) === getExerciseTotalSets(exIndex)" name="done"
+                    class="w-5 h-5 text-green-500 ml-1"></app-icon>
                   <app-icon
-                  *ngIf="getExerciseTotalLoggedSets(exIndex) === getExerciseTotalSets(exIndex)"
-                  name="done"
-                  class="w-5 h-5 text-green-500 ml-1"
-                  ></app-icon>
-                  <app-icon
-                  *ngIf="getExerciseTotalLoggedSets(exIndex) > 0 && getExerciseTotalLoggedSets(exIndex) < getExerciseTotalSets(exIndex)"
-                  name="target"
-                  class="h-4 w-4 text-yellow-500 ml-1"
-                  ></app-icon>
+                    *ngIf="getExerciseTotalLoggedSets(exIndex) > 0 && getExerciseTotalLoggedSets(exIndex) < getExerciseTotalSets(exIndex)"
+                    name="target" class="h-4 w-4 text-yellow-500 ml-1"></app-icon>
                 </ng-container>
               </div>
             </div>
@@ -734,11 +737,11 @@
                       <div class="flex items-start gap-2">
                         <ng-container *ngIf="!isRoundExpanded(exIndex, roundIndex); else expandedRoundHeader">
                           <div class="flex flex-col flex-1 gap-0.5">
-                            <div class="flex-shrink-0 px-1 text-center rounded-lg w-fit" [ngClass]="{
-                                'bg-primary text-white': isStandardSuperSet(exIndex) && !isEmom(exIndex),
-                                'bg-teal-500 text-white': isEmom(exIndex)
+                            <div class="flex-shrink-0 px-1 text-center rounded-lg w-fit text-white" [ngClass]="{
+                              'bg-primary ': isStandardSuperSet(exIndex),
+                              'bg-teal-500': isEmom(exIndex)
                               }">
-                              <span class="font-bold text-lg text-gray-700 dark:text-white">
+                              <span class="font-bold text-lg ">
                                 #{{ 'compactPlayer.roundHeader' | translate:{number: roundIndex + 1} }}
                               </span>
                             </div>
@@ -762,11 +765,11 @@
                           </div>
                         </ng-container>
                         <ng-template #expandedRoundHeader>
-                          <div class="flex-shrink-0 px-1 text-center rounded-lg w-fit" [ngClass]="{
-                              'bg-primary text-white': isRoundExpanded(exIndex, roundIndex) && isStandardSuperSet(exIndex),
-                              'bg-teal-500 text-white': isRoundExpanded(exIndex, roundIndex) && isEmom(exIndex)
+                          <div class="flex-shrink-0 px-1 text-center rounded-lg w-fit text-white" [ngClass]="{
+                              'bg-primary ': isStandardSuperSet(exIndex),
+                              'bg-teal-500': isEmom(exIndex)
                             }">
-                            <span class="font-bold text-lg text-gray-700 dark:text-white">
+                            <span class="font-bold text-lg">
                               #{{ 'compactPlayer.roundHeader' | translate:{number: roundIndex + 1} }}
                             </span>
                           </div>
