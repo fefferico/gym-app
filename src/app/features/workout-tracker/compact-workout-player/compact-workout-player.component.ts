@@ -3450,6 +3450,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   getExerciseClasses(exercise: WorkoutExercise, index: number): any {
     const isStandardSuperSet = this.isSuperSet(index) && !this.isEmom(index);
     const isEmomSet = this.isEmom(index);
+    const isStandardSet = !isStandardSuperSet && !isEmomSet;
     const order = exercise.supersetOrder ?? 0;
     const isExpanded = this.expandedExerciseIndex() === index;
 
@@ -3461,12 +3462,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       'border-primary': isStandardSuperSet,
       'border-teal-400': isEmomSet,
       // Standalone exercises always get these classes
-      'mb-4 rounded-md': !isStandardSuperSet && !isEmomSet,
+      'mb-4 rounded-md': isStandardSet,
     };
 
     // --- State-Specific Logic ---
-    if (isExpanded) {
-      // classes['border-yellow-400 ring-1 ring-yellow-400 dark:ring-yellow-500 z-10'] = true;
+    if (isStandardSet && isExpanded) {
+      classes['mb-8'] = true;
     }
     if ((isStandardSuperSet || isEmomSet) && isExpanded) {
       // STATE 1: THE EXERCISE IS EXPANDED
