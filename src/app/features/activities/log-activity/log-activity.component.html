@@ -17,8 +17,8 @@
 
         <!-- Activity Selection -->
         <div>
-            <label for="activityId"
-                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ 'logActivity.activityLabel' | translate }}</label>
+            <label for="activityId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+                'logActivity.activityLabel' | translate }}</label>
             <select id="activityId" formControlName="activityId" class="input-field"
                 [ngClass]="{ 'input-invalid': f['activityId'].touched && f['activityId'].invalid }">
                 <option value="" disabled>{{ 'logActivity.selectActivity' | translate }}</option>
@@ -35,24 +35,30 @@
         <!-- --- MODIFIED: Replaced Duration with Start and End Time --- -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-                <label for="date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ 'logActivity.dateLabel' | translate }}</label>
-                <input type="date" id="date" formControlName="date" class="input-field dark:text-gray-300 dark:[color-scheme:dark]"
+                <label for="date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+                    'logActivity.dateLabel' | translate }}</label>
+                <input type="date" id="date" formControlName="date"
+                    class="input-field dark:text-gray-300 dark:[color-scheme:dark]"
                     [ngClass]="{ 'input-invalid': f['date'].touched && f['date'].invalid }">
                 <div *ngIf="f['date'].touched && f['date'].invalid" class="validation-message">
                     {{ 'logActivity.dateRequired' | translate }}
                 </div>
             </div>
             <div>
-                <label for="startTime" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ 'logActivity.startTimeLabel' | translate }}</label>
-                <input type="time" id="startTime" formControlName="startTime" class="input-field dark:text-gray-300 dark:[color-scheme:dark]"
+                <label for="startTime" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+                    'logActivity.startTimeLabel' | translate }}</label>
+                <input type="time" id="startTime" formControlName="startTime"
+                    class="input-field dark:text-gray-300 dark:[color-scheme:dark]"
                     [ngClass]="{ 'input-invalid': f['startTime'].touched && f['startTime'].invalid }">
                 <div *ngIf="f['startTime'].touched && f['startTime'].invalid" class="validation-message">
                     {{ 'logActivity.startTimeRequired' | translate }}
                 </div>
             </div>
             <div>
-                <label for="endTime" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ 'logActivity.endTimeLabel' | translate }}</label>
-                <input type="time" id="endTime" formControlName="endTime" class="input-field dark:text-gray-300 dark:[color-scheme:dark]"
+                <label for="endTime" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+                    'logActivity.endTimeLabel' | translate }}</label>
+                <input type="time" id="endTime" formControlName="endTime"
+                    class="input-field dark:text-gray-300 dark:[color-scheme:dark]"
                     [ngClass]="{ 'input-invalid': (f['endTime'].touched && f['endTime'].invalid) || logActivityForm.hasError('timeInvalid') }">
                 <div *ngIf="f['endTime'].touched && f['endTime'].invalid" class="validation-message">
                     {{ 'logActivity.endTimeRequired' | translate }}
@@ -65,7 +71,8 @@
 
         <!-- Intensity -->
         <div>
-            <label for="intensity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ 'logActivity.intensityLabel' | translate }}</label>
+            <label for="intensity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+                'logActivity.intensityLabel' | translate }}</label>
             <select id="intensity" formControlName="intensity" class="input-field">
                 <option value="Low">{{ 'logActivity.intensityOptions.low' | translate }}</option>
                 <option value="Medium">{{ 'logActivity.intensityOptions.medium' | translate }}</option>
@@ -75,27 +82,73 @@
 
         <!-- Optional Fields -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div *ngIf="f['location'].enabled">
-                <label for="location" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ 'logActivity.locationLabel' | translate }}</label>
-                <input type="string" id="location" formControlName="location" [placeholder]="'logActivity.locationPlaceholder' | translate"
-                    class="input-field">
+            <!-- LOCATION TYPE -->
+            <div *ngIf="f['locationId'].enabled">
+                <label for="locationId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+                    'logActivity.locationLabel' | translate }}</label>
+                <select id="locationId" formControlName="locationId" class="input-field">
+                    <option value="">{{ 'logActivity.locationPlaceholder' | translate }}</option>
+                    <option *ngFor="let location of locationService.allLocationTypes()" [value]="location.id">
+                        {{ location.label }}
+                    </option>
+                </select>
+            </div>
+            <!-- LOCATION NAME -->
+            <div *ngIf="f['locationName'].enabled">
+                <label for="locationName" class="block text-m font-medium text-gray-700 dark:text-gray-200">
+                    {{ 'workoutBuilder.logEntry.locationLabel' | translate }}
+                </label>
+                <input id="locationName" type="text" formControlName="locationName" [attr.list]="'locationName-list'"
+                    [placeholder]="'workoutBuilder.logEntry.locationPlaceholder' | translate"
+                    class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 text-gray-700 dark:text-gray-200"
+                    autocomplete="off" (focus)="onLocationNameFocus(locationNameInput)"
+                    (input)="onLocationNameInput($event)" #locationNameInput />
+                <datalist id="locationName-list">
+                    <option *ngFor="let loc of activityService.getActivityLocations()" [value]="loc"></option>
+                </datalist>
             </div>
             <div *ngIf="f['distanceKm'].enabled">
-                <label for="distanceKm" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ 'logActivity.distanceLabel' | translate }}</label>
-                <input type="number" id="distanceKm" formControlName="distanceKm" [placeholder]="'logActivity.distancePlaceholder' | translate"
-                    class="input-field">
+                <label for="distanceKm" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+                    'logActivity.distanceLabel' | translate }}</label>
+                <input type="number" id="distanceKm" formControlName="distanceKm"
+                    [placeholder]="'logActivity.distancePlaceholder' | translate" class="input-field">
             </div>
             <div *ngIf="f['caloriesBurned'].enabled">
-                <label for="caloriesBurned"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ 'logActivity.caloriesLabel' | translate }}</label>
-                <input type="number" id="caloriesBurned" formControlName="caloriesBurned" [placeholder]="'logActivity.caloriesPlaceholder' | translate"
-                    class="input-field">
+                <label for="caloriesBurned" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+                    'logActivity.caloriesLabel' | translate }}</label>
+                <input type="number" id="caloriesBurned" formControlName="caloriesBurned"
+                    [placeholder]="'logActivity.caloriesPlaceholder' | translate" class="input-field">
             </div>
+        </div>
+
+        <!-- People Selection (Chips) -->
+        <div>
+            <label for="people" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {{ 'logActivity.peopleLabel' | translate }}
+            </label>
+            <input id="people" type="text" [value]="peopleInput" (input)="onPeopleInput($event)"
+                (keydown.enter)="addPersonFromInput($event); $event.preventDefault()" [attr.list]="'people-list'"
+                placeholder="..." class="input-field mb-2" autocomplete="off" />
+            <datalist id="people-list">
+                <option *ngFor="let person of filteredPeople" [value]="person"></option>
+            </datalist>
+            <div class="flex flex-wrap gap-2">
+                <ng-container *ngFor="let person of f['people'].value">
+                    <span
+                        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary text-white cursor-pointer"
+                        (click)="removePerson(person)">
+                        {{ person }}
+                        <app-icon name="x" class="ml-2 w-3 h-3"></app-icon>
+                    </span>
+                </ng-container>
+            </div>
+            <input type="hidden" formControlName="people">
         </div>
 
         <!-- Notes -->
         <div>
-            <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ 'logActivity.notesLabel' | translate }}</label>
+            <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+                'logActivity.notesLabel' | translate }}</label>
             <textarea id="notes" formControlName="notes" rows="3" class="input-field"
                 [placeholder]="'logActivity.notesPlaceholder' | translate"></textarea>
         </div>

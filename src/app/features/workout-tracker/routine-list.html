@@ -166,6 +166,21 @@
                             {{ equipment.label | translate }} </button>
                     </div>
                 </div>
+                <div>
+                    <label for="routine-sort-filter"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {{ 'routineList.filters.sortLabel' | translate }}
+                    </label>
+                    <select id="routine-sort-filter" (change)="onRoutineSortChange($event)"
+                        [value]="selectedRoutineSort() || 'lastUsed'"
+                        class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
+                        <option value="lastUsed">{{ 'routineList.filters.sort.lastUsed' | translate }}</option>
+                        <option value="lastCreated">{{ 'routineList.filters.sort.lastCreated' | translate }}</option>
+                        <option value="lastEdited">{{ 'routineList.filters.sort.lastEdited' | translate }}</option>
+                        <option value="alphabetical">{{ 'routineList.filters.sort.alphabetical' | translate }}</option>
+                        <option value="favourites">{{ 'routineList.filters.sort.favourites' | translate }}</option>
+                    </select>
+                </div>
                 <div class="mt-4 flex justify-between items-center">
                     <button (click)="clearFilters()"
                         class="flex px-4 py-2 bg-yellow-200 dark:bg-yellow-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-yellow-300 dark:hover:bg-yellow-500 text-sm items-center font-medium">

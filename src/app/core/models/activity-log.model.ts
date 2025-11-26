@@ -12,13 +12,14 @@ export interface ActivityLog {
   date: string; // ISO format: YYYY-MM-DD
   startTime: number; // Timestamp (milliseconds since epoch)
   
-  // +++ ADDED +++
   endTime?: number; // Optional timestamp for the end time
   
   durationMinutes: number; // This will now be calculated
   intensity: 'Low' | 'Medium' | 'High';
   distanceKm?: number;
-  location?: string;
+  locationId?: string;
+  locationName?: string;
   caloriesBurned?: number;
   notes?: string;
+  people?: string[];
 }

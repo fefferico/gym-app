@@ -308,7 +308,6 @@ export interface Routine {
   secondaryCategory?: string; // For sub-categories, or even a different categorization axis
   tags?: string[]; // A flexible way to add specific labels like "Bodyweight", "HIIT", "Dumbbells", "Yoga" etc.
   // ==========================
-  locationId?: string;
   sections?: WorkoutSection[];
 }
 

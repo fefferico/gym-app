@@ -49,6 +49,7 @@ import { LanguageService } from '../../../core/services/language.service';
 import { ColorsService } from '../../../core/services/colors.service';
 import { BumpClickDirective } from '../../../shared/directives/bump-click.directive';
 import { repsTypeToReps, genRepsTypeFromRepsNumber, getDurationValue, getWeightValue, weightToExact } from '../../../core/services/workout-helper.service';
+import { LocationService } from '../../../core/services/location.service';
 
 
 interface CalendarMonth {
@@ -217,6 +218,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   private translate = inject(TranslateService);
   private languageService = inject(LanguageService);
   protected colorsService = inject(ColorsService);
+  protected locationService = inject(LocationService);
 
   private dateFnsLocales: { [key: string]: Locale } = {
     en: enUS,
@@ -262,6 +264,13 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (!items || items.length === 0) return [];
     if (!filters) return items;
+
+    // --- Filter by log type ---
+    if (filters.logType === 'workout') {
+      items = items.filter(item => item.itemType === 'workout');
+    } else if (filters.logType === 'activity') {
+      items = items.filter(item => item.itemType === 'activity');
+    }
 
     const filtered = items.filter(item => {
       let match = true;
@@ -316,7 +325,28 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       return match;
     });
 
-    return filtered; // The list is already sorted from the source observable
+      // --- Sorting ---
+  switch (filters.sortBy) {
+    case 'alphabetical':
+      items = [...items].sort((a, b) => {
+        const aName = (a.itemType === 'workout' ? a.routineName : a.activityName) || '';
+        const bName = (b.itemType === 'workout' ? b.routineName : b.activityName) || '';
+        return aName.localeCompare(bName);
+      });
+      break;
+    // case 'lastEdited':
+    //   items = [...items].sort((a, b) => (b.updatedAt ?? b.startTime) - (a.updatedAt ?? a.startTime));
+    //   break;
+    // case 'lastCreated':
+    //   items = [...items].sort((a, b) => (b.createdAt ?? b.startTime) - (a.createdAt ?? a.startTime));
+    //   break;
+    case 'lastUsed':
+    default:
+      items = [...items].sort((a, b) => b.startTime - a.startTime);
+      break;
+  }
+
+    return items; // The list is already sorted from the source observable
   });
 
   constructor() {
@@ -326,7 +356,9 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       routineName: [''],
       exerciseId: [''],
       programId: [''],
-      cardColor: ['']
+      cardColor: [''],
+      logType: [''],    // NEW: 'workout', 'activity', or ''
+      sortBy: ['lastUsed'] // NEW: default sort
     });
     this.filterValuesSignal.set(this.filterForm.value);
     this.filterForm.valueChanges.pipe(
@@ -1193,6 +1225,10 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   // Helper for the template to get the current value
   getCurrentColorFilterValue(): string {
     return this.filterForm.get('cardColor')?.value || '';
+  }
+
+  getLocationById(locationId: string): string {
+    return this.locationService.getHydratedLocationByLocationId(locationId);
   }
 
 }

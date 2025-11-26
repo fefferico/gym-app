@@ -1,6 +1,7 @@
 // src/app/core/models/workout-log.model.ts
 
 import { PerceivedWorkoutInfo } from "../../features/workout-tracker/perceived-effort-modal.component";
+import { WorkoutLocation } from "./location.model";
 import { DistanceTarget, DurationTarget, METRIC, RepsTarget, RestTarget, WeightTarget } from "./workout.model";
 
 // Describes a single set that was actually performed and logged.
@@ -85,6 +86,8 @@ export interface WorkoutLog {
   scheduledDayId?: string;
   iterationId?: string;
   perceivedWorkoutInfo?: PerceivedWorkoutInfo; // <-- ADD THIS LINE (e.g., a rating from 1 to 10)
+  locationName?: string;  // e.g., 'Living Room' (optional, for display/backup)
+  locationId?: string; // e.g., 'res-living'
 }
 
 // For displaying personal bests

@@ -1308,5 +1308,15 @@ export class TrackingService {
     );
   }
 
+  public getAllWorkoutLogs(): WorkoutLog[] {
+    return this.workoutLogsSubject.getValue();
+  }
+
+  public getWorkoutLocations(): string[] {
+    const locations = this.getAllWorkoutLogs()
+      .map(workoutLog => workoutLog.locationName || '')
+      .filter(location => location.trim() !== '');
+    return Array.from(new Set(locations));
+  }
 
 }

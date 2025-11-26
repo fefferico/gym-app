@@ -29,8 +29,10 @@
     <div [@slideView]="currentHistoryView()" [ngSwitch]="currentHistoryView()">
       <!-- LIST VIEW -->
       <div *ngSwitchCase="'list'">
+
+        <!-- FILTER SECTION -->
         <div class="overflow-hidden transition-all duration-500 ease-in-out rounded-md"
-          [style.maxHeight]="isFilterAccordionOpen() ? '600px' : '0px'" [class.mb-8]="isFilterAccordionOpen()"
+          [style.maxHeight]="isFilterAccordionOpen() ? '1000px' : '0px'" [class.mb-8]="isFilterAccordionOpen()"
           [ngClass]="{ '!overflow-visible relative z-20': isColorFilterOpen() }">
           <form [formGroup]="filterForm"
             class="px-4 py-2 bg-white dark:bg-gray-700 rounded-md shadow-md space-y-4 border dark:border-gray-700">
@@ -123,6 +125,29 @@
                   </li>
                 </ul>
               </div>
+              <div>
+                <label for="logType" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {{ 'historyList.filters.logType' | translate }}
+                </label>
+                <select id="logType" formControlName="logType"
+                  class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-gray-200">
+                  <option value="">{{ 'historyList.filters.anyType' | translate }}</option>
+                  <option value="workout">{{ 'historyList.filters.workout' | translate }}</option>
+                  <option value="activity">{{ 'historyList.filters.activity' | translate }}</option>
+                </select>
+              </div>
+              <div>
+                <label for="sortBy" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {{ 'historyList.filters.sortBy' | translate }}
+                </label>
+                <select id="sortBy" formControlName="sortBy"
+                  class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-gray-200">
+                  <option value="lastUsed">{{ 'historyList.filters.sort.lastUsed' | translate }}</option>
+                  <!-- <option value="lastCreated">{{ 'historyList.filters.sort.lastCreated' | translate }}</option>
+                  <option value="lastEdited">{{ 'historyList.filters.sort.lastEdited' | translate }}</option> -->
+                  <option value="alphabetical">{{ 'historyList.filters.sort.alphabetical' | translate }}</option>
+                </select>
+              </div>
             </div>
             <div class="flex justify-between items-center pt-3">
               <button type="button" (click)="resetFilters()"
@@ -185,6 +210,16 @@
                         <span class="font-medium">{{ 'historyList.card.exercises' | translate }}</span> {{
                         item.exercises.length }}
                       </p>
+                      <!-- LOCATION DATA -->
+                      <div class="flex items-center text-md text-gray-600 dark:text-gray-400 mt-1 gap-x-2"
+                        *ngIf="item.locationName">
+                        <app-icon name="map" class="h-7 w-7 mr-1"></app-icon>
+                        <span>
+                          {{ 'logDetail.location' | translate }}: {{ item.locationName | titlecase }} {{ item.locationId
+                          ?
+                          '[' + getLocationById(item.locationId) + ']' : '' }}
+                        </span>
+                      </div>
                       <p *ngIf="item.totalVolume" class="flex gap-1 items-center">
                         <app-icon name="weight" class="w-6 h-6"></app-icon>
                         <span class="font-medium"></span> {{ item.totalVolume }} {{unitsService.getWeightUnitSuffix()}}
@@ -246,10 +281,10 @@
                       <span class="font-medium">{{ 'historyList.card.duration' | translate }} </span> {{
                       item.durationMinutes }} minutes
                     </p>
-                    <p *ngIf="item.location" class="flex gap-1 items-center">
+                    <p *ngIf="item.locationName" class="flex gap-1 items-center">
                       <app-icon name="map" class="w-6 h-6"></app-icon>
                       <span><span class="font-medium">{{ 'historyList.card.location' | translate }} </span>
-                        {{ item.location}}</span>
+                        {{ item.locationName}}</span>
                     </p>
                     <p *ngIf="item.distanceKm" class="flex gap-1 items-center"><app-icon name="distance"
                         class="w-6 h-6"></app-icon>

@@ -340,6 +340,41 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     if (categoryFilter) {
       routines = routines.filter(r => r.primaryCategory === categoryFilter);
     }
+    // --- Sorting ---
+    const sortBy = this.selectedRoutineSort();
+    switch (sortBy) {
+      case 'alphabetical':
+        routines = [...routines].sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case 'lastEdited':
+        routines = [...routines].sort((a, b) =>
+          (b.updatedAt ? new Date(b.updatedAt).getTime() : 0) -
+          (a.updatedAt ? new Date(a.updatedAt).getTime() : 0)
+        );
+        break;
+      case 'lastCreated':
+        routines = [...routines].sort((a, b) =>
+          (b.createdAt ? new Date(b.createdAt).getTime() : 0) -
+          (a.createdAt ? new Date(a.createdAt).getTime() : 0)
+        );
+        break;
+      case 'favourites':
+        routines = [...routines].sort((a, b) => {
+          if (a.isFavourite === b.isFavourite) {
+            return a.name.localeCompare(b.name);
+          }
+          return b.isFavourite ? 1 : -1;
+        });
+        break;
+      case 'lastUsed':
+      default:
+        routines = [...routines].sort((a, b) => {
+          const aTime = this.lastLoggedRoutineInfo()[a.id]?.startTime ?? 0;
+          const bTime = this.lastLoggedRoutineInfo()[b.id]?.startTime ?? 0;
+          return bTime - aTime;
+        });
+        break;
+    }
     return routines;
   });
 
@@ -1324,6 +1359,12 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
   preventScroll(event: MouseEvent) {
     event.preventDefault();
+  }
+
+  selectedRoutineSort = signal<string>('lastUsed');
+  onRoutineSortChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    this.selectedRoutineSort.set(target.value || 'lastUsed');
   }
 
 }

@@ -78,6 +78,15 @@
           <strong>{{ 'logDetail.overallNotes' | translate }}:</strong> {{ log.notes }}
         </p>
 
+        <!-- LOCATION DATA -->
+        <div class="flex items-center text-md text-gray-600 dark:text-gray-400 mt-1 gap-x-2" *ngIf="log.locationName">
+          <app-icon name="map" class="h-7 w-7 mr-1"></app-icon>
+          <span>
+            {{ 'logDetail.location' | translate }}: {{ log.locationName | titlecase }} {{ log.locationId ? '[' +
+            getLocationById(log.locationId) + ']' : '' }}
+          </span>
+        </div>
+
         <button *ngIf="log?.routineId" appBumpClick (click)="openPerformanceComparisonModal()" type="button"
           class="flex items-center mt-2 gap-2 px-3 py-2 text-sm font-medium text-center text-white bg-primary rounded-lg hover:bg-primary-dark focus:ring-4 focus:outline-none focus:ring-primary-light">
           <app-icon name="compare" class="w-5 h-5"></app-icon>

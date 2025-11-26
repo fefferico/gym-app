@@ -5,11 +5,13 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { map, startWith } from 'rxjs/operators';
 import { LocationConfig, WorkoutLocation } from '../models/location.model';
 import { LOCATION_CONFIGS } from '../models/location.data';
+import { ActivityService } from './activity.service';
 
 
 @Injectable({ providedIn: 'root' })
 export class LocationService {
   private _translate = inject(TranslateService);
+  private activityService = inject(ActivityService);
 
   // 1. The Static Data (Private)
   private readonly _configs = signal<LocationConfig[]>(LOCATION_CONFIGS);
@@ -25,7 +27,7 @@ export class LocationService {
 
   // 3. The Hydrated List (Public & Reactive)
   // Whenever _currentLang changes, this re-runs automatically.
-  readonly allLocations = computed<WorkoutLocation[]>(() => {
+  readonly allLocationTypes = computed<WorkoutLocation[]>(() => {
     // Dependency tracking: accessing this signal registers the dependency
     const lang = this._currentLang(); 
     const configs = this._configs();
@@ -37,7 +39,7 @@ export class LocationService {
   readonly locationsByCategory = computed(() => {
     const groups = new Map<string, WorkoutLocation[]>();
     
-    this.allLocations().forEach(loc => {
+    this.allLocationTypes().forEach(loc => {
       // Group by the TRANSLATED category label
       const catLabel = loc.categoryLabel;
       const current = groups.get(catLabel) || [];
@@ -74,10 +76,15 @@ export class LocationService {
 
   readonly selectedLocation = computed(() => {
     const id = this.selectedLocationId();
-    return this.allLocations().find(l => l.id === id) || null;
+    return this.allLocationTypes().find(l => l.id === id) || null;
   });
 
   selectLocation(id: string) {
     this.selectedLocationId.set(id);
+  }
+
+  getHydratedLocationByLocationId(locationId: string): any {
+     const location = this.allLocationTypes().find(l => l.id === locationId);
+     return location ? location.label : locationId;
   }
 }

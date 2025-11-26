@@ -138,7 +138,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   protected spinnerService = inject(SpinnerService);
   protected alertService = inject(AlertService);
   protected toastService = inject(ToastService);
-  private trackingService = inject(TrackingService);
+  protected trackingService = inject(TrackingService);
   private cdr = inject(ChangeDetectorRef);
   private ngZone = inject(NgZone);
   private platformId = inject(PLATFORM_ID);
@@ -152,7 +152,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   protected workoutFormService = inject(WorkoutFormService);
   protected locationService = inject(LocationService);
   protected isRoutineMode = false;
-
 
   // Property to hold the available options for the builder
   availableRepSchemes: { type: RepsTargetType; label: string }[] = [];
@@ -304,6 +303,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       iterationIdForLog: [''], // For selecting base program iteration in manualLogEntry
       scheduledDayIdForLog: [''], // For selecting base program iteration in manualLogEntry
       locationId: [''],
+      locationName: [''],
       exercises: this.fb.array([]), // Validated based on mode/goal
     });
 
@@ -477,6 +477,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             // Set our new signal with the initial data
             this.loadedRoutine.set(loadedData as Routine);
             this.patchFormWithRoutineData(loadedData as Routine);
+
+            if (this.loadedRoutine()?.goal) {
+              this.previousGoalValue = this.loadedRoutine()?.goal;
+            }
           } else if (this.mode === BuilderMode.manualLogEntry && this.isEditMode && this.currentLogId) {
             this.patchFormWithLogData(loadedData as WorkoutLog);
             // For a log, we can derive the initial routine state from the form immediately
@@ -606,7 +610,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         const exercises = this.exercisesFormArray.controls as FormGroup[];
 
         // TABATA LOGIC
-        if (this.isRoutineMode && goalValue === 'tabata') {
+        if (this.isRoutineMode && this.previousGoalValue !== goalValue && goalValue === 'tabata') {
           if (exercises.length < 2) {
             this.toastService.warning(this.translate.instant('workoutBuilder.toasts.tabataSizeError'), 5000);
             this.isRevertingGoal = true;
@@ -1106,6 +1110,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       programIdForLog: log.programId || '',
       iterationIdForLog: log.iterationId || '',
       scheduledDayIdForLog: log.scheduledDayId || '',
+      locationId: log.locationId || '',
+      locationName: log.locationName || '',
     });
 
     // START: Manually trigger population of dropdowns for existing log
@@ -2014,16 +2020,17 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (this.isViewMode) { this.toastService.info(this.translate.instant('workoutBuilder.toasts.viewMode'), 3000, this.translate.instant('workoutBuilder.toasts.viewMode')); return; }
     this.recalculateSupersetOrders();
 
-    // --- NEW: TABATA VALIDATION BLOCK ---
     const formValueForValidation = this.builderForm.getRawValue();
-    if (this.isRoutineMode && formValueForValidation.goal === 'tabata') {
+    if (
+      this.isRoutineMode &&
+      formValueForValidation.goal === 'tabata' &&
+      this.previousGoalValue !== 'tabata'
+    ) {
       if (!this.enforceTabataSuperset()) {
         this.spinnerService.hide();
         return;
       }
     }
-    // --- END: TABATA VALIDATION BLOCK ---
-
     const isRestGoalRoutine = this.isRoutineMode && this.builderForm.get('goal')?.value === METRIC.rest;
 
     if ((this.isRoutineMode && (this.builderForm.get('name')?.invalid || this.builderForm.get('goal')?.invalid)) ||
@@ -2185,7 +2192,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           exercises: logExercises,
           iterationId: formValue.iterationIdForLog || undefined,
           scheduledDayId: formValue.scheduledDayIdForLog || undefined,
-          dayName: 'AAAA'
+          dayName: 'AAAA',
+          // LOCATION DATA
+          locationName: formValue.locationName ?? undefined,
+          locationId: formValue.locationId ?? undefined,
         } as EnrichedWorkoutLog;
 
         if (this.isEditMode && this.currentLogId) {
@@ -2515,7 +2525,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // --- START: ADD NEW MAPPED PROPERTIES ---
       primaryCategory: formValue.primaryCategory || undefined,
       secondaryCategory: formValue.secondaryCategory || undefined,
-      locationId: formValue.locationId || undefined,
       tags: tagsArray,
       // --- END: ADD NEW MAPPED PROPERTIES ---
 
@@ -4566,6 +4575,31 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return hasAtLeastOneUniformValue ? result : null;
   }
 
+  public getDetailedSetViewInfo(exerciseControl: AbstractControl): string[] {
+    const setsFormArray = this.workoutFormService.getSetsFormArray(exerciseControl);
+    if (!setsFormArray || setsFormArray.length === 0) return [];
+
+    const metrics: { key: string, label: string, unit?: string }[] = [
+      { key: 'targetReps', label: this.translate.instant('workoutBuilder.set.reps') },
+      { key: 'targetWeight', label: this.translate.instant('workoutBuilder.set.weight'), unit: this.unitService.getWeightUnitSuffix() },
+      { key: 'targetDistance', label: this.translate.instant('workoutBuilder.set.distance'), unit: this.unitService.getDistanceMeasureUnitSuffix() },
+      { key: 'targetDuration', label: this.translate.instant('workoutBuilder.set.time'), unit: 's' },
+      { key: 'targetRest', label: this.translate.instant('workoutBuilder.set.rest'), unit: 's' }
+    ];
+
+    // For each set, build a string with available metrics
+    return setsFormArray.controls.map((setControl: AbstractControl, idx: number) => {
+      const parts: string[] = [];
+      metrics.forEach(metric => {
+        const value = setControl.get(metric.key)?.value;
+        if (value !== null && value !== undefined && value !== '') {
+          parts.push(`${metric.label}: ${value}${metric.unit ? ' ' + metric.unit : ''}`);
+        }
+      });
+      return `#${idx + 1} ${parts.join(' | ')}`;
+    });
+  }
+
 
   getFieldsForSet(exIndex: number, setIndex: number): { visible: string[], hidden: string[] } {
     const routine = this.liveFormAsRoutine();
@@ -5868,10 +5902,16 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
-  getLocationLabel(): string {
-    const locationId = this.builderForm.get('locationId')?.value;
-    const location = this.locationService.allLocations().find(l => l.id === locationId);
+  getLocationTypeLabel(): string {
+    const locationTypeId = this.builderForm.get('locationId')?.value;
+    const location = this.locationService.allLocationTypes().find(l => l.id === locationTypeId);
     return location ? location.label : '';
+  }
+
+  getLocationName(): string {
+    const locationName = this.builderForm.get('locationName')?.value;
+    const location = this.trackingService.getWorkoutLocations().find(l => l === locationName);
+    return location ?? '';
   }
 
   private enforceTabataSuperset(): boolean {
@@ -5885,34 +5925,43 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // Assign a new supersetId if needed
     const newSupersetId = uuidv4();
 
-    // Standardize sets and enforce Tabata values
-    let numRounds = 0;
-    if (exercises[0].get('supersetId')?.value) {
-      numRounds = exercises[0].get('sets')?.value.length;
-    }
+    // Determine the max number of rounds (sets) across all exercises
+    let numRounds = Math.max(...exercises.map(ex => (ex.get('sets') as FormArray).length || 1));
+
     exercises.forEach((exerciseControl, index) => {
       const setsArray = exerciseControl.get('sets') as FormArray;
-      // Standardize to a single set if needed
-      while (setsArray.length > 1) {
-        setsArray.removeAt(1);
-      }
-      if (setsArray.length === 0) {
+
+      // Ensure correct number of sets
+      while (setsArray.length < numRounds) {
         setsArray.push(this.fb.group({
-          targetDuration: 20,
-          targetRest: 10,
+          targetDuration: null,
+          targetRest: null,
           targetReps: null,
           targetWeight: null,
           targetDistance: null,
+          targetTempo: null
         }));
       }
-      setsArray.at(0).patchValue({
-        targetDuration: 20,
-        targetRest: 10,
-        targetReps: null,
-        targetWeight: null,
-        targetDistance: null,
-        targetTempo: null
-      }, { emitEvent: false });
+      while (setsArray.length > numRounds) {
+        setsArray.removeAt(setsArray.length - 1);
+      }
+
+      // Patch each set: keep user values if present, otherwise default to 20/10
+      setsArray.controls.forEach(setControl => {
+        const duration = setControl.get('targetDuration')?.value;
+        const rest = setControl.get('targetRest')?.value;
+        const reps = setControl.get('targetReps')?.value;
+        const weight = setControl.get('targetWeight')?.value;
+        const distance = setControl.get('targetDistance')?.value;
+        setControl.patchValue({
+          targetDuration: (duration != null && !isNaN(duration) && duration > 0) ? durationToExact(duration) : durationToExact(20),
+          targetRest: (rest != null && !isNaN(rest) && rest > 0) ? restToExact(rest) : restToExact(10),
+          targetReps: (reps != null && !isNaN(reps) && reps > 0) ? repsToExact(reps) : null,
+          targetWeight: (weight != null && !isNaN(weight) && weight > 0) ? repsToExact(weight) : null,
+          targetDistance: (distance != null && !isNaN(distance) && distance > 0) ? distanceToExact(distance) : null,
+          targetTempo: null
+        }, { emitEvent: false });
+      });
 
       exerciseControl.patchValue({
         supersetId: newSupersetId,
@@ -5920,38 +5969,28 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         supersetType: 'standard',
         type: 'superset'
       }, { emitEvent: false });
-
-      numRounds = (setsArray.length > numRounds) ? setsArray.length : numRounds;
-    });
-
-    // Ensure all exercises have the same number of sets
-    exercises.forEach(exerciseControl => {
-      const setsArray = exerciseControl.get('sets') as FormArray;
-      while (setsArray.length < numRounds) {
-        setsArray.push(this.fb.group({
-          targetDuration: 20,
-          targetRest: 10,
-          targetReps: null,
-          targetWeight: null,
-          targetDistance: null,
-        }));
-      }
-      while (setsArray.length > numRounds) {
-        setsArray.removeAt(setsArray.length - 1);
-      }
-      setsArray.controls.forEach(setControl => {
-        setControl.patchValue({
-          targetDuration: 20,
-          targetRest: 10,
-          targetReps: null,
-          targetWeight: null,
-          targetDistance: null,
-        }, { emitEvent: false });
-      });
     });
 
     return true;
   }
 
+  // Add these methods to your component class
+  onLocationNameFocus(input: HTMLInputElement) {
+    if (input) {
+      // Move cursor to end
+      input.value = input.value;
+      input.setSelectionRange(input.value.length, input.value.length);
+    }
+  }
+
+  onLocationNameInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.value.endsWith(' ')) {
+      // Optionally, force blur and focus to trigger autocomplete
+      input.value = input.value;
+      input.blur();
+      input.focus();
+    }
+  }
 
 }

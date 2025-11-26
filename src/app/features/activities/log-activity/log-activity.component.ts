@@ -1,7 +1,7 @@
 // src/app/features/activities/log-activity/log-activity.component.ts
 import { Component, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, Validators, ReactiveFormsModule } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { forkJoin, Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
@@ -13,6 +13,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ActivityLog } from '../../../core/models/activity-log.model';
 import { PremiumFeature, SubscriptionService } from '../../../core/services/subscription.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { LocationService } from '../../../core/services/location.service';
 
 export function timeOrderValidator(startTimeKey: string, endTimeKey: string): (group: AbstractControl) => ValidationErrors | null {
     return (group: AbstractControl): ValidationErrors | null => {
@@ -28,14 +29,15 @@ export function timeOrderValidator(startTimeKey: string, endTimeKey: string): (g
 @Component({
     selector: 'app-log-activity',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, IconComponent, TranslateModule],
+    imports: [CommonModule, ReactiveFormsModule, IconComponent, TranslateModule, FormsModule],
     templateUrl: './log-activity.component.html',
     styleUrls: ['./log-activity.component.scss']
 })
 export class LogActivityComponent implements OnInit {
     // --- Injected Services ---
     private fb = inject(FormBuilder);
-    private activityService = inject(ActivityService);
+    protected activityService = inject(ActivityService);
+    protected locationService = inject(LocationService);
     private toastService = inject(ToastService);
     private router = inject(Router);
     private route = inject(ActivatedRoute);
@@ -56,9 +58,11 @@ export class LogActivityComponent implements OnInit {
             startTime: ['12:00', [Validators.required]],
             endTime: ['13:00', [Validators.required]],
             intensity: ['Medium', [Validators.required]],
-            location: ['', []],
+            locationId: ['', []],
+            locationName: ['', []],
             distanceKm: [{ value: null, disabled: true }, [Validators.min(0)]],
             caloriesBurned: [{ value: null, disabled: true }, [Validators.min(0)]],
+            people: [[]], // <-- array of string by default
             notes: ['']
         }, { validators: timeOrderValidator('startTime', 'endTime') });
 
@@ -91,6 +95,7 @@ export class LogActivityComponent implements OnInit {
                 this.selectedActivity.set(activity || null);
             });
         });
+        this.filteredPeople = this.getActivityPeople();
     }
 
     private loadLogForEditing(logId: string): void {
@@ -119,9 +124,11 @@ export class LogActivityComponent implements OnInit {
                     startTime: formatTime(startDate),
                     endTime: formatTime(endDate),
                     intensity: log.intensity,
-                    location: log.location,
+                    locationId: log.locationId,
+                    locationName: log.locationName,
                     distanceKm: log.distanceKm,
                     caloriesBurned: log.caloriesBurned,
+                    people: log.people,
                     notes: log.notes
                 });
 
@@ -142,7 +149,6 @@ export class LogActivityComponent implements OnInit {
      */
     private updateFormForSelectedActivity(activity: Activity | null): void {
         if (!activity) {
-            // this.logActivityForm.get('location')?.disable();
             this.logActivityForm.get('distanceKm')?.disable();
             this.logActivityForm.get('caloriesBurned')?.disable();
             return;
@@ -211,9 +217,11 @@ export class LogActivityComponent implements OnInit {
             endTime,
             durationMinutes,
             intensity: formValue.intensity,
-            location: formValue.location,
+            locationId: formValue.locationId,
+            locationName: formValue.locationName,
             distanceKm: formValue.distanceKm,
             caloriesBurned: formValue.caloriesBurned,
+            people: formValue.people,
             notes: formValue.notes
         };
     }
@@ -221,4 +229,91 @@ export class LogActivityComponent implements OnInit {
     get f() {
         return this.logActivityForm.controls;
     }
+
+    getActivityPeople(): string[] {
+        return this.activityService.getActivityPeople();
+    }
+
+    // for autocomplete
+    getActivityLocations(): string[] {
+        return this.activityService.getActivityLocations();
+    }
+
+    getLocationTypeLabel(): string {
+        const locationTypeId = this.logActivityForm.get('locationId')?.value;
+        const location = this.locationService.allLocationTypes().find(l => l.id === locationTypeId);
+        return location ? location.label : '';
+    }
+
+    onLocationNameFocus(input: HTMLInputElement) {
+        if (input) {
+            // Move cursor to end
+            input.value = input.value;
+            input.setSelectionRange(input.value.length, input.value.length);
+        }
+    }
+
+    onLocationNameInput(event: Event) {
+        const input = event.target as HTMLInputElement;
+        if (input.value.endsWith(' ')) {
+            // Optionally, force blur and focus to trigger autocomplete
+            input.value = input.value;
+            input.blur();
+            input.focus();
+        }
+    }
+
+    // Called on input event
+    onPeopleInput(event: Event): void {
+        const input = (event.target as HTMLInputElement).value.toLowerCase();
+        const allPeople = this.getActivityPeople();
+        this.filteredPeople = allPeople.filter(
+            person =>
+                person.toLowerCase().includes(input) &&
+                !this.f['people'].value.includes(person)
+        );
+    }
+
+    // Called on Enter or selection from datalist
+    addPersonFromInput(event?: Event): void {
+        // Get the value directly from the input element
+        let name = '';
+        if (event && event.target) {
+            name = (event.target as HTMLInputElement).value.trim();
+        } else {
+            name = this.peopleInput.trim();
+        }
+        if (!name) return;
+        const current = this.f['people'].value as string[];
+        if (!current.includes(name)) {
+            this.f['people'].setValue([...current, name]);
+            this.f['people'].markAsDirty();
+        }
+        this.peopleInput = '';
+        this.filteredPeople = this.getActivityPeople().filter(p => !this.f['people'].value.includes(p));
+    }
+
+    // Remove person chip
+    removePerson(person: string): void {
+        const current = this.f['people'].value as string[];
+        this.f['people'].setValue(current.filter(p => p !== person));
+        this.f['people'].markAsDirty();
+        this.filteredPeople = this.getActivityPeople().filter(p => !this.f['people'].value.includes(p));
+    }
+
+    // Toggle person chip (if you want to use it elsewhere)
+    togglePerson(person: string): void {
+        const current = this.f['people'].value as string[];
+        if (current.includes(person)) {
+            this.removePerson(person);
+        } else {
+            this.f['people'].setValue([...current, person]);
+            this.f['people'].markAsDirty();
+        }
+        this.filteredPeople = this.getActivityPeople().filter(p => !this.f['people'].value.includes(p));
+    }
+    peopleInput: string = '';
+    filteredPeople: string[] = [];
+
+
 }

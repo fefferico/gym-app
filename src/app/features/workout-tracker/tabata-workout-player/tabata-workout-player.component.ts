@@ -25,6 +25,7 @@ import { WorkoutUtilsService } from '../../../core/services/workout-utils.servic
 import { EXERCISE_CATEGORY_TYPES } from '../../../core/models/exercise-category.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { WORKOUT_CATEGORY_DATA } from '../../../core/services/workout-category-data';
+import { UnitsService } from '../../../core/services/units.service';
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -43,6 +44,8 @@ export interface HIITInterval {
     exerciseId?: string;
     totalIntervals: number;
     currentIntervalNumber: number;
+    weight?: string;
+    reps?: string;
 }
 
 @Component({
@@ -57,6 +60,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
     private router = inject(Router);
     private workoutService = inject(WorkoutService);
     private workoutUtilsService = inject(WorkoutUtilsService);
+    private unitsService = inject(UnitsService);
     protected trackingService = inject(TrackingService);
     protected toastService = inject(ToastService);
     private storageService = inject(StorageService);
@@ -1352,12 +1356,16 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
                 const set = exercise.sets[round];
                 if (!set) continue;
 
+                const weightValue = this.workoutUtilsService.getWeightValue(set.targetWeight);
+                const repsValue = this.workoutUtilsService.getRepsValue(set.targetReps);
                 // Work interval
                 intervals.push({
                     type: 'work',
                     duration: getDurationValue(set.targetDuration) || 40,
                     exerciseName: exercise.exerciseName,
-                    exerciseId: exercise.exerciseId
+                    exerciseId: exercise.exerciseId,
+                    weight: weightValue ? this.workoutUtilsService.weightTargetAsString(set.targetWeight) + ' ' + this.unitsService.getWeightUnitSuffix() : undefined,
+                    reps: repsValue ? this.workoutUtilsService.repsTargetAsString(set.targetReps) : undefined
                 });
                 this.tabataIntervalMap.push([exIdx, round, round + 1]);
 
@@ -1370,7 +1378,9 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
                             type: 'rest',
                             duration: getRestValue(set.targetRest) || 20,
                             exerciseName: this.translate.instant('tabataPlayer.rest'),
-                            exerciseId: exercise.exerciseId
+                            exerciseId: exercise.exerciseId,
+                            weight: this.workoutUtilsService.weightTargetAsString(set.targetWeight),
+                            reps: this.workoutUtilsService.repsTargetAsString(set.targetReps)
                         });
                         this.tabataIntervalMap.push([exIdx, round, round + 1]);
                     }

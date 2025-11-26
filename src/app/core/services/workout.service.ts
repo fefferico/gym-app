@@ -1436,6 +1436,4 @@ export class WorkoutService {
         return [];
     }
   }
-
-
 }

@@ -14,6 +14,7 @@ import { AlertButton } from '../../../core/models/alert.model';
 import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { LocationService } from '../../../core/services/location.service';
 
 
 @Component({
@@ -29,6 +30,7 @@ export class ActivityLogDetailsComponent implements OnInit {
   private activityService = inject(ActivityService);
   private alertService = inject(AlertService);
   private translate = inject(TranslateService);
+  private locationService = inject(LocationService);
 
   activityLog = signal<ActivityLog | null>(null);
   baseActivity = signal<Activity | null>(null);
@@ -137,5 +139,13 @@ export class ActivityLogDetailsComponent implements OnInit {
         break;
     }
     this.activeLogIdActions.set(null); // Close the menu
+  }
+
+  getActivityLocations(): string[] {
+    return this.activityService.getActivityLocations();
+  }
+
+  getLocationById(locationId: string): string {
+    return this.locationService.getHydratedLocationByLocationId(locationId);
   }
 }

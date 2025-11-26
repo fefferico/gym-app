@@ -105,6 +105,7 @@
                   <span class="capitalize font-medium">{{ ('tabataPlayer.intervalType.'+item.type) | translate }}: {{
                     item.duration }}s</span>
                   <span *ngIf="item.type === 'work'" class="ml-2 text-left font-light">{{ item.exerciseName }}</span>
+                  <span *ngIf="item.type === 'work'" class="ml-2 text-left font-light">{{ item.weight }} x {{ item.reps }}</span>
                 </div>
               </li>
             </ul>

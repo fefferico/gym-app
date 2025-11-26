@@ -126,26 +126,6 @@
                         [placeholder]="'workoutBuilder.routineBuilder.secondaryCategoryPlaceholder' | translate"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm text-gray-700 dark:bg-gray-600 dark:text-gray-200">
                 </div>
-
-                <div *ngIf="isEditableMode()">
-                    <label for="locationId" class="block text-m font-medium text-gray-700 dark:text-gray-200">
-                        {{ 'workoutBuilder.locationLabel' | translate }}
-                    </label>
-                    <select id="locationId" formControlName="locationId"
-                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 text-gray-700 dark:text-gray-200">
-                        <option value="">{{ 'workoutBuilder.locationPlaceholder' | translate }}</option>
-                        <option *ngFor="let loc of locationService.allLocations()" [value]="loc.id">
-                            {{ loc.label }}
-                        </option>
-                    </select>
-                </div>
-                <div *ngIf="!isEditableMode() && builderForm.get('locationId')?.value">
-                    <label class="block text-m text-gray-700 dark:text-gray-300">
-                        <span class="font-medium">{{ 'workoutBuilder.locationLabel' | translate }}: </span>
-                        {{ getLocationLabel() }}
-                    </label>
-                </div>
-
                 <!-- TAGS -->
                 <div *ngIf="isViewMode && builderForm.get('tags')?.value" class="mt-2">
                     <div class="flex items-center gap-2 flex-wrap">
@@ -315,6 +295,55 @@
                         </option>
                     </select>
                 </div>
+
+                <!-- LOCATION TYPE -->
+                <div>
+                    <label for="locationId" class="block text-m font-medium text-gray-700 dark:text-gray-200">
+                        {{ 'workoutBuilder.logEntry.locationTypeLabel' | translate }}
+                    </label>
+                    <select id="locationId" formControlName="locationId"
+                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 text-gray-700 dark:text-gray-200">
+                        <option value="">{{ 'workoutBuilder.logEntry.locationTypePlaceholder' | translate }}</option>
+                        <option *ngFor="let loc of locationService.allLocationTypes()" [value]="loc.id">
+                            {{ loc.label }}
+                        </option>
+                    </select>
+                </div>
+                <div *ngIf="!isEditableMode() && builderForm.get('locationId')?.value">
+                    <label class="block text-m text-gray-700 dark:text-gray-300">
+                        <span class="font-medium">{{ 'workoutBuilder.logEntry.locationTypeLabel' | translate }}: </span>
+                        {{ getLocationTypeLabel() }}
+                    </label>
+                </div>
+
+                <!-- LOCATION NAME -->
+                <div *ngIf="isEditableMode()">
+                    <label for="locationName" class="block text-m font-medium text-gray-700 dark:text-gray-200">
+                        {{ 'workoutBuilder.logEntry.locationLabel' | translate }}
+                    </label>
+                    <input
+                        id="locationName"
+                        type="text"
+                        formControlName="locationName"
+                        [attr.list]="'locationName-list'"
+                        [placeholder]="'workoutBuilder.logEntry.locationPlaceholder' | translate"
+                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 text-gray-700 dark:text-gray-200"
+                        autocomplete="off"
+                        (focus)="onLocationNameFocus(locationNameInput)"
+                        (input)="onLocationNameInput($event)"
+                        #locationNameInput
+                    />
+                    <datalist id="locationName-list">
+                        <option *ngFor="let loc of trackingService.getWorkoutLocations()" [value]="loc"></option>
+                    </datalist>
+                </div>
+                <div *ngIf="!isEditableMode() && builderForm.get('locationName')?.value">
+                    <label class="block text-m text-gray-700 dark:text-gray-300">
+                        <span class="font-medium">{{ 'workoutBuilder.logEntry.locationLabel' | translate }}: </span>
+                        {{ getLocationName() }}
+                    </label>
+                </div>
+
                 <!-- END: Updated fields -->
                 <div>
                     <label for="overallNotesLog" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
@@ -562,30 +591,12 @@
 
                                                     <!-- DETAILED VIEW: The original display for non-uniform sets -->
                                                     <ng-template #detailedSetView>
-                                                        <p *ngIf="exerciseControl?.get('sets')?.value?.length >= 1">
-                                                            {{ !isEmomExercise(exerciseControl) ?
-                                                            ('workoutBuilder.set.set' | translate) + ': ' +
-                                                            exerciseControl?.get('sets')?.value.length : '' }}
-                                                            {{
-                                                            !isExerciseCardioOnlyCtrl(exerciseControl) &&
-                                                            getSetReps(exerciseControl)
-                                                            ? '( ' + ('workoutBuilder.set.reps' | translate) + ': ' +
-                                                            getSetReps(exerciseControl) + ' )'
-                                                            : ''
-                                                            }}
-                                                        </p>
-                                                        <p
-                                                            *ngIf="exerciseControl?.get('sets')?.value && exerciseControl?.get('sets')?.value.length >= 1 && checkIfWeightedExercise(exerciseControl)">
-                                                            {{ 'workoutBuilder.set.weight' | translate }}
-                                                            ({{unitService.getWeightUnitSuffix()}}):
-                                                            {{getSetWeightsUsed(exerciseControl)}}
-                                                        </p>
-                                                        <p
-                                                            *ngIf="isExerciseCardioOnlyCtrl(exerciseControl) && getSetDistanceDisplay(exerciseControl)">
-                                                            {{ 'workoutBuilder.set.distance' | translate }}
-                                                            ({{unitService.getDistanceMeasureUnitSuffix()}}):
-                                                            {{getSetDistanceDisplay(exerciseControl)}}
-                                                        </p>
+                                                        <div
+                                                            *ngFor="let setInfo of getDetailedSetViewInfo(exerciseControl)">
+                                                            <span
+                                                                class="block text-sm text-gray-500 dark:text-gray-400">{{
+                                                                setInfo }}</span>
+                                                        </div>
                                                     </ng-template>
 
                                                 </div>
@@ -612,7 +623,7 @@
                                             <div class="flex items-center">
                                                 <!-- The Image: Added margin-right for spacing and flex-shrink-0 -->
                                                 <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
-                                                    alt="Exercise Icon" class="object-contain mr-3 flex-shrink-0"
+                                                    alt="Exercise Icon" class="object-contain mr-3 flex-shrink-0 filter dark:invert"
                                                     [ngClass]="{
                                                         'w-8 h-8 ': !isSetExpanded(exIndex, 0),
                                                         'w-10 h-10 py-1': isSetExpanded(exIndex, 0),
@@ -1206,8 +1217,8 @@
             </div>
 
             <div *ngIf="mode === BuilderMode.manualLogEntry && exercisesFormArray.length === 0 && !builderForm.get('routineIdForLog')?.value"
-                class="text-center text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-xl mt-4">
-                <p class="mb-2">Select a routine or ADD EXERCISEs manually to log</p>
+                class="text-center text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-xl mt-4 py-1">
+                <p class="mb-2">{{ 'workoutBuilder.logEntry.noExercisesForLog' | translate }}</p>
                 <button appBumpClick type="button" (click)="openExerciseSelectionModal()"
                     class="bg-green-500 hover:bg-green-600 text-white text-m font-medium py-2 px-3 rounded-xl">
                     + {{ 'workoutBuilder.logEntry.addFirstExercise' | translate }}

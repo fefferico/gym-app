@@ -312,7 +312,7 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
                 const cat = typeof selected.categories === 'object' && selected.categories !== null
                     ? selected.categories
                     : selected.categories ?? null;
-                ExerciseSelectionModalComponent.lastSelectedCategory = cat[0] ?? null;
+                ExerciseSelectionModalComponent.lastSelectedCategory = (cat && cat[0]) ?? null;
             }
         }
     }

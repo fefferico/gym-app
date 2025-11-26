@@ -186,7 +186,7 @@ export class ActivityService {
     }
   }
 
-    clearAllActivities_DEV_ONLY(): Promise<void> {
+  clearAllActivities_DEV_ONLY(): Promise<void> {
     const title = this.translate.instant('activityService.alerts.clearAllTitle');
     return this.alertService.showConfirm(title, this.translate.instant('activityService.alerts.clearAllMessage'))
       .then(async (result) => {
@@ -195,6 +195,28 @@ export class ActivityService {
           await this.alertService.showAlert(title, this.translate.instant('activityService.alerts.clearAllSuccess'));
         }
       });
+  }
+
+  /**
+ * Returns the current list of all activity logs as an array.
+ */
+  public getAllActivityLogs(): ActivityLog[] {
+    return this.activityLogsSubject.getValue();
+  }
+
+  public getActivityLocations(): string[] {
+    const locations = this.getAllActivityLogs()
+      .map(activity => activity.locationName || '')
+      .filter(location => location.trim() !== '');
+    return Array.from(new Set(locations));
+  }
+
+  public getActivityPeople(): string[] {
+    const people = this.getAllActivityLogs()
+      .flatMap(activity => activity.people || [])
+      .map(person => person.trim())
+      .filter(person => person !== '');
+    return Array.from(new Set(people));
   }
 
 }

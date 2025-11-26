@@ -31,6 +31,7 @@ import { DistanceTarget, DistanceTargetType, DurationTarget, DurationTargetType,
 import { BumpClickDirective } from '../../../shared/directives/bump-click.directive';
 import { repsTargetAsString, repsTypeToReps, genRepsTypeFromRepsNumber, getRepsValue, getDurationValue, getDistanceValue, getWeightValue, getRestValue, restTargetAsString, distanceTargetAsString, durationTargetAsString, weightTargetAsString } from '../../../core/services/workout-helper.service';
 import { WorkoutUtilsService } from '../../../core/services/workout-utils.service';
+import { LocationService } from '../../../core/services/location.service';
 
 export interface DisplayLoggedExercise extends LoggedWorkoutExercise {
   baseExercise?: Exercise | null;
@@ -106,6 +107,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   private trainingService = inject(TrainingProgramService);
   private injector = inject(Injector);
   protected translate = inject(TranslateService);
+  protected locationService = inject(LocationService);
 
 
   comparisonModalData = signal<TargetComparisonData | null>(null);
@@ -1111,5 +1113,9 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     }
     // If nothing is present, show '-'
     return info || '-';
+  }
+
+  getLocationById(locationId: string): string {
+    return this.locationService.getHydratedLocationByLocationId(locationId);
   }
 }
