@@ -90,7 +90,7 @@
   },
   "quickActions": {
     "startNewSessionTitle": "Start a new session",
-    "startNewSessionDescription": "Start a brand new session and refine it as you do it",
+    "startNewSessionDescription": "Start a brand new session and refine it as you do it, or use one of the standard templates",
     "logActivityTitle": "Log an Activity",
     "logActivityDescription": "Record other activities like hiking, football, or yoga",
     "myRoutinesTitle": "My Routines",
