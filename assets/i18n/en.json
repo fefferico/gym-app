@@ -1212,7 +1212,7 @@
       "supersetLabel": "SUPERSET",
       "roundsLabel": "({{count}} ROUNDS)",
       "roundLabel": "({{count}} ROUND)",
-      "emomInfo": "EMOM{{rounds}} - Every {{time}}s",
+      "emomInfo": "EMOM{{rounds}} - Every {{time}} sec",
       "selectGroupType": "Select Group Type",
       "howToGroup": "How would you like to group these exercises?",
       "groupingCancelled": "Grouping cancelled.",
