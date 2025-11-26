@@ -1410,7 +1410,7 @@ export class TrackingService {
    * @returns The count of workout logs associated with the routine.
    */
   public getNumberOfSessionsLoggedForRoutine(routineId: string | number): number {
-    if (!routineId) return 1; // Always at least 1, even if no routineId is provided
+    if (!routineId || routineId === '-1') return 1; // Always at least 1, even if no routineId is provided
     const logs = this.getAllWorkoutLogs();
     const count = logs.filter(log => log.routineId === routineId).length;
     return count > 0 ? count : 1; // Ensure at least 1 is returned

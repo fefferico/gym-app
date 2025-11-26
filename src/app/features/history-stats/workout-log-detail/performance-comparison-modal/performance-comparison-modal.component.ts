@@ -89,7 +89,7 @@ export class PerformanceComparisonModalComponent {
     }
 
     private languageService = inject(LanguageService);
-      private dateFnsLocales: { [key: string]: Locale } = {
+    private dateFnsLocales: { [key: string]: Locale } = {
         en: enUS,
         it: it,
         es: es,
@@ -100,7 +100,7 @@ export class PerformanceComparisonModalComponent {
         zh: zhCN,
         pt: pt,
         de: de
-      };
+    };
 
     private readonly currentLogSignal = signal<WorkoutLog | undefined>(undefined);
     @Input({ required: true })
@@ -394,80 +394,94 @@ export class PerformanceComparisonModalComponent {
             comparison.distanceDiff !== 0;
     }
 
-     // Helper to structure the summary data for the template's *ngFor loop
-  getSummaryRows(data: any): any[] {
-    const rows = [];
-    
-    // Sets
-    rows.push({
-      metric: this.translate.instant('performanceComparison.summary.sets'),
-      currentValue: data.currentSummary.setsCount,
-      previousValue: data.previousSummary.setsCount,
-      diff: data.comparison.setsDiff,
-      percentChange: data.comparison.setsPercentChange,
-    });
+    // Helper to structure the summary data for the template's *ngFor loop
+    getSummaryRows(data: any): any[] {
+        const rows = [];
 
-    // Reps (if applicable)
-    if (data.currentSummary.totalReps > 0 || data.previousSummary.totalReps > 0) {
-      rows.push({
-        metric: this.translate.instant('performanceComparison.summary.totalReps'),
-        currentValue: data.currentSummary.totalReps,
-        previousValue: data.previousSummary.totalReps,
-        diff: data.comparison.repsDiff,
-        percentChange: data.comparison.repsPercentChange,
-      });
+        // Sets
+        const showSets = (data.currentSummary.setsCount > 0 || data.previousSummary.setsCount > 0);
+
+        if (showSets) {
+            rows.push({
+                metric: this.translate.instant('performanceComparison.summary.sets'),
+                currentValue: data.currentSummary.setsCount,
+                previousValue: data.previousSummary.setsCount,
+                diff: data.comparison.setsDiff,
+                percentChange: data.comparison.setsPercentChange,
+            });
+        }
+
+        // Reps (if applicable)
+        const showReps = (data.currentSummary.totalReps > 0 || data.previousSummary.totalReps > 0);
+
+        if (showReps) {
+            rows.push({
+                metric: this.translate.instant('performanceComparison.summary.totalReps'),
+                currentValue: data.currentSummary.totalReps,
+                previousValue: data.previousSummary.totalReps,
+                diff: data.comparison.repsDiff,
+                percentChange: data.comparison.repsPercentChange,
+            });
+        }
+
+        // Weight Metrics (if applicable)
+        const showWeight = (data.currentSummary.totalWeight > 0 || data.previousSummary.totalWeight > 0);
+        if (this.showWeightMetrics() && showWeight) {
+            rows.push({
+                metric: this.translate.instant('performanceComparison.summary.maxWeight'),
+                currentValue: this.weightUnitPipe.transform(data.currentSummary.maxWeight, '1.0-1'),
+                previousValue: this.weightUnitPipe.transform(data.previousSummary.maxWeight, '1.0-1'),
+                diff: data.comparison.maxWeightDiff,
+                percentChange: data.comparison.maxWeightPercentChange,
+            }, {
+                metric: this.translate.instant('performanceComparison.summary.totalVolume'),
+                currentValue: this.weightUnitPipe.transform(data.currentSummary.totalVolume, '1.0-0'),
+                previousValue: this.weightUnitPipe.transform(data.previousSummary.totalVolume, '1.0-0'),
+                diff: data.comparison.volumeDiff,
+                percentChange: data.comparison.volumePercentChange,
+            });
+        }
+
+        // Cardio Metrics (if applicable)
+        // Cardio Metrics (only if at least one value is > 0)
+        const showDuration = (data.currentSummary.totalDuration > 0 || data.previousSummary.totalDuration > 0);
+        const showDistance = (data.currentSummary.totalDistance > 0 || data.previousSummary.totalDistance > 0);
+
+        if (showDuration) {
+            rows.push({
+                metric: this.translate.instant('performanceComparison.summary.totalDuration'),
+                currentValue: this.formatDuration(data.currentSummary.totalDuration),
+                previousValue: this.formatDuration(data.previousSummary.totalDuration),
+                diff: data.comparison.durationDiff,
+                percentChange: data.comparison.durationPercentChange,
+            });
+        }
+        if (showDistance) {
+            rows.push({
+                metric: this.translate.instant('performanceComparison.summary.totalDistance'),
+                currentValue: `${this.decimalPipe.transform(data.currentSummary.totalDistance, '1.0-2')} ${this.unitService.getDistanceMeasureUnitSuffix()}`,
+                previousValue: `${this.decimalPipe.transform(data.previousSummary.totalDistance, '1.0-2')} ${this.unitService.getDistanceMeasureUnitSuffix()}`,
+                diff: data.comparison.distanceDiff,
+                percentChange: data.comparison.distancePercentChange,
+            });
+        }
+
+        return rows;
     }
 
-    // Weight Metrics (if applicable)
-    if (this.showWeightMetrics()) {
-      rows.push({
-        metric: this.translate.instant('performanceComparison.summary.maxWeight'),
-        currentValue: this.weightUnitPipe.transform(data.currentSummary.maxWeight, '1.0-1'),
-        previousValue: this.weightUnitPipe.transform(data.previousSummary.maxWeight, '1.0-1'),
-        diff: data.comparison.maxWeightDiff,
-        percentChange: data.comparison.maxWeightPercentChange,
-      }, {
-        metric: this.translate.instant('performanceComparison.summary.totalVolume'),
-        currentValue: this.weightUnitPipe.transform(data.currentSummary.totalVolume, '1.0-0'),
-        previousValue: this.weightUnitPipe.transform(data.previousSummary.totalVolume, '1.0-0'),
-        diff: data.comparison.volumeDiff,
-        percentChange: data.comparison.volumePercentChange,
-      });
+    getRepsValue(targetReps: RepsTarget | undefined): number {
+        return this.workoutUtilsService.getRepsValue(targetReps) || 0;
     }
 
-    // Cardio Metrics (if applicable)
-    if (this.showCardioMetrics()) {
-      rows.push({
-        metric: this.translate.instant('performanceComparison.summary.totalDuration'),
-        currentValue: this.formatDuration(data.currentSummary.totalDuration),
-        previousValue: this.formatDuration(data.previousSummary.totalDuration),
-        diff: data.comparison.durationDiff,
-        percentChange: data.comparison.durationPercentChange,
-      }, {
-        metric: this.translate.instant('performanceComparison.summary.totalDistance'),
-        currentValue: `${this.decimalPipe.transform(data.currentSummary.totalDistance, '1.0-2')} ${this.unitService.getDistanceMeasureUnitSuffix()}`,
-        previousValue: `${this.decimalPipe.transform(data.previousSummary.totalDistance, '1.0-2')} ${this.unitService.getDistanceMeasureUnitSuffix()}`,
-        diff: data.comparison.distanceDiff,
-        percentChange: data.comparison.distancePercentChange,
-      });
+    getDurationValue(duration: DurationTarget | undefined): number {
+        return this.workoutUtilsService.getDurationValue(duration) || 0;
     }
 
-    return rows;
-  }
+    getWeightValue(weight: WeightTarget | undefined): number {
+        return this.workoutUtilsService.getWeightValue(weight) || 0;
+    }
 
-  getRepsValue(targetReps: RepsTarget | undefined): number {
-    return this.workoutUtilsService.getRepsValue(targetReps) || 0;
-  }
-
-  getDurationValue(duration: DurationTarget | undefined): number {
-    return this.workoutUtilsService.getDurationValue(duration) || 0;
-  }
-
-  getWeightValue(weight: WeightTarget | undefined): number {
-    return this.workoutUtilsService.getWeightValue(weight) || 0;
-  }
-
-  getDistanceValue(distance: DistanceTarget | undefined): number {
-    return this.workoutUtilsService.getDistanceValue(distance) || 0;
-  }
+    getDistanceValue(distance: DistanceTarget | undefined): number {
+        return this.workoutUtilsService.getDistanceValue(distance) || 0;
+    }
 }
