@@ -528,9 +528,11 @@
       "sortBy": "Sort By",
       "sort": {
         "lastUsed": "Last Used",
-        "lastCreated": "Last Created",
-        "lastEdited": "Last Edited",
-        "alphabetical": "Alphabetical"
+        "alphabetical": "Alphabetical",
+        "highestVolume": "Highest Volume",
+        "longestSession": "Longest Session",
+        "mostExercises": "Most Exercises",
+        "mostPBs": "Most PBs"
       }
     },
     "card": {
@@ -1455,6 +1457,7 @@
     "edit": "EDIT"
   },
   "logDetail": {
+    "times": "Times",
     "location": "Location",
     "title": "Personal Bests",
     "toggleFilters": "Toggle Filters",
@@ -1579,6 +1582,7 @@
     "routine": "Routine",
     "adHocWorkout": "Ad-hoc Workout",
     "date": "Date",
+    "startTime": "Start Time",
     "duration": "Duration",
     "durationUnit": "minutes",
     "totalVolume": "Total Volume",
@@ -1587,7 +1591,7 @@
     "newPBs": "🎉 New Personal Best! 🎉",
     "newPBs_plural": "🎉 New Personal Bests! 🎉",
     "yourNotes": "Your Notes for this Session",
-    "viewFullLog": "VIEW FULL LOG DETAILS",
+    "viewFullLog": "DETAILS",
     "loading": "Loading workout summary...",
     "notFound": {
       "title": "Workout Log Not Found",
@@ -2514,6 +2518,9 @@
     }
   },
   "exerciseDetail": {
+    "exerciseNotFound": "Exercise not found",
+    "exerciseNotFoundMessage": "The exercise you are looking for does not exist or could not be loaded.",
+    "goToLibrary": "Go to Library",
     "tabs": {
       "description": "Description",
       "history": "History",
