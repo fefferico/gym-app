@@ -4,10 +4,10 @@ import { LocationConfig } from './location.model';
 
 // Helper to create config
 const createConf = (
-  id: string, 
-  translationKey: string, 
-  category: LocationCategory, 
-  type: SpecificLocation, 
+  id: string,
+  translationKey: string,
+  category: LocationCategory,
+  type: SpecificLocation,
   attrs: any
 ): LocationConfig => ({
   id,
@@ -15,13 +15,13 @@ const createConf = (
   category,
   specificType: type,
   attributes: {
-    isIndoors: true, 
-    surface: SurfaceType.HARD, 
-    space: SpaceSize.MODERATE, 
-    allowsNoise: true, 
-    allowsJumping: true, 
-    hasPullUpBar: false, 
-    equipmentTier: 'NONE', 
+    isIndoors: true,
+    surface: SurfaceType.HARD,
+    space: SpaceSize.MODERATE,
+    allowsNoise: true,
+    allowsJumping: true,
+    hasPullUpBar: false,
+    equipmentTier: 'NONE',
     ...attrs
   }
 });
@@ -152,5 +152,62 @@ export const LOCATION_CONFIGS: LocationConfig[] = [
     space: SpaceSize.OPEN,
     allowsNoise: true,
     equipmentTier: 'NONE'
+  })
+
+  ,
+  // ==========================
+  // 7. SPORTS & RECREATION
+  // ==========================
+  createConf('sprt-hall', 'LOCATIONS.SPECIFIC.SPORTS_HALL', LocationCategory.COMMERCIAL, SpecificLocation.SPORTS_HALL, {
+    surface: SurfaceType.HARD,
+    space: SpaceSize.OPEN,
+    equipmentTier: 'LIMITED',
+    allowsNoise: true
+  }),
+  createConf('sprt-field', 'LOCATIONS.SPECIFIC.SPORTS_FIELD', LocationCategory.OUTDOOR, SpecificLocation.SPORTS_FIELD, {
+    isIndoors: false,
+    surface: SurfaceType.SOFT,
+    space: SpaceSize.OPEN,
+    equipmentTier: 'NONE',
+    allowsNoise: true
+  }),
+  createConf('sprt-tennis', 'LOCATIONS.SPECIFIC.TENNIS_COURT', LocationCategory.COMMERCIAL, SpecificLocation.TENNIS_COURT, {
+    surface: SurfaceType.HARD,
+    space: SpaceSize.OPEN,
+    equipmentTier: 'LIMITED',
+    allowsNoise: true
+  }),
+  createConf('sprt-basketball', 'LOCATIONS.SPECIFIC.BASKETBALL_COURT', LocationCategory.COMMERCIAL, SpecificLocation.BASKETBALL_COURT, {
+    surface: SurfaceType.HARD,
+    space: SpaceSize.OPEN,
+    equipmentTier: 'LIMITED',
+    allowsNoise: true
+  }),
+  createConf('sprt-football', 'LOCATIONS.SPECIFIC.FOOTBALL_FIELD', LocationCategory.OUTDOOR, SpecificLocation.FOOTBALL_FIELD, {
+    isIndoors: false,
+    surface: SurfaceType.SOFT,
+    space: SpaceSize.OPEN,
+    equipmentTier: 'NONE',
+    allowsNoise: true
+  }),
+  createConf('sprt-climbing', 'LOCATIONS.SPECIFIC.CLIMBING_GYM', LocationCategory.COMMERCIAL, SpecificLocation.CLIMBING_GYM, {
+    surface: SurfaceType.HARD,
+    space: SpaceSize.OPEN,
+    equipmentTier: 'LIMITED',
+    hasPullUpBar: true,
+    allowsNoise: true
+  }),
+  createConf('sprt-skate', 'LOCATIONS.SPECIFIC.SKATE_PARK', LocationCategory.OUTDOOR, SpecificLocation.SKATE_PARK, {
+    isIndoors: false,
+    surface: SurfaceType.HARD,
+    space: SpaceSize.OPEN,
+    equipmentTier: 'NONE',
+    allowsNoise: true
+  }),
+  createConf('sprt-ice', 'LOCATIONS.SPECIFIC.ICE_RINK', LocationCategory.COMMERCIAL, SpecificLocation.ICE_RINK, {
+    surface: SurfaceType.ICE,
+    space: SpaceSize.OPEN,
+    equipmentTier: 'NONE',
+    allowsNoise: true
   })
 ];

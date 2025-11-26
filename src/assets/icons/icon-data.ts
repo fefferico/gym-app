@@ -28,7 +28,7 @@ export const ICONS: Record<string, string> = {
       <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-11.25a.75.75 0 00-1.5 0v2.5h-2.5a.75.75 0 000 1.5h2.5v2.5a.75.75 0 001.5 0v-2.5h2.5a.75.75 0 000-1.5h-2.5v-2.5z" clip-rule="evenodd" />
     </svg>
   `,
-  'heart':`
+  'heart': `
   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M2 9.1371C2 14 6.01943 16.5914 8.96173 18.9109C10 19.7294 11 20.5 12 20.5C13 20.5 14 19.7294 15.0383 18.9109C17.9806 16.5914 22 14 22 9.1371C22 4.27416 16.4998 0.825464 12 5.50063C7.50016 0.825464 2 4.27416 2 9.1371Z" fill="currentColor" style="--darkreader-inline-fill: var(--darkreader-background-1c274c, currentColor);" data-darkreader-inline-fill=""></path> </g></svg>
   `,
   'minus': `
@@ -250,7 +250,7 @@ viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" >
   'profile': `
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"  stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A1.875 1.875 0 0 1 18.126 22.5H5.874a1.875 1.875 0 0 1-1.373-2.382Z"></path></svg>
   `,
-  'users':`
+  'users': `
   <svg fill="currentColor" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <style type="text/css"> .st0{fill:none;} </style> <path d="M7.5,5C5.6,5,4,6.6,4,8.5S5.6,12,7.5,12S11,10.4,11,8.5S9.4,5,7.5,5z M16.5,5C14.6,5,13,6.6,13,8.5s1.6,3.5,3.5,3.5 S20,10.4,20,8.5S18.4,5,16.5,5z M7.5,14C2.6,14,1,18,1,18v2h13v-2C14,18,12.4,14,7.5,14z M16.5,14c-1.5,0-2.7,0.4-3.6,0.9 c1.4,1.2,2,2.6,2.1,2.7l0.1,0.2V20h8v-2C23,18,21.4,14,16.5,14z"></path> <rect class="st0" width="24" height="24"></rect> </g></svg>
   `,
   'schedule': `
@@ -272,10 +272,10 @@ viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" >
 `,
   'weight': `
 <svg viewBox="0 -0.5 17 17" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="si-glyph si-glyph-weight-up" fill="currentColor"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>674</title> <defs> </defs> <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <path d="M12.867,3.039 L11.944,3.039 C11.978,2.887 12,2.719 12,2.531 C12,1.135 10.877,0 9.495,0 C8.113,0 6.99,1.135 6.99,2.531 C6.99,2.719 7.016,2.886 7.058,3.039 L6.136,3.039 C5.011,3.039 4.099,3.922 4.099,5.01 L2.083,13.985 C2.083,15.075 2.873,15.957 4,15.957 L15,15.957 C16.126,15.957 16.917,15.075 16.917,13.985 L14.905,5.01 C14.905,3.922 13.993,3.039 12.867,3.039 Z M7.824,2.531 C7.824,1.582 8.573,0.808 9.495,0.808 C10.416,0.808 11.165,1.581 11.165,2.531 C11.165,2.709 11.131,2.877 11.082,3.039 L7.906,3.039 C7.857,2.877 7.824,2.709 7.824,2.531 L7.824,2.531 Z M10.054,10.08 L10.054,13.039 L8.946,13.039 L8.946,10.101 L6.813,10.08 L9.543,7.02 L12.107,10.08 L10.054,10.08 L10.054,10.08 Z" fill="currentColor" class="si-glyph-fill"> </path> </g> </g></svg>`,
-'body': `
+  'body': `
 <svg fill="currentColor" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><title>ionicons-v5-h</title><circle cx="256" cy="56" r="56"></circle><path d="M437,128H75a27,27,0,0,0,0,54H176.88c6.91,0,15,3.09,19.58,15,5.35,13.83,2.73,40.54-.57,61.23l-4.32,24.45a.42.42,0,0,1-.12.35l-34.6,196.81A27.43,27.43,0,0,0,179,511.58a27.06,27.06,0,0,0,31.42-22.29l23.91-136.8S242,320,256,320c14.23,0,21.74,32.49,21.74,32.49l23.91,136.92a27.24,27.24,0,1,0,53.62-9.6L320.66,283a.45.45,0,0,0-.11-.35l-4.33-24.45c-3.3-20.69-5.92-47.4-.57-61.23,4.56-11.88,12.91-15,19.28-15H437a27,27,0,0,0,0-54Z"></path></g></svg>
 `,
-'bookmark':`
+  'bookmark': `
 <svg version="1.1" id="_x32_" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve" fill="currentColor"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <style type="text/css"> .st0{fill:currentColor;} </style> <g> <path class="st0" d="M37.246,0v479.924c0,11.47,6.122,22.064,16.052,27.786c9.945,5.732,22.173,5.717,32.103-0.029l138.445-80.198 c19.889-11.514,44.42-11.514,64.309,0l138.453,80.198c9.922,5.746,22.158,5.761,32.088,0.029 c9.938-5.723,16.059-16.316,16.059-27.786V0H37.246z M359.816,208.419l-50.144,41.274c-1.922,1.583-2.762,4.147-2.129,6.564 l16.303,62.858c0.662,2.556-0.303,5.252-2.439,6.8c-2.129,1.554-4.994,1.635-7.219,0.221l-54.733-34.94 c-2.107-1.34-4.803-1.34-6.91,0l-54.74,34.94c-2.218,1.414-5.09,1.333-7.226-0.221c-2.129-1.547-3.094-4.243-2.431-6.8 l16.309-62.858c0.634-2.416-0.206-4.98-2.128-6.564l-50.144-41.274c-2.033-1.68-2.843-4.427-2.025-6.932 c0.818-2.512,3.086-4.265,5.709-4.427l64.824-3.904c2.49-0.155,4.671-1.738,5.584-4.058l23.749-60.442 c0.972-2.453,3.337-4.067,5.974-4.067c2.637,0,5.002,1.62,5.974,4.067l23.742,60.442c0.906,2.32,3.086,3.904,5.583,4.058 l64.824,3.904c2.638,0.162,4.9,1.915,5.717,4.427C362.659,203.992,361.856,206.739,359.816,208.419z"></path> </g> </g></svg>
 `,
   'pb': `
@@ -697,8 +697,94 @@ viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" >
   'metric': `
   <svg fill="currentColor" viewBox="0 0 512 512" version="1.1" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g id="Measure_Tape"> <g id="XMLID_419_"> <path d="M500,296.051c-5.502,0-10,4.461-10,9.963V336H304v60h34v-10.285c0-5.502,4.498-9.963,10-9.963 c5.502,0,10,4.461,10,9.963V396h23v-10.285c0-5.502,3.998-9.963,9.5-9.963c5.502,0,9.5,4.461,9.5,9.963V396h23v-10.285 c0-5.502,4.498-9.963,10-9.963c5.502,0,10,4.461,10,9.963V396h24v-10.285c0-5.502,4.498-9.963,10-9.963s10,4.461,10,9.963V396h23 v-89.987C510,300.512,505.502,296.051,500,296.051z" id="XMLID_1132_"></path> <path d="M142.853,212.285c-30.158,0-54.693,24.535-54.693,54.692c0,30.158,24.535,54.693,54.693,54.693 c30.157,0,54.692-24.535,54.692-54.693C197.545,236.82,173.011,212.285,142.853,212.285z M142.853,298.492 c-17.377,0-31.515-14.137-31.515-31.515c0-17.377,14.137-31.514,31.515-31.514s31.514,14.137,31.514,31.514 C174.368,284.355,160.23,298.492,142.853,298.492z" id="XMLID_1148_"></path> <path d="M142.853,255.389c-6.39,0-11.589,5.198-11.589,11.588c0,6.39,5.199,11.589,11.589,11.589 c6.39,0,11.589-5.199,11.589-11.589C154.443,260.587,149.243,255.389,142.853,255.389z" id="XMLID_1150_"></path> <path d="M269.752,160.935l9.817-9.817c2.699-2.699,4.186-6.287,4.186-10.103c0-3.814-1.485-7.398-4.182-10.092 l-11.438-11.437c-2.698-2.701-6.281-4.186-10.096-4.186c-3.816,0-7.404,1.487-10.103,4.186l-11.441,11.441 C249.026,139.224,260.242,149.352,269.752,160.935z" id="XMLID_1151_"></path> <path d="M30.517,342h-26.6c6.839,29,30.981,50.806,60.805,54.707l0.958-17.9 c0.526-9.753-2.884-18.911-9.601-26.001C49.361,345.716,40.284,342,30.517,342z" id="XMLID_1152_"></path> <path d="M154.168,125h-22.63C60.085,125,2,184.21,2,255.663V322h28.517c15.293,0,29.507,5.841,40.026,16.942 c10.519,11.102,15.857,25.028,15.033,40.299L84.641,396H284v-53.591v-86.746C284,184.21,225.622,125,154.168,125z M142.853,341.596c-41.144,0-74.618-33.474-74.618-74.618s33.474-74.617,74.618-74.617s74.617,33.473,74.617,74.617 S183.998,341.596,142.853,341.596z" id="XMLID_1155_"></path> </g> </g> <g id="Layer_1"></g> </g></svg>
   `,
-  'cycling':`
+  'cycling': `
   <svg fill="currentColor" height="200px" width="200px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M490.667,394.667h-27.285l-10.944-32.789C487.573,344.405,512,308.501,512,266.667c0-51.499-36.693-94.592-85.333-104.512 v-47.851c36.715-9.536,64-42.645,64-82.304c0-11.776-9.536-21.333-21.333-21.333S448,20.224,448,32 c0,16.171-9.131,30.08-22.4,37.333c-2.432-9.131-10.368-16-20.267-16c-11.797,0-21.333,9.557-21.333,21.333v87.488 c-42.965,8.768-76.309,43.52-83.563,87.019l-158.955,35.328L94.784,160h11.883c11.797,0,21.333-9.536,21.333-21.333 c0-11.776-9.536-21.333-21.333-21.333H21.333C9.536,117.333,0,126.891,0,138.667C0,150.464,9.536,160,21.333,160h27.883 l56.683,151.147l-16.704,83.52H21.333C9.536,394.667,0,404.224,0,416v64c0,11.797,9.536,21.333,21.333,21.333h469.333 c11.797,0,21.333-9.536,21.333-21.333v-64C512,404.224,502.464,394.667,490.667,394.667z M132.693,394.667l13.504-67.52 l155.989-34.667c11.627,46.315,53.291,80.853,103.147,80.853c1.984,0,3.819-0.469,5.781-0.576l7.296,21.909H132.693z"></path> </g> </g> </g></svg>
-  `
+  `,
+  'program': `
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <!-- Style Definition: Thick black lines, rounded corners, no fill -->
+    <style>
+      .cls-1 {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 24px;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .cls-2 {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 12px;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }      
+      .cls-3 {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 10px;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+    </style>
+  </defs>
+  <!-- ========================
+       CALENDAR STRUCTURE
+       ======================== -->
+  <!-- Main Body Outline with folded corner -->
+  <path class="cls-1" d="M60,140 L452,140 L452,390 L390,452 L60,452 Z" />
+
+  <!-- Header Top Border (Rounded) -->
+  <path class="cls-1" d="M60,140 L60,80 A20,20 0 0,1 80,60 L432,60 A20,20 0 0,1 452,80 L452,140" />
+
+  <!-- Binder Rings -->
+  <!-- Left -->
+  <path class="cls-1" d="M116,40 L116,90 A10,10 0 0,0 136,90 L136,40 A10,10 0 0,0 116,40" />
+  <!-- Center -->
+  <path class="cls-1" d="M236,40 L236,90 A10,10 0 0,0 256,90 L256,40 A10,10 0 0,0 236,40" />
+  <!-- Right -->
+  <path class="cls-1" d="M356,40 L356,90 A10,10 0 0,0 376,90 L376,40 A10,10 0 0,0 356,40" />
+
+  <!-- ========================
+       NEW CALENDAR GRID (Checkboxes)
+       ======================== -->
+  <g id="CalendarGrid" transform="translate(20, 10)">
+    <!-- Centered grid: 4 columns, 2 rows, bigger cells -->
+    <!-- Cell size: 56x56, gap: 20, grid starts at x=92, y=170 -->
+    <!-- Row 1 -->
+    <rect class="cls-2" x="92"  y="170" width="56" height="56" rx="8" />
+    <rect class="cls-2" x="168" y="170" width="56" height="56" rx="8" />
+    <!-- Checkmarks adjusted for new cell size -->
+    <path class="cls-3" d="M104 200 l16 24 l28 -60" />
+    <path class="cls-3" d="M180 200 l16 24 l28 -60" />
+    <rect class="cls-2" x="244" y="170" width="56" height="56" rx="8" />
+    <rect class="cls-2" x="320" y="170" width="56" height="56" rx="8" />
+
+    <!-- Row 2 -->
+    <rect class="cls-2" x="92"  y="246" width="56" height="56" rx="8" />
+    <rect class="cls-2" x="168" y="246" width="56" height="56" rx="8" />
+    <rect class="cls-2" x="244" y="246" width="56" height="56" rx="8" />
+    <rect class="cls-2" x="320" y="246" width="56" height="56" rx="8" />
+  </g>
+
+  <!-- ========================
+       SMALLER DUMBBELL
+       ======================== -->
+  <!-- Scaled down to 0.7 and centered at the bottom -->
+  <g transform="translate(77, 120) scale(0.7)">
+    <!-- Handle -->
+    <line class="cls-1" x1="160" y1="380" x2="350" y2="380" />
+    
+    <!-- Left Weight -->
+    <rect class="cls-1" x="130" y="325" width="30" height="110" rx="8" />
+    <rect class="cls-1" x="90"  y="340" width="30" height="80" rx="8" />
+    <path class="cls-1" d="M90,380 L80,380" /> <!-- Little tip on the left -->
+
+    <!-- Right Weight -->
+    <rect class="cls-1" x="352" y="325" width="30" height="110" rx="8" />
+    <rect class="cls-1" x="392" y="340" width="30" height="80" rx="8" />
+    <path class="cls-1" d="M422,380 L432,380" /> <!-- Little tip on the right -->
+  </g>
+</svg>`,
 };
 

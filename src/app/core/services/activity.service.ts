@@ -26,6 +26,13 @@ export class ActivityService {
   // --- Activity Log Management ---
   private activityLogsSubject = new BehaviorSubject<ActivityLog[]>(this._loadLogsFromStorage());
   public activityLogs$: Observable<ActivityLog[]> = this.activityLogsSubject.asObservable();
+  public translatedActivityLogs$: Observable<ActivityLog[]> = this.activityLogs$.pipe(
+    map(logs => logs.map(log => ({
+      ...log,
+      activityName: this.translate.instant(`activities.${log.activityId}`)
+      // Add more translated fields as needed
+    })))
+  );
 
   constructor() { }
 
@@ -85,8 +92,20 @@ export class ActivityService {
    * @returns An Observable emitting the full array of Activity objects.
    */
   public getActivities(): Observable<Activity[]> {
-    // Sorting alphabetically for display in lists
-    return of([...ACTIVITIES_DATA].sort((a, b) => a.name.localeCompare(b.name)));
+    // Sorting alphabetically for display in lists, with translated names
+    return of([...ACTIVITIES_DATA].sort((a, b) =>
+      this.translate.instant(`activities.${a.id}`).localeCompare(
+        this.translate.instant(`activities.${b.id}`)
+      )
+    ).map(activity => ({
+      ...activity,
+      name: this.translate.instant(`activities.${activity.id}`),
+      category: this.translate.instant(`activities.activityCategories.${activity.categoryKey}`)
+    })));
+  }
+
+  getTranslatedCategory(activity: Activity): string {
+    return this.translate.instant(`activities.activityCategories.${activity.categoryKey}`);
   }
 
   /**
@@ -205,16 +224,23 @@ export class ActivityService {
   }
 
   public getActivityLocations(): string[] {
+    const toTitleCase = (str: string) =>
+      str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+
     const locations = this.getAllActivityLogs()
       .map(activity => activity.locationName || '')
-      .filter(location => location.trim() !== '');
+      .map(location => toTitleCase(location.trim()))
+      .filter(location => location !== '');
     return Array.from(new Set(locations));
   }
 
   public getActivityPeople(): string[] {
+    const toTitleCase = (str: string) =>
+      str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+
     const people = this.getAllActivityLogs()
       .flatMap(activity => activity.people || [])
-      .map(person => person.trim())
+      .map(person => toTitleCase(person.trim()))
       .filter(person => person !== '');
     return Array.from(new Set(people));
   }

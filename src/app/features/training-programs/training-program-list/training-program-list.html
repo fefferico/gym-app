@@ -1,6 +1,9 @@
 <div class="container mx-auto p-2 sm:p-4 overflow-hidden" #viewSwipeContainerEl view-swipe-container>
   <header class="flex justify-between items-center pb-2">
-    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">{{ 'trainingPrograms.title' | translate }}</h1>
+    <div class="flex items-center justify-start">
+      <app-icon name="program" class="w-10 h-10 mr-2 text-primary dark:text-primary-light"></app-icon>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">{{ 'trainingPrograms.title' | translate }}</h1>
+    </div>
     <button [disabled]="currentView() !== 'list'" [pressDisabled]="currentView() !== 'list'" appPress
       (shortPress)="toggleFilterAccordion()" type="button"
       class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light transition-all duration-300 ease-in-out disabled:opacity-50">

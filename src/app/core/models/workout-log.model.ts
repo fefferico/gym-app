@@ -88,6 +88,7 @@ export interface WorkoutLog {
   perceivedWorkoutInfo?: PerceivedWorkoutInfo; // <-- ADD THIS LINE (e.g., a rating from 1 to 10)
   locationName?: string;  // e.g., 'Living Room' (optional, for display/backup)
   locationId?: string; // e.g., 'res-living'
+  people?: string[]
 }
 
 // For displaying personal bests

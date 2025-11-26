@@ -73,14 +73,14 @@
                 <div *ngIf="isViewMode">
                     <label class="block text-m text-gray-700 dark:text-gray-300">
                         <span class="font-medium">{{ 'workoutBuilder.routineBuilder.goalLabel' | translate }}: </span>
-                        {{ builderForm.get('goal')?.value?.toUpperCase() || ''}}</label>
+                        {{ ('workoutBuilder.goals.' + (builderForm.get('goal')?.value || '') ) | translate }}</label>
                 </div>
                 <div *ngIf="isEditableMode()" class="text-gray-700 dark:text-gray-200">
                     <label for="goal" class="block text-m font-medium text-gray-700 dark:text-gray-300">{{
                         'workoutBuilder.routineBuilder.goalLabel' | translate }}</label>
                     <select id="goal" formControlName="goal"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 dark:text-gray-200">
-                        <option value="">{{ 'workoutBuilder.routineBuilder.goalPlaceholder' | translate }}</option>
+                        <option value="" disabled selected>{{ 'workoutBuilder.routineBuilder.goalPlaceholder' | translate }}</option>
                         <option *ngFor="let goalOpt of routineGoals" [value]="goalOpt.value">
                             {{ goalOpt.label | translate }}
                         </option>
@@ -102,7 +102,7 @@
                     </label>
                     <select id="primaryCategory" formControlName="primaryCategory"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 text-gray-700 dark:text-gray-200">
-                        <option value="">{{ 'workoutBuilder.routineBuilder.primaryCategoryPlaceholder' | translate }}
+                        <option value="" disabled selected>{{ 'workoutBuilder.routineBuilder.primaryCategoryPlaceholder' | translate }}
                         </option>
                         <option *ngFor="let category of categories()" [value]="category.id">
                             {{ category.name }}
@@ -200,8 +200,12 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label for="workoutDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
-                            'workoutBuilder.logEntry.dateLabel' | translate }}</label>
+                        <div class="flex items-center">
+                            <app-icon name="calendar" class="h-5 w-5 text-gray-500 dark:text-gray-300 mr-2"></app-icon>
+                            <label for="workoutDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {{ 'workoutBuilder.logEntry.dateLabel' | translate }}
+                            </label>
+                        </div>
                         <input type="date" id="workoutDate" formControlName="workoutDate"
                             class="mt-1 block w-full p-2 border rounded-xl shadow-sm dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
                             [ngClass]="{'border-red-500 dark:border-red-400': builderForm.get('workoutDate')?.invalid && builderForm.get('workoutDate')?.touched, 'border-gray-300 dark:border-gray-500': !(builderForm.get('workoutDate')?.invalid && builderForm.get('workoutDate')?.touched) }">
@@ -211,29 +215,31 @@
                                 'workoutBuilder.logEntry.dateRequired' | translate }}</span>
                         </div>
                     </div>
-                    <div>
-                        <label for="startTime" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
-                            'workoutBuilder.logEntry.startTimeLabel' | translate }}</label>
-                        <input type="time" id="startTime" formControlName="startTime"
-                            class="mt-1 block w-full p-2 border rounded-xl shadow-sm dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
-                            [ngClass]="{'border-red-500 dark:border-red-400': builderForm.get('startTime')?.invalid && builderForm.get('startTime')?.touched, 'border-gray-300 dark:border-gray-500': !(builderForm.get('startTime')?.invalid && builderForm.get('startTime')?.touched) }">
-                        <div *ngIf="builderForm.get('startTime')?.invalid && (builderForm.get('startTime')?.dirty || builderForm.get('startTime')?.touched)"
-                            class="text-red-500 dark:text-red-400 text-xs mt-1">
-                            <span *ngIf="builderForm.get('startTime')?.errors?.['required']">{{
-                                'workoutBuilder.logEntry.startTimeRequired' | translate }}</span>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="startTime" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                                'workoutBuilder.logEntry.startTimeLabel' | translate }}</label>
+                            <input type="time" id="startTime" formControlName="startTime"
+                                class="mt-1 block w-full p-2 border rounded-xl shadow-sm dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
+                                [ngClass]="{'border-red-500 dark:border-red-400': builderForm.get('startTime')?.invalid && builderForm.get('startTime')?.touched, 'border-gray-300 dark:border-gray-500': !(builderForm.get('startTime')?.invalid && builderForm.get('startTime')?.touched) }">
+                            <div *ngIf="builderForm.get('startTime')?.invalid && (builderForm.get('startTime')?.dirty || builderForm.get('startTime')?.touched)"
+                                class="text-red-500 dark:text-red-400 text-xs mt-1">
+                                <span *ngIf="builderForm.get('startTime')?.errors?.['required']">{{
+                                    'workoutBuilder.logEntry.startTimeRequired' | translate }}</span>
+                            </div>
                         </div>
-                    </div>
-                    <div>
-                        <label for="endTime" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
-                            'workoutBuilder.logEntry.endTimeLabel' | translate }}</label>
-                        <input type="time" id="endTime" formControlName="endTime"
-                            class="mt-1 block w-full p-2 border rounded-xl shadow-sm dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
-                            [ngClass]="{'border-red-500 dark:border-red-400': builderForm.get('endTime')?.invalid && builderForm.get('endTime')?.touched, 'border-gray-300 dark:border-gray-500': !(builderForm.get('endTime')?.invalid && builderForm.get('endTime')?.touched) }"
-                            (change)="handleEndTimeChange()">
-                        <div *ngIf="builderForm.get('endTime')?.invalid && (builderForm.get('endTime')?.dirty || builderForm.get('endTime')?.touched)"
-                            class="text-red-500 dark:text-red-400 text-xs mt-1">
-                            <span *ngIf="builderForm.get('endTime')?.errors?.['required']">{{
-                                'workoutBuilder.logEntry.endTimeRequired' | translate }}</span>
+                        <div>
+                            <label for="endTime" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                                'workoutBuilder.logEntry.endTimeLabel' | translate }}</label>
+                            <input type="time" id="endTime" formControlName="endTime"
+                                class="mt-1 block w-full p-2 border rounded-xl shadow-sm dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
+                                [ngClass]="{'border-red-500 dark:border-red-400': builderForm.get('endTime')?.invalid && builderForm.get('endTime')?.touched, 'border-gray-300 dark:border-gray-500': !(builderForm.get('endTime')?.invalid && builderForm.get('endTime')?.touched) }"
+                                (change)="handleEndTimeChange()">
+                            <div *ngIf="builderForm.get('endTime')?.invalid && (builderForm.get('endTime')?.dirty || builderForm.get('endTime')?.touched)"
+                                class="text-red-500 dark:text-red-400 text-xs mt-1">
+                                <span *ngIf="builderForm.get('endTime')?.errors?.['required']">{{
+                                    'workoutBuilder.logEntry.endTimeRequired' | translate }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -250,7 +256,7 @@
                     <select id="routineIdForLog" formControlName="routineIdForLog"
                         [disabled]="builderForm.get('programIdForLog')?.value"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <option value="">{{ 'workoutBuilder.logEntry.adHocOption' | translate }}</option>
+                        <option value="" disabled selected>{{ 'workoutBuilder.logEntry.adHocOption' | translate }}</option>
                         <option *ngFor="let r of availableRoutines" [value]="r.id">{{ r.name }}</option>
                     </select>
                 </div>
@@ -259,7 +265,7 @@
                         'workoutBuilder.logEntry.basedOnProgramLabel' | translate }}</label>
                     <select id="programIdForLog" formControlName="programIdForLog"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 dark:text-gray-200">
-                        <option value="">{{ 'workoutBuilder.logEntry.adHocProgramOption' | translate }}</option>
+                        <option value="" disabled selected>{{ 'workoutBuilder.logEntry.adHocProgramOption' | translate }}</option>
                         <option *ngFor="let program of availablePrograms" [value]="program.id">{{ program.name }}
                         </option>
                     </select>
@@ -273,7 +279,7 @@
                     <select id="iterationIdForLog" formControlName="iterationIdForLog"
                         [disabled]="!builderForm.get('programIdForLog')?.value || availableIterationIds.length === 0"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <option value="">{{ 'workoutBuilder.logEntry.iterationPlaceholder' | translate }}</option>
+                        <option value="" disabled selected>{{ 'workoutBuilder.logEntry.iterationPlaceholder' | translate }}</option>
                         <option *ngFor="let iterationId of availableIterationIds" [value]="iterationId">{{ iterationId
                             }}</option>
                     </select>
@@ -287,7 +293,7 @@
                     <select id="scheduledDayIdForLog" formControlName="scheduledDayIdForLog"
                         [disabled]="!builderForm.get('programIdForLog')?.value || availableScheduledDayIds.length === 0"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <option value="">{{ 'workoutBuilder.logEntry.scheduledDayPlaceholder' | translate }}</option>
+                        <option value="" disabled selected>{{ 'workoutBuilder.logEntry.scheduledDayPlaceholder' | translate }}</option>
                         <option *ngFor="let scheduledId of availableScheduledDayInfos" [value]="scheduledId.id">{{
                             scheduledId.weekNumber ? ('workoutBuilder.logEntry.weekLabel' | translate:{week:
                             scheduledId.weekNumber}) : '' }} - {{ scheduledId.dayName
@@ -303,7 +309,7 @@
                     </label>
                     <select id="locationId" formControlName="locationId"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 text-gray-700 dark:text-gray-200">
-                        <option value="">{{ 'workoutBuilder.logEntry.locationTypePlaceholder' | translate }}</option>
+                        <option value="" disabled selected>{{ 'workoutBuilder.logEntry.locationTypePlaceholder' | translate }}</option>
                         <option *ngFor="let loc of locationService.allLocationTypes()" [value]="loc.id">
                             {{ loc.label }}
                         </option>
@@ -318,9 +324,12 @@
 
                 <!-- LOCATION NAME -->
                 <div *ngIf="isEditableMode()">
-                    <label for="locationName" class="block text-m font-medium text-gray-700 dark:text-gray-200">
-                        {{ 'workoutBuilder.logEntry.locationLabel' | translate }}
-                    </label>
+                    <div class="flex items-center mb-1">
+                        <app-icon name="map" class="h-5 w-5 text-gray-500 dark:text-gray-300 mr-2"></app-icon>
+                        <label for="locationName" class="block text-m font-medium text-gray-700 dark:text-gray-200">
+                            {{ 'workoutBuilder.logEntry.locationLabel' | translate }}
+                        </label>
+                    </div>
                     <input
                         id="locationName"
                         type="text"
@@ -346,8 +355,12 @@
 
                 <!-- END: Updated fields -->
                 <div>
-                    <label for="overallNotesLog" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
-                        'workoutBuilder.logEntry.notesLabel' | translate }}</label>
+                    <div class="flex items-center mb-1">
+                        <app-icon name="clipboard-list" class="h-5 w-5 text-gray-500 dark:text-gray-300 mr-2"></app-icon>
+                        <label for="overallNotesLog" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            {{ 'workoutBuilder.logEntry.notesLabel' | translate }}
+                        </label>
+                    </div>
                     <textarea id="overallNotesLog" formControlName="overallNotesLog" rows="2"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 dark:text-gray-200"></textarea>
                 </div>
@@ -498,6 +511,9 @@
                                                 alt="Exercise Icon" class="w-6 h-6 sm:w-8 sm:h-8 object-contain"> -->
                                             <div class="min-w-0">
                                                 <div class="flex">
+                                                    <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
+                                                    alt="Exercise Icon" class="object-contain mr-1 flex-shrink-0 filter dark:invert w-8 h-8"
+                                                    >
                                                     <h3 class="font-semibold text-gray-800 dark:text-gray-100 text-wrap text-lg max-exercise-length"
                                                         [title]="exerciseControl.get('exerciseName')?.value">
                                                         {{ exerciseControl.get('exerciseName')?.value }}

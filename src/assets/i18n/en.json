@@ -97,7 +97,7 @@
     "myRoutinesDescription": "View, create, or edit your workout routines",
     "trainingProgramsTitle": "Training Programs",
     "trainingProgramsDescription": "Manage your long-term training schedules",
-    "workoutHistoryTitle": "Workout History",
+    "workoutHistoryTitle": "Workout and Activity History",
     "workoutHistoryDescription": "Review your past workout logs and progress",
     "profileAndSettingsTitle": "Profile & Settings",
     "profileAndSettingsDescription": "Manage your data and app preferences",
@@ -309,7 +309,8 @@
     "invalidData": "Invalid data",
     "ok": "OK",
     "removed": "removed",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "minutes": "minutes"
   },
   "toasts": {
     "statusUpdated": "Status Updated",
@@ -1979,7 +1980,7 @@
     },
     "locationTypeLabel": "Location Type (optional)",
     "locationLabel": "Location",
-    "locationPlaceholder": "e.g., Wonderful Street",
+    "locationPlaceholder": "-- e.g., Wonderful Street -- ",
     "locationTypePlaceholder": "-- Select location type --",
     "distanceLabel": "Distance (km)",
     "distancePlaceholder": "e.g., 5.5",
@@ -2952,5 +2953,9 @@
       "discard": "Discard",
       "quitTitle": "Quit Workout"
     }
+  },
+  "workoutGenerator": {
+    "routineName": "Generated {{split}} Workout",
+    "routineDescription": "Generated on {{date}} for a ~{{duration}} minute, {{goal}}-focused session."
   }
 }

@@ -482,6 +482,15 @@ export class ExerciseService {
 
   determineExerciseIcon(baseExercise: Exercise | null, exerciseName: string | undefined): string {
     const nameLower = exerciseName?.toLowerCase() || '';
+    // Build a string containing all categories (ids and labels) in lowercase for icon detection
+    const categoryLower = [
+      ...(Array.isArray(baseExercise?.categories)
+      ? baseExercise.categories.map(cat => (cat?.toString() || ''))
+      : [String(baseExercise?.categories) || '']),
+      ...(Array.isArray((baseExercise as any)?.categoryLabels)
+      ? (baseExercise as any).categoryLabels.map((label: string) => label || '')
+      : [(baseExercise as any)?.categoryLabels || ''])
+    ].join(' ').toLowerCase();
 
     if (baseExercise && (baseExercise.equipment || baseExercise.equipmentNeeded)) {
       // Prefer equipmentNeeded if present, else fallback to equipment
@@ -499,7 +508,8 @@ export class ExerciseService {
       const cableIndex = equipmentLower.indexOf('cable');
       const bodyweightIndex = equipmentLower.indexOf('body');
       const noneIndex = equipmentLower.indexOf('none');
-      const resistanceBandIndex = equipmentLower.indexOf('resistance band');
+      const resistanceBandIndex = equipmentLower.indexOf('band');
+      const flexibilityIndex = equipmentLower.indexOf('flexibility');
 
       // Collect all found equipment types with their indices
       const equipmentPriority: { type: string; index: number }[] = [
@@ -510,7 +520,8 @@ export class ExerciseService {
         { type: 'machine', index: cableIndex }, // treat cable as machine
         { type: 'bodyweightCalisthenics', index: bodyweightIndex },
         { type: 'bodyweightCalisthenics', index: noneIndex },
-        { type: 'resistanceBand', index: resistanceBandIndex }
+        { type: 'resistanceBand', index: resistanceBandIndex },
+        { type: 'flexibility', index: flexibilityIndex }
       ].filter(e => e.index !== -1);
 
       if (equipmentPriority.length > 0) {
@@ -520,6 +531,8 @@ export class ExerciseService {
       }
     }
 
+    if (nameLower.includes('flexibility') || nameLower.includes('stretch') || categoryLower.includes('flexibility')) return 'flexibility';
+    if (nameLower.includes('yoga') || nameLower.includes('relax') || categoryLower.includes('yoga') || categoryLower.includes('relax')) return 'yoga';
     if (nameLower.includes('barbell')) return 'barbell';
     if (nameLower.includes('dumbbell') || nameLower.includes('db ')) return 'dumbbell';
     if (nameLower.includes('kettlebell')) return 'kettlebell';

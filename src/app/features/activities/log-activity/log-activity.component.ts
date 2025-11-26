@@ -14,6 +14,7 @@ import { ActivityLog } from '../../../core/models/activity-log.model';
 import { PremiumFeature, SubscriptionService } from '../../../core/services/subscription.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LocationService } from '../../../core/services/location.service';
+import { PeopleService } from '../../../core/services/people.service';
 
 export function timeOrderValidator(startTimeKey: string, endTimeKey: string): (group: AbstractControl) => ValidationErrors | null {
     return (group: AbstractControl): ValidationErrors | null => {
@@ -37,6 +38,7 @@ export class LogActivityComponent implements OnInit {
     // --- Injected Services ---
     private fb = inject(FormBuilder);
     protected activityService = inject(ActivityService);
+    protected peopleService = inject(PeopleService);
     protected locationService = inject(LocationService);
     private toastService = inject(ToastService);
     private router = inject(Router);
@@ -231,7 +233,7 @@ export class LogActivityComponent implements OnInit {
     }
 
     getActivityPeople(): string[] {
-        return this.activityService.getActivityPeople();
+        return this.peopleService.getAllPeople();
     }
 
     // for autocomplete
@@ -275,14 +277,8 @@ export class LogActivityComponent implements OnInit {
     }
 
     // Called on Enter or selection from datalist
-    addPersonFromInput(event?: Event): void {
-        // Get the value directly from the input element
-        let name = '';
-        if (event && event.target) {
-            name = (event.target as HTMLInputElement).value.trim();
-        } else {
-            name = this.peopleInput.trim();
-        }
+    addPersonFromInput(name: string): void {
+        name = name.trim();
         if (!name) return;
         const current = this.f['people'].value as string[];
         if (!current.includes(name)) {

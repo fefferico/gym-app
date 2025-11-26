@@ -4,17 +4,19 @@
  * Defines the categories for various physical activities.
  */
 export const ACTIVITY_CATEGORIES = [
-  'Team Sports',
-  'Individual Sports',
-  'Outdoor & Adventure',
-  'Fitness & Classes',
-  'Mind & Body',
-  'Recreational & Leisure',
-  'Home & Lifestyle',
-  'Other'
+  { key: 'teamSports', label: 'Team Sports' },
+  { key: 'individualSports', label: 'Individual Sports' },
+  { key: 'outdoorAdventure', label: 'Outdoor & Adventure' },
+  { key: 'fitnessClasses', label: 'Fitness & Classes' },
+  { key: 'mindBody', label: 'Mind & Body' },
+  { key: 'recreationalLeisure', label: 'Recreational & Leisure' },
+  { key: 'homeLifestyle', label: 'Home & Lifestyle' },
+  { key: 'other', label: 'Other' }
 ] as const;
 
-export type ActivityCategory = typeof ACTIVITY_CATEGORIES[number];
+export type ActivityCategoryKey = typeof ACTIVITY_CATEGORIES[number]['key'];
+export type ActivityCategoryLabel = typeof ACTIVITY_CATEGORIES[number]['label'];
+
 export type IntensityLevel = 'Low' | 'Medium' | 'High';
 
 /**
@@ -42,7 +44,8 @@ export interface Activity {
   description: string;
 
   /** The category the activity belongs to. */
-  category: ActivityCategory;
+  categoryKey: ActivityCategoryKey;
+  category: ActivityCategoryLabel;
 
   /** The name of an icon to represent the activity in the UI. */
   iconName: string;

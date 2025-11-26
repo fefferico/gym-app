@@ -444,11 +444,15 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     }
   }
 
-  viewRoutineDetails(routineId: string | undefined): void {
+  viewRoutineDetails(routineId: string | undefined, programId?: string | undefined): void {
     if (routineId) {
       setTimeout(() => {
         this.workoutService.vibrate();
-        this.router.navigate(['/workout/routine/view', routineId]);
+        if (programId){
+            this.router.navigate(['/workout/routine/view', routineId], { queryParams: { programId: programId } });
+        } else {
+          this.router.navigate(['/workout/routine/view', routineId]);
+        }
       }, this.bumpTimeOut);
     }
   }

@@ -1314,8 +1314,14 @@ export class TrackingService {
 
   public getWorkoutLocations(): string[] {
     const locations = this.getAllWorkoutLogs()
-      .map(workoutLog => workoutLog.locationName || '')
-      .filter(location => location.trim() !== '');
+      .map(workoutLog => (workoutLog.locationName || '').trim())
+      .filter(location => location !== '')
+      .map(location => {
+        // Lowercase, then titlecase each word
+        return location
+          .toLowerCase()
+          .replace(/\b\w/g, char => char.toUpperCase());
+      });
     return Array.from(new Set(locations));
   }
 

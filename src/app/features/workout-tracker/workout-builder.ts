@@ -386,6 +386,29 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       })
     );
 
+    // to populate lastLoggedRoutineInfo
+    this.subscriptions.add(
+      this.trackingService.workoutLogs$.subscribe(logs => {
+        // Map: routineId -> { duration, name, startTime }
+        const info: { [id: string]: { duration: number, name: string, startTime: number | null } } = {};
+        logs.forEach(log => {
+          if (!log.routineId) return;
+          // Only keep the latest log for each routine
+          if (
+            !info[log.routineId] ||
+            (log.startTime && log.startTime > (info[log.routineId].startTime ?? 0))
+          ) {
+            info[log.routineId] = {
+              duration: log.durationMinutes ?? 0,
+              name: log.routineName ?? '',
+              startTime: log.startTime ?? null
+            };
+          }
+        });
+        this.lastLoggedRoutineInfo.set(info);
+      })
+    );
+
     this.routeSub = this.route.data.pipe(
       switchMap(data => {
         this.isGeneratedRoutine.set(false);

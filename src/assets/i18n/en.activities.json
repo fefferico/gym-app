@@ -1,0 +1,37 @@
+{
+    "activities": {
+        "football": "Football",
+        "basketball": "Basketball",
+        "volleyball": "Volleyball",
+        "baseball": "Baseball",
+        "running": "Running",
+        "swimming": "Swimming",
+        "cycling": "Cycling",
+        "tennis": "Tennis",
+        "golf": "Golf",
+        "hiking": "Hiking",
+        "rockClimbing": "Rock Climbing",
+        "skiing": "Skiing",
+        "kayaking": "Kayak",
+        "yoga": "Yoga",
+        "pilates": "Pilates",
+        "hiitClass": "HIIT",
+        "spinning": "Spinning",
+        "meditation": "Meditazione",
+        "stretching": "Stretching",
+        "walking": "Camminata",
+        "dancing": "Danza (Sociale)",
+        "gardening": "Giardinaggio",
+        "heavyChores": "Lavori pesanti",
+        "activityCategories": {
+            "teamSports": "Team Sports",
+            "individualSports": "Individual Sports",
+            "outdoorAdventure": "Outdoor & Adventure",
+            "fitnessClasses": "Fitness & Classes",
+            "mindBody": "Mind & Body",
+            "recreationalLeisure": "Recreational & Leisure",
+            "homeLifestyle": "Home & Lifestyle",
+            "other": "Other"
+        }
+    }
+}

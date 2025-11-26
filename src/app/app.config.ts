@@ -149,6 +149,7 @@ export const appConfig: ApplicationConfig = {
               { prefix: './assets/i18n/', suffix: '.exercises.json' },
               { prefix: './assets/i18n/', suffix: '.equipments.json' },
               { prefix: './assets/i18n/', suffix: '.categories.json' },
+              { prefix: './assets/i18n/', suffix: '.activities.json' },
               { prefix: './assets/i18n/', suffix: '.workout-categories.json' },
               { prefix: './assets/i18n/', suffix: '.locations.json' },
               { prefix: './assets/i18n/', suffix: '.muscles.json' },

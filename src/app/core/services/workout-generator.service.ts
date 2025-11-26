@@ -11,6 +11,7 @@ import { WorkoutService } from './workout.service'; // Import WorkoutService
 import { ToastService } from './toast.service';
 import { distanceToExact, durationToExact, repsNumberToExactRepsTarget, restToExact, weightToExact } from './workout-helper.service';
 import { EXERCISE_CATEGORY_TYPES } from '../models/exercise-category.model';
+import { TranslateService } from '@ngx-translate/core';
 
 // Interface for the detailed generation options
 export interface WorkoutGenerationOptions {
@@ -33,6 +34,7 @@ export class WorkoutGeneratorService {
     private personalGymService = inject(PersonalGymService);
     private workoutService = inject(WorkoutService); // Inject WorkoutService
     private toastService = inject(ToastService); // Inject WorkoutService
+    private translate = inject(TranslateService);
 
     /**
     * --- REWRITTEN METHOD ---
@@ -150,11 +152,11 @@ export class WorkoutGeneratorService {
 
     private async getSelectableExercises(options: WorkoutGenerationOptions): Promise<Exercise[]> {
         const allExercises = await firstValueFrom(this.exerciseService.getExercises());
-        let availableExercises = allExercises.filter(ex => !ex.isHidden && !ex.categories.some(cat => cat === EXERCISE_CATEGORY_TYPES.stretching));
+        let availableExercises = allExercises.filter(ex => !ex.isHidden && !ex.categories?.some(cat => cat === EXERCISE_CATEGORY_TYPES.stretching));
 
         // --- Category filtering ---
         if (options.exerciseCategory && options.exerciseCategory) {
-            availableExercises = availableExercises.filter(ex => ex.categories.some(cat => cat === options.exerciseCategory));
+            availableExercises = availableExercises.filter(ex => ex.categories?.some(cat => cat === options.exerciseCategory));
         }
 
         // Determine equipment filter values, all lowercased for consistent comparison
@@ -170,7 +172,7 @@ export class WorkoutGeneratorService {
         if (equipmentFilterValues.length > 0) {
             availableExercises = availableExercises.filter(ex => {
                 // Always include exercises that don't require any specific equipment
-                if (ex.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.bodyweightCalisthenics) !== undefined || (!ex.equipment && (!ex.equipmentNeeded || ex.equipmentNeeded.length === 0))) {
+                if (ex.categories?.find(cat => cat === EXERCISE_CATEGORY_TYPES.bodyweightCalisthenics) !== undefined || (!ex.equipment && (!ex.equipmentNeeded || ex.equipmentNeeded.length === 0))) {
                     return true;
                 }
 
@@ -252,7 +254,7 @@ export class WorkoutGeneratorService {
         // This inherently respects all exclusions applied by getSelectableExercises.
         const equipmentGoals = new Set<string>();
         allValidExercises.forEach(ex => {
-            if (ex.equipment && ex.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.bodyweightCalisthenics) === undefined) {
+            if (ex.equipment && ex.categories?.find(cat => cat === EXERCISE_CATEGORY_TYPES.bodyweightCalisthenics) === undefined) {
                 equipmentGoals.add(ex.equipment.toLowerCase());
             }
             // Also consider the equipmentNeeded array if it exists
@@ -503,11 +505,11 @@ export class WorkoutGeneratorService {
             return null;
         }
 
-        const routineName = `Generated ${options.split.replace('-', ' ')} Workout`;
+        const routineName = this.translate.instant('workoutGenerator.routineName', { split: options.split.replace('-', ' ') });
         const newRoutine: Routine = {
             id: `generated-${uuidv4()}`,
             name: routineName,
-            description: `Generated on ${new Date().toLocaleDateString()} for a ~${options.duration} minute, ${options.goal}-focused session.`,
+            description: this.translate.instant('workoutGenerator.routineDescription', { date: new Date().toLocaleDateString(), duration: options.duration, goal: this.translate.instant(`workoutBuilder.goals.${options.goal}`) }),
             exercises: generatedExercises,
             goal: options.goal,
             isFavourite: false,

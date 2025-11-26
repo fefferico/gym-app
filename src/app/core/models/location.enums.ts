@@ -44,6 +44,17 @@ export enum SpecificLocation {
   INDOOR_POOL = 'INDOOR_POOL',
   OUTDOOR_POOL = 'OUTDOOR_POOL',
   OPEN_WATER = 'OPEN_WATER'
+
+  ,
+  // Other / Sports
+  SPORTS_HALL = 'SPORTS_HALL',
+  SPORTS_FIELD = 'SPORTS_FIELD',
+  TENNIS_COURT = 'TENNIS_COURT',
+  BASKETBALL_COURT = 'BASKETBALL_COURT',
+  FOOTBALL_FIELD = 'FOOTBALL_FIELD',
+  CLIMBING_GYM = 'CLIMBING_GYM',
+  SKATE_PARK = 'SKATE_PARK',
+  ICE_RINK = 'ICE_RINK'
 }
 
 export enum SurfaceType {
@@ -51,7 +62,8 @@ export enum SurfaceType {
   HARD = 'HARD',       // Concrete, Tile, Wood
   RUBBER = 'RUBBER',   // Gym floor, Track
   UNEVEN = 'UNEVEN',   // Trail
-  WATER = 'WATER'
+  WATER = 'WATER',
+  ICE = 'ICE',
 }
 
 export enum SpaceSize {
