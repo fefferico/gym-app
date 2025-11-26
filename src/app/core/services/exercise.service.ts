@@ -485,11 +485,11 @@ export class ExerciseService {
     // Build a string containing all categories (ids and labels) in lowercase for icon detection
     const categoryLower = [
       ...(Array.isArray(baseExercise?.categories)
-      ? baseExercise.categories.map(cat => (cat?.toString() || ''))
-      : [String(baseExercise?.categories) || '']),
+        ? baseExercise.categories.map(cat => (cat?.toString() || ''))
+        : [String(baseExercise?.categories) || '']),
       ...(Array.isArray((baseExercise as any)?.categoryLabels)
-      ? (baseExercise as any).categoryLabels.map((label: string) => label || '')
-      : [(baseExercise as any)?.categoryLabels || ''])
+        ? (baseExercise as any).categoryLabels.map((label: string) => label || '')
+        : [(baseExercise as any)?.categoryLabels || ''])
     ].join(' ').toLowerCase();
 
     if (baseExercise && (baseExercise.equipment || baseExercise.equipmentNeeded)) {
@@ -721,6 +721,14 @@ export class ExerciseService {
           : [importedExercise.equipment];
         // Optionally delete the old field
         delete importedExercise.equipment;
+      }
+
+      // --- Ensure mapping of legacy "category" to "categories" if present ---
+      if (!importedExercise.categories && importedExercise.category) {
+        importedExercise.categories = Array.isArray(importedExercise.category)
+          ? importedExercise.category
+          : [importedExercise.category];
+        delete importedExercise.category;
       }
 
       if (exerciseMap.has(importedExercise.id)) {
