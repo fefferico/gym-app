@@ -563,30 +563,29 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     ).subscribe(async (routine) => {
       if (this.isDestroyed) { return; }
       if (routine) {
-
         // We capture the routine before adjustments so we can apply them to a copy
         let routineForSession = JSON.parse(JSON.stringify(routine)) as Routine;
 
         // When in True Gym Mode, ensure all non-cardio exercises have weight and reps fields.
-        if (this.appSettingsService.isTrueGymMode()) {
-          const exercisesMap = new Map(this.availableExercises.map(ex => [ex.id, ex]));
+        // if (this.appSettingsService.isTrueGymMode()) {
+        const exercisesMap = new Map(this.availableExercises.map(ex => [ex.id, ex]));
 
-          routineForSession.exercises.forEach(exercise => {
-            const baseExercise = exercisesMap.get(exercise.exerciseId);
-            if (baseExercise) {
-              exercise.sets.forEach(set => {
-                if (baseExercise?.categories?.find(cat => cat === EXERCISE_CATEGORY_TYPES.cardio) === undefined) {
-                  // For non-cardio, ensure weight and reps fields are present
-                  this._ensureMetricInSet(set, METRIC.reps, 8); // Default 8 reps
-                  this._ensureMetricInSet(set, METRIC.weight, 10); // Default 10 weight
-                } else {
-                  // For cardio, ensure the duration field is present
-                  this._ensureMetricInSet(set, METRIC.duration, 300); // Default 300s (5 min)
-                }
-              });
-            }
-          });
-        }
+        routineForSession.exercises.forEach(exercise => {
+          const baseExercise = exercisesMap.get(exercise.exerciseId);
+          if (baseExercise) {
+            exercise.sets.forEach(set => {
+              if (baseExercise?.categories?.find(cat => cat === EXERCISE_CATEGORY_TYPES.cardio) === undefined) {
+                // For non-cardio, ensure weight and reps fields are present
+                this._ensureMetricInSet(set, METRIC.reps, 8); // Default 8 reps
+                this._ensureMetricInSet(set, METRIC.weight, 10); // Default 10 weight
+              } else {
+                // For cardio, ensure the duration field is present
+                this._ensureMetricInSet(set, METRIC.duration, 300); // Default 300s (5 min)
+              }
+            });
+          }
+        });
+        // }
 
         const lastLogArray = await firstValueFrom(this.trackingService.getLogsForRoutine(routine.id, 1));
         const lastLog = lastLogArray.length > 0 ? lastLogArray[0] : null;
@@ -635,14 +634,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         }
         this.startWorkout();
       } else {
-        const emptyNewRoutine = {
-          name: this.translate.instant('pausedWorkout.defaultRoutineName'),
-          createdAt: new Date().toISOString(),
-          goal: 'custom',
-          exercises: [] as WorkoutExercise[],
-        } as Routine;
-        this.routine.set(emptyNewRoutine);
-        this.startWorkout();
+        // COMPLETELY NEW ROUTINE
+        this.showCreationWizard();
       }
     });
   }
@@ -1155,28 +1148,28 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return this._formatSingleSecondValue(totalSeconds);
   }
 
-  toggleExerciseExpansion(index: number): void {
-    const isOpening = this.expandedExerciseIndex() !== index;
-    this.expandedExerciseIndex.update(current => (isOpening ? index : null));
+  toggleExerciseExpansion(exIndex: number): void {
+    const isOpening = this.expandedExerciseIndex() !== exIndex;
+    this.expandedExerciseIndex.update(current => (isOpening ? exIndex : null));
 
     if (isOpening) {
-      const exercise = this.routine()?.exercises[index];
+      const exercise = this.routine()?.exercises[exIndex];
       if (exercise) {
         // If it's a superset, handle round expansion
-        if (this.isSupersetStart(index)) {
-          const firstIncompleteRoundIndex = exercise.sets.findIndex((set, roundIdx) => !this.isRoundCompleted(index, roundIdx));
+        if (this.isSupersetStart(exIndex)) {
+          const firstIncompleteRoundIndex = exercise.sets.findIndex((set, roundIdx) => !this.isRoundCompleted(exIndex, roundIdx));
           const newExpandedRounds = new Set<string>();
           if (firstIncompleteRoundIndex > -1) {
-            newExpandedRounds.add(`${index}-${firstIncompleteRoundIndex}`);
+            newExpandedRounds.add(`${exIndex}-${firstIncompleteRoundIndex}`);
           }
           this.expandedRounds.set(newExpandedRounds);
         }
         // If it's a standard exercise, handle set expansion
-        else if (!this.isSuperSet(index)) {
-          const firstIncompleteSetIndex = exercise.sets.findIndex((set, setIdx) => !this.isSetCompleted(index, setIdx, 0));
+        else if (!this.isSuperSet(exIndex)) {
+          const firstIncompleteSetIndex = exercise.sets.findIndex((set, setIdx) => !this.isSetCompleted(exIndex, setIdx, 0));
           const newExpandedSets = new Set<string>();
           if (firstIncompleteSetIndex > -1) {
-            newExpandedSets.add(`${index}-${firstIncompleteSetIndex}`);
+            newExpandedSets.add(`${exIndex}-${firstIncompleteSetIndex}`);
           }
           // EXPAND FIRST SET
           // this.expandedSets.set(newExpandedSets);
@@ -1191,9 +1184,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         afterNextRender(() => {
 
           requestAnimationFrame(() => {
-            const exercise = this.routine()?.exercises[index];
+            const exercise = this.routine()?.exercises[exIndex];
             const headerElement = this.header?.nativeElement;
-            const cardElement = document.querySelector(`[data-exercise-index="${index}"]`) as HTMLElement;
+            const cardElement = document.querySelector(`[data-exercise-index="${exIndex}"]`) as HTMLElement;
 
             if (!cardElement || !headerElement || !exercise) {
               return; // Failsafe
@@ -1202,21 +1195,17 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
             let targetElement: HTMLElement | null = null;
 
             // Check if any sets for THIS specific exercise have been logged.
-            const hasLoggedSetsForThisExercise = this.getExerciseTotalLoggedSets(index) > 0;
+            const hasLoggedSetsForThisExercise = this.getExerciseTotalLoggedSets(exIndex) > 0;
 
             // --- SCROLL LOGIC ---
-            // If sets HAVE been logged, find the first uncompleted one to scroll to.
-            if (false) {
-
-            }
             if (hasLoggedSetsForThisExercise) {
-              if (this.isSupersetStart(index)) {
-                const targetRoundIndex = exercise.sets.findIndex((set, roundIdx) => !this.isRoundCompleted(index, roundIdx));
+              if (this.isSupersetStart(exIndex)) {
+                const targetRoundIndex = exercise.sets.findIndex((set, roundIdx) => !this.isRoundCompleted(exIndex, roundIdx));
                 if (targetRoundIndex > -1) {
                   targetElement = cardElement.querySelector(`[data-round-index="${targetRoundIndex}"]`);
                 }
-              } else if (!this.isSuperSet(index)) {
-                const targetSetIndex = exercise.sets.findIndex((set, setIdx) => !this.isSetCompleted(index, setIdx, 0));
+              } else if (!this.isSuperSet(exIndex)) {
+                const targetSetIndex = exercise.sets.findIndex((set, setIdx) => !this.isSetCompleted(exIndex, setIdx, 0));
                 if (targetSetIndex > -1) {
                   targetElement = cardElement.querySelector(`[data-set-index="${targetSetIndex}"]`);
                 }
@@ -1239,7 +1228,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
               scrollTopPosition = cardTopPosition - headerHeight - 10;
             }
 
-            window.scrollTo({ top: scrollTopPosition, behavior: 'smooth' });
+            // window.scrollTo({ top: scrollTopPosition, behavior: 'smooth' });
+            this.scrollCurrentElementIntoView(exIndex, undefined);
           });
         });
       });
@@ -2878,15 +2868,34 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           const setElement = cardElement?.querySelector(`[data-set-index="${setIndex}"]`) as HTMLElement;
           const headerElement = this.header?.nativeElement;
 
-          if (setElement && headerElement) {
-            const headerHeight = headerElement.offsetHeight;
-            const elementTopPosition = setElement.getBoundingClientRect().top + window.scrollY;
-            const scrollTopPosition = elementTopPosition - headerHeight - 15; // 15px top padding
-            window.scrollTo({ top: scrollTopPosition, behavior: 'smooth' });
-          }
+          // This logic scrolled too much
+          // if (setElement && headerElement) {
+          //   const headerHeight = headerElement.offsetHeight;
+          //   const elementTopPosition = setElement.getBoundingClientRect().top + window.scrollY;
+          //   const scrollTopPosition = elementTopPosition - headerHeight - 15; // 15px top padding
+          //   window.scrollTo({ top: scrollTopPosition, behavior: 'smooth' });
+          // }
+          this.scrollCurrentElementIntoView(undefined, setIndex);
         });
       });
     });
+  }
+
+  scrollCurrentElementIntoView(exIndex: number | undefined, setIndex: number | undefined): void {
+    const exerciseSelector = `[data-exercise-index="${exIndex}"]`;
+    const setSelector = `[data-set-index="${setIndex}"]`;
+    let element = null;
+    if (setIndex !== undefined){
+      element = document.querySelector(setSelector) as HTMLElement | null;
+    } else {
+      element = document.querySelector(exerciseSelector) as HTMLElement | null;
+    }
+    if (element && typeof element.scrollIntoView === 'function') {
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
   }
 
   /**
@@ -6641,6 +6650,158 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     // Implement the logic to determine if the current theme is dark
     // This is a placeholder implementation
     return this.themeService.isDarkTheme();
+  }
+
+
+  /**
+   * Shows a wizard to create a new routine from a template or blank.
+   * Adapted for the current routine structure (signals, not forms).
+   */
+  async showCreationWizard(): Promise<void> {
+    // Step 0: Template or Blank
+    const templateResult = await this.alertService.showPromptDialog(
+      this.translate.instant('workoutBuilder.wizard.templateOrBlankTitle'),
+      this.translate.instant('workoutBuilder.wizard.templateOrBlankMsg'),
+      [
+        {
+          name: 'routineTemplate',
+          type: 'radio',
+          label: this.translate.instant('workoutBuilder.wizard.templateOrBlankLabel'),
+          value: 'blank',
+          options: [
+            { label: 'Blank (Custom)', value: 'blank' },
+            { label: '3x3', value: '3x3' },
+            { label: '5x5', value: '5x5' },
+            { label: 'Push/Pull/Legs', value: 'ppl' },
+            { label: '5/3/1', value: '531' }
+          ],
+          required: true
+        }
+      ],
+      this.translate.instant('alertService.buttons.ok')
+    );
+
+    // IF NO WIZARD START COMPLETELY EMPTY WORKOUT
+    if (!templateResult || !templateResult['routineTemplate']) {
+      const emptyNewRoutine = {
+        name: this.translate.instant('pausedWorkout.defaultRoutineName'),
+        createdAt: new Date().toISOString(),
+        goal: 'custom',
+        exercises: [] as WorkoutExercise[],
+      } as Routine;
+      this.routine.set(emptyNewRoutine);
+      this.startWorkout();
+      return;
+    };
+
+    const routineTemplate = String(templateResult['routineTemplate']);
+    if (routineTemplate !== 'blank') {
+      await this.createRoutineFromTemplate(routineTemplate);
+      return;
+    }
+
+    // Step 1: Routine Name
+    const nameResult = await this.alertService.showPromptDialog(
+      this.translate.instant('workoutBuilder.routineBuilder.nameLabel'),
+      this.translate.instant('workoutBuilder.routineBuilder.nameWizardMsg'),
+      [
+        {
+          name: 'routineName',
+          type: 'text',
+          label: this.translate.instant('workoutBuilder.routineBuilder.nameLabel'),
+          placeholder: this.translate.instant('workoutBuilder.routineBuilder.namePlaceholder'),
+          required: false,
+          autofocus: true
+        }
+      ],
+      this.translate.instant('alertService.buttons.ok')
+    );
+    if (!nameResult) return;
+    if (!nameResult['routineName']) {
+      nameResult['routineName'] = this.translate.instant('pausedWorkout.defaultRoutineName');
+    }
+
+    // Step 2: Routine Goal
+    const routineGoals = [
+      { value: 'hypertrophy', label: 'workoutBuilder.goals.hypertrophy' },
+      { value: 'strength', label: 'workoutBuilder.goals.strength' },
+      { value: 'endurance', label: 'workoutBuilder.goals.muscularEndurance' },
+      { value: 'custom', label: 'workoutBuilder.goals.custom' }
+    ];
+    const goalResult = await this.alertService.showPromptDialog(
+      this.translate.instant('workoutBuilder.routineBuilder.goalLabel'),
+      this.translate.instant('workoutBuilder.routineBuilder.goalWizardMsg'),
+      [
+        {
+          name: 'routineGoal',
+          type: 'select',
+          label: this.translate.instant('workoutBuilder.routineBuilder.goalLabel'),
+          value: 'hypertrophy',
+          options: routineGoals.map(g => ({
+            label: this.translate.instant(g.label),
+            value: g.value
+          })),
+          required: true
+        }
+      ],
+      this.translate.instant('alertService.buttons.ok')
+    );
+    if (!goalResult || !goalResult['routineGoal']) return;
+
+    // Set the routine signal with the new blank routine
+    this.routine.set({
+      name: nameResult['routineName'] as string,
+      goal: goalResult['routineGoal'],
+      exercises: [] as WorkoutExercise[],
+      createdAt: new Date().toISOString()
+    } as Routine);
+    this._prefillPerformanceInputs();
+
+    this.originalRoutineSnapshot.set(this.routine());
+    this.cdr.detectChanges();
+    this.startWorkout();
+    this.toastService.success(this.translate.instant('workoutBuilder.wizard.templateCreated'), 3000);
+  }
+
+  /**
+   * Creates a routine from a template and sets it as the current routine.
+   * Adapted for the current routine structure (signals, not forms).
+   */
+  private async createRoutineFromTemplate(template: string) {
+    // Use your WorkoutService's shared method
+    const routines = this.workoutService.generateRoutineFromTemplate(template, this.availableExercises);
+
+    // For PPL/5/3/1, let user pick which routine to use, or just pick the first
+    let routine: Routine;
+    if (routines.length === 1) {
+      routine = routines[0];
+    } else {
+      // Prompt user to pick which routine (e.g. Push, Pull, Legs)
+      const pickResult = await this.alertService.showPromptDialog(
+        this.translate.instant('workoutBuilder.wizard.pickRoutineTitle'),
+        this.translate.instant('workoutBuilder.wizard.pickRoutineMsg'),
+        [
+          {
+            name: 'routinePick',
+            type: 'select',
+            label: this.translate.instant('workoutBuilder.wizard.pickRoutineLabel'),
+            value: routines[0].id,
+            options: routines.map(r => ({ label: r.name, value: r.id })),
+            required: true
+          }
+        ],
+        this.translate.instant('alertService.buttons.ok')
+      );
+      if (!pickResult || !pickResult['routinePick']) return;
+      routine = routines.find(r => r.id === pickResult['routinePick']) || routines[0];
+    }
+
+    // Set the routine signal with the template routine
+    this.routine.set({ ...routine });
+    this.originalRoutineSnapshot.set({ ...routine });
+    this._prefillPerformanceInputs();
+    this.cdr.detectChanges();
+    this.toastService.success(this.translate.instant('workoutBuilder.wizard.templateCreated'), 3000);
   }
 }
 

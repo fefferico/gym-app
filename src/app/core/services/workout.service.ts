@@ -685,7 +685,6 @@ export class WorkoutService {
     if (pausedResult) {
       const pausedRoutineId = pausedResult.routineId || '-1';
       playerRoute = this.checkPlayerMode(pausedRoutineId);
-      // this.removePausedWorkout();
       this.router.navigate([playerRoute, pausedRoutineId], { queryParams: { resume: 'true' } });
     } else {
       this.router.navigate([playerRoute, newRoutineId], params ? params : {});
@@ -1378,34 +1377,34 @@ export class WorkoutService {
       case '3x3':
         return [
           createRoutine('3x3', [
-            { idOrName: 'barbell-squat', sets: [createSet(3, 100), createSet(3, 100), createSet(3, 100)] },
-            { idOrName: 'barbell-bench-press', sets: [createSet(3, 80), createSet(3, 80), createSet(3, 80)] },
-            { idOrName: 'bent-over-row-barbell', sets: [createSet(3, 70), createSet(3, 70), createSet(3, 70)] }
+            { idOrName: 'barbell-squat', sets: [createSet(3, 40), createSet(3, 40), createSet(3, 40)] },
+            { idOrName: 'barbell-bench-press', sets: [createSet(3, 20), createSet(3, 20), createSet(3, 20)] },
+            { idOrName: 'bent-over-row-barbell', sets: [createSet(3, 30), createSet(3, 30), createSet(3, 30)] }
           ])
         ];
       case '5x5':
         return [
           createRoutine('5x5', [
-            { idOrName: 'barbell-squat', sets: Array(5).fill(null).map(() => createSet(5, 90)) },
-            { idOrName: 'barbell-bench-press', sets: Array(5).fill(null).map(() => createSet(5, 70)) },
-            { idOrName: 'bent-over-row-barbell', sets: Array(5).fill(null).map(() => createSet(5, 60)) }
+            { idOrName: 'barbell-squat', sets: Array(5).fill(null).map(() => createSet(5, 40)) },
+            { idOrName: 'barbell-bench-press', sets: Array(5).fill(null).map(() => createSet(5, 20)) },
+            { idOrName: 'bent-over-row-barbell', sets: Array(5).fill(null).map(() => createSet(5, 30)) }
           ])
         ];
       case 'ppl':
         return [
           createRoutine('Push', [
-            { idOrName: 'barbell-bench-press', sets: [createSet(8, 60), createSet(8, 60), createSet(8, 60)] },
+            { idOrName: 'barbell-bench-press', sets: [createSet(8, 20), createSet(8, 20), createSet(8, 20)] },
             { idOrName: 'barbell-military-press', sets: [createSet(10, 40), createSet(10, 40)] },
             { idOrName: 'bench-dips', sets: [createSet(12, 'bodyweight'), createSet(12, 'bodyweight')] }
           ]),
           createRoutine('Pull', [
-            { idOrName: 'bent-over-row-barbell', sets: [createSet(8, 50), createSet(8, 50), createSet(8, 50)] },
+            { idOrName: 'bent-over-row-barbell', sets: [createSet(8, 30), createSet(8, 30), createSet(8, 30)] },
             { idOrName: 'pull-up', sets: [createSet(8, 'bodyweight'), createSet(8, 'bodyweight')] },
             { idOrName: 'barbell-bicep-curl', sets: [createSet(12, 20), createSet(12, 20)] }
           ]),
           createRoutine('Legs', [
-            { idOrName: 'barbell-squat', sets: [createSet(10, 70), createSet(10, 70), createSet(10, 70)] },
-            { idOrName: 'barbell-deadlift', sets: [createSet(6, 100), createSet(6, 100)] },
+            { idOrName: 'barbell-squat', sets: [createSet(10, 40), createSet(10, 40), createSet(10, 40)] },
+            { idOrName: 'barbell-deadlift', sets: [createSet(6, 40), createSet(6, 40)] },
             { idOrName: 'leg-curl-machine', sets: [createSet(12, 30), createSet(12, 30)] }
           ])
         ];

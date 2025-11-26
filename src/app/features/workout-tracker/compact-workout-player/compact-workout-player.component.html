@@ -324,8 +324,6 @@
               <!-- CASE 1: Standard Exercise (Not a Superset) -->
               <ng-container *ngIf="!isSuperSet(exIndex)">
                 <ng-container *ngFor="let set of exercise.sets; let setIndex = index">
-
-
                   <!-- START: Set Card Layout -->
                   <div [attr.data-set-index]="setIndex" #setCard [ngClass]="getSetClasses(exIndex, setIndex, set)"
                     appClickOutside (clickOutside)="closeSetActionMenu()">
@@ -591,7 +589,7 @@
                             </button>
                           </div>
                         </div>
-                        <div *ngIf="getSetType(exIndex, setIndex)" class="flex justify-start w-full">
+                        <!-- <div *ngIf="getSetType(exIndex, setIndex)" class="flex justify-start w-full">
                           <div class="w-full px-1">
                             <label [for]="'setType-exp-' + getSetOrderId(exIndex,setIndex)"
                               class="block text-s font-medium text-gray-600 dark:text-gray-400">{{
@@ -605,7 +603,7 @@
                                 }}</option>
                             </select>
                           </div>
-                        </div>
+                        </div> -->
                       </div>
 
                       <!-- Inputs Grid -->
