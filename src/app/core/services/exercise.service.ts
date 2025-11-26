@@ -1137,7 +1137,7 @@ export class ExerciseService {
               this.equipmentService.getTranslatedEquipment(),
               this.exerciseCategoryService.getHydratedCategories(),
             ]).pipe(
-              map(([musclesMap, translatedEquipments]) => {
+              map(([musclesMap, translatedEquipments, hydratedCategories]) => {
                 // Build a map for fast lookup
                 const translatedEquipmentMap = new Map(translatedEquipments.map(eq => [eq.id, eq]));
 
@@ -1171,7 +1171,7 @@ export class ExerciseService {
                   muscleGroups,
                   equipmentNeeded: (equipmentNeeded || []) as HydratedEquipment[],
                   categories: (translatedExercise.categories || []) as EXERCISE_CATEGORY_TYPES[],
-                  categoryLabels: translatedExercise.categories.map(cat => cat.toString()).join(', ')
+                  categoryLabels: translatedExercise.categoryLabels ?? ''
                 };
               })
             )

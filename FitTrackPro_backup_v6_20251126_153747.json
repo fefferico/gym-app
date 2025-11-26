@@ -1,6 +1,6 @@
 {
   "version": 6,
-  "timestamp": "2025-11-26T13:40:02.459Z",
+  "timestamp": "2025-11-26T14:37:47.461Z",
   "profile": {
     "isPremium": true,
     "username": "Fede",
@@ -18630,7 +18630,6 @@
   "exercises": [
     {
       "description": "Piega e salta",
-      "category": "custom",
       "muscleGroups": [],
       "primaryMuscleGroup": "",
       "imageUrls": [],
@@ -18641,13 +18640,15 @@
       "createdAt": "2025-10-24T06:59:26.313Z",
       "updatedAt": "2025-10-24T06:59:26.313Z",
       "lastUsedAt": "2025-10-23",
-      "lastUsedLogId": "6a31e4a7-b138-49a8-8062-25c8a8263c36"
+      "lastUsedLogId": "6a31e4a7-b138-49a8-8062-25c8a8263c36",
+      "categories": [
+        "custom"
+      ]
     },
     {
       "id": "cable-fly",
       "name": "Cable Fly (Standing - High, Mid, or Low)",
       "description": "An isolation exercise for the chest using a cable machine, allowing for various angles to target different parts of the chest.",
-      "category": "cables",
       "primaryMuscleGroup": "chest",
       "muscleGroups": [],
       "equipmentNeeded": [
@@ -18662,11 +18663,13 @@
       "lastUsedLogId": "025a6e74-8ae6-4817-bbe1-0b94b3d09ba0",
       "videoUrl": "",
       "notes": "",
-      "updatedAt": "2025-10-24T15:49:04.909Z"
+      "updatedAt": "2025-10-24T15:49:04.909Z",
+      "categories": [
+        "cables"
+      ]
     },
     {
       "description": "",
-      "category": "bodyweightCalisthenics",
       "muscleGroups": [],
       "primaryMuscleGroup": "",
       "imageUrls": [],
@@ -18675,13 +18678,15 @@
       "isCustom": true,
       "isHidden": false,
       "createdAt": "2025-08-30T22:16:44.194Z",
-      "updatedAt": "2025-08-30T22:16:44.194Z"
+      "updatedAt": "2025-08-30T22:16:44.194Z",
+      "categories": [
+        "bodyweightCalisthenics"
+      ]
     },
     {
       "id": "double-kettlebell-alternating-clean",
       "name": "Double Kettlebell Alternating Clean",
       "description": "An advanced clean variation where you clean one kettlebell at a time while holding both. This challenges coordination, timing, and core stability as you manage the uneven load.",
-      "category": "kettlebells",
       "primaryMuscleGroup": "fullBody",
       "muscleGroups": [
         "glutes",
@@ -18699,13 +18704,15 @@
       ],
       "notes": "Focus on maintaining a stable torso and avoid rotating as you clean each kettlebell up to the rack position.",
       "videoUrl": "",
-      "updatedAt": "2025-11-20T23:41:12.248Z"
+      "updatedAt": "2025-11-20T23:41:12.248Z",
+      "categories": [
+        "kettlebells"
+      ]
     },
     {
       "id": "double-kettlebell-deadlift-to-swing-complex",
       "name": "Double Kettlebell Deadlift to Swing",
       "description": "A two-part movement that teaches the transition from a powerful deadlift into an explosive swing, reinforcing the hip hinge pattern under heavy load.",
-      "category": "kettlebells",
       "primaryMuscleGroup": "hamstrings",
       "muscleGroups": [
         "hamstrings",
@@ -18723,13 +18730,15 @@
       ],
       "notes": "Perform a powerful double kettlebell deadlift. From the top position, hinge and transition immediately into a double kettlebell swing.",
       "videoUrl": "",
-      "updatedAt": "2025-11-15T13:43:49.795Z"
+      "updatedAt": "2025-11-15T13:43:49.795Z",
+      "categories": [
+        "kettlebells"
+      ]
     },
     {
       "id": "dumbbell-incline-fly",
       "name": "Dumbbell Incline Fly",
       "description": "An isolation exercise for the upper chest using dumbbells on an incline bench, focusing on the pectoral muscles.",
-      "category": "dumbbells",
       "primaryMuscleGroup": "chest",
       "muscleGroups": [
         "shoulders",
@@ -18747,11 +18756,13 @@
       "lastUsedAt": "2025-09-30",
       "lastUsedLogId": "715c1520-65b3-46df-a839-672b1aafbf09",
       "videoUrl": "",
-      "updatedAt": "2025-11-21T23:24:07.459Z"
+      "updatedAt": "2025-11-21T23:24:07.459Z",
+      "categories": [
+        "dumbbells"
+      ]
     },
     {
       "description": "",
-      "category": "kettlebells",
       "muscleGroups": [
         "back"
       ],
@@ -18767,7 +18778,10 @@
       "isCustom": true,
       "isHidden": false,
       "createdAt": "2025-11-16T15:08:11.074Z",
-      "updatedAt": "2025-11-16T15:08:11.074Z"
+      "updatedAt": "2025-11-16T15:08:11.074Z",
+      "categories": [
+        "kettlebells"
+      ]
     }
   ],
   "workoutLogs": [

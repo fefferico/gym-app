@@ -384,7 +384,13 @@ export class WorkoutGeneratorService {
         let templateSet: Partial<ExerciseTargetSetParams> = {};
 
         // =================== START OF NEW LOGIC ===================
-        if (exercise.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.cardio) !== undefined) {
+        if (exercise.categories && exercise.categories[0] === EXERCISE_CATEGORY_TYPES.yogaPilates) {
+            templateSet = {
+                fieldOrder: [METRIC.reps, METRIC.duration],
+                targetReps: { type: RepsTargetType.range, min: repRange.min, max: repRange.max },
+                targetDuration: durationToExact(duration),
+            };
+        } else if (exercise.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.cardio) !== undefined) {
             templateSet = {
                 fieldOrder: [METRIC.duration, METRIC.distance, METRIC.rest],
                 targetDuration: durationToExact(duration),
@@ -434,7 +440,15 @@ export class WorkoutGeneratorService {
         let sets: ExerciseTargetSetParams[];
         const numSets = 3;
 
-        if (exercise.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.cardio) !== undefined) {
+        if (exercise.categories && exercise.categories[0] === EXERCISE_CATEGORY_TYPES.yogaPilates) {
+            sets = Array.from({ length: numSets }, () => ({
+                id: uuidv4(),
+                type: 'standard',
+                fieldOrder: [METRIC.reps, METRIC.duration],
+                targetReps: repsNumberToExactRepsTarget(10),
+                targetDuration: durationToExact(300),
+            }));
+        } else if (exercise.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.cardio) !== undefined) {
             // Cardio exercises get duration and distance
             sets = Array.from({ length: numSets }, () => ({
                 id: uuidv4(),

@@ -2,14 +2,14 @@
 import {
   Component, inject, OnInit, signal, computed, PLATFORM_ID, OnDestroy,
   ChangeDetectorRef, ElementRef, AfterViewInit, NgZone, ViewChild,
-  HostListener
+  HostListener,
 } from '@angular/core';
-import { CommonModule, DatePipe, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
+import { CommonModule, DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Observable, combineLatest, Subscription, firstValueFrom } from 'rxjs';
 import { map, distinctUntilChanged, take, switchMap } from 'rxjs/operators';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
-import { ExerciseService } from '../../../core/services/exercise.service';
+import { ExerciseService, HydratedExercise } from '../../../core/services/exercise.service';
 import { TrackingService } from '../../../core/services/tracking.service';
 import { AchievedPB, LoggedSet, PersonalBestSet, WorkoutLog } from '../../../core/models/workout-log.model';
 import { Exercise } from '../../../core/models/exercise.model';
@@ -50,6 +50,8 @@ import { ColorsService } from '../../../core/services/colors.service';
 import { BumpClickDirective } from '../../../shared/directives/bump-click.directive';
 import { repsTypeToReps, genRepsTypeFromRepsNumber, getDurationValue, getWeightValue, weightToExact } from '../../../core/services/workout-helper.service';
 import { LocationService } from '../../../core/services/location.service';
+import { CdkVirtualForOf, CdkVirtualScrollViewport, ScrollingModule } from '@angular/cdk/scrolling';
+import { WorkoutUtilsService } from '../../../core/services/workout-utils.service';
 
 
 interface CalendarMonth {
@@ -84,7 +86,7 @@ type EnrichedHistoryListItem = HistoryListItem & {
 @Component({
   selector: 'app-history-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, FormsModule, ReactiveFormsModule, ActionMenuComponent, PressDirective, IconComponent, FabMenuComponent, TranslateModule, BumpClickDirective],
+  imports: [CdkVirtualScrollViewport, CdkVirtualForOf, ScrollingModule, CommonModule, DatePipe, FormsModule, ReactiveFormsModule, ActionMenuComponent, PressDirective, IconComponent, FabMenuComponent, TranslateModule, BumpClickDirective],
   templateUrl: './history-list.html',
   styleUrl: './history-list.scss',
   providers: [DecimalPipe],
@@ -201,6 +203,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   protected activityService = inject(ActivityService);
   protected toastService = inject(ToastService);
   protected workoutService = inject(WorkoutService);
+  protected workoutUtilsService = inject(WorkoutUtilsService);
   private exerciseService = inject(ExerciseService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
@@ -232,7 +235,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   protected allHistoryItems = signal<EnrichedHistoryListItem[]>([]);
   private workoutLogsSubscription: Subscription | undefined;
 
-  availableExercisesForFilter$: Observable<Exercise[]> | undefined;
+  availableExercisesForFilter$: Observable<HydratedExercise[]> | undefined;
   isFilterAccordionOpen = signal(false);
   availableRoutines: Routine[] = [];
   visibleActionsRutineId = signal<string | null>(null);
@@ -334,12 +337,30 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
           return aName.localeCompare(bName);
         });
         break;
-      // case 'lastEdited':
-      //   items = [...items].sort((a, b) => (b.updatedAt ?? b.startTime) - (a.updatedAt ?? a.startTime));
-      //   break;
-      // case 'lastCreated':
-      //   items = [...items].sort((a, b) => (b.createdAt ?? b.startTime) - (a.createdAt ?? a.startTime));
-      //   break;
+      case 'highestVolume':
+        filtered = [...filtered].sort((a, b) => {
+          const aVol = a.itemType === 'workout' ? a.totalVolume ?? 0 : 0;
+          const bVol = b.itemType === 'workout' ? b.totalVolume ?? 0 : 0;
+          return bVol - aVol; // Descending: highest first
+        });
+        break;
+      case 'longestSession':
+        filtered = [...filtered].sort((a, b) => (b.durationMinutes ?? 0) - (a.durationMinutes ?? 0));
+        break;
+      case 'mostExercises':
+        filtered = [...filtered].sort((a, b) => {
+          const aCount = a.itemType === 'workout' ? (a.exercises?.length ?? 0) : 0;
+          const bCount = b.itemType === 'workout' ? (b.exercises?.length ?? 0) : 0;
+          return bCount - aCount;
+        });
+        break;
+      case 'mostPBs':
+        filtered = [...filtered].sort((a, b) => {
+          const bPB = b.itemType === 'workout' ? (b.personalBests ?? 0) : 0;
+          const aPB = a.itemType === 'workout' ? (a.personalBests ?? 0) : 0;
+          return bPB - aPB;
+        });
+        break;
       case 'lastUsed':
       default:
         filtered = [...filtered].sort((a, b) => b.startTime - a.startTime);
@@ -385,8 +406,13 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     return log.exercises.reduce((totalVolume, exercise) => {
       const exerciseVolume = exercise.sets.reduce((volume, set) => {
         // Ensure both reps and weight are valid numbers for calculation
-        if (typeof set.repsLogged === 'number' && typeof set.weightLogged === 'number') {
-          return Math.ceil(volume + (set.repsLogged * set.weightLogged));
+        if (this.workoutUtilsService.getRepsValue(set.repsLogged) !== undefined && this.workoutUtilsService.getWeightValue(set.weightLogged) !== undefined) {
+          const reps = this.workoutUtilsService.getRepsValue(set.repsLogged);
+          const weight = this.workoutUtilsService.getWeightValue(set.weightLogged);
+          if (reps !== undefined && weight !== undefined) {
+            return Math.ceil(volume + (reps * weight));
+          }
+          return volume;
         }
         return volume;
       }, 0);
@@ -596,7 +622,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     this.workoutService.routines$.pipe(take(1)).subscribe(routines => this.availableRoutines = routines);
-    this.availableExercisesForFilter$ = this.exerciseService.getExercises().pipe(
+    this.availableExercisesForFilter$ = this.exerciseService.getHydratedExercises().pipe(
       map(exercises => exercises.sort((a, b) => a.name.localeCompare(b.name)))
     );
     this.trainingProgramService.getAllPrograms().pipe(take(1)).subscribe(programs => {
@@ -660,13 +686,25 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     return enrichedItem;
   }
 
-  private calendarScrollDebounceTimer: any;
-
-
-
+  @ViewChild('calendarScrollSentinel', { static: false }) calendarScrollSentinel!: ElementRef;
+  private calendarObserver: IntersectionObserver | null = null;
   ngAfterViewInit(): void {
-    // HammerJS setup is handled by @ViewChild setter
     this.setupSwipeGestures();
+
+    // Setup IntersectionObserver for fluid infinite scroll
+    if (this.calendarScrollSentinel) {
+      this.calendarObserver = new IntersectionObserver(entries => {
+        if (
+          entries[0].isIntersecting &&
+          this.currentHistoryView() === 'calendar' &&
+          !this.historyCalendarLoading()
+        ) {
+          this.loadNextCalendarMonth();
+        }
+      }, { root: null, threshold: 0.1 });
+
+      this.calendarObserver.observe(this.calendarScrollSentinel.nativeElement);
+    }
   }
 
   setView(view: HistoryListView): void {
@@ -677,10 +715,14 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       enterTransform = (current === 'calendar') ? 'translateX(-100%)' : 'translateX(100%)';
       leaveTransform = (current === 'calendar') ? 'translateX(100%)' : 'translateX(-100%)';
       this.resetFilters();
-    }
-    else {
-      enterTransform = (current === 'list') ? 'translateX(100%)' : 'translateX(-100%)';
-      leaveTransform = (current === 'list') ? 'translateX(-100%)' : 'translateX(100%)';
+
+      // --- Reset calendar months to current + 2 when leaving calendar view ---
+      this.historyCalendarMonths.set([]);
+      this.currentCalendarDate = new Date();
+      this.generateCalendarMonths(this.currentCalendarDate, 3); // current + next 2 months
+    } else {
+      // When leaving list view, clear the virtualScroll reference
+      this.virtualScroll = undefined;
     }
     this.historyViewAnimationParams.set({ value: view, params: { enterTransform, leaveTransform } });
     this.currentHistoryView.set(view);
@@ -803,6 +845,9 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.workoutLogsSubscription?.unsubscribe();
     if (this.hammerInstance) {
       this.hammerInstance.destroy();
+    }
+    if (this.calendarObserver) {
+      this.calendarObserver.disconnect();
     }
   }
 
@@ -960,8 +1005,37 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     return d;
   }
 
+  showBackToTopButton = signal<boolean>(false);
+  private calendarScrollDebounceTimer: any;
+  // @HostListener('window:scroll', [])
+  // onWindowScroll(): void {
+  //   if (!isPlatformBrowser(this.platformId)) return;
+  //   this.showBackToTopButton.set(window.pageYOffset > 800);
 
-  // --- ADD NEW HANDLER METHODS FOR THE FAB ---
+  //   // Infinite Scroll for Calendar (debounced)
+  //   if (
+  //     this.currentHistoryView() === 'calendar' &&
+  //     !this.historyCalendarLoading()
+  //   ) {
+  //     const isAtBottom = (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 200;
+  //     if (isAtBottom) {
+  //       if (this.calendarScrollDebounceTimer) {
+  //         clearTimeout(this.calendarScrollDebounceTimer);
+  //       }
+  //       this.calendarScrollDebounceTimer = setTimeout(() => {
+  //         if (!this.historyCalendarLoading()) {
+  //           this.loadNextCalendarMonth();
+  //         }
+  //       }, 250); // 250ms debounce
+  //     }
+  //   }
+  // }
+
+  scrollToTop(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
 
   /**
    * Toggles the FAB menu on touch devices.
@@ -1074,6 +1148,13 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       iconName: 'plus-circle',
       cssClass: 'bg-teal-500 focus:ring-teal-400',
       isPremium: true
+    },
+    {
+      label: 'GEN RANDOM LOGS',
+      actionKey: 'gen_random_logs',
+      iconName: 'magic-wand',
+      cssClass: 'bg-purple-500 focus:ring-purple-400',
+      isPremium: true
     }
     ];
   }
@@ -1085,6 +1166,9 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
         break;
       case 'log_past_activity':
         this.logPastActivity();
+        break;
+      case 'gen_random_logs':
+        this.trackingService.generateAndSaveRandomWorkoutLogs();
         break;
     }
   }
@@ -1217,6 +1301,15 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   getLocationById(locationId: string): string {
     return this.locationService.getHydratedLocationByLocationId(locationId);
+  }
+
+  virtualScroll?: CdkVirtualScrollViewport;
+  @ViewChild(CdkVirtualScrollViewport)
+  set virtualScrollSetter(vs: CdkVirtualScrollViewport | undefined) {
+    this.virtualScroll = vs;
+    if (vs) {
+      this.cdr.detectChanges();
+    }
   }
 
 }

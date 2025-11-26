@@ -104,9 +104,9 @@
               </div>
 
               <div class="mb-4">
-                <span
-                  class="px-3 py-1 text-xs font-semibold rounded-full bg-primary-light text-white dark:bg-primary-dark dark:text-primary-light capitalize">
-                  {{ ex.categories }}
+                <span *ngFor="let label of ex.categoryLabels.split(',')" 
+                  class="px-3 py-1 mr-2 text-xs font-semibold rounded-full bg-primary-light text-white dark:bg-primary-dark dark:text-primary-light capitalize">
+                  {{ label.trim() }}
                 </span>
               </div>
 
@@ -324,7 +324,7 @@
           <!-- --- END: CONDITIONAL CHARTS FOR CARDIO --- -->
 
           <ng-template #noChartData>
-            <p class="text-center text-gray-500 dark:text-gray-400 py-8 text-sm">{{ 'exerciseDetail.charts.noData' |
+            <p class="text-start text-gray-500 dark:text-gray-400 py-8 text-sm">{{ 'exerciseDetail.charts.noData' |
               translate }}</p>
 
           </ng-template>
@@ -405,12 +405,10 @@
   </div>
   <ng-template #notFound>
     <div class="text-center py-10">
-      <h2 class="text-2xl font-semibold mb-4 text-gray-700 dark:text-gray-200">Exercise Not Found</h2>
-      <p class="text-gray-600 dark:text-gray-400">The exercise you are looking for does not exist or could not be
-        loaded</p>
+      <h2 class="text-2xl font-semibold mb-4 text-gray-700 dark:text-gray-200">{{ 'exerciseDetail.exerciseNotFound' | translate }}</h2>
+      <p class="text-gray-600 dark:text-gray-400">{{ 'exerciseDetail.exerciseNotFoundMessage' | translate }}</p>
       <a *ngIf="!isModal" routerLink="/library"
-        class="mt-4 inline-block bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-4 rounded-md">Go to
-        Library</a>
+        class="mt-4 inline-block bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-4 rounded-md">{{ 'exerciseDetail.goToLibrary' | translate }}</a>
     </div>
   </ng-template>
 </ng-template>

@@ -665,7 +665,7 @@ export const EXERCISES_DATA: Exercise[] = [
     "imageUrls": ["assets/images/exercises/cable-woodchop_1.jpg", "assets/images/exercises/cable-woodchop_2.jpg"]
   },
   {
-    "id": "resistanceBand-bicep-curl",
+    "id": "resistance-band-bicep-curl",
     "name": "Resistance Band Bicep Curl",
     "description": "Bicep curls performed with a resistance band, providing variable resistance.",
     "categories": [exerciseCategoryTypesEnum.bands],
@@ -675,7 +675,7 @@ export const EXERCISES_DATA: Exercise[] = [
     "imageUrls": ["assets/images/exercises/band-bicep-curl_1.jpg", "assets/images/exercises/band-bicep-curl_2.jpg"]
   },
   {
-    "id": "resistanceBand-tricep-pushdown",
+    "id": "resistance-band-tricep-pushdown",
     "name": "Resistance Band Tricep Pushdown",
     "description": "Tricep pushdowns using a resistance band anchored overhead or held.",
     "categories": [exerciseCategoryTypesEnum.bands],
@@ -685,7 +685,7 @@ export const EXERCISES_DATA: Exercise[] = [
     "imageUrls": ["assets/images/exercises/band-tricep-pushdown_1.jpg", "assets/images/exercises/band-tricep-pushdown_2.jpg"]
   },
   {
-    "id": "resistanceBand-pull-apart",
+    "id": "resistance-band-pull-apart",
     "name": "Resistance Band Pull-Apart",
     "description": "A great exercise for shoulder health, targeting the rear shoulders and upper back muscles.",
     "categories": [exerciseCategoryTypesEnum.bands],
@@ -695,7 +695,7 @@ export const EXERCISES_DATA: Exercise[] = [
     "imageUrls": ["assets/images/exercises/band-pull-apart_1.jpg", "assets/images/exercises/band-pull-apart_2.jpg"]
   },
   {
-    "id": "resistanceBand-squat",
+    "id": "resistance-band-squat",
     "name": "Resistance Band Squat",
     "description": "Squats performed with a resistance band underfoot and looped over shoulders or held, adding resistance.",
     "categories": [exerciseCategoryTypesEnum.bands],
@@ -705,7 +705,7 @@ export const EXERCISES_DATA: Exercise[] = [
     "imageUrls": ["assets/images/exercises/band-squat_1.jpg", "assets/images/exercises/band-squat_2.jpg"]
   },
   {
-    "id": "resistanceBand-glute-bridge",
+    "id": "resistance-band-glute-bridge",
     "name": "Resistance Band Glute Bridge",
     "description": "Glute bridges with a resistance band around the thighs for added glute medius activation.",
     "categories": [exerciseCategoryTypesEnum.bands],
@@ -977,7 +977,7 @@ export const EXERCISES_DATA: Exercise[] = [
     "imageUrls": ["assets/images/exercises/cable-torso-twist_1.jpg", "assets/images/exercises/cable-torso-twist_2.jpg"]
   },
   {
-    "id": "resistanceBand-chest-press",
+    "id": "resistance-band-chest-press",
     "name": "Resistance Band Chest Press",
     "description": "A chest press variation using resistance bands, can be done standing or lying down.",
     "categories": [exerciseCategoryTypesEnum.bands],
@@ -987,7 +987,7 @@ export const EXERCISES_DATA: Exercise[] = [
     "imageUrls": ["assets/images/exercises/band-chest-press_1.jpg", "assets/images/exercises/band-chest-press_2.jpg"]
   },
   {
-    "id": "resistanceBand-row",
+    "id": "resistance-band-row",
     "name": "Resistance Band Row (Seated or Standing)",
     "description": "Targets back muscles using a resistance band, can be anchored or held.",
     "categories": [exerciseCategoryTypesEnum.bands],
@@ -997,7 +997,7 @@ export const EXERCISES_DATA: Exercise[] = [
     "imageUrls": ["assets/images/exercises/band-row_1.jpg", "assets/images/exercises/band-row_2.jpg"]
   },
   {
-    "id": "resistanceBand-deadlift",
+    "id": "resistance-band-deadlift",
     "name": "Resistance Band Deadlift",
     "description": "A deadlift variation using resistance bands, good for learning form or lighter days.",
     "categories": [exerciseCategoryTypesEnum.bands],
@@ -1007,7 +1007,7 @@ export const EXERCISES_DATA: Exercise[] = [
     "imageUrls": ["assets/images/exercises/band-deadlift_1.jpg", "assets/images/exercises/band-deadlift_2.jpg"]
   },
   {
-    "id": "resistanceBand-lateral-walk",
+    "id": "resistance-band-lateral-walk",
     "name": "Resistance Band Lateral Walk (Crab Walk)",
     "description": "Targets the glute medius and hip abductors, performed by walking sideways with a band around ankles or knees.",
     "categories": [exerciseCategoryTypesEnum.bands],

@@ -1325,4 +1325,95 @@ export class TrackingService {
     return Array.from(new Set(locations));
   }
 
+
+  /**
+   * Generates and saves 50 random WorkoutLog entries for development/testing.
+   * Each log will have random exercises, sets, and plausible values.
+   */
+  public generateAndSaveRandomWorkoutLogs(): void {
+    const randomId = () => uuidv4();
+    const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const randomFloat = (min: number, max: number, decimals = 2) =>
+      parseFloat((Math.random() * (max - min) + min).toFixed(decimals));
+    const randomDate = (start: Date, end: Date) =>
+      new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+
+    // Get all exercises from ExerciseService (async)
+    if (!this.exerciseService.getExercises) {
+      this.toastService.error('No exercises found. Please add some exercises first.', 3000, 'Random Log Generation');
+      return;
+    }
+
+    this.exerciseService.getExercises().subscribe((allExercises) => {
+      if (!allExercises || allExercises.length === 0) {
+        this.toastService.error('No exercises found. Please add some exercises first.', 3000, 'Random Log Generation');
+        return;
+      }
+
+      const logs: WorkoutLog[] = [];
+      const today = new Date();
+      const startDate = new Date(today.getFullYear(), today.getMonth() - 3, today.getDate()); // 3 months ago
+
+      for (let i = 0; i < 50; i++) {
+        const logId = randomId();
+        const logDate = randomDate(startDate, today);
+        const startTime = logDate.getTime();
+        const endTime = startTime + randomInt(30, 120) * 60 * 1000; // 30-120 min workout
+
+        // Pick 2-5 random exercises for this log
+        const numExercises = randomInt(2, Math.min(5, allExercises.length));
+        const shuffledExercises = [...allExercises].sort(() => 0.5 - Math.random());
+        const chosenExercises = shuffledExercises.slice(0, numExercises);
+
+        const exercises = chosenExercises.map(ex => {
+          const numSets = randomInt(2, 5);
+          const sets = Array.from({ length: numSets }).map(() => {
+            const reps = randomInt(5, 15);
+            const weight = randomFloat(20, 100);
+            return {
+              id: randomId(),
+              workoutLogId: logId,
+              exerciseId: ex.id,
+              repsLogged: genRepsTypeFromRepsNumber(reps),
+              weightLogged: weightToExact(weight),
+              timestamp: new Date(startTime + randomInt(0, 60 * 60 * 1000)).toISOString(),
+              fieldOrder: [METRIC.reps, METRIC.weight],
+            };
+          });
+          return {
+            exerciseId: ex.id,
+            workoutLogId: logId,
+            sets,
+          };
+        });
+
+        logs.push({
+          id: logId,
+          date: logDate.toISOString().split('T')[0],
+          startTime,
+          endTime,
+          durationMinutes: Math.round((endTime - startTime) / (1000 * 60)),
+          durationSeconds: Math.round((endTime - startTime) / 1000),
+          exercises,
+          locationName: ['Home', 'Gym', 'Park'][randomInt(0, 2)],
+        } as WorkoutLog);
+      }
+
+      this.saveWorkoutLogsToStorage([...logs, ...this.getAllWorkoutLogs()]);
+      this.toastService.success('50 random workout logs generated and saved.', 3000, 'Random Logs');
+    });
+  }
+
+  /**
+   * Returns the number of workout sessions logged for a given routine.
+   * @param routineId The ID of the routine (string or number).
+   * @returns The count of workout logs associated with the routine.
+   */
+  public getNumberOfSessionsLoggedForRoutine(routineId: string | number): number {
+    if (!routineId) return 1; // Always at least 1, even if no routineId is provided
+    const logs = this.getAllWorkoutLogs();
+    const count = logs.filter(log => log.routineId === routineId).length;
+    return count > 0 ? count : 1; // Ensure at least 1 is returned
+  }
+
 }

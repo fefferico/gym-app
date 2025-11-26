@@ -87,6 +87,14 @@
           </span>
         </div>
 
+        <!-- ROUTINE EXECUTED N° TIMES -->
+        <div class="flex items-center text-md text-gray-600 dark:text-gray-400 mt-1 gap-x-2">
+          <app-icon name="change" class="h-7 w-7 mr-1"></app-icon>
+          <span>
+            {{ 'logDetail.times' | translate }}: {{getRoutineNumberOfSessionsLogged() }}
+          </span>
+        </div>
+
         <button *ngIf="log?.routineId" appBumpClick (click)="openPerformanceComparisonModal()" type="button"
           class="flex items-center mt-2 gap-2 px-3 py-2 text-sm font-medium text-center text-white bg-primary rounded-lg hover:bg-primary-dark focus:ring-4 focus:outline-none focus:ring-primary-light">
           <app-icon name="compare" class="w-5 h-5"></app-icon>
@@ -138,7 +146,8 @@
                             <strong [ngClass]="checkTextClass(set, metricEnum.reps)"
                               [class.cursor-pointer]="isTargetDifferent(set, metricEnum.reps)"
                               [class.hover:underline]="isTargetDifferent(set, metricEnum.reps)"
-                              (click)="showComparisonModal(set, metricEnum.reps)">{{ getRepsValue(set.repsLogged) || '-' }}</strong>
+                              (click)="showComparisonModal(set, metricEnum.reps)">{{ getRepsValue(set.repsLogged) || '-'
+                              }}</strong>
                             <span *ngIf="set.weightLogged != null" class="text-gray-600 dark:text-gray-400 text-sm"
                               [class.cursor-pointer]="isTargetDifferent(set, metricEnum.weight)"
                               [class.hover:underline]="isTargetDifferent(set, metricEnum.weight)"

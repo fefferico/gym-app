@@ -1141,4 +1141,10 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     }
     return '';
   }
+
+  getRoutineNumberOfSessionsLogged(): number {
+    const log = this.workoutLog();
+    if (!log?.routineId) return 0;
+    return this.trackingService.getNumberOfSessionsLoggedForRoutine(log.routineId);
+  }
 }

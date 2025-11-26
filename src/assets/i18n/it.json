@@ -480,9 +480,11 @@
       "sortBy": "Ordina per",
       "sort": {
         "lastUsed": "Ultimo Utilizzo",
-        "lastCreated": "Ultima Creazione",
-        "lastEdited": "Ultima Modifica",
-        "alphabetical": "Alfabetico"
+        "alphabetical": "Alfabetico",
+        "highestVolume": "Volume Più Alto",
+        "longestSession": "Sessione Più Lunga",
+        "mostExercises": "Più Esercizi",
+        "mostPBs": "Più Record"
       }
     },
     "card": {
@@ -1457,6 +1459,7 @@
     "edit": "MODIFICA"
   },
   "logDetail": {
+    "times": "Volte",
     "location": "Luogo",
     "title": "Dettaglio Allenamento",
     "toggleFilters": "Mostra/Nascondi Filtri",
@@ -1581,6 +1584,7 @@
     "routine": "Scheda",
     "adHocWorkout": "Allenamento non programmato",
     "date": "Data",
+    "startTime": "Ora inizio",
     "duration": "Durata",
     "durationUnit": "minuti",
     "totalVolume": "Volume Totale",
@@ -1589,7 +1593,7 @@
     "newPBs": "🎉 Nuovo Record Personale! 🎉",
     "newPBs_plural": "🎉 Nuovi Record Personali! 🎉",
     "yourNotes": "Le Tue Note per questa Sessione",
-    "viewFullLog": "VEDI DETTAGLI LOG COMPLETI",
+    "viewFullLog": "DETTAGLI",
     "loading": "Caricamento riepilogo allenamento...",
     "notFound": {
       "title": "Registrazione Allenamento Non Trovata",
@@ -2641,6 +2645,9 @@
     }
   },
   "exerciseDetail": {
+    "exerciseNotFound": "Esercizio non trovato",
+    "exerciseNotFoundMessage": "L'esercizio che stai cercando non esiste o non può essere caricato.",
+    "goToLibrary": "Vai alla Libreria",
     "tabs": {
       "description": "Descrizione",
       "history": "Cronologia",

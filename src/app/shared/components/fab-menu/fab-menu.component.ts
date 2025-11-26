@@ -1,6 +1,6 @@
 // src/app/shared/components/fab-menu/fab-menu.component.ts
 
-import { Component, EventEmitter, HostListener, inject, input, Input, model, OnDestroy, OnInit, Output, PLATFORM_ID, signal } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, HostListener, inject, input, Input, model, OnDestroy, OnInit, Output, PLATFORM_ID, signal } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { trigger, style, animate, transition } from '@angular/animations';
 import { Subscription } from 'rxjs';
@@ -12,6 +12,7 @@ import { PressDirective } from '../../directives/press.directive';
 import { ClickOutsideDirective } from '../../directives/click-outside.directive';
 import { TranslateModule } from '@ngx-translate/core';
 import { BumpClickDirective } from '../../directives/bump-click.directive';
+import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 
 export interface FabAction {
   actionKey: string;  // A unique key for the action, e.g., 'create_routine'
@@ -55,7 +56,7 @@ export interface FabAction {
     ])
   ]
 })
-export class FabMenuComponent implements OnInit, OnDestroy {
+export class FabMenuComponent implements OnInit, OnDestroy, AfterViewInit {
   // --- Injected Services ---
   protected workoutService = inject(WorkoutService);
   protected subscriptionService = inject(SubscriptionService);
@@ -70,6 +71,7 @@ export class FabMenuComponent implements OnInit, OnDestroy {
   @Input() scrollToTopDisabled: boolean = false;
   @Input() showMainButton: boolean = true;
   @Input() customBottomPositioning: number | undefined = undefined;
+  @Input() virtualScrollViewport?: CdkVirtualScrollViewport;
 
   // --- Component State (Unchanged) ---
   isFabActionsOpen = model<boolean>(false);
@@ -109,21 +111,24 @@ export class FabMenuComponent implements OnInit, OnDestroy {
       const buffer = 100;
 
       // --- Conditions ---
-
       // Show the "Back to Top" button if the user has scrolled down a bit
       this.showBackToTopButton.set(scrollY > 400);
-
       // Show the "Back to Bottom" button if the user is NOT near the bottom of the page
       this.showBackToBottomButton.set(scrollY + windowHeight < documentHeight - buffer);
     }
   }
   scrollToTop(): void {
-    if (isPlatformBrowser(this.platformId)) {
+    if (this.virtualScrollViewport) {
+      this.virtualScrollViewport.scrollToIndex(0, 'smooth');
+    } else if (isPlatformBrowser(this.platformId)) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
   scrollToBottom(): void {
-    if (isPlatformBrowser(this.platformId)) {
+    if (this.virtualScrollViewport) {
+      const itemCount = this.virtualScrollViewport.getDataLength();
+      this.virtualScrollViewport.scrollToIndex(itemCount - 1, 'smooth');
+    } else if (isPlatformBrowser(this.platformId)) {
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
   }
@@ -148,10 +153,30 @@ export class FabMenuComponent implements OnInit, OnDestroy {
   }
 
   checkClassForPositioning(): string {
-    if (!!this.customBottomPositioning){
+    if (!!this.customBottomPositioning) {
       return `bottom-${this.customBottomPositioning}`;
     } else {
       return this.isPausedSession() ? 'bottom-36' : 'bottom-20';
     }
+  }
+
+  ngAfterViewInit(): void {
+    if (this.virtualScrollViewport) {
+      this.virtualScrollViewport.elementScrolled().subscribe(() => {
+        this.updateFabVisibility();
+      });
+      // Initial check
+      this.updateFabVisibility();
+    }
+  }
+
+  updateFabVisibility(): void {
+    if (!this.virtualScrollViewport) return;
+    const scrollOffset = this.virtualScrollViewport.measureScrollOffset('top');
+    const maxOffset = this.virtualScrollViewport.measureScrollOffset('bottom');
+    // Show "to top" if not at the very top
+    this.showBackToTopButton.set(scrollOffset > 50);
+    // Show "to bottom" if not at the very bottom
+    this.showBackToBottomButton.set(maxOffset > 50);
   }
 }

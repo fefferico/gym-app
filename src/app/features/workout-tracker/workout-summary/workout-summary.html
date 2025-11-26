@@ -2,7 +2,7 @@
   <ng-container *ngIf="workoutLog() as log; else loadingOrNotFoundSummary">
     <div class="bg-white dark:bg-gray-700 rounded-xl shadow-2xl p-4 md:p-8 max-w-2xl mx-auto">
       <button [routerLink]="'/history/log/'+logId"
-        class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 -ml-1"><svg
+        class="text-gray-600 dark:text-gray-300 hover:text-primary-light dark:hover:text-primary-light-light p-2 -ml-1"><svg
           fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg></button>
@@ -37,22 +37,40 @@
 
       <div class="space-y-1 mb-8">
         <div class="flex justify-between items-baseline px-3 py-1 bg-gray-50 dark:bg-gray-700 rounded-md">
-          <span class="text-m font-medium text-gray-600 dark:text-gray-300">{{ 'workoutSummary.routine' | translate }}:</span>
+          <div class="flex items-center">
+            <app-icon name="routines" class="h-5 w-5 text-primary-light mr-2"></app-icon>
+            <span class="text-m font-medium text-gray-600 dark:text-gray-300">{{ 'workoutSummary.routine' | translate }}:</span>
+          </div>
           <span class="text-md font-semibold text-gray-800 dark:text-gray-100">{{ log.routineName || ('workoutSummary.adHocWorkout' | translate)
             }}</span>
         </div>
         <div class="flex justify-between items-baseline px-3 py-1 bg-gray-50 dark:bg-gray-700 rounded-md">
-          <span class="text-m font-medium text-gray-600 dark:text-gray-300">{{ 'workoutSummary.date' | translate }}:</span>
-          <span class="text-md font-semibold text-gray-800 dark:text-gray-100">{{ log.startTime | date:'fullDate'
-            }}</span>
+          <div class="flex items-center">
+            <app-icon name="calendar" class="h-5 w-5 text-primary-light mr-2"></app-icon>
+            <span class="text-m font-medium text-gray-600 dark:text-gray-300">{{ 'workoutSummary.date' | translate }}:</span>
+          </div>
+          <span class="text-md font-semibold text-gray-800 dark:text-gray-100">{{ log.startTime | date:'fullDate' | titlecase }}</span>
         </div>
         <div class="flex justify-between items-baseline px-3 py-1 bg-gray-50 dark:bg-gray-700 rounded-md">
-          <span class="text-m font-medium text-gray-600 dark:text-gray-300">{{ 'workoutSummary.duration' | translate }}:</span>
+          <div class="flex items-center">
+            <app-icon name="clock" class="h-5 w-5 text-primary-light mr-2"></app-icon>
+            <span class="text-m font-medium text-gray-600 dark:text-gray-300">{{ 'workoutSummary.startTime' | translate }}:</span>
+          </div>
+          <span class="text-md font-semibold text-gray-800 dark:text-gray-100">{{ log.startTime | date:'shortTime' }}</span>
+        </div>
+        <div class="flex justify-between items-baseline px-3 py-1 bg-gray-50 dark:bg-gray-700 rounded-md">
+            <div class="flex items-center">
+            <app-icon name="duration" class="h-5 w-5 text-primary-light mr-2"></app-icon>
+            <span class="text-m font-medium text-gray-600 dark:text-gray-300">{{ 'workoutSummary.duration' | translate }}:</span>
+            </div>
           <span class="text-md font-semibold text-gray-800 dark:text-gray-100">{{ log.durationMinutes }} {{ 'workoutSummary.durationUnit' | translate }}</span>
         </div>
         <div *ngIf="sessionTotalVolume() > 0"
           class="flex justify-between items-baseline px-3 py-1 bg-gray-50 dark:bg-gray-700 rounded-md">
-          <span class="text-m font-medium text-gray-600 dark:text-gray-300">{{ 'workoutSummary.totalVolume' | translate }}:</span>
+          <div class="flex items-center">
+            <app-icon name="weight" class="h-5 w-5 text-primary-light mr-2"></app-icon>
+            <span class="text-m font-medium text-gray-600 dark:text-gray-300">{{ 'workoutSummary.totalVolume' | translate }}:</span>
+          </div>
           <span class="text-md font-semibold text-gray-800 dark:text-gray-100">{{ sessionTotalVolume() | number:'1.0-0'
             }} {{ unitsService.getWeightUnitSuffix() }}</span>
         </div>
@@ -69,13 +87,6 @@
           <span class="text-m font-medium text-gray-600 dark:text-gray-300">{{ 'workoutSummary.perceivedFeeling' | translate }}:</span>
           <span class="text-md font-semibold text-gray-800 dark:text-gray-100">{{ workoutLog()?.perceivedWorkoutInfo?.perceivedFeeling }} /
             10</span>
-        </div>
-
-        <div *ngIf="sessionTotalVolume() > 0"
-          class="flex justify-between items-baseline px-3 py-1 bg-gray-50 dark:bg-gray-700 rounded-md">
-          <span class="text-m font-medium text-gray-600 dark:text-gray-300">{{ 'workoutSummary.totalVolume' | translate }}:</span>
-          <span class="text-md font-semibold text-gray-800 dark:text-gray-100">{{ sessionTotalVolume() | number:'1.0-0'
-            }} {{ unitsService.getWeightUnitSuffix() }}</span>
         </div>
       </div>
 

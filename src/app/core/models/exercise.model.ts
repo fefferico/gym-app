@@ -1,6 +1,7 @@
 import { EquipmentValue } from "../services/equipment-data";
 import { MuscleValue } from "../services/muscles-data";
 import { EXERCISE_CATEGORY_TYPES } from "./exercise-category.model";
+import { METRIC } from "./workout.model";
 
 export interface Exercise {
   id: string; // Unique identifier (e.g., UUID or a slug like 'push-up')
@@ -23,6 +24,7 @@ export interface Exercise {
   lastUsedLogId?: string;
   isHidden?: boolean; // Flag to indicate if the exercise is hidden from the main list
   usageCount?: number;
+  suggestedMetrics?: METRIC[];
 
   _searchId?: string;
   _searchName?: string;
