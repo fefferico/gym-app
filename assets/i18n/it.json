@@ -352,6 +352,14 @@
     "title": "Le mie schede",
     "toggleFilters": "Mostra/Nascondi Filtri",
     "filters": {
+      "sortLabel": "Ordina per",
+      "sort": {
+      "lastUsed": "Ultimo Utilizzo",
+      "lastCreated": "Ultima Creazione",
+      "lastEdited": "Ultima Modifica",
+      "alphabetical": "Alfabetico",
+      "favourites": "Preferiti"
+      },
       "title": "Filtra Schede",
       "searchLabel": "Cerca Nome/Descr.",
       "searchPlaceholder": "Inserisci nome o descrizione della scheda...",
@@ -463,7 +471,18 @@
       "cardColor": "Colore Scheda",
       "anyColor": "Qualsiasi Colore",
       "clearButton": "PULISCI FILTRI",
-      "showingResult": "Mostrando {{count}} di {{total}} voci"
+      "showingResult": "Mostrando {{count}} di {{total}} voci",
+      "logType": "Tipo di Log",
+      "anyType": "Qualsiasi Tipo",
+      "workout": "Allenamento",
+      "activity": "Attività",
+      "sortBy": "Ordina per",
+      "sort": {
+        "lastUsed": "Ultimo Utilizzo",
+        "lastCreated": "Ultima Creazione",
+        "lastEdited": "Ultima Modifica",
+        "alphabetical": "Alfabetico"
+      }
     },
     "card": {
       "adHocWorkout": "Allenamento non programmato",
@@ -1077,8 +1096,10 @@
     "addSelected": "Aggiungi selezionato/i"
   },
   "workoutBuilder": {
+    "locationTypeLabel": "Tipo di Luogo (opzionale)",
     "locationLabel": "Luogo",
-    "locationPlaceholder": "Seleziona luogo",
+    "locationPlaceholder": "-- Seleziona luogo --",
+    "locationTypePlaceholder": "-- Seleziona tipo di luogo --",
     "wizard": {
       "templateOrBlankTitle": "Scegli un Modello",
       "templateOrBlankMsg": "Vuoi iniziare da un modello o creare una scheda personalizzata?",
@@ -1145,6 +1166,11 @@
       "saveCustomRoutineButton": "SALVA MODIFICHE SCHEDA"
     },
     "logEntry": {
+      "noExercisesForLog": "Seleziona una scheda o AGGIUNGI ESERCIZI manualmente per registrare",
+      "locationTypeLabel": "Tipo di Luogo (opzionale)",
+      "locationLabel": "Luogo",
+      "locationPlaceholder": "Seleziona luogo",
+      "locationTypePlaceholder": "-- Seleziona tipo di luogo --",
       "logForProgramTitle": "Log per Programma: {{programName}} - Scheda: {{routineName}}",
       "adHocTitle": "Allenamento non programmato",
       "dateLabel": "Data Allenamento",
@@ -1430,6 +1456,7 @@
     "edit": "MODIFICA"
   },
   "logDetail": {
+    "location": "Luogo",
     "title": "Dettaglio Allenamento",
     "toggleFilters": "Mostra/Nascondi Filtri",
     "adHocWorkout": "Allenamento non programmato",
@@ -1956,6 +1983,7 @@
     }
   },
   "logActivity": {
+    "peopleLabel": "Persone coinvolte",
     "logTitle": "Registra un'attività",
     "editTitle": "Modifica Registro Attività",
     "logSubtitle": "Registra qualsiasi attività fisica che hai svolto.",
@@ -1976,8 +2004,10 @@
       "medium": "Media",
       "high": "Alta"
     },
+    "locationTypeLabel": "Tipo di Luogo (opzionale)",
     "locationLabel": "Luogo (opzionale)",
     "locationPlaceholder": "es., Via Roma",
+    "locationTypePlaceholder": "-- Seleziona tipo di luogo --",
     "distanceLabel": "Distanza (km)",
     "distancePlaceholder": "es., 5.5",
     "caloriesLabel": "Calorie Bruciate (opzionale)",
@@ -1993,6 +2023,7 @@
     }
   },
   "activityLogDetails": {
+    "peopleInvolved": "Persone coinvolte",
     "duration": "Durata",
     "intensity": "Intensità",
     "location": "Luogo",
@@ -2906,6 +2937,23 @@
     "stop": "Ferma",
     "reset": "Reimposta",
     "addCustom": "Aggiungi Personalizzato",
-      "modeLabel": "Modalità"
+    "modeLabel": "Modalità"
+  },
+  "tabataPlayer": {
+    "rest": "Recupero",
+    "getReady": "Preparati",
+    "elapsedTime": "Tempo Trascorso",
+    "scrollToCurrentSet": "Torna all'esercizio corrente",
+    "roundProgression": "Progressione round",
+    "intervalType": {
+      "prepare": "Preparati",
+      "work": "Lavoro",
+      "rest": "Recupero"
+    },
+    "alerts": {
+      "resume": "Riprendi",
+      "discard": "Scarta",
+      "quitTitle": "Abbandona Allenamento"
+    }
   }
 }

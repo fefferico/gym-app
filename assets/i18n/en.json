@@ -400,6 +400,14 @@
     "title": "My Routines",
     "toggleFilters": "Toggle Filters",
     "filters": {
+      "sortLabel": "Sort By",
+      "sort": {
+        "lastUsed": "Last Used",
+        "lastCreated": "Last Created",
+        "lastEdited": "Last Edited",
+        "alphabetical": "Alphabetical",
+        "favourites": "Favourites"
+      },
       "title": "Filter Routines",
       "searchLabel": "Search Name/Desc.",
       "searchPlaceholder": "Enter routine name or description...",
@@ -511,7 +519,18 @@
       "cardColor": "Card Color",
       "anyColor": "Any Color",
       "clearButton": "CLEAR FILTERS",
-      "showingResult": "Showing {{count}} of {{total}} entries"
+      "showingResult": "Showing {{count}} of {{total}} entries",
+      "logType": "Log Type",
+      "anyType": "Any Type",
+      "workout": "Workout",
+      "activity": "Activity",
+      "sortBy": "Sort By",
+      "sort": {
+        "lastUsed": "Last Used",
+        "lastCreated": "Last Created",
+        "lastEdited": "Last Edited",
+        "alphabetical": "Alphabetical"
+      }
     },
     "card": {
       "adHocWorkout": "Ad-hoc Workout",
@@ -1078,8 +1097,10 @@
     "addSelected": "Add selected"
   },
   "workoutBuilder": {
+    "locationTypeLabel": "Location Type (optional)",
     "locationLabel": "Location",
     "locationPlaceholder": "Select location",
+    "locationTypePlaceholder": "-- Select location type --",
     "wizard": {
       "templateOrBlankTitle": "Choose a Template",
       "templateOrBlankMsg": "Would you like to start from a template or create a custom routine?",
@@ -1146,6 +1167,11 @@
       "saveCustomRoutineButton": "SAVE ROUTINE EDITS"
     },
     "logEntry": {
+      "noExercisesForLog": "Select a routine or ADD EXERCISEs manually to log",
+      "locationTypeLabel": "Location Type (optional)",
+      "locationLabel": "Location",
+      "locationPlaceholder": "-- Select location --",
+      "locationTypePlaceholder": "-- Select location type --",
       "logForProgramTitle": "Log for Program: {{programName}} - Routine: {{routineName}}",
       "adHocTitle": "Ad-hoc Workout",
       "dateLabel": "Workout Date",
@@ -1428,6 +1454,7 @@
     "edit": "EDIT"
   },
   "logDetail": {
+    "location": "Location",
     "title": "Personal Bests",
     "toggleFilters": "Toggle Filters",
     "adHocWorkout": "Ad-hoc Workout",
@@ -1929,6 +1956,7 @@
     }
   },
   "logActivity": {
+    "peopleLabel": "People involved",
     "logTitle": "Log an Activity",
     "editTitle": "Edit Activity Log",
     "logSubtitle": "Record any physical activity you've done.",
@@ -1949,8 +1977,10 @@
       "medium": "Medium",
       "high": "High"
     },
+    "locationTypeLabel": "Location Type (optional)",
     "locationLabel": "Location",
     "locationPlaceholder": "e.g., Wonderful Street",
+    "locationTypePlaceholder": "-- Select location type --",
     "distanceLabel": "Distance (km)",
     "distancePlaceholder": "e.g., 5.5",
     "caloriesLabel": "Calories Burned",
@@ -1966,6 +1996,7 @@
     }
   },
   "activityLogDetails": {
+    "peopleInvolved": "People involved",
     "duration": "Duration",
     "intensity": "Intensity",
     "location": "Location",
@@ -2904,5 +2935,22 @@
     "reset": "Reset",
     "addCustom": "Add Custom",
     "modeLabel": "Mode"
+  },
+  "tabataPlayer": {
+    "rest": "Rest",
+    "getReady": "Get ready",
+    "elapsedTime": "Elapsed Time",
+    "scrollToCurrentSet": "Scroll to Current Set",
+    "roundProgression": "Round progression",
+    "intervalType": {
+      "prepare": "Prepare",
+      "work": "Work",
+      "rest": "Rest"
+    },
+    "alerts": {
+      "resume": "Resume",
+      "discard": "Discard",
+      "quitTitle": "Quit Workout"
+    }
   }
 }
