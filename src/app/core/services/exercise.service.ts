@@ -53,7 +53,7 @@ export interface HydratedExercise extends Omit<Exercise, 'primaryMuscleGroup' | 
   equipmentNeeded: HydratedEquipment[];
   categories: EXERCISE_CATEGORY_TYPES[]; // category ids
   hydratedCategories?: HydratedExerciseCategory[]; // hydrated category objects
-  categoryLabels: string[]; // translated labels
+  categoryLabels: string; // translated labels
 }
 
 @Injectable({
@@ -1007,6 +1007,10 @@ export class ExerciseService {
         const translatedName = translations.name;
         const translatedDescription = translations.description;
 
+        const translatedCategories = (exercise.categories || []).map(
+          key => this.translate.instant(`categories.${key}`)
+        ).join(', ');
+
         return {
           ...exercise,
           _searchId: exercise.id,
@@ -1017,6 +1021,7 @@ export class ExerciseService {
           description: (!translatedDescription || translatedDescription === `${translationKey}.description`) ? exercise.description : translatedDescription,
           // equipmentNeeded should remain as in the original exercise object
           equipmentNeeded: exercise.equipmentNeeded,
+          categoryLabels: translatedCategories
         };
       })
     );
@@ -1102,7 +1107,7 @@ export class ExerciseService {
             muscleGroups,
             equipmentNeeded,
             categories: (ex.categories || []) as EXERCISE_CATEGORY_TYPES[], // keep as ids
-            categoryLabels: hydratedCategories.map(cat => cat.name)
+            categoryLabels: hydratedCategories.map(cat => cat.name).join(', ')
           };
         });
         // --- Sort by translated name ---
@@ -1166,7 +1171,7 @@ export class ExerciseService {
                   muscleGroups,
                   equipmentNeeded: (equipmentNeeded || []) as HydratedEquipment[],
                   categories: (translatedExercise.categories || []) as EXERCISE_CATEGORY_TYPES[],
-                  categoryLabels: translatedExercise.categories.map(cat => cat.toString())
+                  categoryLabels: translatedExercise.categories.map(cat => cat.toString()).join(', ')
                 };
               })
             )
@@ -1250,7 +1255,7 @@ export class ExerciseService {
             equipmentNeeded,
             categories: (ex.categories || []) as EXERCISE_CATEGORY_TYPES[], // keep as ids
             hydratedCategories,
-            categoryLabels: hydratedCategories.map(cat => cat.name.toString())
+            categoryLabels: hydratedCategories.map(cat => cat.name.toString()).join(', ')
           };
         });
         // --- Sort by translated name ---

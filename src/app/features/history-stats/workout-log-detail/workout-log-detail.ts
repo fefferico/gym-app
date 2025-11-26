@@ -247,13 +247,19 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
       // Get the translated exercise for the name
       const translatedEx = translatedExercisesMap.get(ex.exerciseId);
 
+      // If translatedEx has categoriesLabel, inject it into baseEx
+      let enrichedBaseEx = baseEx;
+      if (baseEx && translatedEx?.categoryLabels) {
+        enrichedBaseEx = { ...baseEx, categoryLabels: translatedEx.categoryLabels };
+      }
+
       return {
         ...ex,
         // Prioritize the translated name, falling back to the name stored in the log
         exerciseName: translatedEx?.name || ex.exerciseName,
-        baseExercise: baseEx,
+        baseExercise: enrichedBaseEx,
         isExpanded: true,
-        iconName: this.exerciseService.determineExerciseIcon(baseEx, ex.exerciseName),
+        iconName: this.exerciseService.determineExerciseIcon(enrichedBaseEx, ex.exerciseName),
       };
     });
 
@@ -1121,5 +1127,18 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
 
   getLocationById(locationId: string): string {
     return this.locationService.getHydratedLocationByLocationId(locationId);
+  }
+
+  getExerciseCategoriesDisplay(exercise: Exercise | undefined | null): string {
+    if (!exercise) return '';
+    // If categoriesLabel exists and is non-empty, use it
+    if (exercise.categoryLabels && exercise.categoryLabels.length > 0) {
+      return exercise.categoryLabels;
+    }
+    // Fallback to categories if categoriesLabel is not available
+    if (Array.isArray(exercise.categories) && exercise.categories.length > 0) {
+      return exercise.categories.join(', ');
+    }
+    return '';
   }
 }

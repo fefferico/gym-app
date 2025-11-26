@@ -156,7 +156,7 @@ export class ExerciseListComponent implements OnInit, OnDestroy {
           return {
             ...ex,
             categories: ex.categories,
-            categoriesLabel: ex.categoryLabels.join(', '),
+            categoriesLabel: ex.categoryLabels,
             muscleGroupLabel: muscleObj?.name || ex.primaryMuscleGroup,
             equipmentLabel: equipmentArray.join(', ')
           };

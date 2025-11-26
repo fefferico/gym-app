@@ -239,7 +239,8 @@
                       </div>
                       <div *ngIf="!item.isExpanded" class="text-xs text-gray-500 dark:text-gray-400 truncate">
                         <p class="truncate" *ngIf="checkIfCategoriesAreAvailable(item)">
-                          {{ (item?.baseExercise?.categories?.toString() ?? '') | titlecase }}
+                          <!-- {{ (item?.baseExercise?.categories?.toString() ?? '') | titlecase }} -->
+                          {{ getExerciseCategoriesDisplay(item?.baseExercise || undefined) | titlecase }}
                         </p>
                         <p *ngIf="checkIfDurationAvailable(item)">{{ 'logDetail.card.time' | translate }}:
                           {{getExerciseDurationLogged(item)}}</p>

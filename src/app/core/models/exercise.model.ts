@@ -7,7 +7,7 @@ export interface Exercise {
   name: string;
   description: string;
   categories: EXERCISE_CATEGORY_TYPES[];
-  categoriesLabel?: string; // translated category labels
+  categoryLabels?: string; // translated category labels
   muscleGroups: MuscleValue[]; // e.g., ['Chest', 'Triceps', 'Shoulders (Anterior)']
   primaryMuscleGroup?: MuscleValue; // For easier filtering/display
   equipmentNeeded?: EquipmentValue[]; // e.g., ['Dumbbells', 'Bench'] or empty for bodyweight
