@@ -649,8 +649,23 @@ export class ExerciseService {
 
   /** Returns the current list of programs for backup */
   public getDataForBackup(): Exercise[] {
-    // Only export custom exercises
-    return this.exercisesSubject.getValue().filter(ex => ex.isCustom || ex.createdAt || ex.updatedAt);
+    // Only export custom exercises, and map legacy "category" to "categories" if needed
+    return this.exercisesSubject.getValue()
+      .filter(ex => ex.isCustom || ex.createdAt || ex.updatedAt)
+      .map(ex => {
+        // If the legacy "category" property exists and "categories" does not, map it
+        if ((ex as any).category && !ex.categories) {
+          return {
+            ...ex,
+            categories: Array.isArray((ex as any).category)
+              ? (ex as any).category
+              : [(ex as any).category],
+            // Optionally remove the legacy property
+            category: undefined
+          };
+        }
+        return ex;
+      });
   }
 
   /**

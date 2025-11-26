@@ -1,6 +1,6 @@
 {
   "version": 6,
-  "timestamp": "2025-11-24T23:19:25.020Z",
+  "timestamp": "2025-11-26T13:40:02.459Z",
   "profile": {
     "isPremium": true,
     "username": "Fede",
@@ -1458,6 +1458,377 @@
       "updatedAt": "2025-10-23T21:10:03.826Z"
     },
     {
+      "id": "e941dc4d-a0f1-4886-9e73-b306be0e1af5",
+      "name": "Generated full body Workout",
+      "description": "Generated on 23/10/2025 for a ~45 minute, hypertrophy-focused session.",
+      "goal": "tabata",
+      "tags": [],
+      "exercises": [
+        {
+          "id": "2f75e8d5-7138-4b5d-9b34-6050120b00e8",
+          "exerciseId": "kettlebell-jefferson-curl",
+          "exerciseName": "Jefferson Curl con Kettlebell",
+          "notes": "",
+          "sets": [
+            {
+              "id": "15039b58-ac51-4df1-8202-22d7e40b2da5",
+              "type": "standard",
+              "notes": "",
+              "fieldOrder": [
+                "reps",
+                "weight",
+                "rest"
+              ],
+              "targetReps": null,
+              "targetWeight": {
+                "type": "bodyweight"
+              },
+              "targetTempo": null,
+              "targetRest": {
+                "type": "exact",
+                "seconds": 10
+              },
+              "targetDuration": null,
+              "targetDistance": null
+            }
+          ],
+          "supersetId": "698bf408-b081-41e5-b9bc-b097433ddd6c",
+          "supersetOrder": 0,
+          "supersetType": "standard",
+          "emomTimeSeconds": null
+        },
+        {
+          "id": "ae9dc5e2-bb6b-4201-80c6-2ab23892654f",
+          "exerciseId": "goblet-squat",
+          "exerciseName": "Goblet Squat",
+          "notes": "",
+          "sets": [
+            {
+              "id": "b0cfe619-edab-4dc5-9d7b-3b163c2d74a7",
+              "type": "standard",
+              "notes": "",
+              "fieldOrder": [
+                "reps",
+                "weight",
+                "rest"
+              ],
+              "targetReps": null,
+              "targetWeight": {
+                "type": "bodyweight"
+              },
+              "targetTempo": null,
+              "targetRest": {
+                "type": "exact",
+                "seconds": 10
+              },
+              "targetDuration": null,
+              "targetDistance": null
+            }
+          ],
+          "supersetId": "698bf408-b081-41e5-b9bc-b097433ddd6c",
+          "supersetOrder": 1,
+          "supersetType": "standard",
+          "emomTimeSeconds": null
+        },
+        {
+          "id": "ba0903df-01c8-45c8-affe-a0164d6c3b65",
+          "exerciseId": "dip",
+          "exerciseName": "Dip su Sbarra Dritta",
+          "notes": "",
+          "sets": [
+            {
+              "id": "eacc84f1-b11d-4a84-ac8e-b700afac2c15",
+              "type": "standard",
+              "notes": "",
+              "fieldOrder": [
+                "reps",
+                "rest"
+              ],
+              "targetReps": null,
+              "targetTempo": null,
+              "targetRest": {
+                "type": "exact",
+                "seconds": 10
+              },
+              "targetWeight": {
+                "type": "bodyweight"
+              },
+              "targetDuration": null,
+              "targetDistance": null
+            }
+          ],
+          "supersetId": "698bf408-b081-41e5-b9bc-b097433ddd6c",
+          "supersetOrder": 2,
+          "supersetType": "standard",
+          "emomTimeSeconds": null
+        },
+        {
+          "id": "ecb1c4e6-bca5-4a52-9262-279d31cab6d3",
+          "exerciseId": "dip-bar",
+          "exerciseName": "Dip (parallele)",
+          "notes": "",
+          "sets": [
+            {
+              "id": "9cd3452e-d3f7-4b8d-9357-a70efb381815",
+              "type": "standard",
+              "notes": "",
+              "fieldOrder": [
+                "reps",
+                "rest"
+              ],
+              "targetReps": null,
+              "targetTempo": null,
+              "targetRest": {
+                "type": "exact",
+                "seconds": 10
+              },
+              "targetWeight": {
+                "type": "bodyweight"
+              },
+              "targetDuration": null,
+              "targetDistance": null
+            }
+          ],
+          "supersetId": "698bf408-b081-41e5-b9bc-b097433ddd6c",
+          "supersetOrder": 3,
+          "supersetType": "standard",
+          "emomTimeSeconds": null
+        },
+        {
+          "id": "b59deca0-0408-4ddc-b411-36ff93179bd4",
+          "exerciseId": "kettlebell-towel-curl",
+          "exerciseName": "Curl con Asciugamano e Kettlebell",
+          "notes": "",
+          "sets": [
+            {
+              "id": "cb33dce1-4d4a-4f7e-8508-2596a7fdcfc9",
+              "type": "standard",
+              "notes": "",
+              "fieldOrder": [
+                "reps",
+                "weight",
+                "rest"
+              ],
+              "targetReps": null,
+              "targetWeight": {
+                "type": "bodyweight"
+              },
+              "targetTempo": null,
+              "targetRest": {
+                "type": "exact",
+                "seconds": 10
+              },
+              "targetDuration": null,
+              "targetDistance": null
+            }
+          ],
+          "supersetId": "698bf408-b081-41e5-b9bc-b097433ddd6c",
+          "supersetOrder": 4,
+          "supersetType": "standard",
+          "emomTimeSeconds": null
+        },
+        {
+          "id": "d34d4437-9532-408a-8888-1e9cff8b70ee",
+          "exerciseId": "ring-archer-pull-up",
+          "exerciseName": "Trazione dell'Arciere agli Anelli",
+          "notes": "",
+          "sets": [
+            {
+              "id": "c9bec005-2624-4167-866b-96a391b302e0",
+              "type": "standard",
+              "notes": "",
+              "fieldOrder": [
+                "reps",
+                "rest"
+              ],
+              "targetReps": null,
+              "targetTempo": null,
+              "targetRest": {
+                "type": "exact",
+                "seconds": 10
+              },
+              "targetWeight": {
+                "type": "bodyweight"
+              },
+              "targetDuration": null,
+              "targetDistance": null
+            }
+          ],
+          "supersetId": "698bf408-b081-41e5-b9bc-b097433ddd6c",
+          "supersetOrder": 5,
+          "supersetType": "standard",
+          "emomTimeSeconds": null
+        },
+        {
+          "id": "2e0dc30a-b509-493f-88e8-2c41259c434b",
+          "exerciseId": "parallette-tuck-planche",
+          "exerciseName": "Tuck Planche su Parallettes",
+          "notes": "",
+          "sets": [
+            {
+              "id": "a737a0c0-44f4-46b6-bd15-b343c6b4418c",
+              "type": "standard",
+              "notes": "",
+              "fieldOrder": [
+                "reps",
+                "rest"
+              ],
+              "targetReps": null,
+              "targetTempo": null,
+              "targetRest": {
+                "type": "exact",
+                "seconds": 10
+              },
+              "targetWeight": {
+                "type": "bodyweight"
+              },
+              "targetDuration": null,
+              "targetDistance": null
+            }
+          ],
+          "supersetId": "698bf408-b081-41e5-b9bc-b097433ddd6c",
+          "supersetOrder": 6,
+          "supersetType": "standard",
+          "emomTimeSeconds": null
+        },
+        {
+          "id": "e52693bf-19cb-48a6-a974-168c0deb523a",
+          "exerciseId": "standing-calf-raise",
+          "exerciseName": "Sollevamento dei Polpacci in Piedi",
+          "notes": "",
+          "sets": [
+            {
+              "id": "df9c4657-c3cd-484f-a8c6-9f464fa47383",
+              "type": "standard",
+              "notes": "",
+              "fieldOrder": [
+                "reps",
+                "rest"
+              ],
+              "targetReps": null,
+              "targetTempo": null,
+              "targetRest": {
+                "type": "exact",
+                "seconds": 10
+              },
+              "targetWeight": {
+                "type": "bodyweight"
+              },
+              "targetDuration": null,
+              "targetDistance": null
+            }
+          ],
+          "supersetId": "698bf408-b081-41e5-b9bc-b097433ddd6c",
+          "supersetOrder": 7,
+          "supersetType": "standard",
+          "emomTimeSeconds": null
+        },
+        {
+          "id": "fd7f1a53-c70c-4c1c-8559-b2047f6591e9",
+          "exerciseId": "double-kettlebell-press",
+          "exerciseName": "Overhead Press con Due Kettlebell",
+          "notes": "",
+          "sets": [
+            {
+              "id": "01bf1e3a-f7c8-4ba0-8b96-a292c1aff3b8",
+              "type": "standard",
+              "notes": "",
+              "fieldOrder": [
+                "reps",
+                "weight",
+                "rest"
+              ],
+              "targetReps": null,
+              "targetWeight": {
+                "type": "bodyweight"
+              },
+              "targetTempo": null,
+              "targetRest": {
+                "type": "exact",
+                "seconds": 10
+              },
+              "targetDuration": null,
+              "targetDistance": null
+            }
+          ],
+          "supersetId": "698bf408-b081-41e5-b9bc-b097433ddd6c",
+          "supersetOrder": 8,
+          "supersetType": "standard",
+          "emomTimeSeconds": null
+        },
+        {
+          "id": "adcc1f7d-c1d2-4415-92dd-8bf4ae761713",
+          "exerciseId": "kettlebell-tate-press",
+          "exerciseName": "Tate Press con Kettlebell",
+          "notes": "",
+          "sets": [
+            {
+              "id": "69b19ff5-ba6c-4008-996e-d84313bebd58",
+              "type": "standard",
+              "notes": "",
+              "fieldOrder": [
+                "reps",
+                "weight",
+                "rest"
+              ],
+              "targetReps": null,
+              "targetWeight": {
+                "type": "bodyweight"
+              },
+              "targetTempo": null,
+              "targetRest": {
+                "type": "exact",
+                "seconds": 10
+              },
+              "targetDuration": null,
+              "targetDistance": null
+            }
+          ],
+          "supersetId": "698bf408-b081-41e5-b9bc-b097433ddd6c",
+          "supersetOrder": 9,
+          "supersetType": "standard",
+          "emomTimeSeconds": null
+        },
+        {
+          "id": "07aa5bb2-b2b1-45a5-8693-34d7205f4f39",
+          "exerciseId": "kettlebell-half-kneeling-press",
+          "exerciseName": "Press in Mezzo Ginocchio con Kettlebell",
+          "notes": "",
+          "sets": [
+            {
+              "id": "026d6a7a-724c-4697-9f5b-380c449390ce",
+              "type": "standard",
+              "notes": "",
+              "fieldOrder": [
+                "reps",
+                "weight",
+                "rest"
+              ],
+              "targetReps": null,
+              "targetWeight": {
+                "type": "bodyweight"
+              },
+              "targetTempo": null,
+              "targetRest": {
+                "type": "exact",
+                "seconds": 10
+              },
+              "targetDuration": null,
+              "targetDistance": null
+            }
+          ],
+          "supersetId": "698bf408-b081-41e5-b9bc-b097433ddd6c",
+          "supersetOrder": 10,
+          "supersetType": "standard",
+          "emomTimeSeconds": null
+        }
+      ],
+      "lastPerformed": "2025-11-25T14:51:34.981Z",
+      "isDisabled": false,
+      "createdAt": "2025-10-23T21:13:49.229Z",
+      "updatedAt": "2025-10-23T21:13:49.229Z"
+    },
+    {
       "id": "8e95a1bf-c47a-4310-a40b-5b3c10261e57",
       "name": "Nuova sessione - As Routine",
       "description": "",
@@ -2712,377 +3083,6 @@
       "isDisabled": false,
       "createdAt": "2025-11-04T20:21:25.856Z",
       "updatedAt": "2025-11-04T20:21:25.856Z"
-    },
-    {
-      "id": "e941dc4d-a0f1-4886-9e73-b306be0e1af5",
-      "name": "Generated full body Workout",
-      "description": "Generated on 23/10/2025 for a ~45 minute, hypertrophy-focused session.",
-      "goal": "tabata",
-      "tags": [],
-      "exercises": [
-        {
-          "id": "2f75e8d5-7138-4b5d-9b34-6050120b00e8",
-          "exerciseId": "kettlebell-jefferson-curl",
-          "exerciseName": "Jefferson Curl con Kettlebell",
-          "notes": "",
-          "sets": [
-            {
-              "id": "15039b58-ac51-4df1-8202-22d7e40b2da5",
-              "type": "standard",
-              "notes": "",
-              "fieldOrder": [
-                "reps",
-                "weight",
-                "rest"
-              ],
-              "targetReps": null,
-              "targetWeight": {
-                "type": "bodyweight"
-              },
-              "targetTempo": null,
-              "targetRest": {
-                "type": "exact",
-                "seconds": 10
-              },
-              "targetDuration": null,
-              "targetDistance": null
-            }
-          ],
-          "supersetId": "698bf408-b081-41e5-b9bc-b097433ddd6c",
-          "supersetOrder": 0,
-          "supersetType": "standard",
-          "emomTimeSeconds": null
-        },
-        {
-          "id": "ae9dc5e2-bb6b-4201-80c6-2ab23892654f",
-          "exerciseId": "goblet-squat",
-          "exerciseName": "Goblet Squat",
-          "notes": "",
-          "sets": [
-            {
-              "id": "b0cfe619-edab-4dc5-9d7b-3b163c2d74a7",
-              "type": "standard",
-              "notes": "",
-              "fieldOrder": [
-                "reps",
-                "weight",
-                "rest"
-              ],
-              "targetReps": null,
-              "targetWeight": {
-                "type": "bodyweight"
-              },
-              "targetTempo": null,
-              "targetRest": {
-                "type": "exact",
-                "seconds": 10
-              },
-              "targetDuration": null,
-              "targetDistance": null
-            }
-          ],
-          "supersetId": "698bf408-b081-41e5-b9bc-b097433ddd6c",
-          "supersetOrder": 1,
-          "supersetType": "standard",
-          "emomTimeSeconds": null
-        },
-        {
-          "id": "ba0903df-01c8-45c8-affe-a0164d6c3b65",
-          "exerciseId": "dip",
-          "exerciseName": "Dip su Sbarra Dritta",
-          "notes": "",
-          "sets": [
-            {
-              "id": "eacc84f1-b11d-4a84-ac8e-b700afac2c15",
-              "type": "standard",
-              "notes": "",
-              "fieldOrder": [
-                "reps",
-                "rest"
-              ],
-              "targetReps": null,
-              "targetTempo": null,
-              "targetRest": {
-                "type": "exact",
-                "seconds": 10
-              },
-              "targetWeight": {
-                "type": "bodyweight"
-              },
-              "targetDuration": null,
-              "targetDistance": null
-            }
-          ],
-          "supersetId": "698bf408-b081-41e5-b9bc-b097433ddd6c",
-          "supersetOrder": 2,
-          "supersetType": "standard",
-          "emomTimeSeconds": null
-        },
-        {
-          "id": "ecb1c4e6-bca5-4a52-9262-279d31cab6d3",
-          "exerciseId": "dip-bar",
-          "exerciseName": "Dip (parallele)",
-          "notes": "",
-          "sets": [
-            {
-              "id": "9cd3452e-d3f7-4b8d-9357-a70efb381815",
-              "type": "standard",
-              "notes": "",
-              "fieldOrder": [
-                "reps",
-                "rest"
-              ],
-              "targetReps": null,
-              "targetTempo": null,
-              "targetRest": {
-                "type": "exact",
-                "seconds": 10
-              },
-              "targetWeight": {
-                "type": "bodyweight"
-              },
-              "targetDuration": null,
-              "targetDistance": null
-            }
-          ],
-          "supersetId": "698bf408-b081-41e5-b9bc-b097433ddd6c",
-          "supersetOrder": 3,
-          "supersetType": "standard",
-          "emomTimeSeconds": null
-        },
-        {
-          "id": "b59deca0-0408-4ddc-b411-36ff93179bd4",
-          "exerciseId": "kettlebell-towel-curl",
-          "exerciseName": "Curl con Asciugamano e Kettlebell",
-          "notes": "",
-          "sets": [
-            {
-              "id": "cb33dce1-4d4a-4f7e-8508-2596a7fdcfc9",
-              "type": "standard",
-              "notes": "",
-              "fieldOrder": [
-                "reps",
-                "weight",
-                "rest"
-              ],
-              "targetReps": null,
-              "targetWeight": {
-                "type": "bodyweight"
-              },
-              "targetTempo": null,
-              "targetRest": {
-                "type": "exact",
-                "seconds": 10
-              },
-              "targetDuration": null,
-              "targetDistance": null
-            }
-          ],
-          "supersetId": "698bf408-b081-41e5-b9bc-b097433ddd6c",
-          "supersetOrder": 4,
-          "supersetType": "standard",
-          "emomTimeSeconds": null
-        },
-        {
-          "id": "d34d4437-9532-408a-8888-1e9cff8b70ee",
-          "exerciseId": "ring-archer-pull-up",
-          "exerciseName": "Trazione dell'Arciere agli Anelli",
-          "notes": "",
-          "sets": [
-            {
-              "id": "c9bec005-2624-4167-866b-96a391b302e0",
-              "type": "standard",
-              "notes": "",
-              "fieldOrder": [
-                "reps",
-                "rest"
-              ],
-              "targetReps": null,
-              "targetTempo": null,
-              "targetRest": {
-                "type": "exact",
-                "seconds": 10
-              },
-              "targetWeight": {
-                "type": "bodyweight"
-              },
-              "targetDuration": null,
-              "targetDistance": null
-            }
-          ],
-          "supersetId": "698bf408-b081-41e5-b9bc-b097433ddd6c",
-          "supersetOrder": 5,
-          "supersetType": "standard",
-          "emomTimeSeconds": null
-        },
-        {
-          "id": "2e0dc30a-b509-493f-88e8-2c41259c434b",
-          "exerciseId": "parallette-tuck-planche",
-          "exerciseName": "Tuck Planche su Parallettes",
-          "notes": "",
-          "sets": [
-            {
-              "id": "a737a0c0-44f4-46b6-bd15-b343c6b4418c",
-              "type": "standard",
-              "notes": "",
-              "fieldOrder": [
-                "reps",
-                "rest"
-              ],
-              "targetReps": null,
-              "targetTempo": null,
-              "targetRest": {
-                "type": "exact",
-                "seconds": 10
-              },
-              "targetWeight": {
-                "type": "bodyweight"
-              },
-              "targetDuration": null,
-              "targetDistance": null
-            }
-          ],
-          "supersetId": "698bf408-b081-41e5-b9bc-b097433ddd6c",
-          "supersetOrder": 6,
-          "supersetType": "standard",
-          "emomTimeSeconds": null
-        },
-        {
-          "id": "e52693bf-19cb-48a6-a974-168c0deb523a",
-          "exerciseId": "standing-calf-raise",
-          "exerciseName": "Sollevamento dei Polpacci in Piedi",
-          "notes": "",
-          "sets": [
-            {
-              "id": "df9c4657-c3cd-484f-a8c6-9f464fa47383",
-              "type": "standard",
-              "notes": "",
-              "fieldOrder": [
-                "reps",
-                "rest"
-              ],
-              "targetReps": null,
-              "targetTempo": null,
-              "targetRest": {
-                "type": "exact",
-                "seconds": 10
-              },
-              "targetWeight": {
-                "type": "bodyweight"
-              },
-              "targetDuration": null,
-              "targetDistance": null
-            }
-          ],
-          "supersetId": "698bf408-b081-41e5-b9bc-b097433ddd6c",
-          "supersetOrder": 7,
-          "supersetType": "standard",
-          "emomTimeSeconds": null
-        },
-        {
-          "id": "fd7f1a53-c70c-4c1c-8559-b2047f6591e9",
-          "exerciseId": "double-kettlebell-press",
-          "exerciseName": "Overhead Press con Due Kettlebell",
-          "notes": "",
-          "sets": [
-            {
-              "id": "01bf1e3a-f7c8-4ba0-8b96-a292c1aff3b8",
-              "type": "standard",
-              "notes": "",
-              "fieldOrder": [
-                "reps",
-                "weight",
-                "rest"
-              ],
-              "targetReps": null,
-              "targetWeight": {
-                "type": "bodyweight"
-              },
-              "targetTempo": null,
-              "targetRest": {
-                "type": "exact",
-                "seconds": 10
-              },
-              "targetDuration": null,
-              "targetDistance": null
-            }
-          ],
-          "supersetId": "698bf408-b081-41e5-b9bc-b097433ddd6c",
-          "supersetOrder": 8,
-          "supersetType": "standard",
-          "emomTimeSeconds": null
-        },
-        {
-          "id": "adcc1f7d-c1d2-4415-92dd-8bf4ae761713",
-          "exerciseId": "kettlebell-tate-press",
-          "exerciseName": "Tate Press con Kettlebell",
-          "notes": "",
-          "sets": [
-            {
-              "id": "69b19ff5-ba6c-4008-996e-d84313bebd58",
-              "type": "standard",
-              "notes": "",
-              "fieldOrder": [
-                "reps",
-                "weight",
-                "rest"
-              ],
-              "targetReps": null,
-              "targetWeight": {
-                "type": "bodyweight"
-              },
-              "targetTempo": null,
-              "targetRest": {
-                "type": "exact",
-                "seconds": 10
-              },
-              "targetDuration": null,
-              "targetDistance": null
-            }
-          ],
-          "supersetId": "698bf408-b081-41e5-b9bc-b097433ddd6c",
-          "supersetOrder": 9,
-          "supersetType": "standard",
-          "emomTimeSeconds": null
-        },
-        {
-          "id": "07aa5bb2-b2b1-45a5-8693-34d7205f4f39",
-          "exerciseId": "kettlebell-half-kneeling-press",
-          "exerciseName": "Press in Mezzo Ginocchio con Kettlebell",
-          "notes": "",
-          "sets": [
-            {
-              "id": "026d6a7a-724c-4697-9f5b-380c449390ce",
-              "type": "standard",
-              "notes": "",
-              "fieldOrder": [
-                "reps",
-                "weight",
-                "rest"
-              ],
-              "targetReps": null,
-              "targetWeight": {
-                "type": "bodyweight"
-              },
-              "targetTempo": null,
-              "targetRest": {
-                "type": "exact",
-                "seconds": 10
-              },
-              "targetDuration": null,
-              "targetDistance": null
-            }
-          ],
-          "supersetId": "698bf408-b081-41e5-b9bc-b097433ddd6c",
-          "supersetOrder": 10,
-          "supersetType": "standard",
-          "emomTimeSeconds": null
-        }
-      ],
-      "lastPerformed": "2025-10-23",
-      "isDisabled": false,
-      "createdAt": "2025-10-23T21:13:49.229Z",
-      "updatedAt": "2025-10-23T21:13:49.229Z"
     },
     {
       "id": "toning-3-giorno-2",
@@ -18630,7 +18630,7 @@
   "exercises": [
     {
       "description": "Piega e salta",
-      "categories": ["custom"],
+      "category": "custom",
       "muscleGroups": [],
       "primaryMuscleGroup": "",
       "imageUrls": [],
@@ -18644,8 +18644,29 @@
       "lastUsedLogId": "6a31e4a7-b138-49a8-8062-25c8a8263c36"
     },
     {
+      "id": "cable-fly",
+      "name": "Cable Fly (Standing - High, Mid, or Low)",
+      "description": "An isolation exercise for the chest using a cable machine, allowing for various angles to target different parts of the chest.",
+      "category": "cables",
+      "primaryMuscleGroup": "chest",
+      "muscleGroups": [],
+      "equipmentNeeded": [
+        "Cable Machine (Dual Pulleys)",
+        "D-Handles"
+      ],
+      "imageUrls": [
+        "assets/images/exercises/cable-fly_1.jpg",
+        "assets/images/exercises/cable-fly_2.jpg"
+      ],
+      "lastUsedAt": "2025-11-04",
+      "lastUsedLogId": "025a6e74-8ae6-4817-bbe1-0b94b3d09ba0",
+      "videoUrl": "",
+      "notes": "",
+      "updatedAt": "2025-10-24T15:49:04.909Z"
+    },
+    {
       "description": "",
-      "categories": ["bodyweightCalisthenics"],
+      "category": "bodyweightCalisthenics",
       "muscleGroups": [],
       "primaryMuscleGroup": "",
       "imageUrls": [],
@@ -18657,8 +18678,80 @@
       "updatedAt": "2025-08-30T22:16:44.194Z"
     },
     {
+      "id": "double-kettlebell-alternating-clean",
+      "name": "Double Kettlebell Alternating Clean",
+      "description": "An advanced clean variation where you clean one kettlebell at a time while holding both. This challenges coordination, timing, and core stability as you manage the uneven load.",
+      "category": "kettlebells",
+      "primaryMuscleGroup": "fullBody",
+      "muscleGroups": [
+        "glutes",
+        "hamstrings",
+        "back",
+        "core",
+        "shoulders"
+      ],
+      "equipmentNeeded": [
+        "kettlebell"
+      ],
+      "imageUrls": [
+        "assets/images/exercises/dkb-alternating-clean_1.jpg",
+        "assets/images/exercises/dkb-alternating-clean_2.jpg"
+      ],
+      "notes": "Focus on maintaining a stable torso and avoid rotating as you clean each kettlebell up to the rack position.",
+      "videoUrl": "",
+      "updatedAt": "2025-11-20T23:41:12.248Z"
+    },
+    {
+      "id": "double-kettlebell-deadlift-to-swing-complex",
+      "name": "Double Kettlebell Deadlift to Swing",
+      "description": "A two-part movement that teaches the transition from a powerful deadlift into an explosive swing, reinforcing the hip hinge pattern under heavy load.",
+      "category": "kettlebells",
+      "primaryMuscleGroup": "hamstrings",
+      "muscleGroups": [
+        "hamstrings",
+        "glutes",
+        "lowerBack",
+        "core",
+        "lats"
+      ],
+      "equipmentNeeded": [
+        "kettlebell"
+      ],
+      "imageUrls": [
+        "assets/images/exercises/dkb-deadlift-to-swing_1.jpg",
+        "assets/images/exercises/dkb-deadlift-to-swing_2.jpg"
+      ],
+      "notes": "Perform a powerful double kettlebell deadlift. From the top position, hinge and transition immediately into a double kettlebell swing.",
+      "videoUrl": "",
+      "updatedAt": "2025-11-15T13:43:49.795Z"
+    },
+    {
+      "id": "dumbbell-incline-fly",
+      "name": "Dumbbell Incline Fly",
+      "description": "An isolation exercise for the upper chest using dumbbells on an incline bench, focusing on the pectoral muscles.",
+      "category": "dumbbells",
+      "primaryMuscleGroup": "chest",
+      "muscleGroups": [
+        "shoulders",
+        "chest"
+      ],
+      "equipmentNeeded": [
+        "inclineBench",
+        "dumbbell"
+      ],
+      "imageUrls": [
+        "assets/images/exercises/db-incline-fly_1.jpg",
+        "assets/images/exercises/db-incline-fly_2.jpg"
+      ],
+      "notes": "Focus on a wide arc and squeezing the chest at the top of the movement. Avoid using heavy weight to maintain proper form.",
+      "lastUsedAt": "2025-09-30",
+      "lastUsedLogId": "715c1520-65b3-46df-a839-672b1aafbf09",
+      "videoUrl": "",
+      "updatedAt": "2025-11-21T23:24:07.459Z"
+    },
+    {
       "description": "",
-      "categories": ["kettlebells"],
+      "category": "kettlebells",
       "muscleGroups": [
         "back"
       ],
@@ -47006,6 +47099,53 @@
     }
   ],
   "activityLogs": [
+    {
+      "activityId": "walking",
+      "activityName": "Camminata",
+      "date": "2025-11-26",
+      "startTime": 1764154800000,
+      "endTime": 1764158400000,
+      "durationMinutes": 60,
+      "intensity": "Low",
+      "locationId": "",
+      "locationName": "Mamma mia",
+      "distanceKm": null,
+      "caloriesBurned": null,
+      "people": [],
+      "notes": "",
+      "id": "37830a45-0c98-424e-83ca-81683ef9d617"
+    },
+    {
+      "activityId": "cycling",
+      "activityName": "Cycling",
+      "date": "2025-11-26",
+      "startTime": 1764154800000,
+      "endTime": 1764158400000,
+      "durationMinutes": 60,
+      "intensity": "Medium",
+      "locationId": "",
+      "locationName": "Prova",
+      "distanceKm": null,
+      "caloriesBurned": null,
+      "people": [],
+      "notes": "",
+      "id": "15940d5c-40b5-4409-a782-ff0a52c458f6"
+    },
+    {
+      "id": "f33b0493-96bf-4ae5-944d-378a99b9f7c3",
+      "activityId": "football",
+      "activityName": "Football",
+      "date": "2025-11-25",
+      "startTime": 1764101400000,
+      "endTime": 1764106320000,
+      "durationMinutes": 82,
+      "intensity": "High",
+      "locationId": "out-track",
+      "locationName": "Salamaro",
+      "distanceKm": null,
+      "caloriesBurned": 1227,
+      "notes": "C'erano: Samu, Giulio, Elia (alto e mingherlino),Brian (scarsetto e con la faccia da chi ne ha passate tante), Longo, Andrea (militare), Fabio (militare), Claudio (buon piedino) e Antonio (bravo)"
+    },
     {
       "activityId": "football",
       "activityName": "Football",

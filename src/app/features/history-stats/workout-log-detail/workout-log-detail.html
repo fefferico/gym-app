@@ -39,7 +39,7 @@
           <app-icon name="calendar" class="w-7 h-7 mr-1"></app-icon>
           <div>
             <p class="font-bold">
-              {{ log.startTime | date:'fullDate'}}
+              {{ log.startTime | date:'EEEE d MMMM y' | titlecase}}
             </p>
             <p class="text-sm text-gray-600 dark:text-gray-400">
               {{ 'logDetail.from' | translate:{start: (log.startTime | date:'shortTime'), end: (log.endTime |
@@ -101,7 +101,7 @@
 
             <!-- Case 1: Item is an EMOM Block -->
             <ng-container *ngIf="isEmomBlock(item)">
-              <div class="border border-teal-400 dark:border-teal-600 rounded-lg mt-4 overflow-hidden shadow-lg">
+              <div class="border-2 border-teal-400 dark:border-teal-600 rounded-lg mt-4 overflow-hidden shadow-lg">
                 <button appBumpClick (click)="toggleExerciseAccordion(item)"
                   class="w-full flex justify-between items-center p-2 text-left bg-teal-50 dark:bg-teal-900/40 hover:bg-teal-100 dark:hover:bg-teal-800/60 transition-colors">
                   <div class="flex-grow min-w-0">
@@ -138,7 +138,7 @@
                             <strong [ngClass]="checkTextClass(set, metricEnum.reps)"
                               [class.cursor-pointer]="isTargetDifferent(set, metricEnum.reps)"
                               [class.hover:underline]="isTargetDifferent(set, metricEnum.reps)"
-                              (click)="showComparisonModal(set, metricEnum.reps)">{{ set.repsLogged || '-' }}</strong>
+                              (click)="showComparisonModal(set, metricEnum.reps)">{{ getRepsValue(set.repsLogged) || '-' }}</strong>
                             <span *ngIf="set.weightLogged != null" class="text-gray-600 dark:text-gray-400 text-sm"
                               [class.cursor-pointer]="isTargetDifferent(set, metricEnum.weight)"
                               [class.hover:underline]="isTargetDifferent(set, metricEnum.weight)"
@@ -159,13 +159,13 @@
 
             <!-- Case 2: Item is a Standard Superset Block -->
             <ng-container *ngIf="isSupersetBlock(item)">
-              <div class="border border-orange-400 dark:border-orange-600 rounded-lg mt-4 overflow-hidden shadow-lg">
+              <div class="border-2 border-orange-400 dark:border-orange-600 rounded-lg mt-4 overflow-hidden shadow-lg">
                 <button appBumpClick (click)="toggleExerciseAccordion(item)"
                   class="w-full flex justify-between items-center p-2 text-left bg-orange-50 dark:bg-orange-900/40 hover:bg-orange-100 dark:hover:bg-orange-800/60 transition-colors">
                   <div class="flex-grow min-w-0">
                     <span class="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase">{{
                       'logDetail.supersetBlock' | translate }}</span>
-                    <h3 class="text-md sm:text-lg font-bold text-orange-800 dark:text-orange-200 truncate"
+                    <h3 class="text-md sm:text-lg font-bold text-orange-800 dark:text-orange-200"
                       [title]="item.blockName">
                       {{ item.blockName }}
                     </h3>

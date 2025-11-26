@@ -819,9 +819,9 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
 
   protected emomLabel(exercise: EMOMDisplayBlock): string {
     const rounds = exercise.totalRounds || 1;
-    let roundString = this.translate.instant(rounds > 1 ? 'trainingPrograms.card.roundsLabel' : 'trainingPrograms.card.roundLabel', { count: rounds });
+    let roundString = this.translate.instant(rounds > 1 ? 'workoutBuilder.superset.roundsLabel' : 'workoutBuilder.superset.roundLabel', { count: rounds });
 
-    return this.translate.instant('trainingPrograms.superset.emomInfo', { rounds: roundString, time: exercise.emomTimeSeconds || 60 });
+    return this.translate.instant('workoutBuilder.superset.emomInfo', { rounds: roundString, time: exercise.emomTimeSeconds || 60 });
   }
 
   protected exerciseNameDisplay(exercise: DisplayLoggedExercise): string {
@@ -1090,6 +1090,10 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     return getWeightValue(duration);
   }
 
+  getRepsValue(reps: RepsTarget | undefined): number {
+    return getRepsValue(reps);
+  }
+
   getDistanceValue(distance: DistanceTarget | undefined): number {
     return getDistanceValue(distance);
   }
@@ -1107,9 +1111,9 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     if (weight != null && weight !== 0) {
       info += (info ? ' @ ' : '') + `${weight} ${this.unitService.getWeightUnitSuffix()}`;
     }
-    // Only show reps if duration and weight are missing
-    if (!info && reps) {
-      info = `${reps} reps`;
+    if (reps) {
+      // Always show reps if present, appended at the end
+      info += (info ? ' / ' : '') + `${reps} reps`;
     }
     // If nothing is present, show '-'
     return info || '-';

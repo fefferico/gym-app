@@ -1211,7 +1211,7 @@
       "supersetLabel": "SUPERSET",
       "roundsLabel": "({{count}} TURNO)",
       "roundLabel": "({{count}} TURNO)",
-      "emomInfo": "EMOM{{rounds}} - Ogni {{time}}s",
+      "emomInfo": "EMOM{{rounds}} - Ogni {{time}} sec",
       "supersetInfo": "SUPERSET{{rounds}}",
       "selectGroupType": "Seleziona tipo di gruppo",
       "howToGroup": "Come vuoi raggruppare questi esercizi?",
