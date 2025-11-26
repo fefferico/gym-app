@@ -798,7 +798,7 @@ export class WorkoutService {
       metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.targetWeight', { unit: this.unitsService.getWeightUnitSuffix() }), name: METRIC.weight, type: 'number', value: 10, attributes: { min: 0, required: true } });
     }
     if (fieldOrder.includes(METRIC.distance)) {
-      metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.targetDistance', { unit: this.unitsService.getDistanceMeasureUnitSuffix() }), name: METRIC.distance, type: 'number', value: 1, attributes: { min: 0, required: true } });
+      metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.targetDistance', { unit: this.unitsService.getDistanceUnitSuffix() }), name: METRIC.distance, type: 'number', value: 1, attributes: { min: 0, required: true } });
     }
     if (fieldOrder.includes(METRIC.duration)) {
       metricInputs.push({ label: this.translate.instant('workoutService.prompts.labels.targetDuration'), name: METRIC.duration, type: 'number', value: 60, attributes: { min: 0, required: true } });

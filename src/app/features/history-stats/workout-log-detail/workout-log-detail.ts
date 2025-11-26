@@ -613,7 +613,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
 
     let modalData: TargetComparisonData | null = null;
     const unitLabel = this.unitService.getWeightUnitSuffix();
-    const distUnitLabel = this.unitService.getDistanceMeasureUnitSuffix();
+    const distUnitLabel = this.unitService.getDistanceUnitSuffix();
 
     switch (type) {
       case METRIC.reps:

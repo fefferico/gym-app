@@ -191,7 +191,7 @@ private setYAxisLabel(pbType: string): void {
         } else if (pbType.includes('Max Duration')) {
             this.yAxisLabel.set(this.translate.instant('pbTrend.yAxis.duration'));
         } else if (pbType.includes('Max Distance')) { // <-- ADD THIS BLOCK
-            this.yAxisLabel.set(this.translate.instant('pbTrend.yAxis.distance', { unit: this.unitsService.getDistanceMeasureUnitSuffix() }));
+            this.yAxisLabel.set(this.translate.instant('pbTrend.yAxis.distance', { unit: this.unitsService.getDistanceUnitSuffix() }));
         } else {
             this.yAxisLabel.set(this.translate.instant('pbTrend.yAxis.value'));
         }

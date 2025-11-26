@@ -260,7 +260,7 @@
                           ({{unitService.getWeightUnitSuffix()}}):
                           {{getExerciseWeightLogged(item)}}</p>
                         <p *ngIf="checkIfDistanceAvailable(item)">{{ 'logDetail.card.distance' | translate }}
-                          ({{unitService.getDistanceMeasureUnitSuffix()}}):
+                          ({{unitService.getDistanceUnitSuffix()}}):
                           {{getExerciseDistanceLogged(item)}}</p>
                       </div>
                     </div>
@@ -290,7 +290,7 @@
                   <div *ngIf="checkIfDistanceAvailable(item)"
                     class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">{{ 'logDetail.card.distance' |
                     translate }}
-                    ({{unitService.getDistanceMeasureUnitSuffix()}})</div>
+                    ({{unitService.getDistanceUnitSuffix()}})</div>
                   <div *ngIf="checkIfDurationAvailable(item)"
                     class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">{{ 'logDetail.card.time' |
                     translate }} (s)</div>

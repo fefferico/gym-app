@@ -570,7 +570,7 @@
                                                                     *ngIf="uniformValues.distance || uniformValues.duration">
                                                                     <span *ngIf="uniformValues.distance">{{
                                                                         uniformValues.distance }} {{
-                                                                        unitService.getDistanceMeasureUnitSuffix()
+                                                                        unitService.getDistanceUnitSuffix()
                                                                         }}</span>
                                                                     <span
                                                                         *ngIf="uniformValues.distance && uniformValues.duration"
@@ -746,7 +746,7 @@
                                                 class="flex items-center justify-center">
                                                 <strong>{{ getSetTargetDisplay(set, metricEnum.distance) || '-' }}{{
                                                     getSetTargetDisplay(set, metricEnum.distance) !== '-' ? (' ' +
-                                                    unitService.getDistanceMeasureUnitSuffix()) : '' }}</strong>
+                                                    unitService.getDistanceUnitSuffix()) : '' }}</strong>
                                             </div>
 
                                             <!-- Duration Data Cell -->
@@ -879,7 +879,7 @@
                                                                 <label
                                                                     class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{
                                                                     'metrics.distance' | translate }}
-                                                                    ({{ unitService.getDistanceMeasureUnitSuffix()
+                                                                    ({{ unitService.getDistanceUnitSuffix()
                                                                     }})</label>
                                                                 <input type="number" [(ngModel)]="distanceToSetForAll"
                                                                     [ngModelOptions]="{standalone: true}" min="0.1"
@@ -937,7 +937,7 @@
                                                             <div *ngIf="visibleCols[metricEnum.distance]"
                                                                 class="w-20 text-center truncate">{{
                                                                 'workoutBuilder.set.distance' | translate }}
-                                                                ({{unitService.getDistanceMeasureUnitSuffix()}})</div>
+                                                                ({{unitService.getDistanceUnitSuffix()}})</div>
                                                             <div *ngIf="visibleCols[metricEnum.duration]"
                                                                 class="w-16 text-center">{{ 'workoutBuilder.set.time' |
                                                                 translate }} (s)</div>

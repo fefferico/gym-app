@@ -68,7 +68,7 @@
                 <span *ngIf="(workoutUtilsService.getRepsValue(row.todaySet.repsLogged) || 0) > 0" class="text-green-600 dark:text-green-400">{{ workoutUtilsService.getRepsValue(row.todaySet.repsLogged) }} {{ 'performanceComparison.units.reps' | translate }}</span>
                 <span *ngIf="(workoutUtilsService.getWeightValue(row.todaySet.weightLogged) || 0) > 0" class="text-yellow-600 dark:text-yellow-400">@ {{ workoutUtilsService.getWeightValue(row.todaySet.weightLogged) | weightUnit:'1.0-2' }}</span>
                 <span *ngIf="(workoutUtilsService.getDurationValue(row.todaySet.durationLogged) || 0) > 0" class="text-purple-600 dark:text-purple-400">{{ formatDuration(workoutUtilsService.getDurationValue(row.todaySet.durationLogged!) || 0) }}</span>
-                <span *ngIf="(workoutUtilsService.getDistanceValue(row.todaySet.distanceLogged) || 0) > 0" class="text-cyan-600 dark:text-cyan-400">{{ workoutUtilsService.getDistanceValue(row.todaySet.distanceLogged) | number:'1.0-2' }} {{ unitService.getDistanceMeasureUnitSuffix() }}</span>
+                <span *ngIf="(workoutUtilsService.getDistanceValue(row.todaySet.distanceLogged) || 0) > 0" class="text-cyan-600 dark:text-cyan-400">{{ workoutUtilsService.getDistanceValue(row.todaySet.distanceLogged) | number:'1.0-2' }} {{ unitService.getDistanceUnitSuffix() }}</span>
               </ng-container>
             </div>
 
@@ -81,7 +81,7 @@
                 <span *ngIf="(workoutUtilsService.getRepsValue(row.previousSet.repsLogged) || 0) > 0" class="text-green-600 dark:text-green-400">{{ workoutUtilsService.getRepsValue(row.previousSet.repsLogged) }} {{ 'performanceComparison.units.reps' | translate }}</span>
                 <span *ngIf="(workoutUtilsService.getWeightValue(row.previousSet.weightLogged) || 0) > 0" class="text-yellow-600 dark:text-yellow-400">@ {{ workoutUtilsService.getWeightValue(row.previousSet.weightLogged) | weightUnit:'1.0-2' }}</span>
                 <span *ngIf="(workoutUtilsService.getDurationValue(row.previousSet.durationLogged) || 0) > 0" class="text-purple-600 dark:text-purple-400">{{ formatDuration(workoutUtilsService.getDurationValue(row.previousSet.durationLogged!) || 0) }}</span>
-                <span *ngIf="(workoutUtilsService.getDistanceValue(row.previousSet.distanceLogged) || 0) > 0" class="text-cyan-600 dark:text-cyan-400">{{ workoutUtilsService.getDistanceValue(row.previousSet.distanceLogged) | number:'1.0-2' }} {{ unitService.getDistanceMeasureUnitSuffix() }}</span>
+                <span *ngIf="(workoutUtilsService.getDistanceValue(row.previousSet.distanceLogged) || 0) > 0" class="text-cyan-600 dark:text-cyan-400">{{ workoutUtilsService.getDistanceValue(row.previousSet.distanceLogged) | number:'1.0-2' }} {{ unitService.getDistanceUnitSuffix() }}</span>
               </ng-container>
             </div>
             <ng-template #noSetData><span class="p-2 flex items-center justify-center bg-white dark:bg-gray-800 text-gray-500">{{ 'performanceComparison.card.noSetData' | translate }}</span></ng-template>

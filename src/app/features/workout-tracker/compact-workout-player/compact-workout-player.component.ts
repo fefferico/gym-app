@@ -78,6 +78,7 @@ import { WorkoutSectionService } from '../../../core/services/workout-section.se
 import { ModalService } from '../../../core/services/modal.service';
 import { EXERCISE_CATEGORY_TYPES } from '../../../core/models/exercise-category.model';
 import { ThemeService } from '../../../core/services/theme.service';
+import { NumbersOnlyDirective } from '../../../shared/directives/onlyNumbers.directive';
 
 // Interface for saving the paused state
 
@@ -118,7 +119,7 @@ export interface NextStepInfo {
     CommonModule, DatePipe, IconComponent,
     ExerciseSelectionModalComponent, FormsModule, ActionMenuComponent, FullScreenRestTimerComponent, NgLetDirective,
     DragDropModule, BarbellCalculatorModalComponent, TranslateModule, SessionOverviewModalComponent, PressDirective,
-    BumpClickDirective
+    BumpClickDirective, NumbersOnlyDirective
   ],
   templateUrl: './compact-workout-player.component.html',
   styleUrls: ['./compact-workout-player.component.scss'],
@@ -2656,7 +2657,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         }
         const distanceValue = this.workoutUtilsService.getDistanceValue(historicalSet.distanceLogged);
         if (distanceValue != undefined && distanceValue > 0) {
-          parts.push(`${distanceValue} ${this.unitsService.getDistanceMeasureUnitSuffix()}`);
+          parts.push(`${distanceValue} ${this.unitsService.getDistanceUnitSuffix()}`);
         }
         if (parts.length > 0) {
           // Add date if available
@@ -2682,7 +2683,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       }
       const distanceDisplay = this.workoutUtilsService.getSetTargetDisplay(plannedSet, METRIC.distance);
       if (distanceDisplay && distanceDisplay !== '0') {
-        targetParts.push(`${distanceDisplay} ${this.unitsService.getDistanceMeasureUnitSuffix()}`);
+        targetParts.push(`${distanceDisplay} ${this.unitsService.getDistanceUnitSuffix()}`);
       }
       let targetLine = '';
       if (targetParts.length > 0) {
@@ -3420,7 +3421,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     // Define classes based on priority: focused > completed > warmup > default
     if (isFocused) {
       return {
-        'rounded-xl shadow-md transition-all duration-300': true,
+        // 'rounded-xl shadow-md transition-all duration-300': true,
+        'rounded-xl shadow-md': true,
         'relative ring-2 ring-yellow-400 dark:ring-yellow-500 z-10': true, // Focus style
         'bg-white dark:bg-gray-800': set.type !== 'warmup', // Default background when focused
         'relative ring-2 ring-blue-400 dark:ring-blue-500 z-10 bg-blue-100 dark:bg-blue-700/80': set.type === 'warmup'
@@ -3430,7 +3432,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     // "Next up" ring (not expanded)
     if (isNextUp) {
       return {
-        'rounded-xl shadow-sm transition-all duration-300 pb-2': true,
+        // 'rounded-xl shadow-sm transition-all duration-300 pb-2': true,
+        'rounded-xl shadow-sm': true,
+        // 'rounded-xl shadow-sm pb-2': true,
         'relative ring-2 ring-yellow-400 dark:ring-yellow-500 z-10': true, // Next up ring
         'bg-white dark:bg-gray-800': set.type !== 'warmup',
         'border-2 border-blue-400 dark:border-blue-500 bg-blue-100 dark:bg-blue-700/80': set.type === 'warmup',
@@ -3439,14 +3443,17 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     if (isCompleted) {
       return {
-        'rounded-xl shadow-sm transition-all duration-300 pb-2': true,
+        // 'rounded-xl shadow-sm transition-all duration-300 pb-2': true,
+        'rounded-xl shadow-sm': true,
+        // 'rounded-xl shadow-sm pb-2': true,
         'bg-green-300 dark:bg-green-700 border border-green-300 dark:border-green-800': true, // Subtle completed style
       };
     }
 
     // Default style for a standard, non-focused, non-completed set
     return {
-      'rounded-xl shadow-sm transition-all duration-300 pb-2': true,
+      // 'rounded-xl shadow-sm transition-all duration-300 pb-2': true,
+      'rounded-xl shadow-sm transition-all duration-300': true,
       'bg-white dark:bg-gray-800': set.type !== 'warmup',
       'border-2 border-blue-400 dark:border-blue-500 bg-blue-100 dark:bg-blue-700/80': set.type === 'warmup', // Subtle warmup style
     };
@@ -3862,7 +3869,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       const distance = setForDisplay.targetDistance ?? distanceToExact(0);
       const duration = setForDisplay.targetDuration ?? durationToExact(0);
       let parts: string[] = [];
-      if (getDistanceValue(distance) > 0) parts.push(`${distance} ${this.unitsService.getDistanceMeasureUnitSuffix()}`);
+      if (getDistanceValue(distance) > 0) parts.push(`${distance} ${this.unitsService.getDistanceUnitSuffix()}`);
       if (getDurationValue(duration) > 0) parts.push(this.formatSecondsToTime(getDurationValue(duration)));
       return parts.length > 0 ? `Target: ${parts.join(' for ')}` : 'No target set';
     } else {
@@ -4188,6 +4195,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return this.workoutUtilsService.getVisibleSetColumns(routine, exIndex, setIndex);
   }
 
+  public getVisibleSetColumnsCount(exIndex: number, setIndex: number): number {
+    const cols = this.getVisibleSetColumns(exIndex, setIndex);
+    return Object.values(cols).filter(v => v).length;
+  }
+
   public getFieldsForSet(exIndex: number, setIndex: number, restExcluded?: boolean): { visible: string[], hidden: string[] } {
     const routine = this.routine();
     if (!routine) return this.workoutUtilsService.defaultHiddenFields();
@@ -4362,6 +4374,19 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   // +++ ADD THIS METHOD: Toggles the expanded/collapsed state of a specific set +++
   toggleSetExpansion(exIndex: number, setIndex: number, event: Event): void {
+    if (event) {
+      const target = event.target as HTMLElement;
+      if (target.closest('button') || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) {
+        return;
+      }
+
+
+      // Ignore clicks inside the #exerciseCard
+      if (target.closest('#exerciseCard')) {
+        return;
+      }
+
+    }
     event.stopPropagation(); // Prevent the main exercise card from toggling
     const key = this.getSetOrderId(exIndex, setIndex);;
 
@@ -4446,7 +4471,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     // Distance
     if (distance !== undefined && distance !== null && getDistanceValue(distance) > 0) {
-      parts.push(`${getDistanceValue(distance)} ${this.unitsService.getDistanceMeasureUnitSuffix()}`);
+      parts.push(`${getDistanceValue(distance)} ${this.unitsService.getDistanceUnitSuffix()}`);
     }
 
     // Duration
@@ -5328,7 +5353,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (reps !== null) summaryParts.push(`${this.translate.instant('metrics.reps')}: ${reps}`);
     if (weight !== null) summaryParts.push(`${this.translate.instant('metrics.weight')}: ${weight} (${this.unitsService.getWeightUnitSuffix()})`);
     if (duration !== null) summaryParts.push(`${this.translate.instant('metrics.duration')}: ${duration} (s)`);
-    if (distance !== null) summaryParts.push(`${this.translate.instant('metrics.distance')}: ${distance} (${this.unitsService.getDistanceMeasureUnitSuffix()})`);
+    if (distance !== null) summaryParts.push(`${this.translate.instant('metrics.distance')}: ${distance} (${this.unitsService.getDistanceUnitSuffix()})`);
     if (rest !== null) summaryParts.push(`${this.translate.instant('metrics.rest')}: ${rest} (s)`);
     if (tempo !== null) summaryParts.push(`${this.translate.instant('metrics.tempo')}: ${tempo}`);
 
@@ -5427,7 +5452,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
             affectedSetsCount++;
             // Remove the related target property
             switch (metric) {
-              case METRIC.rest: set.targetRest = undefined; break;
+              case METRIC.rest: set.targetRest = undefined;
+                const restKey = this.getSupersetRestKey(exIndex, setIndex);
+                this.restStartTimestamps[restKey] = 0;
+                break;
               case METRIC.weight: set.targetWeight = undefined; break;
               case METRIC.reps: set.targetReps = undefined; break;
               case METRIC.distance: set.targetDistance = undefined; break;
@@ -5435,7 +5463,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
             }
             // Remove from performanceInputValues
             this.performanceInputValues.update(inputs => {
-              const key = `${originalExIndex}-${setIndex}`;
+              const key = this.getSupersetRestKey(originalExIndex, setIndex);
               if (inputs[key]) {
                 delete inputs[key][this.getFieldKey(metric)];
               }

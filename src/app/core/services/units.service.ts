@@ -94,7 +94,7 @@ export class UnitsService {
     return this.translate.instant(key);
   }
 
-  public getDistanceMeasureUnitSuffix(): string {
+  public getDistanceUnitSuffix(): string {
     const key = this.currentDistanceMeasureUnit() === 'km' ? 'units.distance.km' : 'units.distance.mi';
     return this.translate.instant(key);
   }

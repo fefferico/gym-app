@@ -459,8 +459,8 @@ export class PerformanceComparisonModalComponent {
         if (showDistance) {
             rows.push({
                 metric: this.translate.instant('performanceComparison.summary.totalDistance'),
-                currentValue: `${this.decimalPipe.transform(data.currentSummary.totalDistance, '1.0-2')} ${this.unitService.getDistanceMeasureUnitSuffix()}`,
-                previousValue: `${this.decimalPipe.transform(data.previousSummary.totalDistance, '1.0-2')} ${this.unitService.getDistanceMeasureUnitSuffix()}`,
+                currentValue: `${this.decimalPipe.transform(data.currentSummary.totalDistance, '1.0-2')} ${this.unitService.getDistanceUnitSuffix()}`,
+                previousValue: `${this.decimalPipe.transform(data.previousSummary.totalDistance, '1.0-2')} ${this.unitService.getDistanceUnitSuffix()}`,
                 diff: data.comparison.distanceDiff,
                 percentChange: data.comparison.distancePercentChange,
             });

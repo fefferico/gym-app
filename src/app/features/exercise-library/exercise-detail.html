@@ -302,7 +302,7 @@
           <ng-container *ngIf="hasCardioCategory()">
             <div>
               <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">{{
-                'exerciseDetail.charts.maxDistanceTitle' | translate: { unit: unitService.getDistanceMeasureUnitSuffix()
+                'exerciseDetail.charts.maxDistanceTitle' | translate: { unit: unitService.getDistanceUnitSuffix()
                 } }}</h3>
 
               <div *ngIf="maxDistanceChartData().length > 0; else noChartData"

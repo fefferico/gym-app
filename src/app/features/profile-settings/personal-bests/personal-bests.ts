@@ -267,7 +267,7 @@ export class PersonalBestsComponent implements OnInit {
       }
       if (effectivePbType.includes('Max Distance')) {
         if (item.distanceLogged != null) {
-          return `${item.distanceLogged} ${this.unitsService.getDistanceMeasureUnitSuffix()}`;
+          return `${item.distanceLogged} ${this.unitsService.getDistanceUnitSuffix()}`;
         }
       }
     }
@@ -288,7 +288,7 @@ export class PersonalBestsComponent implements OnInit {
       return this.workoutUtilsService.formatSecondsToTime(item.durationLogged);
     }
     if (item.distanceLogged != null && item.distanceLogged > 0) {
-      return `${item.distanceLogged} ${this.unitsService.getDistanceMeasureUnitSuffix()}`;
+      return `${item.distanceLogged} ${this.unitsService.getDistanceUnitSuffix()}`;
     }
 
     return 'N/A';

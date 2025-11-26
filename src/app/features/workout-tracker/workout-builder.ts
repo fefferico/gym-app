@@ -4605,7 +4605,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const metrics: { key: string, label: string, unit?: string }[] = [
       { key: 'targetReps', label: this.translate.instant('workoutBuilder.set.reps') },
       { key: 'targetWeight', label: this.translate.instant('workoutBuilder.set.weight'), unit: this.unitService.getWeightUnitSuffix() },
-      { key: 'targetDistance', label: this.translate.instant('workoutBuilder.set.distance'), unit: this.unitService.getDistanceMeasureUnitSuffix() },
+      { key: 'targetDistance', label: this.translate.instant('workoutBuilder.set.distance'), unit: this.unitService.getDistanceUnitSuffix() },
       { key: 'targetDuration', label: this.translate.instant('workoutBuilder.set.time'), unit: 's' },
       { key: 'targetRest', label: this.translate.instant('workoutBuilder.set.rest'), unit: 's' }
     ];

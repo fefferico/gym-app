@@ -476,7 +476,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     if (this.hasCardioCategory()) {
       const maxDist = pbs.find(p => p.pbType === 'Max Distance');
       const maxDur = pbs.find(p => p.pbType === 'Max Duration');
-      if (maxDist) records.push({ label: this.translate.instant('exerciseDetail.records.maxDistance'), value: this.decimalPipe.transform(getDistanceValue(maxDist.distanceLogged), '1.0-2') ?? '0', unit: this.unitService.getDistanceMeasureUnitSuffix() });
+      if (maxDist) records.push({ label: this.translate.instant('exerciseDetail.records.maxDistance'), value: this.decimalPipe.transform(getDistanceValue(maxDist.distanceLogged), '1.0-2') ?? '0', unit: this.unitService.getDistanceUnitSuffix() });
       if (maxDur) records.push({ label: this.translate.instant('exerciseDetail.records.maxDuration'), value: this.formatDurationForRecord(getDurationValue(maxDur.durationLogged)), unit: '' });
     } else {
       const est1RM = pbs.find(p => p.pbType === '1RM (Estimated)');
@@ -590,7 +590,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     // Set the appropriate chart signals
     if (isCardio) {
       this.maxDurationChartData.set([{ name: this.translate.instant('exerciseDetail.charts.maxDurationSeries'), series: maxDurationSeries }]);
-      this.maxDistanceChartData.set([{ name: this.translate.instant('exerciseDetail.charts.maxDistanceSeries', { unit: this.unitService.getDistanceMeasureUnitSuffix() }), series: maxDistanceSeries }]);
+      this.maxDistanceChartData.set([{ name: this.translate.instant('exerciseDetail.charts.maxDistanceSeries', { unit: this.unitService.getDistanceUnitSuffix() }), series: maxDistanceSeries }]);
     } else {
       this.est1rmChartData.set([{ name: this.translate.instant('exerciseDetail.charts.est1rmSeries'), series: est1rmSeries }]);
       this.maxWeightChartData.set([{ name: this.translate.instant('exerciseDetail.charts.maxWeightSeries'), series: maxWeightSeries }]);
@@ -684,7 +684,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     if (set.repsLogged) parts.push(`${getRepsValue(set.repsLogged)} ${this.translate.instant('exerciseDetail.historyDisplay.reps')}`);
-    if (set.distanceLogged && getDistanceValue(set.distanceLogged) > 0) parts.push(`${this.decimalPipe.transform(getDistanceValue(set.distanceLogged), '1.0-2')} ${this.unitService.getDistanceMeasureUnitSuffix()}`);
+    if (set.distanceLogged && getDistanceValue(set.distanceLogged) > 0) parts.push(`${this.decimalPipe.transform(getDistanceValue(set.distanceLogged), '1.0-2')} ${this.unitService.getDistanceUnitSuffix()}`);
     if (set.durationLogged && getDurationValue(set.durationLogged) > 0) parts.push(this.formatDurationForRecord(getDurationValue(set.durationLogged)));
 
     return parts.length > 0 ? parts.join(' x ') : this.translate.instant('exerciseDetail.historyDisplay.noData');

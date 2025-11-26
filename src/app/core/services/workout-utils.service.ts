@@ -662,7 +662,7 @@ export class WorkoutUtilsService {
                 placeholderValue = 60;
                 break;
             case METRIC.distance:
-                inputLabel += ` (${this.unitsService.getDistanceMeasureUnitSuffix()})`;
+                inputLabel += ` (${this.unitsService.getDistanceUnitSuffix()})`;
                 placeholderValue = 1;
                 break;
             case METRIC.tempo:
@@ -711,7 +711,7 @@ export class WorkoutUtilsService {
     }
 
     public getDefaultFields(): METRIC[] {
-        return [METRIC.weight, METRIC.reps, METRIC.distance, METRIC.duration, METRIC.tempo, METRIC.rest];
+        return [METRIC.reps, METRIC.weight, METRIC.distance, METRIC.duration, METRIC.tempo, METRIC.rest];
     }
 
     public getFieldsForSet(routine: Routine, exIndex: number, setIndex: number): { visible: METRIC[], hidden: METRIC[] } {
@@ -1001,9 +1001,18 @@ export class WorkoutUtilsService {
         const exercise = routine?.exercises?.[exIndex];
         const set = exercise?.sets?.[setIndex];
 
-        // Return the fieldOrder array if it exists and is an array, otherwise return null.
+        // If fieldOrder exists and is an array, sort it according to the default metrics order
         if (set && Array.isArray(set.fieldOrder)) {
-            return set.fieldOrder;
+            const defaultOrder = this.getDefaultFields();
+            // Sort fieldOrder by the index in defaultOrder, unknown fields go last
+            return [...set.fieldOrder].sort((a, b) => {
+                const idxA = defaultOrder.indexOf(a as any);
+                const idxB = defaultOrder.indexOf(b as any);
+                if (idxA === -1 && idxB === -1) return 0;
+                if (idxA === -1) return 1;
+                if (idxB === -1) return -1;
+                return idxA - idxB;
+            });
         }
 
         return null;
