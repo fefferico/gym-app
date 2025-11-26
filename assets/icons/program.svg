@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <!-- Style Definition: Thick black lines, rounded corners, no fill -->
+    <style>
+      .cls-1 {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 24px;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .cls-2 {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 12px;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }      
+      .cls-3 {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 10px;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+    </style>
+  </defs>
+  <!-- ========================
+       CALENDAR STRUCTURE
+       ======================== -->
+  <!-- Main Body Outline with folded corner -->
+  <path class="cls-1" d="M60,140 L452,140 L452,390 L390,452 L60,452 Z" />
+
+  <!-- Header Top Border (Rounded) -->
+  <path class="cls-1" d="M60,140 L60,80 A20,20 0 0,1 80,60 L432,60 A20,20 0 0,1 452,80 L452,140" />
+
+  <!-- Binder Rings -->
+  <!-- Left -->
+  <path class="cls-1" d="M116,40 L116,90 A10,10 0 0,0 136,90 L136,40 A10,10 0 0,0 116,40" />
+  <!-- Center -->
+  <path class="cls-1" d="M236,40 L236,90 A10,10 0 0,0 256,90 L256,40 A10,10 0 0,0 236,40" />
+  <!-- Right -->
+  <path class="cls-1" d="M356,40 L356,90 A10,10 0 0,0 376,90 L376,40 A10,10 0 0,0 356,40" />
+
+  <!-- ========================
+       NEW CALENDAR GRID (Checkboxes)
+       ======================== -->
+  <g id="CalendarGrid" transform="translate(20, 10)">
+    <!-- Centered grid: 4 columns, 2 rows, bigger cells -->
+    <!-- Cell size: 56x56, gap: 20, grid starts at x=92, y=170 -->
+    <!-- Row 1 -->
+    <rect class="cls-2" x="92"  y="170" width="56" height="56" rx="8" />
+    <rect class="cls-2" x="168" y="170" width="56" height="56" rx="8" />
+    <!-- Checkmarks adjusted for new cell size -->
+    <path class="cls-3" d="M104 200 l16 24 l28 -60" />
+    <path class="cls-3" d="M180 200 l16 24 l28 -60" />
+    <rect class="cls-2" x="244" y="170" width="56" height="56" rx="8" />
+    <rect class="cls-2" x="320" y="170" width="56" height="56" rx="8" />
+
+    <!-- Row 2 -->
+    <rect class="cls-2" x="92"  y="246" width="56" height="56" rx="8" />
+    <rect class="cls-2" x="168" y="246" width="56" height="56" rx="8" />
+    <rect class="cls-2" x="244" y="246" width="56" height="56" rx="8" />
+    <rect class="cls-2" x="320" y="246" width="56" height="56" rx="8" />
+  </g>
+
+  <!-- ========================
+       SMALLER DUMBBELL
+       ======================== -->
+  <!-- Scaled down to 0.7 and centered at the bottom -->
+  <g transform="translate(77, 120) scale(0.7)">
+    <!-- Handle -->
+    <line class="cls-1" x1="160" y1="380" x2="350" y2="380" />
+    
+    <!-- Left Weight -->
+    <rect class="cls-1" x="130" y="325" width="30" height="110" rx="8" />
+    <rect class="cls-1" x="90"  y="340" width="30" height="80" rx="8" />
+    <path class="cls-1" d="M90,380 L80,380" /> <!-- Little tip on the left -->
+
+    <!-- Right Weight -->
+    <rect class="cls-1" x="352" y="325" width="30" height="110" rx="8" />
+    <rect class="cls-1" x="392" y="340" width="30" height="80" rx="8" />
+    <path class="cls-1" d="M422,380 L432,380" /> <!-- Little tip on the right -->
+  </g>
+</svg>

@@ -35,7 +35,15 @@
       "OFFICE_GYM": "Palestra Aziendale",
       "INDOOR_POOL": "Piscina Coperta",
       "OUTDOOR_POOL": "Piscina Scoperta",
-      "OPEN_WATER": "Acque Libere (Lago/Mare)"
+      "OPEN_WATER": "Acque Libere (Lago/Mare)",
+      "SPORTS_HALL": "Palazzetto sportivo",
+      "SPORTS_FIELD": "Campo sportivo",
+      "TENNIS_COURT": "Campo da tennis",
+      "BASKETBALL_COURT": "Campo da basket",
+      "FOOTBALL_FIELD": "Campo da calcio",
+      "CLIMBING_GYM": "Palestra di arrampicata",
+      "SKATE_PARK": "Skatepark",
+      "ICE_RINK": "Pista di pattinaggio su ghiaccio"
     }
   }
 }
