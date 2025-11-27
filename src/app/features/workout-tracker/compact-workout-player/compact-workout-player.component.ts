@@ -2573,22 +2573,35 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       } else {
         // RULES 2 & 3: "Add to" and "Create Superset"
         if (routine.exercises.length >= 2) {
-            // There must be at least one superset exercise,
-            // and for all superset exercises, there must be absolutely no logged set
-            // Find all unique supersetIds in the routine
-            const supersetIds = Array.from(new Set(routine.exercises.filter(ex => ex.supersetId).map(ex => ex.supersetId)));
-            // For each superset group, check if ALL exercises in that group have NO logged sets
-            supersetIds.forEach(supersetId => {
-              const groupExercises = routine.exercises.filter(ex => ex.supersetId === supersetId);
-              const allNotLogged = groupExercises.every(supersetEx => !this.isExerciseLogged(routine.exercises.indexOf(supersetEx)));
-              if (allNotLogged) {
-              actionsArray.push({
-                ...addToSuperSetBtn,
-                data: { exIndex },
-                overrideCssButtonClass: addToSuperSetBtn.buttonClass + commonModalButtonClass
-              });
-              }
+          // Find all unique supersetIds in the routine
+          const supersetIds = Array.from(new Set(routine.exercises.filter(ex => ex.supersetId).map(ex => ex.supersetId)));
+
+          // Find if there is AT LEAST ONE superset group where NO exercises have any logged sets
+          let hasUnloggedSupersetGroup = false;
+
+          supersetIds.forEach(supersetId => {
+            const groupExercises = routine.exercises.filter(ex => ex.supersetId === supersetId);
+            // Check if ALL exercises in this group have NO logged sets
+            const allNotLogged = groupExercises.every(supersetEx => {
+              const exIdx = routine.exercises.indexOf(supersetEx);
+              return !this.isExerciseLogged(exIdx);
             });
+
+            if (allNotLogged) {
+              hasUnloggedSupersetGroup = true;
+            }
+          });
+
+          // Add the button ONLY ONCE if there's at least one unlogged superset group
+          if (hasUnloggedSupersetGroup) {
+            actionsArray.push({
+              ...addToSuperSetBtn,
+              data: { exIndex },
+              overrideCssButtonClass: addToSuperSetBtn.buttonClass + commonModalButtonClass
+            });
+          }
+
+          // Add "Create Superset" button if there are at least 2 non-superset exercises
           if (routine.exercises.filter(ex => !ex.supersetId).length >= 2) {
             actionsArray.push({
               ...createSuperSetBtn,
@@ -3255,10 +3268,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   async addToSupersetModal(exIndex: number): Promise<void> {
     const routine = this.routine();
     if (!routine) return;
+    const loggedExercisesToExclude = this.currentWorkoutLog().exercises || [];
 
     const updatedRoutine = await this.workoutService.addToSuperset(
       routine,
       exIndex,
+      loggedExercisesToExclude,
       this.alertService,
       this.toastService
     );
@@ -4277,7 +4292,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   public getVisibleSetColumnsCountForGrid(exIndex: number, setIndex: number): number {
     let cols = this.getVisibleSetColumns(exIndex, setIndex);
-    if (this.isEmom(exIndex)){
+    if (this.isEmom(exIndex)) {
       // in case of emom REST is usually not available so it must be incremented by 1
       cols = {
         ...cols,

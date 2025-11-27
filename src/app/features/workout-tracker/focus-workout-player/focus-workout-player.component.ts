@@ -4663,10 +4663,13 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     if (!routine || !currentLog.exercises) return;
     if (!currentExercise || currentExercise.exerciseIndex < 0) return;
 
+    const loggedExercisesToExclude = this.currentWorkoutLog().exercises || [];
+
 
     const updatedRoutine = await this.workoutService.addToSuperset(
       routine,
       currentExercise.exerciseIndex,
+      loggedExercisesToExclude,
       this.alertService,
       this.toastService
     );
@@ -4880,16 +4883,16 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     return getDurationValue(duration);
   }
 
-    getWeightValue(duration: WeightTarget | undefined): number {
+  getWeightValue(duration: WeightTarget | undefined): number {
     return getWeightValue(duration);
   }
 
-    getDistanceValue(distance: DistanceTarget | undefined): number {
+  getDistanceValue(distance: DistanceTarget | undefined): number {
     return getDistanceValue(distance);
   }
 
   isCardio(exercise: WorkoutExercise | Exercise | undefined): boolean {
     if (!exercise) return false;
-    return !!exercise.categories?.find(cat=> cat === EXERCISE_CATEGORY_TYPES.cardio);
+    return !!exercise.categories?.find(cat => cat === EXERCISE_CATEGORY_TYPES.cardio);
   }
 }

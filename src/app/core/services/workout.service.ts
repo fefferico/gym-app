@@ -1051,9 +1051,10 @@ export class WorkoutService {
    * Opens a modal to add a standalone exercise to an existing superset.
    * @returns A promise that resolves with the updated routine, or null if cancelled.
    */
-  public async addToSuperset(
+    public async addToSuperset(
     routine: Routine,
     exIndex: number,
+    loggedExercises: LoggedWorkoutExercise[],
     alertService: AlertService,
     toastService: ToastService
   ): Promise<Routine | null> {
@@ -1076,15 +1077,44 @@ export class WorkoutService {
       return null;
     }
 
-    const supersetChoices: AlertInput[] = Array.from(supersetMap.values()).map((group, i) => ({
-      name: 'supersetChoice',
-      type: 'radio',
-      label: `Superset: ${group.map(e => e.exerciseName).join(' & ')}`,
-      value: group[0].supersetId!,
-      checked: i === 0,
-    }));
+    // Filter to only show superset groups where NO rounds have been logged yet
+    const unloggedSupersets: Array<[string, WorkoutExercise[]]> = [];
+    
+    for (const [supersetId, group] of supersetMap.entries()) {
+      // Check if ANY exercise in this superset group has logged sets
+      const hasAnyLoggedSets = group.some(groupEx => {
+        const loggedEx = loggedExercises.find(log => log.id === groupEx.id);
+        return loggedEx && loggedEx.sets.length > 0;
+      });
 
-    const result = await alertService.showPromptDialog('Add to Superset', `Which superset for "${exerciseToAdd.exerciseName}"?`, supersetChoices, 'Add', 'Cancel');
+      // Only add this superset group if NO exercises have any logged sets
+      if (!hasAnyLoggedSets) {
+        unloggedSupersets.push([supersetId, group]);
+      }
+    }
+
+    if (unloggedSupersets.length === 0) {
+      toastService.error("No unlogged supersets exist to add this exercise to.");
+      return null;
+    }
+
+    const supersetChoices: AlertInput[] = unloggedSupersets.map((entry, i) => {
+      const group = entry[1];
+      return {
+        name: 'supersetChoice',
+        type: 'radio',
+        label: `Superset: ${group.map(e => e.exerciseName).join(' & ')}`,
+        value: group[0].supersetId!,
+        checked: i === 0,
+      };
+    });
+
+    const result = await alertService.showPromptDialog( 
+      this.translate.instant('workoutService.prompts.addToSuperset.title'), 
+      this.translate.instant('workoutService.prompts.addToSuperset.message', { exerciseName: exerciseToAdd.exerciseName }), 
+      supersetChoices,  
+      this.translate.instant('workoutService.prompts.addToSuperset.addButton'), 
+      this.translate.instant('common.cancel'));
 
     if (!result || !result['supersetChoice']) return null;
 
