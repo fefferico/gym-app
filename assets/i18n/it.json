@@ -519,18 +519,18 @@
     "toasts": {
       "filteredByProgram": "Mostrando registrazioni filtrate per programma di allenamento",
       "filteredByRoutine": "Mostrando registrazioni filtrate per nome scheda",
-      "logDeleted": "Registrazione allenamento eliminata con successo",
-      "logDeleteFailed": "Impossibile eliminare la registrazione dell'allenamento",
+      "logDeleted": "Sessione allenamento eliminata con successo",
+      "logDeleteFailed": "Impossibile eliminare la sessione dell'allenamento",
       "pausedDiscarded": "Sessione di allenamento in pausa scartata.",
       "noLogsOnDay": "Nessuna attività registrata in questo giorno"
     },
     "alerts": {
-      "noRoutineTitle": "Nessuna scheda per questa registrazione",
-      "noRoutineMessage": "Non c'è nessuna scheda associata a questa registrazione: vuoi crearne una? Se sì, ricorda di collegarla a questa registrazione una volta creata",
-      "deleteLogTitle": "Elimina Registrazione Allenamento",
-      "deleteLogMessage": "Sei sicuro di voler eliminare questa registrazione? L'azione non può essere annullata",
-      "deleteActivityTitle": "Eliminare Registrazione Attività?",
-      "deleteActivityMessage": "Sei sicuro di voler eliminare la registrazione per \"{{name}}\"? L'azione non può essere annullata.",
+      "noRoutineTitle": "Nessuna scheda per questa sessione",
+      "noRoutineMessage": "Non c'è nessuna scheda associata a questa sessione: vuoi crearne una? Se sì, ricorda di collegarla a questa sessione una volta creata",
+      "deleteLogTitle": "Elimina Sessione Allenamento",
+      "deleteLogMessage": "Sei sicuro di voler eliminare questa sessione? L'azione non può essere annullata",
+      "deleteActivityTitle": "Eliminare Sessione Attività?",
+      "deleteActivityMessage": "Sei sicuro di voler eliminare la sessione per \"{{name}}\"? L'azione non può essere annullata.",
       "deleteButton": "Elimina",
       "pausedWorkoutTitle": "Trovato Allenamento in Sospeso",
       "pausedWorkoutMessage": "C'è un allenamento in sospeso: vuoi scartare questa sessione in pausa e registrarne una nuova? L'azione non può essere annullata.",
@@ -751,7 +751,7 @@
     },
     "backToTop": "Torna su",
     "toasts": {
-      "logNotFound": "Impossibile trovare la registrazione dell'allenamento associata a questo record. È possibile che la sessione di allenamento correlata sia stata rimossa.",
+      "logNotFound": "Impossibile trovare la sessione dell'allenamento associata a questo record. È possibile che la sessione di allenamento correlata sia stata rimossa.",
       "navigationError": "Errore di Navigazione",
       "recalcError": "Si è verificato un errore durante il ricalcolo dei record personali.",
       "resetError": "Si è verificato un errore durante il tentativo di azzerare i record personali.",
@@ -1020,6 +1020,7 @@
     "addExercise": "Aggiungi Esercizio",
     "jumpToExercise": "Vai all'esercizio",
     "switch": "Sostituisci",
+    "info": "Info",
     "sessionInsight": "Statistiche sessione",
     "exerciseInsights": "Statistiche esercizio",
     "exit": "Esci",
@@ -1480,8 +1481,8 @@
     "exerciseLabel": "Esercizio {{order}} di {{total}}",
     "noLoggedExercises": "Nessun esercizio specifico è stato registrato per questo allenamento",
     "loading": "Caricamento dettagli allenamento...",
-    "notFoundTitle": "Registrazione Allenamento Non Trovata",
-    "notFoundMessage": "La registrazione dell'allenamento che stai cercando non esiste",
+    "notFoundTitle": "Sessione Allenamento Non Trovata",
+    "notFoundMessage": "La sessione dell'allenamento che stai cercando non esiste",
     "backToHistory": "Torna allo Cronologia",
     "comparisonModal": {
       "exerciseTitle": "Confronto Esercizio",
@@ -1505,15 +1506,15 @@
       "delete": "ELIMINA"
     },
     "alerts": {
-      "noRoutineTitle": "Nessuna scheda per questa registrazione",
-      "noRoutineMessage": "Non c'è nessuna scheda associata a questa registrazione: vuoi crearne una? Se sì, ricorda di collegarla a questa registrazione una volta creata",
-      "deleteTitle": "Elimina Registrazione Allenamento",
-      "deleteMessage": "Sei sicuro di voler eliminare questa registrazione? L'azione non può essere annullata",
+      "noRoutineTitle": "Nessuna scheda per questa sessione",
+      "noRoutineMessage": "Non c'è nessuna scheda associata a questa sessione: vuoi crearne una? Se sì, ricorda di collegarla a questa sessione una volta creata",
+      "deleteTitle": "Elimina Sessione Allenamento",
+      "deleteMessage": "Sei sicuro di voler eliminare questa sessione? L'azione non può essere annullata",
       "deleteButton": "Elimina"
     },
     "toasts": {
-      "logDeleted": "Registrazione allenamento eliminata con successo",
-      "logDeleteFailed": "Impossibile eliminare la registrazione dell'allenamento"
+      "logDeleted": "Sessione allenamento eliminata con successo",
+      "logDeleteFailed": "Impossibile eliminare la sessione dell'allenamento"
     },
     "card": {
       "set": "Serie",
@@ -1596,8 +1597,8 @@
     "viewFullLog": "DETTAGLI",
     "loading": "Caricamento riepilogo allenamento...",
     "notFound": {
-      "title": "Registrazione Allenamento Non Trovata",
-      "message": "La registrazione dell'allenamento che stai cercando non esiste",
+      "title": "Sessione Allenamento Non Trovata",
+      "message": "La sessione dell'allenamento che stai cercando non esiste",
       "backToHistory": "Torna al Diario"
     },
     "toasts": {
@@ -2042,7 +2043,7 @@
     },
     "alerts": {
       "deleteTitle": "Eliminare Registro Attività?",
-      "deleteMessage": "Sei sicuro di voler eliminare questa registrazione per \"{{name}}\"? L'azione non può essere annullata.",
+      "deleteMessage": "Sei sicuro di voler eliminare questa sessione per \"{{name}}\"? L'azione non può essere annullata.",
       "cancel": "Annulla",
       "deleteButton": "Elimina"
     }
