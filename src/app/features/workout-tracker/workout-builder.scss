@@ -1,5 +1,5 @@
 .exercise-list-container {
-  min-height: 60px; // Ensure drop list has some height even when empty for dropping
+  min-height: 60px;
 }
 
 .exercise-item {
@@ -9,85 +9,134 @@
 // This is our custom class, added by the independent directive.
 // This style will be applied when the long press is successful.
 :host ::ng-deep .is-long-pressing {
-  // 1. The "pop" and "lift" effect
-  // transform: scale(1.03);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25); // The outer shadow for depth
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
   z-index: 1000;
 
-  // 2. The "border" effect that STAYS INSIDE
-  // We add the inset shadow to the existing outer shadow
-  box-shadow: inset 0 0 0 2px #e0460d, 0 5px 15px rgba(0, 0, 0, 0.25);
+  // Purple inset border for long press
+  box-shadow: inset 0 0 0 2px #a855f7, 0 5px 15px rgba(0, 0, 0, 0.25);
   border-radius: 5px;
-  
-  // Remove the problematic outline and border
-  // outline: none;
-  // border-color: transparent; // Or whatever makes sense
 }
 
 /* When an item is being dragged, its original spot gets this placeholder */
 .cdk-drag-placeholder {
-  opacity: 0.4;
-  background: #ccc;
-  border: dotted 2px #999;
-  min-height: 100px; // Match approximate item height
-  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
-  display: block; // Ensure it takes up space
+  opacity: 0.5;
+  background: linear-gradient(135deg, #f3f4f6 25%, transparent 25%, transparent 75%, #f3f4f6 75%, #f3f4f6),
+    linear-gradient(135deg, #f3f4f6 25%, transparent 25%, transparent 75%, #f3f4f6 75%, #f3f4f6);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+  background-color: #e5e7eb;
+  border: 2px dashed #d1d5db;
+  min-height: 100px;
+  border-radius: 0.375rem;
   margin-bottom: 0.5rem;
-  /* space-y-2 */
+  display: block;
+  transition: all 200ms ease-out;
 }
 
-/* The item being dragged */
+/* The item being dragged - PURPLE BORDER, NO OUTER RING */
 .cdk-drag-preview {
-  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
-    0 8px 10px 1px rgba(0, 0, 0, 0.14),
-    0 3px 14px 2px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Shadow only, NO glow ring */
   border-radius: 0.5rem;
-  /* rounded-lg */
-  // Ensure its background is solid so content below doesn't show through
   background-color: var(--card-background-color, white);
-  /* Use CSS variable or actual color */
+  opacity: 0.95;
+  transform: scale(1.02);
+  border: 3px solid #a855f7; /* PURPLE border, solid */
 }
 
 body.dark .cdk-drag-preview {
   background-color: var(--dark-card-background-color, #1f2937);
-  /* dark:bg-gray-700 */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+  border: 3px solid #a855f7;
 }
 
+body.dark .cdk-drag-placeholder {
+  background-color: #374151;
+  border-color: #4b5563;
+}
+
+// Highlight drop zones during drag
+.cdk-drop-list-dragging {
+  .exercise-item:not(.cdk-drag-placeholder) {
+    transition: transform 200ms cubic-bezier(0, 0, 0.2, 1),
+      opacity 200ms ease-out;
+  }
+}
 
 /* While dragging over the list */
 .cdk-drop-list-dragging .exercise-item:not(.cdk-drag-placeholder) {
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
 
+// Style for superset group visual separation
+.exercise-card-wrapper {
+  // Normal state - no special styling
+  &.superset-start {
+    margin-left: 0;
+  }
 
-.cdk-drag-handle {
-  cursor: grab; /* 'cursor-grab' */
-  padding: 0.25rem; /* 'p-1' */
-  color: #9ca3af; /* 'text-gray-400' */
-  // display: flex;
-  // flex-shrink: 0; /* 'flex-shrink-0' */
-  position: relative; /* default position for top/right */
-  top: 0.25rem; /* 'top-1' */
-  right: 0.25rem; /* 'right-1' */
+  &.superset-member {
+    margin-left: 1rem;
+    border-left: 3px solid var(--primary-color, #3b82f6);
+  }
+
+  // When a superset member is being dragged, show it's part of a group
+  &.cdk-drag-animating {
+    &.superset-member {
+      opacity: 0.85;
+      border-left-color: #a855f7;
+    }
+  }
 }
 
-/* Hover states */
+body.dark .exercise-card-wrapper.superset-member {
+  border-left-color: var(--primary-light-color, #60a5fa);
+
+  &.cdk-drag-animating {
+    border-left-color: #a855f7;
+  }
+}
+
+// When dragging a superset start, move all members with it
+.exercise-list-container.dragging-superset-group {
+  .superset-member-of-dragged {
+    opacity: 1;
+    transform: translateY(0); /* They move with the dragged item */
+    border-left-color: #a855f7;
+    box-shadow: inset 0 0 0 1px rgba(168, 85, 247, 0.3);
+  }
+}
+
+// Individual superset member styling during drag
+.exercise-card-wrapper.superset-member-of-dragged {
+  opacity: 0.9;
+  border-left: 3px solid #a855f7;
+  transition: opacity 150ms ease-out, border-left-color 150ms ease-out;
+}
+
+.cdk-drag-handle {
+  cursor: grab;
+  padding: 0.25rem;
+  color: #9ca3af;
+  position: relative;
+  top: 0.25rem;
+  right: 0.25rem;
+}
+
 .cdk-drag-handle:hover {
-  color: #4B5563; /* 'hover:text-gray-600' */
+  color: #4B5563;
 }
 
 .dark .cdk-drag-handle {
-  color: #6B7280; /* 'dark:text-gray-500' */
+  color: #6B7280;
 }
 
 .dark .cdk-drag-handle:hover {
-  color: #D1D5DB; /* 'dark:hover:text-gray-300' */
+  color: #D1D5DB;
 }
 
-/* Responsive for small screens and above */
 @media (min-width: 640px) {
   .cdk-drag-handle {
-    position: static; /* 'sm:static' */
+    position: static;
   }
 }
 
@@ -95,22 +144,19 @@ body.dark .cdk-drag-preview {
   margin-top: 0 !important;
 }
 
-// _variables.scss (or wherever you define your breakpoints)
-$breakpoint-md: 768px; // Matching Tailwind's default 'md' breakpoint
+$breakpoint-md: 768px;
 
-// _mixins.scss (optional, for reusable media query mixins)
 @mixin md-up {
   @media (min-width: #{$breakpoint-md}) {
     @content;
   }
 }
 
-// your-component.scss (or your main SCSS file)
 .max-exercise-length {
-  max-width: 250px; // Default for mobile
+  max-width: 250px;
 
   @include md-up {
-    max-width: 100%; // For medium screens and up
+    max-width: 100%;
   }
 }
 
@@ -121,93 +167,56 @@ $breakpoint-md: 768px; // Matching Tailwind's default 'md' breakpoint
 .wrapper_ranged_input_number_class {
   @apply flex items-center w-full p-0.5 justify-center bg-gray-200 dark:bg-gray-700 rounded-xl no-arrows;
 }
+
 .input_number_class_separator {
   @apply text-gray-500 dark:text-gray-400 font-bold mx-1;
 }
 
-/*
-  This styles the main wrapper div. It creates the dark, rounded container
-  and clips the animation.
-*/
 .numeric-stepper-container {
   display: flex;
   align-items: center;
   background-color: #2c3240;
   border-radius: 12px;
-  // height: 52px;
-  position: relative; /* Establishes a stacking context */
-  overflow: hidden;   /* Contains the animation */
+  position: relative;
+  overflow: hidden;
 }
 
-/*
-  --- CLICKABILITY AND INTERACTION FIX ---
-  This targets the <input> ONLY when it's inside our new container.
-*/
 .numeric-stepper-container input {
-  /* Make the input transparent so the animated number behind it is visible */
   background: transparent !important;
-  color: transparent; /* Hide the input's actual text/caret */
-  caret-color: white; /* Make the typing caret visible for user feedback */
-
-  /* Remove default styling */
+  color: transparent;
+  caret-color: white;
   border: none !important;
   box-shadow: none !important;
   outline: none !important;
-  
-  /* Layering Fix: */
-  position: relative; /* Ensure z-index is applied correctly */
-  z-index: 2;         /* Bring the input to the very top layer */
-
-  /* Make the input fill the central area to be clickable */
+  position: relative;
+  z-index: 2;
   width: 100%;
   height: 100%;
   text-align: center;
-  font-size: 1.5em; /* Match the font size of your animated number */
+  font-size: 1.5em;
   font-weight: bold;
 }
 
-/*
-  This assumes your animated number is a <span> or <div> inside the template.
-  We force it to be on a lower layer than the input.
-  You may need to adjust the selector (e.g., '.animated-value') to match your code.
-*/
-.numeric-stepper-container .input-number-container > span {
+.numeric-stepper-container .input-number-container>span {
   position: absolute;
-  z-index: 1; /* Places it BEHIND the input */
+  z-index: 1;
   left: 0;
   right: 0;
   text-align: center;
   color: white;
-  /* Prevent the span itself from capturing clicks */
   pointer-events: none;
 }
 
-/*
-  Styles the buttons inside the container.
-*/
 .numeric-stepper-container button {
-  // background-color: #3a4151;
-  // border-radius: 8px;
-  // color: white;
-  // flex-shrink: 0;
-  // margin: 0 6px;
-  // width: 42px;
-  // height: 42px;
-  // font-size: 2em;
-  // /* Layering: Keep buttons on top, but below the input overlay if they overlap */
-  // position: relative;
-  // z-index: 3;
-
   @apply flex items-center px-3 py-5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 border-y border-gray-200 dark:border-gray-700 transition-colors
 }
 
-
 .no-arrows::-webkit-outer-spin-button,
 .no-arrows::-webkit-inner-spin-button {
- -webkit-appearance: none;
- margin: 0;
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .no-arrows {
- -moz-appearance: textfield;
+  -moz-appearance: textfield;
 }

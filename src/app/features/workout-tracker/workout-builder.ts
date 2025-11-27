@@ -1746,47 +1746,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return uniqueSupersetIds.length === 1;
   }
 
-  onExerciseDrop(event: CdkDragDrop<AbstractControl[]>): void {
-    if (this.isViewMode) return;
-    if (event.previousContainer === event.container) {
-      const exercisesArray = this.exercisesFormArray;
-      moveItemInArray(exercisesArray.controls, event.previousIndex, event.currentIndex);
-      exercisesArray.updateValueAndValidity();
-      this.selectedExerciseIndicesForSuperset.set([]);
-      this.handleSupersetIntegrityAfterDrag(event.previousIndex, event.currentIndex);
-      this.recalculateSupersetOrders();
-      this.expandedSetPath.set(null); // Collapse any expanded set after reorder
-    }
-  }
-
-  private handleSupersetIntegrityAfterDrag(previousIndex: number, currentIndex: number): void {
-    const affectedIndices = new Set<number>();
-    affectedIndices.add(previousIndex);
-    affectedIndices.add(currentIndex);
-    if (previousIndex < currentIndex) {
-      for (let i = previousIndex; i <= currentIndex; i++) affectedIndices.add(i);
-    } else {
-      for (let i = currentIndex; i <= previousIndex; i++) affectedIndices.add(i);
-    }
-    const supersetIdsToUngroup = new Set<string>();
-    affectedIndices.forEach(index => {
-      if (index < this.exercisesFormArray.length) {
-        const exerciseControl = this.exercisesFormArray.at(index) as FormGroup;
-        const supersetId = exerciseControl.get('supersetId')?.value;
-        if (supersetId) supersetIdsToUngroup.add(supersetId);
-      }
-    });
-    supersetIdsToUngroup.forEach(supersetIdToClear => {
-      this.exercisesFormArray.controls.forEach(exCtrl => {
-        const fg = exCtrl as FormGroup;
-        if (fg.get('supersetId')?.value === supersetIdToClear) {
-          fg.patchValue({ supersetId: null, supersetOrder: null });
-        }
-      });
-    });
-    this.recalculateSupersetOrders();
-  }
-
   private recalculateSupersetOrders(): void {
     const supersetGroups = new Map<string, FormGroup[]>();
     this.exercisesFormArray.controls.forEach(control => {
@@ -1821,185 +1780,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.exercisesFormArray.updateValueAndValidity({ emitEvent: false });
   }
 
-  async groupSelectedAsSuperset(): Promise<void> {
-    if (this.isViewMode) return;
-    const selectedIndices = this.selectedExerciseIndicesForSuperset().sort((a, b) => a - b);
-
-    if (selectedIndices.length < 2) {
-      this.toastService.warning(this.translate.instant("workoutBuilder.toasts.supersetSizeError"), 3000, "Superset Error");
-      return;
-    }
-
-    for (let i = 1; i < selectedIndices.length; i++) {
-      if (selectedIndices[i] !== selectedIndices[i - 1] + 1) {
-        this.toastService.warning(this.translate.instant("workoutBuilder.toasts.supersetOrderError"), 5000, "Superset Error");
-        return;
-      }
-    }
-
-    let isEmom: boolean = false;
-
-    const customBtns: AlertButton[] = [
-      { text: 'STANDARD', role: 'confirm', data: 'standard', cssClass: 'bg-orange-500 text-white' },
-      { text: 'EMOM', role: 'confirm', data: 'emom', cssClass: 'bg-teal-500 text-white' }
-    ];
-
-    const typeResult = await this.alertService.showConfirmationDialog(
-      this.translate.instant("workoutBuilder.superset.selectGroupType"),
-      this.translate.instant("workoutBuilder.superset.howToGroup"),
-      customBtns,
-    );
-
-    if (!typeResult || !typeResult.data) {
-      this.toastService.info("Grouping cancelled.", 2000);
-      return;
-    }
-
-    const supersetType: 'standard' | 'emom' = typeResult.data;
-    let numberOfSets: number;
-    let emomTimeSeconds: number | null = null;
-
-    if (supersetType === 'emom') {
-      isEmom = true;
-      const emomInputs: AlertInput[] = [
-        { name: 'emomTime', type: 'number', label: this.translate.instant("workoutBuilder.superset.emomTimePerRound"), value: '60', attributes: { min: '10', required: true } },
-        { name: 'numSets', type: 'number', label: this.translate.instant("workoutBuilder.superset.numRounds"), value: '5', attributes: { min: '1', required: true } }
-      ];
-      const emomResult = await this.alertService.showPromptDialog(this.translate.instant("workoutBuilder.superset.setEmomDetails"), this.translate.instant("workoutBuilder.superset.configureEmom"), emomInputs);
-
-      if (!emomResult || !emomResult['emomTime'] || !emomResult['numSets']) {
-        return;
-      }
-      emomTimeSeconds = Number(emomResult['emomTime']);
-      numberOfSets = Number(emomResult['numSets']);
-    } else {
-      const setsResult = await this.alertService.showPromptDialog(this.translate.instant("workoutBuilder.superset.setSupersetRounds"), this.translate.instant("workoutBuilder.superset.howManyRounds"),
-        [{ name: 'numSets', type: 'number', label: this.translate.instant("workoutBuilder.superset.numRounds"), value: '3', attributes: { min: '1', required: true } }]
-      );
-
-      if (!setsResult || !setsResult['numSets']) {
-        this.toastService.info(this.translate.instant("workoutBuilder.superset.groupingCancelled"), 2000);
-        return;
-      }
-      numberOfSets = Number(setsResult['numSets']);
-    }
-
-    // --- NEW: Prompt for targets for each exercise individually ---
-    const exerciseTargets: { reps: number, weight?: number }[] = [];
-    const defaultWeightKg = 15;
-    const defaultWeightInCurrentUnit = this.unitService.convertWeight(defaultWeightKg, this.unitService.currentWeightUnit(), 'kg');
-
-    for (const [i, index] of selectedIndices.entries()) {
-      const exerciseControl = this.exercisesFormArray.at(index) as FormGroup;
-      const exerciseName = exerciseControl.get('exerciseName')?.value;
-      const exerciseId = exerciseControl.get('exerciseId')?.value;
-      const baseExercise = this.availableExercises.find(ex => ex.id === exerciseId);
-      const isWeighted = baseExercise ? !baseExercise.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.cardio) : false;
-
-      const inputs: AlertInput[] = [
-        {
-          name: 'reps',
-          type: 'number',
-          label: `${this.translate.instant('workoutBuilder.set.reps')}`,
-          // label: `${exerciseName} - ${this.translate.instant('workoutBuilder.set.reps')}`,
-          value: '8',
-          attributes: { min: '0', required: true }
-        }
-      ];
-      if (isWeighted) {
-        inputs.push({
-          name: 'weight',
-          type: 'number',
-          label: `${this.translate.instant('workoutBuilder.set.weight')} (${this.unitService.getWeightUnitSuffix()})`,
-          // label: `${exerciseName} - ${this.translate.instant('workoutBuilder.set.weight')} (${this.unitService.getWeightUnitSuffix()})`,
-          value: String(Math.round(defaultWeightInCurrentUnit!)),
-          attributes: { min: '0' }
-        });
-      }
-
-      const result = await this.alertService.showPromptDialog(
-        this.translate.instant('workoutBuilder.superset.setExerciseTargets'),
-        this.translate.instant('workoutBuilder.superset.enterTargets', { weight: isWeighted ? ' and weight' : '', exerciseName }),
-        inputs
-      );
-
-      if (!result || !result['reps']) {
-        this.toastService.info(this.translate.instant('workoutBuilder.superset.supersetCreationCancelled'), 2000);
-        return;
-      }
-      exerciseTargets.push({
-        reps: Number(result['reps']),
-        weight: isWeighted && result['weight'] !== undefined ? Number(result['weight']) : undefined
-      });
-    }
-
-    // --- The rest of your logic, but use confirmedIndices and exerciseTargets ---
-    const newSupersetId = uuidv4();
-    const supersetSize = selectedIndices.length;
-
-    selectedIndices.forEach((exerciseIndexInFormArray, orderInSuperset) => {
-      const exerciseControl = this.exercisesFormArray.at(exerciseIndexInFormArray) as FormGroup;
-      const { reps, weight } = exerciseTargets[orderInSuperset];
-
-      exerciseControl.patchValue({
-        supersetId: newSupersetId,
-        supersetOrder: orderInSuperset,
-        supersetType: supersetType,
-        emomTimeSeconds: emomTimeSeconds,
-        type: 'superset'
-      });
-
-      const setsArray = exerciseControl.get('sets') as FormArray;
-      const targetReps: RepsTarget = { type: RepsTargetType.exact, value: reps };
-      const targetWeightKg = weight !== undefined
-        ? weightToExact(this.unitService.convertWeight(weight, 'kg', this.unitService.currentWeightUnit()))
-        : undefined;
-
-      let restForThisExercise = restToExact(0);
-
-      if (supersetType === 'standard') {
-        const isLastExerciseInGroup = (orderInSuperset === supersetSize - 1);
-        if (isLastExerciseInGroup) {
-          restForThisExercise = restToExact(60);
-        }
-      }
-      let fieldOrder = [];
-
-      if (targetReps) {
-        fieldOrder.push(METRIC.weight);
-      }
-      if (targetWeightKg) {
-        fieldOrder.push(METRIC.reps);
-      }
-      if (restForThisExercise) {
-        fieldOrder.push(METRIC.rest);
-      }
-
-      const templateSetData: ExerciseTargetSetParams = {
-        id: uuidv4(),
-        type: 'superset',
-        targetReps: targetReps,
-        targetWeight: targetWeightKg,
-        fieldOrder: fieldOrder,
-        targetRest: restForThisExercise
-      };
-
-      setsArray.clear();
-
-      for (let i = 0; i < numberOfSets; i++) {
-        const newSet = this.workoutFormService.createSetFormGroup(templateSetData, false);
-        setsArray.push(newSet);
-      }
-    });
-
-    this.selectedExerciseIndicesForSuperset.set([]);
-    const successMessage = supersetType === 'emom'
-      ? this.translate.instant("workoutBuilder.superset.emomCreated", { numberOfSets })
-      : this.translate.instant("workoutBuilder.superset.supersetCreated", { numberOfSets });
-    this.toastService.success(successMessage, 4000, "Success");
-    this.expandedSetPath.set(null);
-    this.toggleSetExpansion(selectedIndices[0], 0);
-  }
 
   ungroupSuperset(exerciseIndex: number): void {
     if (this.isViewMode) return;
@@ -2362,7 +2142,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         'border-primary border-r-2 border-l-2': true,
         'bg-orange-100 dark:bg-orange-900/10': !isSelected,
         'bg-orange-200 dark:bg-orange-800/50': isSelected,
-        'rounded-t-xl border-x-2 border-t-2 mt-2': isFirst,
+        'rounded-t-xl border-x-2 border-t-2 mt-4': isFirst,
         'border-x-2': !isFirst,
         'rounded-b-xl border-b-2 mb-2': isLast,
       };
@@ -3698,6 +3478,20 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   protected isStandardSupersetExercise(exerciseControl: AbstractControl): boolean {
     return exerciseControl.get('supersetType')?.value === 'standard';
+  }
+
+  protected isStandardExercise(exerciseControl: AbstractControl): boolean {
+    const supersetId = exerciseControl.get('supersetId')?.value;
+    return !supersetId;
+  }
+
+  protected isSSExercise(exerciseControl: AbstractControl): boolean {
+    const supersetId = exerciseControl.get('supersetId')?.value;
+    return supersetId;
+  }
+
+  protected isLastExercise(exIndex: number): boolean {
+    return exIndex === this.exercisesFormArray.length - 1;
   }
 
   /**
@@ -5130,10 +4924,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return 0;
   }
 
-  protected isDraggingEnabled(exIndex: number): boolean {
-    return this.isEditableMode() && !this.shouldShowExpandedExercise(exIndex) && !this.isSuperSet(exIndex);
-  }
-
   protected metricEnum = METRIC;
   protected repsTargetTypeEnum = RepsTargetType;
   protected restTargetTypeEnum = RestTargetType;
@@ -6015,6 +5805,621 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       input.blur();
       input.focus();
     }
+  }
+
+
+
+  /**
+   * Handles dragging an entire superset group (when grabbing a superset start).
+   * Moves all exercises in the group atomically to the new position.
+   */
+  private handleSupersetGroupDrag(supersetId: string, draggedStartIndex: number, targetIndex: number): void {
+    const exercises = this.exercisesFormArray.controls as FormGroup[];
+
+    // Find all exercises in this superset
+    const supersetGroup = exercises
+      .map((ctrl, idx) => ({ ctrl, idx }))
+      .filter(({ ctrl }) => ctrl.get('supersetId')?.value === supersetId);
+
+    if (supersetGroup.length === 0) return;
+
+    const groupSize = supersetGroup.length;
+    const draggedEndIndex = draggedStartIndex + groupSize - 1;
+
+    // Extract the entire group
+    const groupControls = supersetGroup.map(({ ctrl }) => ctrl);
+
+    // Remove all group members from their current positions
+    for (let i = draggedEndIndex; i >= draggedStartIndex; i--) {
+      this.exercisesFormArray.removeAt(i);
+    }
+
+    // Calculate correct insertion point
+    let insertionIndex = targetIndex;
+    if (targetIndex > draggedStartIndex) {
+      insertionIndex = targetIndex - groupSize;
+    }
+
+    // Insert the entire group at the new position
+    groupControls.forEach((ctrl, offset) => {
+      this.exercisesFormArray.insert(insertionIndex + offset, ctrl);
+    });
+
+    this.exercisesFormArray.updateValueAndValidity();
+    this.recalculateSupersetOrders();
+    this.selectedExerciseIndicesForSuperset.set([]);
+    this.expandedSetPath.set(null);
+
+    this.toastService.success(
+      this.translate.instant('workoutBuilder.drag.supersetMoved'),
+      2000
+    );
+  }
+
+  /**
+   * UPDATED: Remove the consecutive-only restriction for superset creation.
+   * Automatically reorders exercises to be consecutive when creating a superset.
+   */
+  async groupSelectedAsSuperset(): Promise<void> {
+    if (this.isViewMode) return;
+    const selectedIndices = this.selectedExerciseIndicesForSuperset().sort((a, b) => a - b);
+
+    if (selectedIndices.length < 2) {
+      this.toastService.warning(
+        this.translate.instant("workoutBuilder.toasts.supersetSizeError"),
+        3000,
+        "Superset Error"
+      );
+      return;
+    }
+
+    // --- NEW: Check if consecutive, if not, ask to reorder ---
+    const isConsecutive = selectedIndices.every(
+      (val, idx, arr) => idx === 0 || val === arr[idx - 1] + 1
+    );
+
+    if (!isConsecutive) {
+      // Show the UI about auto-reordering
+      const confirm = await this.alertService.showConfirm(
+        this.translate.instant("workoutBuilder.superset.nonConsecutiveTitle"),
+        this.translate.instant("workoutBuilder.superset.nonConsecutiveMessage"),
+        this.translate.instant("workoutBuilder.superset.reorderAndGroup"),
+        this.translate.instant("common.cancel")
+      );
+
+      if (!confirm?.data) {
+        return;
+      }
+
+      // Reorder: extract selected exercises and move them to be consecutive
+      const selectedControls = selectedIndices.map(idx =>
+        this.exercisesFormArray.at(idx) as FormGroup
+      );
+
+      // Remove all selected in reverse order
+      for (let i = selectedIndices.length - 1; i >= 0; i--) {
+        this.exercisesFormArray.removeAt(selectedIndices[i]);
+      }
+
+      // Insert consecutively starting at the position of the first selected
+      const insertPosition = selectedIndices[0];
+      selectedControls.forEach((ctrl, offset) => {
+        this.exercisesFormArray.insert(insertPosition + offset, ctrl);
+      });
+
+      this.toastService.info(
+        this.translate.instant("workoutBuilder.superset.exercisesReordered"),
+        2000
+      );
+    }
+
+    // --- Rest of the original logic continues as before ---
+    let isEmom: boolean = false;
+    const customBtns: AlertButton[] = [
+      { text: 'STANDARD', role: 'confirm', data: 'standard', cssClass: 'bg-orange-500 text-white' },
+      { text: 'EMOM', role: 'confirm', data: 'emom', cssClass: 'bg-teal-500 text-white' }
+    ];
+
+    const typeResult = await this.alertService.showConfirmationDialog(
+      this.translate.instant("workoutBuilder.superset.selectGroupType"),
+      this.translate.instant("workoutBuilder.superset.howToGroup"),
+      customBtns,
+    );
+
+    if (!typeResult || !typeResult.data) {
+      this.toastService.info("Grouping cancelled.", 2000);
+      return;
+    }
+
+    const supersetType: 'standard' | 'emom' = typeResult.data;
+    let numberOfSets: number;
+    let emomTimeSeconds: number | null = null;
+
+    if (supersetType === 'emom') {
+      isEmom = true;
+      const emomInputs: AlertInput[] = [
+        { name: 'emomTime', type: 'number', label: this.translate.instant("workoutBuilder.superset.emomTimePerRound"), value: '60', attributes: { min: '10', required: true } },
+        { name: 'numSets', type: 'number', label: this.translate.instant("workoutBuilder.superset.numRounds"), value: '5', attributes: { min: '1', required: true } }
+      ];
+      const emomResult = await this.alertService.showPromptDialog(this.translate.instant("workoutBuilder.superset.setEmomDetails"), this.translate.instant("workoutBuilder.superset.configureEmom"), emomInputs);
+
+      if (!emomResult || !emomResult['emomTime'] || !emomResult['numSets']) {
+        return;
+      }
+      emomTimeSeconds = Number(emomResult['emomTime']);
+      numberOfSets = Number(emomResult['numSets']);
+    } else {
+      const setsResult = await this.alertService.showPromptDialog(this.translate.instant("workoutBuilder.superset.setSupersetRounds"), this.translate.instant("workoutBuilder.superset.howManyRounds"),
+        [{ name: 'numSets', type: 'number', label: this.translate.instant("workoutBuilder.superset.numRounds"), value: '3', attributes: { min: '1', required: true } }]
+      );
+
+      if (!setsResult || !setsResult['numSets']) {
+        this.toastService.info(this.translate.instant("workoutBuilder.superset.groupingCancelled"), 2000);
+        return;
+      }
+      numberOfSets = Number(setsResult['numSets']);
+    }
+
+    // --- Continue with exercise target prompts ---
+    const exerciseTargets: { reps: number, weight?: number }[] = [];
+    const defaultWeightKg = 15;
+    const defaultWeightInCurrentUnit = this.unitService.convertWeight(defaultWeightKg, this.unitService.currentWeightUnit(), 'kg');
+
+    const sortedIndices = this.selectedExerciseIndicesForSuperset().sort((a, b) => a - b);
+
+    for (const [i, index] of sortedIndices.entries()) {
+      const exerciseControl = this.exercisesFormArray.at(index) as FormGroup;
+      const exerciseName = exerciseControl.get('exerciseName')?.value;
+      const exerciseId = exerciseControl.get('exerciseId')?.value;
+      const baseExercise = this.availableExercises.find(ex => ex.id === exerciseId);
+      const isWeighted = baseExercise ? !baseExercise.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.cardio) : false;
+
+      const inputs: AlertInput[] = [
+        {
+          name: 'reps',
+          type: 'number',
+          label: `${this.translate.instant('workoutBuilder.set.reps')}`,
+          value: '8',
+          attributes: { min: '0', required: true }
+        }
+      ];
+      if (isWeighted) {
+        inputs.push({
+          name: 'weight',
+          type: 'number',
+          label: `${this.translate.instant('workoutBuilder.set.weight')} (${this.unitService.getWeightUnitSuffix()})`,
+          value: String(Math.round(defaultWeightInCurrentUnit!)),
+          attributes: { min: '0' }
+        });
+      }
+
+      const result = await this.alertService.showPromptDialog(
+        this.translate.instant('workoutBuilder.superset.setExerciseTargets'),
+        this.translate.instant('workoutBuilder.superset.enterTargets', { weight: isWeighted ? ' and weight' : '', exerciseName }),
+        inputs
+      );
+
+      if (!result || !result['reps']) {
+        this.toastService.info(this.translate.instant('workoutBuilder.superset.supersetCreationCancelled'), 2000);
+        return;
+      }
+      exerciseTargets.push({
+        reps: Number(result['reps']),
+        weight: isWeighted && result['weight'] !== undefined ? Number(result['weight']) : undefined
+      });
+    }
+
+    // --- Apply superset to now-consecutive exercises ---
+    const newSupersetId = uuidv4();
+    const supersetSize = sortedIndices.length;
+    const firstIndex = sortedIndices[0];
+
+    sortedIndices.forEach((exerciseIndexInFormArray, orderInSuperset) => {
+      const exerciseControl = this.exercisesFormArray.at(exerciseIndexInFormArray) as FormGroup;
+      const { reps, weight } = exerciseTargets[orderInSuperset];
+
+      exerciseControl.patchValue({
+        supersetId: newSupersetId,
+        supersetOrder: orderInSuperset,
+        supersetType: supersetType,
+        emomTimeSeconds: emomTimeSeconds,
+        type: 'superset'
+      });
+
+      const setsArray = exerciseControl.get('sets') as FormArray;
+      const targetReps: RepsTarget = { type: RepsTargetType.exact, value: reps };
+      const targetWeightKg = weight !== undefined
+        ? weightToExact(this.unitService.convertWeight(weight, 'kg', this.unitService.currentWeightUnit()))
+        : undefined;
+
+      let restForThisExercise = restToExact(0);
+
+      if (supersetType === 'standard') {
+        const isLastExerciseInGroup = (orderInSuperset === supersetSize - 1);
+        if (isLastExerciseInGroup) {
+          restForThisExercise = restToExact(60);
+        }
+      }
+      let fieldOrder = [];
+
+      if (targetReps) {
+        fieldOrder.push(METRIC.weight);
+      }
+      if (targetWeightKg) {
+        fieldOrder.push(METRIC.reps);
+      }
+      if (restForThisExercise) {
+        fieldOrder.push(METRIC.rest);
+      }
+
+      const templateSetData: ExerciseTargetSetParams = {
+        id: uuidv4(),
+        type: 'superset',
+        targetReps: targetReps,
+        targetWeight: targetWeightKg,
+        fieldOrder: fieldOrder,
+        targetRest: restForThisExercise
+      };
+
+      setsArray.clear();
+
+      for (let i = 0; i < numberOfSets; i++) {
+        const newSet = this.workoutFormService.createSetFormGroup(templateSetData, false);
+        setsArray.push(newSet);
+      }
+    });
+
+    this.selectedExerciseIndicesForSuperset.set([]);
+    const successMessage = supersetType === 'emom'
+      ? this.translate.instant("workoutBuilder.superset.emomCreated", { numberOfSets })
+      : this.translate.instant("workoutBuilder.superset.supersetCreated", { numberOfSets });
+    this.toastService.success(successMessage, 4000, "Success");
+    this.expandedSetPath.set(null);
+    this.toggleSetExpansion(firstIndex, 0);
+  }
+
+
+
+  /**
+ * FIXED: Properly moves an entire superset group atomically.
+ * Handles all edge cases: superset-to-superset, superset-before/after another superset.
+ */
+  private moveSupersetGroup(supersetId: string, draggedStartIndex: number, targetIndex: number): void {
+    const exercises = this.exercisesFormArray.controls as FormGroup[];
+
+    // Find ALL exercises in this superset (they should be consecutive but verify)
+    const supersetIndices: number[] = [];
+    exercises.forEach((ctrl, idx) => {
+      if (ctrl.get('supersetId')?.value === supersetId) {
+        supersetIndices.push(idx);
+      }
+    });
+
+    if (supersetIndices.length === 0) return;
+
+    const groupSize = supersetIndices.length;
+    const groupStart = supersetIndices[0];
+    const groupEnd = supersetIndices[supersetIndices.length - 1];
+
+    // Ensure group is actually consecutive
+    if (groupEnd - groupStart + 1 !== groupSize) {
+      console.error('Superset exercises are not consecutive - this should not happen');
+      return;
+    }
+
+    // Extract group controls
+    const groupControls = supersetIndices.map(idx => exercises[idx]);
+
+    // Remove all group members in reverse order
+    for (let i = groupEnd; i >= groupStart; i--) {
+      this.exercisesFormArray.removeAt(i);
+    }
+
+    // CRITICAL: Adjust targetIndex for removed items
+    let insertionIndex = targetIndex;
+    if (targetIndex > groupEnd) {
+      // Moving DOWN: adjust for removed items
+      insertionIndex = targetIndex - groupSize;
+    } else if (targetIndex < groupStart) {
+      // Moving UP: no adjustment needed
+      insertionIndex = targetIndex;
+    } else {
+      // Dropped within original position - put back where it was
+      insertionIndex = groupStart;
+    }
+
+    // Clamp to valid range
+    insertionIndex = Math.max(0, Math.min(insertionIndex, this.exercisesFormArray.length));
+
+    // Re-insert the entire group at new position
+    groupControls.forEach((ctrl, offset) => {
+      this.exercisesFormArray.insert(insertionIndex + offset, ctrl);
+    });
+
+    this.exercisesFormArray.updateValueAndValidity();
+    this.recalculateSupersetOrders();
+    this.selectedExerciseIndicesForSuperset.set([]);
+    this.expandedSetPath.set(null);
+
+    this.toastService.success(
+      this.translate.instant('workoutBuilder.drag.supersetMoved'),
+      2000
+    );
+  }
+
+  /**
+   * FIXED: Check what's at a given index in the exercises array
+   */
+  private getExerciseAtIndex(index: number): FormGroup | null {
+    if (index < 0 || index >= this.exercisesFormArray.length) return null;
+    return this.exercisesFormArray.at(index) as FormGroup;
+  }
+
+  /**
+   * FIXED: Get all exercises in a superset group
+   */
+  private getSupersetGroup(supersetId: string): { control: FormGroup, index: number }[] {
+    const exercises = this.exercisesFormArray.controls as FormGroup[];
+    const result: { control: FormGroup, index: number }[] = [];
+    exercises.forEach((ctrl, idx) => {
+      if (ctrl.get('supersetId')?.value === supersetId) {
+        result.push({ control: ctrl, index: idx });
+      }
+    });
+    return result.sort((a, b) => a.index - b.index);
+  }
+
+  /**
+   * COMPLETE REWRITE: Main drop handler with all cases properly handled
+   */
+  onExerciseDrop(event: CdkDragDrop<AbstractControl[]>): void {
+    if (this.isViewMode) return;
+    if (event.previousContainer !== event.container) return;
+
+    // Clear drag marking
+    const container = document.querySelector('.exercise-list-container');
+    if (container) {
+      container.classList.remove('dragging-superset-group');
+    }
+    document.querySelectorAll('.superset-member-of-dragged').forEach(el => {
+      el.classList.remove('superset-member-of-dragged');
+    });
+
+    const exercisesArray = this.exercisesFormArray;
+    const draggedControl = exercisesArray.at(event.previousIndex) as FormGroup;
+    const draggedSupersetId = draggedControl.get('supersetId')?.value;
+    const draggedSupersetOrder = draggedControl.get('supersetOrder')?.value;
+
+    // CASE 1: Dragging a superset START
+    if (draggedSupersetId && draggedSupersetOrder === 0) {
+      const targetControl = this.getExerciseAtIndex(event.currentIndex);
+      if (targetControl) {
+        const targetSupersetId = targetControl.get('supersetId')?.value;
+        if (targetSupersetId && targetSupersetId !== draggedSupersetId) {
+          this.toastService.warning(
+            this.translate.instant('workoutBuilder.drag.cannotDropSupersetOnSuperset'),
+            3000
+          );
+          return;
+        }
+      }
+
+      this.moveSupersetGroup(draggedSupersetId, event.previousIndex, event.currentIndex);
+      return;
+    }
+
+    // CASE 2: Trying to drag non-start superset exercise
+    if (draggedSupersetId && draggedSupersetOrder !== 0) {
+      this.toastService.info(
+        this.translate.instant('workoutBuilder.drag.cannotDragSupersetMember'),
+        3000
+      );
+      return;
+    }
+
+    // CASE 3: Dragging standalone onto superset
+    const targetControl = this.getExerciseAtIndex(event.currentIndex);
+    if (targetControl && !draggedSupersetId) {
+      const targetSupersetId = targetControl.get('supersetId')?.value;
+      if (targetSupersetId) {
+        this.handleStandaloneDropIntoSuperset(
+          event.previousIndex,
+          event.currentIndex,
+          targetSupersetId,
+          targetControl
+        );
+        return;
+      }
+    }
+
+    // CASE 4: Normal standalone drag
+    moveItemInArray(exercisesArray.controls, event.previousIndex, event.currentIndex);
+    exercisesArray.updateValueAndValidity();
+
+    const affectedExercise = exercisesArray.at(event.currentIndex) as FormGroup;
+    if (affectedExercise?.get('supersetId')?.value) {
+      this.recalculateSupersetOrders();
+    }
+
+    this.selectedExerciseIndicesForSuperset.set([]);
+    this.expandedSetPath.set(null);
+  }
+
+  /**
+   * IMPROVED: Allow drag on superset starts AND standalone exercises
+   */
+  protected isDraggingEnabled(exIndex: number): boolean {
+    const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
+    const supersetId = exerciseControl?.get('supersetId')?.value;
+    const supersetOrder = exerciseControl?.get('supersetOrder')?.value;
+
+    return this.isEditableMode()
+      && !this.shouldShowExpandedExercise(exIndex)
+      && (!supersetId || supersetOrder === 0);
+  }
+
+  /**
+   * COMPLETE REWRITE: Handle dropping standalone exercise into a superset
+   * Properly handles drop position within the superset
+   */
+  private async handleStandaloneDropIntoSuperset(
+    draggedIndex: number,
+    targetIndex: number,
+    targetSupersetId: string,
+    targetControlAtDropPoint: FormGroup
+  ): Promise<void> {
+    const draggedControl = this.exercisesFormArray.at(draggedIndex) as FormGroup;
+    const draggedName = draggedControl.get('exerciseName')?.value;
+
+    // Get all exercises in the target superset
+    const targetGroup = this.getSupersetGroup(targetSupersetId);
+    const targetGroupStartIndex = targetGroup[0].index;
+    const targetGroupEndIndex = targetGroup[targetGroup.length - 1].index;
+    const targetSupersetSize = targetGroup.length;
+
+    // Determine drop position within the superset
+    let positionInGroup = 0;
+    const targetOrderAtDropPoint = targetControlAtDropPoint.get('supersetOrder')?.value;
+    if (typeof targetOrderAtDropPoint === 'number') {
+      positionInGroup = targetOrderAtDropPoint;
+    }
+
+    const options: AlertButton[] = [
+      {
+        text: this.translate.instant('workoutBuilder.drag.addToSuperset'),
+        role: 'confirm',
+        data: 'add',
+        cssClass: 'bg-blue-600 text-white'
+      },
+      {
+        text: this.translate.instant('workoutBuilder.drag.keepSeparate'),
+        role: 'cancel',
+        data: 'separate',
+        cssClass: 'bg-gray-500 text-white'
+      }
+    ];
+
+    const result = await this.alertService.showConfirmationDialog(
+      this.translate.instant('workoutBuilder.drag.addExerciseToSuperset', {
+        name: draggedName,
+        supersetSize: targetSupersetSize
+      }),
+      this.translate.instant('workoutBuilder.drag.chooseAction'),
+      options
+    );
+
+    if (result?.data === 'add') {
+      // Remove dragged exercise from its current location
+      const draggedCtrl = this.exercisesFormArray.at(draggedIndex);
+      this.exercisesFormArray.removeAt(draggedIndex);
+
+      // Adjust targetGroupStartIndex if we removed from before it
+      let adjustedStartIndex = targetGroupStartIndex;
+      if (draggedIndex < targetGroupStartIndex) {
+        adjustedStartIndex--;
+      }
+
+      // Insert at the position user dropped it (within the group)
+      const insertIndex = adjustedStartIndex + positionInGroup;
+      this.exercisesFormArray.insert(insertIndex, draggedCtrl);
+
+      // Update the superset properties
+      draggedControl.patchValue({
+        supersetId: targetSupersetId,
+        supersetType: targetControlAtDropPoint.get('supersetType')?.value,
+        emomTimeSeconds: targetControlAtDropPoint.get('emomTimeSeconds')?.value
+      });
+
+      this.exercisesFormArray.updateValueAndValidity();
+
+      // Recalculate all orders in the superset
+      this.recalculateSupersetOrders();
+
+      this.toastService.success(
+        this.translate.instant('workoutBuilder.drag.exerciseAddedToSuperset', {
+          name: draggedName
+        }),
+        2000
+      );
+    } else {
+      // Keep separate - do a normal move of the dragged exercise
+      moveItemInArray(this.exercisesFormArray.controls, draggedIndex, targetIndex);
+      this.exercisesFormArray.updateValueAndValidity();
+
+      this.toastService.info(
+        this.translate.instant('workoutBuilder.drag.exerciseMovedSeparate'),
+        2000
+      );
+    }
+
+    this.selectedExerciseIndicesForSuperset.set([]);
+    this.expandedSetPath.set(null);
+  }
+
+  /**
+ * Mark superset members as part of a dragged group for visual cohesion
+ * This adds the class to DOM elements so CSS can style them
+ */
+  private markSupersetMembersForDrag(supersetId: string, isDragging: boolean): void {
+    // If ending drag, clear all marked members
+    if (!isDragging) {
+      document.querySelectorAll('.superset-member-of-dragged').forEach(el => {
+        el.classList.remove('superset-member-of-dragged');
+      });
+      const container = document.querySelector('.exercise-list-container');
+      if (container) {
+        container.classList.remove('dragging-superset-group');
+      }
+      return;
+    }
+
+    // If starting drag with a superset, mark all its members
+    if (!supersetId) return;
+
+    const exercises = this.exercisesFormArray.controls as FormGroup[];
+    let foundAny = false;
+
+    exercises.forEach((ctrl, index) => {
+      // Find the wrapper div for this exercise
+      const wrapperDiv = document.querySelector(`[formGroupName="${index}"]`)?.closest('.exercise-card-wrapper');
+
+      if (!wrapperDiv) return;
+
+      if (ctrl.get('supersetId')?.value === supersetId && ctrl.get('supersetOrder')?.value !== 0) {
+        wrapperDiv.classList.add('superset-member-of-dragged');
+        foundAny = true;
+      }
+    });
+
+    // Add container class if we marked any members
+    if (foundAny) {
+      const container = document.querySelector('.exercise-list-container');
+      if (container) {
+        container.classList.add('dragging-superset-group');
+      }
+    }
+  }
+
+  /**
+ * Called when a drag starts - highlight superset members if dragging a superset start
+ */
+  onDragStarted(exIndex: number): void {
+    const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
+    const supersetId = exerciseControl?.get('supersetId')?.value;
+    const supersetOrder = exerciseControl?.get('supersetOrder')?.value;
+
+    // Only mark members if dragging a superset start
+    if (supersetId && supersetOrder === 0) {
+      this.markSupersetMembersForDrag(supersetId, true);
+    }
+  }
+
+  /**
+   * Called when drag ends - clear visual highlighting
+   */
+  onDragEnded(): void {
+    // Clear all drag marking
+    this.markSupersetMembersForDrag('', false);
   }
 
 }

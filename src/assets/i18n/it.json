@@ -1100,6 +1100,17 @@
     "addSelected": "Aggiungi selezionato/i"
   },
   "workoutBuilder": {
+    "drag": {
+      "cannotDragSupersetMember": "Non è possibile trascinare singolarmente gli esercizi di una superserie. Trascina il primo esercizio per spostare l'intero gruppo.",
+      "supersetMoved": "Gruppo superserie spostato con successo",
+      "cannotDropSupersetOnSuperset": "Impossibile rilasciare un superset su un altro superset. Rilascia prima o dopo.",
+      "exerciseMovedSeparate": "Esercizio spostato separatamente",
+      "keepSeparate": "Mantieni separato",
+      "addToSuperset": "Aggiungi a Superserie",
+      "chooseAction": "Scegli un'azione per l'esercizio rilasciato",
+      "addExerciseToSuperset": "Aggiungi esercizio alla superserie" ,
+      "exerciseAddedToSuperset": "Esercizio aggiunto alla superserie"
+    },
     "locationTypeLabel": "Tipo di Luogo (opzionale)",
     "locationLabel": "Luogo",
     "locationPlaceholder": "-- Seleziona luogo --",
@@ -1205,6 +1216,10 @@
     },
     "changeType": "Cambia",
     "superset": {
+      "nonConsecutiveTitle": "Esercizi Non Consecutivi",
+      "nonConsecutiveMessage": "Gli esercizi selezionati non sono adiacenti. Vuoi che li riordini automaticamente per renderli consecutivi prima di creare la superserie?",
+      "reorderAndGroup": "Riordina e Crea",
+      "exercisesReordered": "Esercizi riordinati per essere consecutivi",
       "removeExercisesButton": "Rimuovi esercizi",
       "groupButton": "Raggruppa in Superserie ({{count}})",
       "ungroupButton": "Separa Superserie ({{count}})",

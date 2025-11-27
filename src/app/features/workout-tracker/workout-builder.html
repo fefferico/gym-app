@@ -80,7 +80,8 @@
                         'workoutBuilder.routineBuilder.goalLabel' | translate }}</label>
                     <select id="goal" formControlName="goal"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 dark:text-gray-200">
-                        <option value="" disabled selected>{{ 'workoutBuilder.routineBuilder.goalPlaceholder' | translate }}</option>
+                        <option value="" disabled selected>{{ 'workoutBuilder.routineBuilder.goalPlaceholder' |
+                            translate }}</option>
                         <option *ngFor="let goalOpt of routineGoals" [value]="goalOpt.value">
                             {{ goalOpt.label | translate }}
                         </option>
@@ -102,7 +103,8 @@
                     </label>
                     <select id="primaryCategory" formControlName="primaryCategory"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 text-gray-700 dark:text-gray-200">
-                        <option value="" disabled selected>{{ 'workoutBuilder.routineBuilder.primaryCategoryPlaceholder' | translate }}
+                        <option value="" disabled selected>{{ 'workoutBuilder.routineBuilder.primaryCategoryPlaceholder'
+                            | translate }}
                         </option>
                         <option *ngFor="let category of categories()" [value]="category.id">
                             {{ category.name }}
@@ -256,7 +258,8 @@
                     <select id="routineIdForLog" formControlName="routineIdForLog"
                         [disabled]="builderForm.get('programIdForLog')?.value"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <option value="" disabled selected>{{ 'workoutBuilder.logEntry.adHocOption' | translate }}</option>
+                        <option value="" disabled selected>{{ 'workoutBuilder.logEntry.adHocOption' | translate }}
+                        </option>
                         <option *ngFor="let r of availableRoutines" [value]="r.id">{{ r.name }}</option>
                     </select>
                 </div>
@@ -265,7 +268,8 @@
                         'workoutBuilder.logEntry.basedOnProgramLabel' | translate }}</label>
                     <select id="programIdForLog" formControlName="programIdForLog"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 dark:text-gray-200">
-                        <option value="" disabled selected>{{ 'workoutBuilder.logEntry.adHocProgramOption' | translate }}</option>
+                        <option value="" disabled selected>{{ 'workoutBuilder.logEntry.adHocProgramOption' | translate
+                            }}</option>
                         <option *ngFor="let program of availablePrograms" [value]="program.id">{{ program.name }}
                         </option>
                     </select>
@@ -279,7 +283,8 @@
                     <select id="iterationIdForLog" formControlName="iterationIdForLog"
                         [disabled]="!builderForm.get('programIdForLog')?.value || availableIterationIds.length === 0"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <option value="" disabled selected>{{ 'workoutBuilder.logEntry.iterationPlaceholder' | translate }}</option>
+                        <option value="" disabled selected>{{ 'workoutBuilder.logEntry.iterationPlaceholder' | translate
+                            }}</option>
                         <option *ngFor="let iterationId of availableIterationIds" [value]="iterationId">{{ iterationId
                             }}</option>
                     </select>
@@ -293,7 +298,8 @@
                     <select id="scheduledDayIdForLog" formControlName="scheduledDayIdForLog"
                         [disabled]="!builderForm.get('programIdForLog')?.value || availableScheduledDayIds.length === 0"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <option value="" disabled selected>{{ 'workoutBuilder.logEntry.scheduledDayPlaceholder' | translate }}</option>
+                        <option value="" disabled selected>{{ 'workoutBuilder.logEntry.scheduledDayPlaceholder' |
+                            translate }}</option>
                         <option *ngFor="let scheduledId of availableScheduledDayInfos" [value]="scheduledId.id">{{
                             scheduledId.weekNumber ? ('workoutBuilder.logEntry.weekLabel' | translate:{week:
                             scheduledId.weekNumber}) : '' }} - {{ scheduledId.dayName
@@ -309,7 +315,8 @@
                     </label>
                     <select id="locationId" formControlName="locationId"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 text-gray-700 dark:text-gray-200">
-                        <option value="" disabled selected>{{ 'workoutBuilder.logEntry.locationTypePlaceholder' | translate }}</option>
+                        <option value="" disabled selected>{{ 'workoutBuilder.logEntry.locationTypePlaceholder' |
+                            translate }}</option>
                         <option *ngFor="let loc of locationService.allLocationTypes()" [value]="loc.id">
                             {{ loc.label }}
                         </option>
@@ -330,18 +337,12 @@
                             {{ 'workoutBuilder.logEntry.locationLabel' | translate }}
                         </label>
                     </div>
-                    <input
-                        id="locationName"
-                        type="text"
-                        formControlName="locationName"
+                    <input id="locationName" type="text" formControlName="locationName"
                         [attr.list]="'locationName-list'"
                         [placeholder]="'workoutBuilder.logEntry.locationPlaceholder' | translate"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 text-gray-700 dark:text-gray-200"
-                        autocomplete="off"
-                        (focus)="onLocationNameFocus(locationNameInput)"
-                        (input)="onLocationNameInput($event)"
-                        #locationNameInput
-                    />
+                        autocomplete="off" (focus)="onLocationNameFocus(locationNameInput)"
+                        (input)="onLocationNameInput($event)" #locationNameInput />
                     <datalist id="locationName-list">
                         <option *ngFor="let loc of trackingService.getWorkoutLocations()" [value]="loc"></option>
                     </datalist>
@@ -356,7 +357,8 @@
                 <!-- END: Updated fields -->
                 <div>
                     <div class="flex items-center mb-1">
-                        <app-icon name="clipboard-list" class="h-5 w-5 text-gray-500 dark:text-gray-300 mr-2"></app-icon>
+                        <app-icon name="clipboard-list"
+                            class="h-5 w-5 text-gray-500 dark:text-gray-300 mr-2"></app-icon>
                         <label for="overallNotesLog" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             {{ 'workoutBuilder.logEntry.notesLabel' | translate }}
                         </label>
@@ -421,6 +423,8 @@
                             [longPressDelay]="150" longPressClass="is-long-pressing" [cdkDragData]="exerciseControl"
                             [cdkDragStartDelay]="110" class="transition-all" [formGroupName]="exIndex"
                             (click)="expandExerciseCard(exIndex, $event)"
+                            (cdkDragStarted)="onDragStarted(exIndex)"
+                            (cdkDragEnded)="onDragEnded()"
                             [title]="isEditableMode() && !shouldShowExpandedExercise(exIndex)? ('workoutBuilder.exercise.dragToReorder' | translate) : ''">
 
                             <!-- NEW: SECTION BADGE -->
@@ -436,9 +440,16 @@
                             <div #superSetControlPanel_Info
                                 *ngIf="isEditableMode() && isSuperSet(exIndex) && isFirstInSuperset(exIndex)"
                                 class="flex flex-col items-end space-y-2 flex-shrink-0 w-full sm:w-auto">
-
                                 <!-- +++ START: NEW UNIFIED CONTROL PANEL +++ -->
+
+                                
                                 <div class="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm w-full">
+                                    <!-- DRAG HANDLE ICON - SUPERSET EXERCISE -->
+                                       <div *ngIf="isDraggingEnabled(exIndex)" cdkDragHandle
+                                           class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 flex item-center cursor-move rounded-xl"
+                                           [title]="'workoutBuilder.exercise.dragToReorder' | translate">
+                                           <app-icon name="reorder"></app-icon>
+                                       </div>
                                     <!-- Col 1: Round Management -->
                                     <div class="flex items-center gap-x-2">
                                         <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -471,8 +482,8 @@
                                             class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex-shrink-0">{{
                                             'workoutBuilder.set.time' | translate }}
                                             (s):</label>
-                                        <input type="text" inputmode="decimal" pattern="[0-9]*" numbersOnly [id]="'emomTime-' + exIndex"
-                                            formControlName="emomTimeSeconds" min="10"
+                                        <input type="text" inputmode="decimal" pattern="[0-9]*" numbersOnly
+                                            [id]="'emomTime-' + exIndex" formControlName="emomTimeSeconds" min="10"
                                             class="w-full p-1 mt-1 text-m border-gray-300 dark:border-gray-500 rounded-xl focus:ring-primary dark:bg-gray-600 dark:text-gray-200 text-right">
                                     </div>
                                 </div>
@@ -485,8 +496,8 @@
                                 </div>
                                 <!-- COMPACT VIEW / HEADER AREA -->
                                 <div class="flex items-center space-x-1 pt-1 px-1">
-                                    <!-- DRAG HANDLE ICON (Now just a visual cue) -->
-                                    <div *ngIf="isDraggingEnabled(exIndex)" data-drag-handle
+                                    <!-- DRAG HANDLE ICON - STANDARD EXERCISE -->
+                                    <div *ngIf="isStandardExercise(exerciseControl) && isDraggingEnabled(exIndex)" cdkDragHandle
                                         class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 flex item-center cursor-move rounded-xl"
                                         [title]="'workoutBuilder.exercise.dragToReorder' | translate">
                                         <app-icon name="reorder"></app-icon>
@@ -501,7 +512,7 @@
                                         (change)="toggleExerciseSelection(exIndex, $event)"
                                         [checked]="selectedExerciseIndicesForSuperset().includes(exIndex)"
                                         class="h-6 w-6 text-orange-600 border-gray-300 dark:border-gray-600 rounded-xl focus:ring-orange-500 flex-shrink-0 disabled:opacity-50">
-                                    <!-- EXERCISE NAME & SUPERSET INFO / SETS SUMMARY FOR COMPACT -->
+                                        <!-- EXERCISE NAME & SUPERSET INFO / SETS SUMMARY FOR COMPACT -->
                                     <div *ngIf="!shouldShowExpandedExercise(exIndex)"
                                         class="flex-grow min-w-0 py-2 px-0">
                                         <!-- COMPACT: Show SETS SUMMARY if in compact view -->
@@ -512,8 +523,8 @@
                                             <div class="min-w-0">
                                                 <div class="flex">
                                                     <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
-                                                    alt="Exercise Icon" class="object-contain mr-1 flex-shrink-0 filter dark:invert w-8 h-8"
-                                                    >
+                                                        alt="Exercise Icon"
+                                                        class="object-contain mr-1 flex-shrink-0 filter dark:invert w-8 h-8">
                                                     <h3 class="font-semibold text-gray-800 dark:text-gray-100 text-wrap text-lg max-exercise-length"
                                                         [title]="exerciseControl.get('exerciseName')?.value">
                                                         {{ exerciseControl.get('exerciseName')?.value }}
@@ -639,7 +650,8 @@
                                             <div class="flex items-center">
                                                 <!-- The Image: Added margin-right for spacing and flex-shrink-0 -->
                                                 <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
-                                                    alt="Exercise Icon" class="object-contain mr-3 flex-shrink-0 filter dark:invert"
+                                                    alt="Exercise Icon"
+                                                    class="object-contain mr-3 flex-shrink-0 filter dark:invert"
                                                     [ngClass]="{
                                                         'w-8 h-8 ': !isSetExpanded(exIndex, 0),
                                                         'w-10 h-10 py-1': isSetExpanded(exIndex, 0),
