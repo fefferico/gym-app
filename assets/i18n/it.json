@@ -33,7 +33,7 @@
     "detailsButton": "DETTAGLI",
     "discardButton": "SCARTA",
     "discardTitle": "Scartare l'allenamento in pausa?",
-    "discardMessage": "Sei sicuro di voler scartare questa sessione di allenamento in pausa? L'azione non può essere annullata.",
+    "discardMessage": "Confermi di voler scartare questa sessione di allenamento in pausa? L'azione non può essere annullata.",
     "summaryTitle": "In pausa: {{routineName}}",
     "summaryMessage": "Hai eseguito {{exercisesDone}} di {{exercisesAvailable}} esercizi, con {{setsDone}} set registrati{{targetSetsInfo}}. Tempo trascorso: {{timeElapsed}}. Riprendi l'allenamento per continuare.",
     "noPausedWorkoutFound": "Nessun allenamento in pausa trovato da riprendere",
@@ -292,11 +292,11 @@
     "invalidFileType": "Tipo di file non valido. Seleziona un file JSON.",
     "invalidBackupFormat": "Formato del file di backup non valido. Previsto un oggetto.",
     "backupVersionTooNew": "La versione del backup {{version}} è più recente della versione supportata dall'app {{appVersion}}. Aggiorna l'applicazione.",
-    "importWarning": "L'importazione dei dati tenterà di UNIRE i dati attuali con quelli IMPORTATI. Sei sicuro di voler procedere?",
+    "importWarning": "L'importazione dei dati tenterà di UNIRE i dati attuali con quelli IMPORTATI. Confermi di voler procedere?",
     "errorProcessingFile": "Errore durante l'elaborazione del file di backup. Assicurati che sia un JSON valido.",
     "errorReadingFile": "Errore durante la lettura del file.",
     "clearAllDataWarningTitle": "ATTENZIONE",
-    "clearAllDataWarningMessage": "Questo eliminerà TUTTI i tuoi dati di allenamento, profilo e impostazioni. L'azione non può essere annullata. Sei sicuro?",
+    "clearAllDataWarningMessage": "Questo eliminerà TUTTI i tuoi dati di allenamento, profilo e impostazioni. L'azione non può essere annullata. Continuare?",
     "clearAllDataConfirmationTitle": "Conferma Eliminazione Dati",
     "clearAllDataConfirmationMessage": "Per confermare, digita \"DELETE\" nel campo sottostante. Questo eliminerà TUTTI i tuoi dati di allenamento, profilo e impostazioni. L'azione non può essere annullata.",
     "clearAllDataConfirmationPlaceholder": "Scrivi DELETE per confermare",
@@ -430,7 +430,7 @@
       "editRunningTitle": "Info",
       "editRunningMessage": "Non è possibile modificare una scheda in esecuzione. Completala o scartala prima di procedere.",
       "deleteTitle": "Elimina Scheda",
-      "deleteMessage": "Sei sicuro di voler eliminare la scheda \"{{name}}\"?",
+      "deleteMessage": "Confermi di voler eliminare la scheda \"{{name}}\"?",
       "deleteWithLogs": "Questo eliminerà anche {{count}} registrazioni di allenamenti associati.",
       "deleteWithPrograms": "Questo eliminerà anche le voci in {{count}} programmi associati.",
       "deleteWithOneProgram": "Questo eliminerà anche le voci nel programma associato '{{name}}'.",
@@ -528,9 +528,9 @@
       "noRoutineTitle": "Nessuna scheda per questa sessione",
       "noRoutineMessage": "Non c'è nessuna scheda associata a questa sessione: vuoi crearne una? Se sì, ricorda di collegarla a questa sessione una volta creata",
       "deleteLogTitle": "Elimina Sessione Allenamento",
-      "deleteLogMessage": "Sei sicuro di voler eliminare questa sessione? L'azione non può essere annullata",
+      "deleteLogMessage": "Confermi di voler eliminare questa sessione? L'azione non può essere annullata",
       "deleteActivityTitle": "Eliminare Sessione Attività?",
-      "deleteActivityMessage": "Sei sicuro di voler eliminare la sessione per \"{{name}}\"? L'azione non può essere annullata.",
+      "deleteActivityMessage": "Confermi di voler eliminare la sessione per \"{{name}}\"? L'azione non può essere annullata.",
       "deleteButton": "Elimina",
       "pausedWorkoutTitle": "Trovato Allenamento in Sospeso",
       "pausedWorkoutMessage": "C'è un allenamento in sospeso: vuoi scartare questa sessione in pausa e registrarne una nuova? L'azione non può essere annullata.",
@@ -637,7 +637,7 @@
       "deactivate": "Disattiva",
       "complete": "Completa",
       "finishTitle": "Completa Programma",
-      "finishMessage": "Sei sicuro di voler contrassegnare questo programma come completato?",
+      "finishMessage": "Confermi di voler contrassegnare questo programma come completato?",
       "finishButton": "Completa Programma",
       "selectProgramTitle": "Seleziona Programma",
       "selectProgramMessage": "Scegli un programma da visualizzare nel calendario."
@@ -653,7 +653,7 @@
     },
     "weeks": {
       "confirmRemoveDayTitle": "Rimuovi Giorno",
-      "confirmRemoveDayMsg": "Sei sicuro di voler rimuovere questo giorno?"
+      "confirmRemoveDayMsg": "Confermi di voler rimuovere questo giorno?"
     }
   },
   "statsDashboard": {
@@ -946,25 +946,25 @@
       "removeLastRoundMessage": "Questo è l'ultimo turno della superserie. Rimuovendolo eliminerai l'intera superserie dall'allenamento. Continuare?",
       "removeSuperset": "Rimuovi Superserie",
       "removeRoundTitle": "Rimuovi Turno",
-      "removeRoundMessage": "Questo rimuoverà il Turno {{number}} da tutti gli esercizi in questa superserie e cancellerà ogni dato registrato. Sei sicuro?",
+      "removeRoundMessage": "Questo rimuoverà il Turno {{number}} da tutti gli esercizi in questa superserie e cancellerà ogni dato registrato. Continuare?",
       "removeSetTitle": "Rimuovi Serie",
-      "removeSetMessage": "Sei sicuro di voler rimuovere la serie da {{name}}?",
+      "removeSetMessage": "Confermi di voler rimuovere la serie da {{name}}?",
       "removeLastSetMessage": "Questo rimuoverà anche l'esercizio dall'allenamento. Continuare?",
       "removeSupersetTitle": "Rimuovi Superserie",
-      "removeSupersetMessage": "Questo rimuoverà l'intera superserie \"{{name}}\" e tutti i dati registrati per questa sessione. Sei sicuro?",
+      "removeSupersetMessage": "Questo rimuoverà l'intera superserie \"{{name}}\" e tutti i dati registrati per questa sessione. Continuare?",
       "removeExerciseTitle": "Rimuovi Esercizio",
-      "removeExerciseMessage": "Sei sicuro di voler rimuovere {{name}}?",
-      "removeExerciseLoggedMessage": "Sei sicuro di voler rimuovere {{name}}? Tutti i dati registrati per questo esercizio in questa sessione andranno persi.",
+      "removeExerciseMessage": "Confermi di voler rimuovere {{name}}?",
+      "removeExerciseLoggedMessage": "Confermi di voler rimuovere {{name}}? Tutti i dati registrati per questo esercizio in questa sessione andranno persi.",
       "sessionNotesTitle": "Note Sessione",
       "sessionNotesMessage": "Aggiungi o modifica note per l'intera sessione di allenamento.",
       "sessionNotesPlaceholder": "Inserisci le note qui",
       "saveNotes": "Salva Note",
       "finishEarlyTitle": "Terminare l'Allenamento in anticipo?",
-      "finishEarlyMessageSimple": "Hai ancora {{details}}. Sei sicuro di voler terminare in anticipo?",
+      "finishEarlyMessageSimple": "Hai ancora {{details}}. Confermi di voler terminare in anticipo?",
       "skippedDetailSimple": "{{count}} esercizio/i saltato/i",
       "incompleteDetailSimple": "{{count}} esercizio/i incompleto/i",
       "finishTitle": "Termina Allenamento",
-      "finishMessage": "Sei sicuro di voler terminare e salvare questo allenamento?",
+      "finishMessage": "Confermi di voler terminare e salvare questo allenamento?",
       "finishButton": "Termina",
       "routineChangedTitle": "Struttura Scheda Modificata",
       "routineChangedMessage": "Hai apportato delle modifiche alla scheda. Cosa vorresti fare?",
@@ -1100,6 +1100,17 @@
     "addSelected": "Aggiungi selezionato/i"
   },
   "workoutBuilder": {
+    "drag": {
+      "cannotDragSupersetMember": "Non è possibile trascinare singolarmente gli esercizi di una superserie. Trascina il primo esercizio per spostare l'intero gruppo.",
+      "supersetMoved": "Gruppo superserie spostato con successo",
+      "cannotDropSupersetOnSuperset": "Impossibile rilasciare un superset su un altro superset. Rilascia prima o dopo.",
+      "exerciseMovedSeparate": "Esercizio spostato separatamente",
+      "keepSeparate": "Mantieni separato",
+      "addToSuperset": "Aggiungi a Superserie",
+      "chooseAction": "Scegli un'azione per l'esercizio rilasciato",
+      "addExerciseToSuperset": "Aggiungi esercizio alla superserie" ,
+      "exerciseAddedToSuperset": "Esercizio aggiunto alla superserie"
+    },
     "locationTypeLabel": "Tipo di Luogo (opzionale)",
     "locationLabel": "Luogo",
     "locationPlaceholder": "-- Seleziona luogo --",
@@ -1205,6 +1216,10 @@
     },
     "changeType": "Cambia",
     "superset": {
+      "nonConsecutiveTitle": "Esercizi Non Consecutivi",
+      "nonConsecutiveMessage": "Gli esercizi selezionati non sono adiacenti. Vuoi che li riordini automaticamente per renderli consecutivi prima di creare la superserie?",
+      "reorderAndGroup": "Riordina e Crea",
+      "exercisesReordered": "Esercizi riordinati per essere consecutivi",
       "removeExercisesButton": "Rimuovi esercizi",
       "groupButton": "Raggruppa in Superserie ({{count}})",
       "ungroupButton": "Separa Superserie ({{count}})",
@@ -1355,21 +1370,21 @@
     },
     "alerts": {
       "tabataConvertTitle": "Convertire in Tabata?",
-      "tabataConvertMessage": "Questo convertirà tutti gli esercizi in un unica superserie. Ogni turno sarà impostato su 20 secondi di lavoro e 10 secondi di recupero. Sei sicuro?",
+      "tabataConvertMessage": "Questo convertirà tutti gli esercizi in un unica superserie. Ogni turno sarà impostato su 20 secondi di lavoro e 10 secondi di recupero. Continuare?",
       "convert": "Converti",
       "removeLastRoundTitle": "Rimuovi Ultimo Turno",
       "removeLastRoundMessage": "Questo è l'ultimo turno della superserie. Rimuovendolo si eliminerà l'intera superserie dall'allenamento. Continuare?",
       "removeSuperset": "Rimuovi Superserie",
       "removeRoundTitle": "Rimuovi Turno",
-      "removeRoundMessage": "Questo rimuoverà il Turno {{number}} da tutti gli esercizi in questa superserie e cancellerà tutti i dati registrati per esso. Sei sicuro?",
+      "removeRoundMessage": "Questo rimuoverà il Turno {{number}} da tutti gli esercizi in questa superserie e cancellerà tutti i dati registrati per esso. Continuare?",
       "removeSetTitle": "Rimuovi Serie",
-      "removeSetMessage": "Sei sicuro di voler rimuovere la serie da {{name}}?",
+      "removeSetMessage": "Confermi di voler rimuovere la serie da {{name}}?",
       "removeLastSetMessage": "Questo rimuoverà anche l'esercizio dall'allenamento. Continuare?",
       "removeSupersetTitle": "Rimuovi Superserie",
-      "removeSupersetMessage": "Questo rimuoverà l'intera superserie \"{{name}}\" e tutti i suoi dati registrati per questa sessione. Sei sicuro?",
+      "removeSupersetMessage": "Questo rimuoverà l'intera superserie \"{{name}}\" e tutti i suoi dati registrati per questa sessione. Continuare?",
       "removeExerciseTitle": "Rimuovi Esercizio",
-      "removeExerciseLoggedMessage": "Sei sicuro di voler rimuovere {{name}}? Tutti i dati registrati per questo esercizio in questa sessione andranno persi.",
-      "removeExerciseMessage": "Sei sicuro di voler rimuovere {{name}}?",
+      "removeExerciseLoggedMessage": "Confermi di voler rimuovere {{name}}? Tutti i dati registrati per questo esercizio in questa sessione andranno persi.",
+      "removeExerciseMessage": "Confermi di voler rimuovere {{name}}?",
       "customExerciseTitle": "Aggiungi Nuovo Esercizio Personalizzato",
       "customExerciseMessage": "Definisci nome dell'esercizio e serie",
       "customExerciseNameLabel": "Nome Esercizio Personalizzato",
@@ -1384,7 +1399,7 @@
       "unmarkFavouriteTitle": "Rimuovi scheda dai preferiti",
       "unmarkFavouriteMessage": "Vuoi rimuovere {{name}} dai preferiti?",
       "deleteRoutineTitle": "Elimina Scheda",
-      "deleteRoutineMessage": "Sei sicuro di voler eliminare questo allenamento? Questa azione non può essere annullata",
+      "deleteRoutineMessage": "Confermi di voler eliminare questo allenamento? Questa azione non può essere annullata",
       "delete": "Elimina",
       "cloneSuccess": "Scheda \"{{name}}\" clonata con successo.",
       "cloneFailed": "Clonazione scheda fallita",
@@ -1509,7 +1524,7 @@
       "noRoutineTitle": "Nessuna scheda per questa sessione",
       "noRoutineMessage": "Non c'è nessuna scheda associata a questa sessione: vuoi crearne una? Se sì, ricorda di collegarla a questa sessione una volta creata",
       "deleteTitle": "Elimina Sessione Allenamento",
-      "deleteMessage": "Sei sicuro di voler eliminare questa sessione? L'azione non può essere annullata",
+      "deleteMessage": "Confermi di voler eliminare questa sessione? L'azione non può essere annullata",
       "deleteButton": "Elimina"
     },
     "toasts": {
@@ -1749,14 +1764,14 @@
     },
     "alerts": {
       "finishTitle": "Completa Programma",
-      "finishMessage": "Sei sicuro di voler contrassegnare questo programma come completato?",
+      "finishMessage": "Confermi di voler contrassegnare questo programma come completato?",
       "finishButton": "Completa Programma",
       "activeTitle": "Il programma è attualmente attivo.",
       "activeMessage": "Cosa vorresti fare?",
       "deactivate": "Disattiva",
       "complete": "Completa",
       "deleteTitle": "Elimina Programma",
-      "deleteMessage": "Sei sicuro di voler eliminare questo programma? Questa azione non può essere annullata",
+      "deleteMessage": "Confermi di voler eliminare questo programma? Questa azione non può essere annullata",
       "delete": "Elimina",
       "cloneSuccess": "Programma \"{{name}}\" clonato con successo.",
       "cloneFailed": "Clonazione programma fallita",
@@ -1821,7 +1836,7 @@
     },
     "alerts": {
       "deleteTitle": "Elimina Voce",
-      "deleteMessage": "Sei sicuro di voler eliminare permanentemente tutti i dati per il {{date}}? Questo include qualsiasi foto associata e non può essere annullato."
+      "deleteMessage": "Confermi di voler eliminare permanentemente tutti i dati per il {{date}}? Questo include qualsiasi foto associata e non può essere annullato."
     },
     "toasts": {
       "entrySaved": "Voce Salvata!",
@@ -2043,7 +2058,7 @@
     },
     "alerts": {
       "deleteTitle": "Eliminare Registro Attività?",
-      "deleteMessage": "Sei sicuro di voler eliminare questa sessione per \"{{name}}\"? L'azione non può essere annullata.",
+      "deleteMessage": "Confermi di voler eliminare questa sessione per \"{{name}}\"? L'azione non può essere annullata.",
       "cancel": "Annulla",
       "deleteButton": "Elimina"
     }
@@ -2188,7 +2203,7 @@
     "deleteFailedTitle": "Eliminazione Fallita",
     "deleteFailedMessage": "Attrezzatura non trovata.",
     "deleteConfirmTitle": "Elimina Attrezzatura",
-    "deleteConfirmMessage": "Sei sicuro di voler eliminare \"{{name}}\" dalla tua palestra? Questa azione è irreversibile.",
+    "deleteConfirmMessage": "Confermi di voler eliminare \"{{name}}\" dalla tua palestra? Questa azione è irreversibile.",
     "deletedTitle": "Eliminato",
     "deletedMessage": "\"{{name}}\" è stato eliminato.",
     "importErrorTitle": "Errore di Importazione",
@@ -2289,7 +2304,7 @@
   "storageService": {
     "clearAllWarning": {
       "title": "ATTENZIONE",
-      "message": "Questo cancellerà TUTTI i dati in localStorage per questo dominio, influenzando potenzialmente altre applicazioni o impostazioni. Sei sicuro di voler procedere?"
+      "message": "Questo cancellerà TUTTI i dati in localStorage per questo dominio, influenzando potenzialmente altre applicazioni o impostazioni. Confermi di voler procedere?"
     }
   },
   "subscriptionService": {
@@ -2301,7 +2316,7 @@
   "trackingService": {
     "clearLogsConfirm": {
       "title": "Info",
-      "message": "SVILUPPO: Sei sicuro di voler eliminare TUTTI i log degli allenamenti? Questa azione è irreversibile.",
+      "message": "SVILUPPO: Confermi di voler eliminare TUTTI i log degli allenamenti? Questa azione è irreversibile.",
       "success": "Tutti i log degli allenamenti sono stati cancellati!"
     },
     "recalcPbs": {
@@ -2314,7 +2329,7 @@
     },
     "clearPbsConfirm": {
       "title": "Info",
-      "message": "SVILUPPO: Sei sicuro di voler eliminare TUTTI i record personali? Questa azione è irreversibile.",
+      "message": "SVILUPPO: Confermi di voler eliminare TUTTI i record personali? Questa azione è irreversibile.",
       "success": "Tutti i record personali sono stati cancellati!"
     },
     "import": {
@@ -2339,8 +2354,8 @@
       "warningTitle": "Attenzione",
       "noIdMessage": "Nessun ID routine fornito per cancellare i log",
       "confirmTitle": "Conferma Eliminazione",
-      "confirmMessageSimple": "Sei sicuro di voler eliminare la routine \"{{routineName}}\"? Questa azione è irreversibile.",
-      "confirmMessageWithLogs": "Sei sicuro di voler eliminare la routine \"{{routineName}}\"? Ci sono {{count}} log di allenamento associati. Eliminando la routine verranno eliminati anche questi log. Questa azione è irreversibile.",
+      "confirmMessageSimple": "Confermi di voler eliminare la routine \"{{routineName}}\"? Questa azione è irreversibile.",
+      "confirmMessageWithLogs": "Confermi di voler eliminare la routine \"{{routineName}}\"? Ci sono {{count}} log di allenamento associati. Eliminando la routine verranno eliminati anche questi log. Questa azione è irreversibile.",
       "successTitleSimple": "Info",
       "successMessageSimple": "Routine \"{{routineName}}\" eliminata con successo!",
       "successTitleWithLogs": "Successo",
@@ -2369,7 +2384,7 @@
     },
     "deleteConfirm": {
       "title": "Elimina Programma",
-      "message": "Sei sicuro di voler eliminare il programma \"{{name}}\"? Questa azione è irreversibile.",
+      "message": "Confermi di voler eliminare il programma \"{{name}}\"? Questa azione è irreversibile.",
       "cancelButton": "Annulla",
       "deleteButton": "Elimina Programma"
     },
@@ -2450,10 +2465,10 @@
       "editRunningTitle": "Info",
       "editRunningMessage": "Non è possibile modificare una routine in esecuzione. Completala o scartala prima di modificarla.",
       "clearAllTitle": "Info",
-      "clearAllMessage": "Sei sicuro di voler eliminare TUTTE le routine? Questo eliminerà TUTTE le routine (non solo i log) e l'azione è irreversibile.",
+      "clearAllMessage": "Confermi di voler eliminare TUTTE le routine? Questo eliminerà TUTTE le routine (non solo i log) e l'azione è irreversibile.",
       "clearAllSuccess": "Tutte le routine sono state cancellate!",
       "clearExecutedTitle": "Info",
-      "clearExecutedMessage": "Sei sicuro di voler resettare la proprietà 'ultimaEsecuzione' di TUTTE le routine? Questa azione è irreversibile.",
+      "clearExecutedMessage": "Confermi di voler resettare la proprietà 'ultimaEsecuzione' di TUTTE le routine? Questa azione è irreversibile.",
       "clearExecutedSuccess": "Tutti i log delle routine sono stati cancellati!",
       "resume": {
         "title": "Riprendere l'Allenamento in Pausa?",
@@ -2666,7 +2681,7 @@
     },
     "delete": {
       "confirmTitle": "Elimina Esercizio",
-      "confirmMessage": "Sei sicuro di voler eliminare \"{{name}}\"? Verrà rimosso da tutte le routine e dai registri storici. Questa azione non può essere annullata.",
+      "confirmMessage": "Confermi di voler eliminare \"{{name}}\"? Verrà rimosso da tutte le routine e dai registri storici. Questa azione non può essere annullata.",
       "successTitle": "Esercizio Eliminato",
       "successMessage": "\"{{name}}\" è stato eliminato con successo.",
       "errorTitle": "Eliminazione Fallita",
@@ -2759,7 +2774,7 @@
     "delete": {
       "notFound": "Esercizio non trovato",
       "confirmTitle": "Elimina Esercizio",
-      "confirmMessage": "Sei sicuro di voler eliminare \"{{name}}\"? Verrà rimosso da tutte le routine e dai registri storici. Questa azione non può essere annullata.",
+      "confirmMessage": "Confermi di voler eliminare \"{{name}}\"? Verrà rimosso da tutte le routine e dai registri storici. Questa azione non può essere annullata.",
       "deleting": "Eliminazione esercizio in corso...",
       "success": "\"{{name}}\" è stato eliminato con successo.",
       "successTitle": "Eliminato",

@@ -1101,6 +1101,17 @@
     "addSelected": "Add selected"
   },
   "workoutBuilder": {
+    "drag": {
+      "cannotDragSupersetMember": "Cannot drag individual exercises in a superset. Drag the first exercise to move the entire group.",
+      "supersetMoved": "Superset group moved successfully",
+      "cannotDropSupersetOnSuperset": "Cannot drop a superset on another superset. Drop before or after instead.",
+      "exerciseMovedSeparate": "Exercise moved separately",
+      "keepSeparate": "Keep Separate",
+      "addToSuperset": "Add to Superset",
+      "chooseAction": "Choose an action for the dropped exercise",
+      "addExerciseToSuperset": "Add exercise to Superset",
+      "exerciseAddedToSuperset": "Exercise added to Superset"
+    },
     "locationTypeLabel": "Location Type (optional)",
     "locationLabel": "Location",
     "locationPlaceholder": "Select location",
@@ -1206,6 +1217,10 @@
     },
     "changeType": "Change",
     "superset": {
+      "nonConsecutiveTitle": "Exercises Not Consecutive",
+      "nonConsecutiveMessage": "The selected exercises are not next to each other. Would you like me to automatically reorder them to be consecutive before creating the superset?",
+      "reorderAndGroup": "Reorder & Create",
+      "exercisesReordered": "Exercises reordered to be consecutive",
       "removeExercisesButton": "Remove exercises",
       "groupButton": "Group Superset ({{count}})",
       "ungroupButton": "Ungroup Superset ({{count}})",
