@@ -39,36 +39,20 @@ export class AudioService {
   };
 
   async playSound(type: AUDIO_TYPES): Promise<void> {
-    this.initializeAudioContext();
-    if (!this.audioCtx) return;
+  this.initializeAudioContext();
+  if (!this.audioCtx) return;
 
-    // If user interacts via a UI event that triggers playSound, set _userInteracted
-    if (!this._userInteracted) {
-      this._userInteracted = true;
+  if (!this._userInteracted) {
+    this._userInteracted = true;
+  }
+
+  if (this.audioCtx.state === 'suspended') {
+    try {
+      await this.audioCtx.resume();
+    } catch (e) {
+      return;
     }
-
-    // Ensure AudioContext is resumed before playing
-    if (this.audioCtx.state === 'suspended') {
-      try {
-        await this.audioCtx.resume();
-      } catch (e) {
-        // Resume may fail if not in user gesture
-        return;
-      }
-    }
-
-    const now = this.audioCtx.currentTime;
-
-    // Always create new nodes per sound
-    const oscillator = this.audioCtx.createOscillator();
-    const gainNode = this.audioCtx.createGain();
-    const masterGain = this.audioCtx.createGain();
-    const overtoneGain = this.audioCtx.createGain();
-
-    const osc1 = this.audioCtx.createOscillator();
-    const osc2 = this.audioCtx.createOscillator();
-    const osc3 = this.audioCtx.createOscillator();
-    const osc4 = this.audioCtx.createOscillator();
+  }
 
     switch (type) {
       case AUDIO_TYPES.countdown:
@@ -84,149 +68,16 @@ export class AudioService {
         this.playCorrectSound();
         break;
       case AUDIO_TYPES.untoggle:
-        gainNode.gain.setValueAtTime(0.3, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 1); // Very short fade
-
-        oscillator.type = 'triangle'; // Softer than a square wave
-        oscillator.frequency.setValueAtTime(120, now); // Low, bassy pop
-
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioCtx.destination);
-
-        oscillator.start(now);
-        oscillator.stop(now + 0.1);
+        this.playUntoggleSound();
         break;
       case AUDIO_TYPES.whoosh:
-        // --- Whoosh Sound ---
-        const duration = 0.3;
-        gainNode.gain.setValueAtTime(1, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-
-        const filter = this.audioCtx.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.Q.value = 15; // High Q value for a more resonant "whistling" sound
-        filter.frequency.setValueAtTime(4000, now); // Start high
-        filter.frequency.exponentialRampToValueAtTime(100, now + duration); // Sweep low
-
-        // Generate white noise
-        const bufferSize = this.audioCtx.sampleRate * duration;
-        const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
-        const output = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          output[i] = Math.random() * 2 - 1;
-        }
-
-        const noiseSource = this.audioCtx.createBufferSource();
-        noiseSource.buffer = buffer;
-
-        // Connect the nodes
-        noiseSource.connect(filter);
-        filter.connect(gainNode);
-        gainNode.connect(this.audioCtx.destination);
-
-        noiseSource.start(now);
-        noiseSource.stop(now + duration);
+        this.playWhooshSound();
         break;
       case AUDIO_TYPES.tada:
-        // --- "Ta-daaaan!" Fanfare ---
-        masterGain.gain.setValueAtTime(0.6, now);
-        masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2); // Total duration
-        masterGain.connect(this.audioCtx.destination);
-
-        // Note 1: "Ta" (C5)
-        osc1.type = 'triangle';
-        osc1.frequency.setValueAtTime(523.25, now);
-        osc1.connect(masterGain);
-        osc1.start(now);
-        osc1.stop(now + 0.15);
-
-        // Note 2: "Da" (G5)
-        osc2.type = 'triangle';
-        osc2.frequency.setValueAtTime(783.99, now + 0.15);
-        osc2.connect(masterGain);
-        osc2.start(now + 0.15);
-        osc2.stop(now + 0.3);
-
-        // Note 3: "Daaan!" (C6) - The final, triumphant note
-        osc3.type = 'triangle';
-        osc3.frequency.setValueAtTime(1046.50, now + 0.3);
-        osc3.connect(masterGain);
-        osc3.start(now + 0.3);
-        osc3.stop(now + 5);
+        this.playTadaSound();
         break;
       case AUDIO_TYPES.tatatada:
-        // --- "Ta-daaaan!" Fanfare ---
-        // Set master gain for the whole sequence and fade out
-        masterGain.gain.setValueAtTime(0.6, now);
-        // Exponential ramp to almost silent over 3.5 seconds (adjust as needed for fanfare duration)
-        masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 3.5);
-        masterGain.connect(this.audioCtx.destination);
-
-        // Define frequencies for a classic "Ta-da" (e.g., C4 - G4 - C5 - G5)
-        // You can adjust these to your liking.
-        const noteC4 = 261.63; // C4
-        const noteG4 = 392.00; // G4
-        const noteC5 = 523.25; // C5
-        const noteG5 = 783.99; // G5 (the "Daaan!" note)
-
-        const noteDuration = 0.15; // Duration of the short 'Ta' notes
-        const delayBetweenNotes = 0.10; // Pause between 'Ta' notes
-        let startTime = now;
-
-        // Helper function to create and play a single note
-        const playNote = (frequency: number, duration: number, startAt: number) => {
-          if (!this.audioCtx) {
-            return;
-          }
-          const osc = this.audioCtx.createOscillator();
-          const gainNode = this.audioCtx.createGain(); // Use a dedicated gain for each note for more control
-
-          osc.type = 'triangle'; // Or 'sine', 'square', 'sawtooth'
-          osc.frequency.setValueAtTime(frequency, startAt);
-
-          // Simple ADSR envelope for each note for a cleaner sound
-          gainNode.gain.setValueAtTime(0, startAt);
-          gainNode.gain.linearRampToValueAtTime(1, startAt + 0.01); // Attack
-          gainNode.gain.exponentialRampToValueAtTime(0.0001, startAt + duration); // Release
-
-          osc.connect(gainNode);
-          gainNode.connect(masterGain); // Connect to master gain
-
-          osc.start(startAt);
-          osc.stop(startAt + duration); // Stop the oscillator after its duration
-        };
-
-        // Note 1: "Ta" (C4)
-        playNote(noteC4, noteDuration, startTime);
-        startTime += noteDuration + delayBetweenNotes;
-
-        // Note 2: "Ta" (G4)
-        playNote(noteG4, noteDuration, startTime);
-        startTime += noteDuration + delayBetweenNotes;
-
-        // Note 3: "Ta" (C5)
-        playNote(noteC5, noteDuration, startTime);
-        startTime += noteDuration + delayBetweenNotes;
-
-        // Note 4: "Daaan!" (G5) - The final, triumphant note
-        // This note will be longer
-        const finalNoteDuration = 2.0; // Sustain for 2 seconds
-        const finalOsc = this.audioCtx.createOscillator();
-        const finalGain = this.audioCtx.createGain();
-
-        finalOsc.type = 'triangle';
-        finalOsc.frequency.setValueAtTime(noteG5, startTime);
-
-        // More pronounced envelope for the final note
-        finalGain.gain.setValueAtTime(0, startTime);
-        finalGain.gain.linearRampToValueAtTime(1, startTime + 0.05); // Attack
-        finalGain.gain.exponentialRampToValueAtTime(0.0001, startTime + finalNoteDuration + 0.5); // Decay/Release over a longer period
-
-        finalOsc.connect(finalGain);
-        finalGain.connect(masterGain);
-
-        finalOsc.start(startTime);
-        finalOsc.stop(startTime + finalNoteDuration + 0.5); // Stop slightly after gain ramps down
+        this.playTaTaTaDaSound();
         break;
       case AUDIO_TYPES.magic: {
         this.playMagicRestoreSound();
@@ -237,37 +88,7 @@ export class AudioService {
         break;
       }
       case AUDIO_TYPES.referee:
-        // --- Referee Whistle (Fixed Pitch / Sharp Stop) ---
-        const whistleDur = 0.4;
-
-        // Master gain for this sound
-        const whistleGain = this.audioCtx.createGain();
-
-        // Volume Envelope
-        whistleGain.gain.setValueAtTime(0, now);
-        whistleGain.gain.linearRampToValueAtTime(0.8, now + 0.05); // Fast attack
-        whistleGain.gain.setValueAtTime(0.8, now + whistleDur - 0.05); // Sustain
-        // Sharp release (0.05s fade out) to avoid the "sliding" feel
-        whistleGain.gain.linearRampToValueAtTime(0.0001, now + whistleDur);
-
-        whistleGain.connect(this.audioCtx.destination);
-
-        // Oscillator 1: Base Tone
-        // We keep the frequency CONSTANT now (no ramping down)
-        osc1.type = 'triangle';
-        osc1.frequency.setValueAtTime(3000, now);
-        osc1.connect(whistleGain);
-
-        // Oscillator 2: Interference Tone (The "Pea")
-        // Also constant frequency
-        osc2.type = 'triangle';
-        osc2.frequency.setValueAtTime(3080, now); // 80Hz difference = fast rattle
-        osc2.connect(whistleGain);
-
-        osc1.start(now);
-        osc1.stop(now + whistleDur);
-        osc2.start(now);
-        osc2.stop(now + whistleDur);
+        this.playRefereeSound();
         break;
       case AUDIO_TYPES.tick: {
         this.playTickSound();
@@ -530,4 +351,219 @@ export class AudioService {
     osc2.stop(now + 0.7);
   }
 
+  /**
+   * Plays a short "whoosh" sound using white noise and a sweeping bandpass filter.
+   */
+  playWhooshSound(): void {
+    this.initializeAudioContext();
+    if (!this.audioCtx) return;
+
+    const now = this.audioCtx.currentTime;
+    const duration = 0.3;
+
+    // Create gain node for volume envelope
+    const gainNode = this.audioCtx.createGain();
+    gainNode.gain.setValueAtTime(1, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    // Create a bandpass filter for the sweeping effect
+    const filter = this.audioCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.Q.value = 15;
+    filter.frequency.setValueAtTime(4000, now);
+    filter.frequency.exponentialRampToValueAtTime(100, now + duration);
+
+    // Generate white noise buffer
+    const bufferSize = this.audioCtx.sampleRate * duration;
+    const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
+    const output = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      output[i] = Math.random() * 2 - 1;
+    }
+
+    const noiseSource = this.audioCtx.createBufferSource();
+    noiseSource.buffer = buffer;
+
+    // Connect nodes: noise -> filter -> gain -> destination
+    noiseSource.connect(filter);
+    filter.connect(gainNode);
+    gainNode.connect(this.audioCtx.destination);
+
+    noiseSource.start(now);
+    noiseSource.stop(now + duration);
+  }
+
+  /**
+ * Plays a "Ta-daaaan!" fanfare sound using three triangle wave notes.
+ */
+  playTadaSound(): void {
+    this.initializeAudioContext();
+    if (!this.audioCtx) return;
+
+    const now = this.audioCtx.currentTime;
+    const masterGain = this.audioCtx.createGain();
+    masterGain.gain.setValueAtTime(0.6, now);
+    masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2); // Total duration
+    masterGain.connect(this.audioCtx.destination);
+
+    // Note 1: "Ta" (C5)
+    const osc1 = this.audioCtx.createOscillator();
+    osc1.type = 'triangle';
+    osc1.frequency.setValueAtTime(523.25, now);
+    osc1.connect(masterGain);
+    osc1.start(now);
+    osc1.stop(now + 0.15);
+
+    // Note 2: "Da" (G5)
+    const osc2 = this.audioCtx.createOscillator();
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(783.99, now + 0.15);
+    osc2.connect(masterGain);
+    osc2.start(now + 0.15);
+    osc2.stop(now + 0.3);
+
+    // Note 3: "Daaan!" (C6) - The final, triumphant note
+    const osc3 = this.audioCtx.createOscillator();
+    osc3.type = 'triangle';
+    osc3.frequency.setValueAtTime(1046.50, now + 0.3);
+    osc3.connect(masterGain);
+    osc3.start(now + 0.3);
+    osc3.stop(now + 1.2);
+  }
+
+  /**
+ * Plays a "Ta-Ta-Ta-Daaan!" fanfare: three short notes and a long final note.
+ */
+  playTaTaTaDaSound(): void {
+    this.initializeAudioContext();
+    if (!this.audioCtx) return;
+
+    const now = this.audioCtx.currentTime;
+    const masterGain = this.audioCtx.createGain();
+    masterGain.gain.setValueAtTime(0.6, now);
+    masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 3.5);
+    masterGain.connect(this.audioCtx.destination);
+
+    // Note frequencies
+    const noteC4 = 261.63;
+    const noteG4 = 392.00;
+    const noteC5 = 523.25;
+    const noteG5 = 783.99;
+
+    const noteDuration = 0.15;
+    const delayBetweenNotes = 0.10;
+    let startTime = now;
+
+    // Helper to play a short note
+    const playNote = (frequency: number, duration: number, startAt: number) => {
+      if (!this.audioCtx) return;
+      const osc = this.audioCtx.createOscillator();
+      const gainNode = this.audioCtx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(frequency, startAt);
+
+      gainNode.gain.setValueAtTime(0, startAt);
+      gainNode.gain.linearRampToValueAtTime(1, startAt + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, startAt + duration);
+
+      osc.connect(gainNode);
+      gainNode.connect(masterGain);
+
+      osc.start(startAt);
+      osc.stop(startAt + duration);
+    };
+
+    // Play the three "Ta" notes
+    playNote(noteC4, noteDuration, startTime);
+    startTime += noteDuration + delayBetweenNotes;
+
+    playNote(noteG4, noteDuration, startTime);
+    startTime += noteDuration + delayBetweenNotes;
+
+    playNote(noteC5, noteDuration, startTime);
+    startTime += noteDuration + delayBetweenNotes;
+
+    // Final "Daaan!" note (longer)
+    const finalNoteDuration = 2.0;
+    const finalOsc = this.audioCtx.createOscillator();
+    const finalGain = this.audioCtx.createGain();
+
+    finalOsc.type = 'triangle';
+    finalOsc.frequency.setValueAtTime(noteG5, startTime);
+
+    finalGain.gain.setValueAtTime(0, startTime);
+    finalGain.gain.linearRampToValueAtTime(1, startTime + 0.05);
+    finalGain.gain.exponentialRampToValueAtTime(0.0001, startTime + finalNoteDuration + 0.5);
+
+    finalOsc.connect(finalGain);
+    finalGain.connect(masterGain);
+
+    finalOsc.start(startTime);
+    finalOsc.stop(startTime + finalNoteDuration + 0.5);
+  }
+
+  /**
+ * Plays a short referee whistle sound (fixed pitch, sharp stop).
+ */
+  playRefereeSound(): void {
+    this.initializeAudioContext();
+    if (!this.audioCtx) return;
+
+    const now = this.audioCtx.currentTime;
+    const whistleDur = 0.4;
+
+    // Master gain for this sound
+    const whistleGain = this.audioCtx.createGain();
+
+    // Volume Envelope
+    whistleGain.gain.setValueAtTime(0, now);
+    whistleGain.gain.linearRampToValueAtTime(0.8, now + 0.05); // Fast attack
+    whistleGain.gain.setValueAtTime(0.8, now + whistleDur - 0.05); // Sustain
+    whistleGain.gain.linearRampToValueAtTime(0.0001, now + whistleDur); // Sharp release
+
+    whistleGain.connect(this.audioCtx.destination);
+
+    // Oscillator 1: Base Tone (constant frequency)
+    const osc1 = this.audioCtx.createOscillator();
+    osc1.type = 'triangle';
+    osc1.frequency.setValueAtTime(3000, now);
+    osc1.connect(whistleGain);
+
+    // Oscillator 2: Interference Tone ("pea" rattle, constant frequency)
+    const osc2 = this.audioCtx.createOscillator();
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(3080, now); // 80Hz difference = fast rattle
+    osc2.connect(whistleGain);
+
+    osc1.start(now);
+    osc1.stop(now + whistleDur);
+    osc2.start(now);
+    osc2.stop(now + whistleDur);
+  }
+
+  /**
+   * Plays a short, soft "untoggle" sound (low, quick pop).
+   */
+  playUntoggleSound(): void {
+    this.initializeAudioContext();
+    if (!this.audioCtx) return;
+
+    const now = this.audioCtx.currentTime;
+    const oscillator = this.audioCtx.createOscillator();
+    const gainNode = this.audioCtx.createGain();
+
+
+    gainNode.gain.setValueAtTime(0.3, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.1); // Quick fade
+
+        oscillator.type = 'triangle'; // Softer than square
+    oscillator.frequency.setValueAtTime(120, now); // Low, bassy pop
+
+    oscillator.connect(gainNode);
+    gainNode.connect(this.audioCtx.destination);
+
+    oscillator.start(now);
+    oscillator.stop(now + 0.1);
+  }
 }

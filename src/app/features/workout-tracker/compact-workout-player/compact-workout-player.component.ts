@@ -81,6 +81,7 @@ import { ThemeService } from '../../../core/services/theme.service';
 import { NumbersOnlyDirective } from '../../../shared/directives/onlyNumbers.directive';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
 import { ExerciseDetailComponent } from '../../exercise-library/exercise-detail';
+import { ShatterableDirective } from '../../../animations/shatterable.directive';
 
 // Interface for saving the paused state
 
@@ -121,7 +122,7 @@ export interface NextStepInfo {
     CommonModule, DatePipe, IconComponent,
     ExerciseSelectionModalComponent, FormsModule, ActionMenuComponent, FullScreenRestTimerComponent, NgLetDirective,
     DragDropModule, BarbellCalculatorModalComponent, TranslateModule, SessionOverviewModalComponent, PressDirective,
-    BumpClickDirective, NumbersOnlyDirective, ModalComponent, ExerciseDetailComponent
+    BumpClickDirective, NumbersOnlyDirective, ModalComponent, ExerciseDetailComponent, ShatterableDirective
   ],
   templateUrl: './compact-workout-player.component.html',
   styleUrls: ['./compact-workout-player.component.scss'],
@@ -150,6 +151,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private themeService = inject(ThemeService);
 
   private workoutSectionService = inject(WorkoutSectionService);
+
+
+  @ViewChildren(ShatterableDirective) shatterables!: QueryList<ShatterableDirective>;
 
   availablePlayerRepSchemes: { type: RepsTargetType; label: string }[] = [];
 
@@ -1835,9 +1839,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       // Failsafe: if the exercise is somehow the last in a group and has no sets, treat it as an exercise removal.
       if (exercisesInGroup[0]?.sets.length === 1) {
         const confirmLast = await this.alertService.showConfirm(
-          "Remove Last Round",
-          `This is the last round of the superset. Removing it will delete the entire superset from the workout. Continue?`,
-          'Remove Superset', 'Cancel'
+          this.translate.instant('compactPlayer.alerts.removeLastRoundTitle'),
+          this.translate.instant('compactPlayer.alerts.removeLastRoundMessage'),
+          this.translate.instant('actionButtons.removeSuperset'), this.translate.instant('common.cancel')
         );
         if (confirmLast?.data) {
           await this.removeExercise(exIndex, true); // This now correctly handles removing the whole group
@@ -1846,8 +1850,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       }
 
       const confirm = await this.alertService.showConfirm(
-        "Remove Round",
-        `This will remove Round ${roundIndexToRemove + 1} from all exercises in this superset and clear any logged data for it. Are you sure?`
+        this.translate.instant('compactPlayer.alerts.removeRoundTitle'),
+        this.translate.instant('compactPlayer.alerts.removeRoundMessage', { roundNumber: roundIndexToRemove + 1 }),
       );
       if (!confirm?.data) return;
 
@@ -1884,7 +1888,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         return { ...r };
       });
 
-      this.toastService.info(`Round ${roundIndexToRemove + 1} removed from the superset.`);
+      this.toastService.info(this.translate.instant('compactPlayer.toasts.roundRemoved', { roundNumber: roundIndexToRemove + 1 }));
       this.audioService.playSound(AUDIO_TYPES.whoosh);
 
       return;
@@ -1967,10 +1971,17 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.audioService.playSound(AUDIO_TYPES.whoosh);
   }
 
-  private removeExerciseNoPrompt(exIndex: number): void {
+  private async removeExerciseNoPrompt(exIndex: number): Promise<void> {
     const routine = this.routine();
     if (!routine) return;
     const exerciseToRemove = routine.exercises[exIndex];
+
+    const shatterable = this.shatterables.find(dir => dir.el.nativeElement.id === `appShatterable-${exerciseToRemove.id}`);
+    if (shatterable) {
+      shatterable.shatter();
+      // Wait for the animation to finish before removing
+      await new Promise(res => setTimeout(res, 350));
+    }
 
     // Remove the single exercise from the routine
     routine.exercises.splice(exIndex, 1);
@@ -2003,6 +2014,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.audioService.playSound(AUDIO_TYPES.whoosh);
   }
 
+
+
   async removeExercise(exIndex: number, confirmRequest: boolean = false): Promise<void> {
     const routine = this.routine();
     if (!routine) return;
@@ -2010,8 +2023,16 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const exerciseToRemove = routine.exercises[exIndex];
     const supersetId = exerciseToRemove.supersetId;
 
+    // Find the shatterable directive for this exercise card
+    const shatterable = this.shatterables.find(dir => dir.el.nativeElement.id === `appShatterable-${exerciseToRemove.id}`);
+
     // --- CASE 0: Forcely removing an entire Superset group / exercise ---
     if (confirmRequest) {
+      if (shatterable) {
+        shatterable.shatter();
+        // Wait for the animation to finish before removing
+        await new Promise(res => setTimeout(res, 350));
+      }
       if (supersetId) {
         this.removeSuperset(exIndex);
       } else {
@@ -2024,18 +2045,26 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (supersetId) {
       const supersetName = this.getSupersetDisplayName(supersetId);
       const confirm = await this.alertService.showConfirm(
-        "Remove Superset",
-        `This will remove the entire "${supersetName}" superset and all its logged data for this session. Are you sure?`,
-        'Remove Superset',
-        'Cancel'
+        this.translate.instant("compactPlayer.alerts.removeSupersetTitle"),
+        this.translate.instant("compactPlayer.alerts.removeSupersetMessage", { name: supersetName }),
+        this.translate.instant("compactPlayer.alerts.removeSupersetTitle"),
+        this.translate.instant("common.cancel")
       );
 
       if (!confirm?.data && !confirmRequest) return;
+
+      if (shatterable) {
+        shatterable.shatter();
+        // Wait for the animation to finish before removing
+        await new Promise(res => setTimeout(res, 350));
+      }
+
       this.removeSuperset(exIndex);
       return;
 
     } else {
       // --- CASE 2: Removing a Standard (standalone) Exercise ---
+      // Only ask for confirmation if the exercise has at least one logged set
       const isExerciseLogged = this.isExerciseLogged(exIndex);
       const confirmMessage = isExerciseLogged
         ? this.translate.instant('compactPlayer.alerts.removeExerciseLoggedMessage', { name: exerciseToRemove.exerciseName })
@@ -2512,7 +2541,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
       const removeExerciseBtnItem = {
         ...removeExerciseBtn,
-        label: this.isSuperSet(exIndex) ? 'Remove superset' : removeExerciseBtn.label,
+        label: this.isSuperSet(exIndex) ? 'actionButtons.removeSuperset' : removeExerciseBtn.label,
         data: { exIndex },
         overrideCssButtonClass: removeExerciseBtn.buttonClass + commonModalButtonClass
       } as ActionMenuItem;
@@ -2544,13 +2573,22 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       } else {
         // RULES 2 & 3: "Add to" and "Create Superset"
         if (routine.exercises.length >= 2) {
-          if (routine.exercises.some(ex => ex.supersetId)) {
-            actionsArray.push({
-              ...addToSuperSetBtn,
-              data: { exIndex },
-              overrideCssButtonClass: addToSuperSetBtn.buttonClass + commonModalButtonClass
+            // There must be at least one superset exercise,
+            // and for all superset exercises, there must be absolutely no logged set
+            // Find all unique supersetIds in the routine
+            const supersetIds = Array.from(new Set(routine.exercises.filter(ex => ex.supersetId).map(ex => ex.supersetId)));
+            // For each superset group, check if ALL exercises in that group have NO logged sets
+            supersetIds.forEach(supersetId => {
+              const groupExercises = routine.exercises.filter(ex => ex.supersetId === supersetId);
+              const allNotLogged = groupExercises.every(supersetEx => !this.isExerciseLogged(routine.exercises.indexOf(supersetEx)));
+              if (allNotLogged) {
+              actionsArray.push({
+                ...addToSuperSetBtn,
+                data: { exIndex },
+                overrideCssButtonClass: addToSuperSetBtn.buttonClass + commonModalButtonClass
+              });
+              }
             });
-          }
           if (routine.exercises.filter(ex => !ex.supersetId).length >= 2) {
             actionsArray.push({
               ...createSuperSetBtn,
@@ -2588,7 +2626,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       this.compactRestInterval = setInterval(() => {
         const remaining = this.restTimerRemainingForSet(completedExIndex, completedSetIndex);
         // Play countdown sound for last 5 seconds
-        if (remaining > 0 && remaining <= 5 && remaining !== this.lastCompactRestBeepSecond) {
+        const countDownSoundEnabled: boolean = !!(this.appSettingsService.enableTimerCountdownSound() && this.appSettingsService.getSettings().countdownSoundSeconds);
+        const countDownSoundNumber: number = countDownSoundEnabled ? this.appSettingsService.getSettings().countdownSoundSeconds : 0;
+
+        if (remaining > 0 && countDownSoundNumber && remaining <= countDownSoundNumber && remaining !== this.lastCompactRestBeepSecond) {
           this.playCountdownSound(remaining);
           this.lastCompactRestBeepSecond = remaining;
         }
@@ -3755,13 +3796,17 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         const nextRoundIndex = roundIndex + 1;
         const hasNextRound = nextRoundIndex < firstExercise.sets.length;
 
-        this.playEndSound();
+        // it's being called inside startRestTimer
+        // this.playEndSound();
         if (hasNextRound) {
           // 1. Expand the next round and collapse the one we just finished
           this.expandedRounds.update(currentSet => {
             const newSet = new Set(currentSet);
+            // collapse previous/current round
             newSet.delete(`${exIndex}-${roundIndex}`);
-            newSet.add(`${exIndex}-${nextRoundIndex}`);
+
+            // expand next round
+            // newSet.add(`${exIndex}-${nextRoundIndex}`);
             return newSet;
           });
 
@@ -3769,18 +3814,23 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           this.handleEmomAction(exIndex, nextRoundIndex);
 
           // 3. Scroll the next round into view after the DOM updates
-          afterNextRender(() => {
-            requestAnimationFrame(() => {
-              const cardElement = document.querySelector(`[data-exercise-index="${exIndex}"]`) as HTMLElement;
-              const nextRoundElement = cardElement?.querySelector(`[data-round-index="${nextRoundIndex}"]`) as HTMLElement;
-              const headerElement = this.header?.nativeElement;
+          runInInjectionContext(this.injector, () => {
+            if (this.isDestroyed) {
+              return;
+            }
+            afterNextRender(() => {
+              requestAnimationFrame(() => {
+                const cardElement = document.querySelector(`[data-exercise-index="${exIndex}"]`) as HTMLElement;
+                const nextRoundElement = cardElement?.querySelector(`[data-round-index="${nextRoundIndex}"]`) as HTMLElement;
+                const headerElement = this.header?.nativeElement;
 
-              if (nextRoundElement && headerElement) {
-                const headerHeight = headerElement.offsetHeight;
-                const elementTopPosition = nextRoundElement.getBoundingClientRect().top + window.scrollY;
-                const scrollTopPosition = elementTopPosition - headerHeight - 15;
-                window.scrollTo({ top: scrollTopPosition, behavior: 'smooth' });
-              }
+                if (nextRoundElement && headerElement) {
+                  const headerHeight = headerElement.offsetHeight;
+                  const elementTopPosition = nextRoundElement.getBoundingClientRect().top + window.scrollY;
+                  const scrollTopPosition = elementTopPosition - headerHeight - 15;
+                  window.scrollTo({ top: scrollTopPosition, behavior: 'smooth' });
+                }
+              });
             });
           });
         }
@@ -4225,8 +4275,15 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return this.workoutUtilsService.getVisibleSetColumns(routine, exIndex, setIndex);
   }
 
-  public getVisibleSetColumnsCount(exIndex: number, setIndex: number): number {
-    const cols = this.getVisibleSetColumns(exIndex, setIndex);
+  public getVisibleSetColumnsCountForGrid(exIndex: number, setIndex: number): number {
+    let cols = this.getVisibleSetColumns(exIndex, setIndex);
+    if (this.isEmom(exIndex)){
+      // in case of emom REST is usually not available so it must be incremented by 1
+      cols = {
+        ...cols,
+        [METRIC.rest]: true
+      }
+    }
     return Object.values(cols).filter(v => v).length;
   }
 
@@ -6480,7 +6537,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   // Returns the remaining rest time for this set (in seconds)
   restTimerRemainingForSet(exIndex: number, setIndex: number): number {
     if (!this.isRestTimerVisibleForSet(exIndex, setIndex)) return 0;
-    const startTimestamp = this.restStartTimestamps?.[`${exIndex}-${setIndex}`];
+    const restKey = this.getSupersetRestKey(exIndex, setIndex);
+    const startTimestamp = this.restStartTimestamps?.[restKey];
     const duration = this.getSetRestDuration(exIndex, setIndex);
     if (!startTimestamp || !duration) return duration;
     const elapsed = Math.floor((Date.now() - startTimestamp) / 1000);
@@ -6827,7 +6885,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
    */
   private async createRoutineFromTemplate(template: string) {
     // Use your WorkoutService's shared method
-    const routines = this.workoutService.generateRoutineFromTemplate(template, this.availableExercises);
+    const templateName = `${template} - ${this.translate.instant('workoutGenerator.routineName', { split: format(new Date(), 'yyyy-MM-dd') })}`;
+    const routines = this.workoutService.generateRoutineFromTemplate(template, this.availableExercises, templateName);
 
     // For PPL/5/3/1, let user pick which routine to use, or just pick the first
     let routine: Routine;
@@ -7007,6 +7066,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       if (!exercise.supersetId) return;
       exercise.sets.forEach((set, roundIndex) => {
         const key = `${exIndex}-${roundIndex}`;
+        // const key = `${this.getSupersetRestKey(exIndex, roundIndex)}`;
         result[key] = this._computeSupersetSummaryMetrics(exIndex, roundIndex, routine, perfInputs);
       });
     });

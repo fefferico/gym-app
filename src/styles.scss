@@ -329,6 +329,12 @@ body {
   cursor: not-allowed;
 }
 
+.disabled-div-lower-opacity-70 {
+  pointer-events: none;
+  opacity: 0.70;
+  cursor: not-allowed;
+}
+
 /* Keyframe for the "bumping out" (un-complete) animation */
 @keyframes bump-out-animation {
   0% {

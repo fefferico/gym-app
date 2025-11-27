@@ -57,6 +57,7 @@ import { WorkoutSectionType } from '../../core/models/workout-section-type.model
 import { WorkoutSection } from '../../core/models/workout-section.model';
 import { LocationService } from '../../core/services/location.service';
 import { EXERCISE_CATEGORY_TYPES } from '../../core/models/exercise-category.model';
+import { NumbersOnlyDirective } from '../../shared/directives/onlyNumbers.directive';
 
 export enum BuilderMode {
   routineBuilder = 'routineBuilder',
@@ -94,7 +95,7 @@ export enum SET_TYPE {
     ModalComponent, ClickOutsideDirective,
     ExerciseDetailComponent, IconComponent, ExerciseSelectionModalComponent, MillisecondsDatePipe, FabMenuComponent, TranslateModule, NgLetDirective,
     PressDirective,
-    GenerateWorkoutModalComponent, BumpClickDirective],
+    GenerateWorkoutModalComponent, BumpClickDirective, NumbersOnlyDirective],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
   providers: [DecimalPipe],

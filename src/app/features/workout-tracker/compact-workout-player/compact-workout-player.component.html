@@ -124,9 +124,10 @@
       (cdkDropListDropped)="onExerciseDrop($event)" class="">
       <ng-container *ngFor="let exercise of currentRoutine.exercises; let exIndex = index;">
         <!-- Exercise Card -->
-        <div #exerciseCard cdkDrag *ngIf="!exercise.supersetId || isSupersetStart(exIndex)"
-          class="transition-all duration-300 relative" [ngClass]="getExerciseClasses(exercise, exIndex)"
-          [style.zIndex]="areActionsVisible(exIndex) ? 50 : 'auto'" [attr.data-exercise-index]="exIndex"
+        <div #exerciseCard cdkDrag *ngIf="!exercise.supersetId || isSupersetStart(exIndex)" appShatterable
+          [id]="'appShatterable-' + exercise.id" class="transition-all duration-300 relative"
+          [ngClass]="getExerciseClasses(exercise, exIndex)" [style.zIndex]="areActionsVisible(exIndex) ? 50 : 'auto'"
+          [attr.data-exercise-index]="exIndex"
           [ngStyle]="{ border: '3px solid ' + getSectionProgressColor(getSectionForExercise(exIndex)) }">
 
           <!-- Ghost element for drop placeholder -->
@@ -346,13 +347,12 @@
                         <span class="font-bold text-lg">#{{ setIndex + 1 }}</span>
                       </div>
 
-                      <!-- Summary for collapsed view -->
+                      <!-- Summary for collapsed view - STANDARD EXERCISE  TEXT MODE -->
                       <div class="flex-1 grid gap-1 content-center text-sm text-gray-700 dark:text-gray-200 font-medium"
                         [ngClass]="{
-                          'grid-cols-1': getVisibleSetColumnsCount(exIndex, setIndex) <= 2,
-                          'grid-cols-2': getVisibleSetColumnsCount(exIndex, setIndex) > 2,
-                        }"
-                        *ngIf="getSummaryDisplayMode() === summaryDisplayModeEnum.Text && !isSetExpanded(exIndex, setIndex)">
+                          'grid-cols-1': getVisibleSetColumnsCountForGrid(exIndex, setIndex) <= 2,
+                          'grid-cols-2': getVisibleSetColumnsCountForGrid(exIndex, setIndex) > 2,
+                        }" *ngIf="!isSetExpanded(exIndex, setIndex)">
                         <ng-container *ngIf="getSetUniformValues(exIndex, setIndex) as values">
                           <!-- If only reps, only weight, or both reps and weight (rest is ignored) -->
                           <!-- *ngIf="(values.reps && !values.weight && !values.distance) || (!values.reps && values.weight && !values.distance) || (values.reps && values.weight && !values.distance); else summaryText" -->
@@ -373,7 +373,7 @@
                                 exIndex: exIndex,
                                 setIndex: setIndex,
                                 suffix: 'compactPlayer.repsLabel' | translate,
-                                iconActive: false
+                                iconActive: getSummaryDisplayMode() === summaryDisplayModeEnum.Icons
                               }">
                             </ng-container>
                             <ng-container *ngTemplateOutlet="metricInputSpan;
@@ -385,7 +385,7 @@
                                 exIndex: exIndex,
                                 setIndex: setIndex,
                                 suffix: unitsService.getWeightUnitSuffix(),
-                                iconActive: false
+                                iconActive: getSummaryDisplayMode() === summaryDisplayModeEnum.Icons
                               }">
                             </ng-container>
                             <ng-container *ngTemplateOutlet="metricInputSpan;
@@ -397,7 +397,7 @@
                                 exIndex: exIndex,
                                 setIndex: setIndex,
                                 suffix: unitsService.getDistanceUnitSuffix(),
-                                iconActive: false
+                                iconActive: getSummaryDisplayMode() === summaryDisplayModeEnum.Icons
                               }">
                             </ng-container>
                             <ng-container *ngTemplateOutlet="metricInputSpan;
@@ -409,7 +409,7 @@
                                 exIndex: exIndex,
                                 setIndex: setIndex,
                                 suffix: 's',
-                                iconActive: false
+                                iconActive: getSummaryDisplayMode() === summaryDisplayModeEnum.Icons
                               }">
                             </ng-container>
                           </ng-container>
@@ -424,90 +424,6 @@
                               {{ 'compactPlayer.pending' | translate }}
                             </span>
                           </ng-container> 
-                          <p *ngIf="isSetWarmup(exIndex, setIndex)" class="font-bold">
-                            <app-icon name="flame" class="h-4 w-4 inline-block mr-1"></app-icon>
-                            {{ 'compactPlayer.warmupSet' | translate }}
-                          </p>
-                        </div> -->
-                      </div>
-
-                      <div class="flex-1 grid gap-1 content-center text-sm text-gray-700 dark:text-gray-200 font-medium"
-                        [ngClass]="{
-                          'grid-cols-1': getVisibleSetColumnsCount(exIndex, setIndex) <= 2,
-                          'grid-cols-2': getVisibleSetColumnsCount(exIndex, setIndex) > 2,
-                        }"
-                        *ngIf="getSummaryDisplayMode() === summaryDisplayModeEnum.Icons && !isSetExpanded(exIndex, setIndex)">
-                        <ng-container *ngIf="getSetUniformValues(exIndex, setIndex) as values">
-                          <!-- If only reps, only weight, or both reps and weight (rest is ignored) -->
-                          <div *ngIf="isSetWarmup(exIndex, setIndex)" class="col-span-2 flex flex-col mb-1">
-                            <p class="font-bold">
-                              <app-icon name="flame" class="h-4 w-4 inline-block mr-1"></app-icon>
-                              {{ 'compactPlayer.warmupSet' | translate }}
-                            </p>
-                          </div>
-                          <ng-container
-                            *ngIf="(values.reps || values.weight || values.distance || values.duration); else summaryText">
-                            <ng-container *ngTemplateOutlet="metricInputSpan;
-                              context: {
-                                icon: 'reps',
-                                iconClass: 'h-4 w-4 mr-0.5 inline-block text-black dark:text-white',
-                                metric: metricEnum.reps,
-                                value: values.reps,
-                                exIndex: exIndex,
-                                setIndex: setIndex,
-                                suffix: 'compactPlayer.repsLabel' | translate,
-                                iconActive: true
-                              }">
-                            </ng-container>
-                            <ng-container *ngTemplateOutlet="metricInputSpan;
-                              context: {
-                                icon: values.weightIcon,
-                                iconClass: 'h-5 w-5 mr-0.5 inline-block',
-                                metric: metricEnum.weight,
-                                value: values.weight,
-                                exIndex: exIndex,
-                                setIndex: setIndex,
-                                suffix: unitsService.getWeightUnitSuffix(),
-                                iconActive: true
-                              }">
-                            </ng-container>
-                            <ng-container *ngTemplateOutlet="metricInputSpan;
-                              context: {
-                                icon: 'distance',
-                                iconClass: 'h-4 w-4 mr-0.5 inline-block text-black dark:text-white',
-                                metric: metricEnum.distance,
-                                value: values.distance,
-                                exIndex: exIndex,
-                                setIndex: setIndex,
-                                suffix: unitsService.getDistanceUnitSuffix(),
-                                iconActive: true
-                              }">
-                            </ng-container>
-                            <ng-container *ngTemplateOutlet="metricInputSpan;
-                              context: {
-                                icon: 'duration',
-                                iconClass: 'h-4 w-4 mr-0.5 inline-block text-black dark:text-white',
-                                metric: metricEnum.duration,
-                                value: values.duration,
-                                exIndex: exIndex,
-                                setIndex: setIndex,
-                                suffix: 's',
-                                iconActive: true
-                              }">
-                            </ng-container>
-                          </ng-container>
-                          <!-- Otherwise, fallback to icon summary as before -->
-                          <ng-template #summaryText>
-                            {{ getSetSummary(exIndex, setIndex) }}
-                          </ng-template>
-                        </ng-container>
-                        <!-- <div class="flex flex-col">
-                           <ng-container *ngIf="!isSetCompleted(exIndex, setIndex)">
-                            <span *ngIf="setIndex !== findFirstIncompleteSetIndex(exIndex)"
-                              class="w-fit inline-flex items-center gap-1 rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400">
-                              {{ 'compactPlayer.pending' | translate }}
-                            </span>
-                          </ng-container>
                           <p *ngIf="isSetWarmup(exIndex, setIndex)" class="font-bold">
                             <app-icon name="flame" class="h-4 w-4 inline-block mr-1"></app-icon>
                             {{ 'compactPlayer.warmupSet' | translate }}
@@ -636,7 +552,7 @@
                     </div>
 
                     <div *ngIf="isTimedSet(exIndex, setIndex)"
-                      class="relative flex items-center px-2 py-1 mt-2 transition-all">
+                      class="relative flex items-center px-2 py-0.5 transition-all">
                       <!-- Timed set Progress Bar -->
                       <div
                         class="progress-bar-container w-full bg-gray-300 dark:bg-gray-700 rounded-full h-5 relative flex items-center">
@@ -790,11 +706,12 @@
                     <!-- Compact Rest Timer Progress Bar (per set, styled like timed set) STANDARD SET -->
                     <div #restTimerStandardProgressBar
                       *ngIf="getRestTimerMode() === restTimerModeEnum.Compact && isRestTimerVisibleForSet(exIndex, setIndex)"
-                      class="relative flex items-center px-2 py-1 transition-all">
-                      <app-icon class="h-6 w-6 text-yellow-600 ml-2" [strokeWidth]="2.5"></app-icon>
+                      class="relative flex items-center px-2 py-0.5 transition-all"
+                      [ngClass]="{'disabled-div-lower-opacity-70': restTimerRemainingForSet(exIndex, setIndex) === 0}">
+                      <app-icon class="h-6 w-6 text-yellow-600 ml-2 pb-1" [strokeWidth]="2.5"></app-icon>
                       <div
-                        class="progress-bar-container w-full bg-gray-300 dark:bg-gray-700 rounded-full h-3 relative flex items-center">
-                        <div class="progress-bar bg-yellow-400 h-1.5 rounded-full my-1 mx-1"
+                        class="progress-bar-container w-full bg-gray-300 dark:bg-gray-700 rounded-full h-4 relative flex items-center">
+                        <div class="progress-bar bg-yellow-400 h-3 rounded-full my-1 mx-1"
                           [style.width.%]="restTimerProgressForSet(exIndex, setIndex)">
                         </div>
                         <!-- Percentage label, centered absolutely -->
@@ -804,7 +721,7 @@
                           formatSecondsToTime(getSetRestDuration(exIndex, setIndex)) }}
                         </span>
                       </div>
-                      <app-icon name="rest" class="h-6 w-6 text-yellow-600 ml-2" [strokeWidth]="2.5"></app-icon>
+                      <app-icon name="rest" class="h-6 w-6 text-yellow-600 ml-2 pb-1" [strokeWidth]="2.5"></app-icon>
                     </div>
                     <!-- END: Set Card Layout -->
 
@@ -838,7 +755,7 @@
                   <div #roundCard [attr.data-round-index]="roundIndex" [ngClass]="getRoundClasses(exIndex, roundIndex)">
                     <!-- Round Header -->
                     <div (click)="toggleRoundExpansion(exIndex, roundIndex, $event)"
-                      class="flex items-center justify-between p-1 cursor-pointer">
+                      class="flex items-start justify-between p-1 cursor-pointer">
 
                       <div class="flex items-start gap-2 w-full">
                         <ng-container *ngIf="!isRoundExpanded(exIndex, roundIndex); else expandedRoundHeader">
@@ -858,11 +775,19 @@
                                   <div *ngIf="ssOriginalIndex > -1" class="flex flex-col gap-0.5">
                                     <!-- Exercise name or index (now above metrics) -->
                                     <span class="font-semibold text-xs text-gray-500 dark:text-gray-400 min-w-[60px]">
-                                      {{ getExerciseDisplayIndex(ssOriginalIndex, true) }} - {{ ssExercise.exerciseName }}
+                                      {{ getExerciseDisplayIndex(ssOriginalIndex, true) }} - {{ ssExercise.exerciseName
+                                      }}
                                     </span>
                                     <!-- Metrics for this exercise and round -->
-                                    <div class="flex items-center justify-between px-4">
-                                      <ng-container *ngFor="let metric of supersetSummaryMetrics()[ssOriginalIndex + '-' + roundIndex]; trackBy: trackByMetric">
+                                    <!-- Summary for collapsed view - SUPERSET EXERCISE  ICON MODE -->
+                                    <div
+                                      class="flex-1 grid gap-1 content-center text-sm text-gray-700 dark:text-gray-200 font-medium"
+                                      [ngClass]="{
+                                        'grid-cols-1': getVisibleSetColumnsCountForGrid(exIndex, roundIndex) <= 2,
+                                        'grid-cols-2': getVisibleSetColumnsCountForGrid(exIndex, roundIndex) > 2,
+                                      }">
+                                      <ng-container
+                                        *ngFor="let metric of supersetSummaryMetrics()[ssOriginalIndex + '-' + roundIndex]; trackBy: trackByMetric">
                                         <ng-container *ngTemplateOutlet="metricInputSpan;
                                           context: {
                                             icon: metric.icon,
@@ -956,11 +881,12 @@
                     <!-- Compact Rest Timer Progress Bar (per set, styled like timed set) SUPERSET -->
                     <div
                       *ngIf="getRestTimerMode() === restTimerModeEnum.Compact && isRestTimerVisibleForSet(exIndex, roundIndex)"
-                      class="relative flex items-center px-2 py-1 mt-2 transition-all">
-                      <app-icon class="h-6 w-6 text-yellow-600 ml-2" [strokeWidth]="2.5"></app-icon>
+                      class="relative flex items-center px-2 py-0.5 transition-all"
+                      [ngClass]="{'disabled-div-lower-opacity-70': restTimerRemainingForSet(exIndex, roundIndex) === 0}">
+                      <app-icon class="h-6 w-6 text-yellow-600 ml-2 pb-1" [strokeWidth]="2.5"></app-icon>
                       <div
-                        class="progress-bar-container w-full bg-gray-300 dark:bg-gray-700 rounded-full h-3 relative flex items-center">
-                        <div class="progress-bar bg-yellow-400 h-1.5 rounded-full my-1 mx-1"
+                        class="progress-bar-container w-full bg-gray-300 dark:bg-gray-700 rounded-full h-4 relative flex items-center">
+                        <div class="progress-bar bg-yellow-400 h-3 rounded-full my-1 mx-1"
                           [style.width.%]="restTimerProgressForSet(exIndex, roundIndex)">
                         </div>
                         <!-- Percentage label, centered absolutely -->
@@ -970,7 +896,7 @@
                           formatSecondsToTime(getSetRestDuration(exIndex, roundIndex)) }}
                         </span>
                       </div>
-                      <app-icon name="rest" class="h-6 w-6 text-yellow-600 ml-2" [strokeWidth]="2.5"></app-icon>
+                      <app-icon name="rest" class="h-6 w-6 text-yellow-600 ml-2 pb-1" [strokeWidth]="2.5"></app-icon>
                     </div>
 
                     <!-- Collapsible Round Body -->
@@ -1043,6 +969,10 @@
                                       </div>
                                       <div *ngSwitchCase="'duration'">
                                         <ng-container [ngTemplateOutlet]="durationInputTemplate"
+                                          [ngTemplateOutletContext]="{ exIndex: ssOriginalIndex, setIndex: roundIndex, set: ssExercise.sets[roundIndex] }"></ng-container>
+                                      </div>
+                                      <div *ngSwitchCase="'distance'">
+                                        <ng-container [ngTemplateOutlet]="distanceInputTemplate"
                                           [ngTemplateOutletContext]="{ exIndex: ssOriginalIndex, setIndex: roundIndex, set: ssExercise.sets[roundIndex] }"></ng-container>
                                       </div>
                                       <div *ngSwitchCase="'tempo'">
@@ -1523,10 +1453,11 @@
 <ng-template #metricInputSpan let-icon="icon" let-iconClass="iconClass" let-metric="metric" let-value="value"
   let-iconActive="iconActive" let-exIndex="exIndex" let-setIndex="setIndex" let-suffix="suffix">
   <span class="inline-flex items-center " *ngIf="value" [ngClass]="{
-                          'justify-center': getVisibleSetColumnsCount(exIndex, setIndex) <= 2,
-                          'justify-start': getVisibleSetColumnsCount(exIndex, setIndex) > 2,
+                          'justify-center': getVisibleSetColumnsCountForGrid(exIndex, setIndex) <= 2,
+                          'justify-start': getVisibleSetColumnsCountForGrid(exIndex, setIndex) > 2,
                         }">
-    <app-icon class="h-5 w-5 text-gray-800 dark:text-white" *ngIf="iconActive" [name]="icon" [ngClass]="iconClass"></app-icon>
+    <app-icon class="h-5 w-5 text-gray-800 dark:text-white" *ngIf="iconActive" [name]="icon"
+      [ngClass]="iconClass"></app-icon>
     <input type="text" inputmode="decimal" pattern="[0-9]*" numbersOnly
       class="w-14 px-1 py-0.5 text-black dark:text-white text-center font-bold" [ngClass]="{
     'border-0 pointer-events-none disabled-div-lower-opacity bg-green-300 dark:bg-green-700': isSetOrRoundCompleted(exIndex, setIndex),

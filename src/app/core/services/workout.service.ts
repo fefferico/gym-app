@@ -998,7 +998,11 @@ export class WorkoutService {
 
         // 1. Define the fieldOrder for this exercise's sets
         const isLastExerciseInGroup = originalIndex === selectedOriginalIndices[selectedOriginalIndices.length - 1];
-        const fieldOrder = [METRIC.weight, METRIC.reps];
+        // const fieldOrder = [METRIC.weight, METRIC.reps];
+        // Use the fieldOrder from the original exercise's first set, or default if missing
+        const fieldOrder = targetExercise.sets[0]?.fieldOrder
+          ? [...targetExercise.sets[0].fieldOrder]
+          : [METRIC.weight, METRIC.reps];
         if (isLastExerciseInGroup) {
           fieldOrder.push(METRIC.rest);
         }
@@ -1295,7 +1299,8 @@ export class WorkoutService {
   */
   public generateRoutineFromTemplate(
     template: string,
-    availableExercises: Exercise[]
+    availableExercises: Exercise[],
+    customRoutineName?: string
   ): Routine[] {
     // Helper to find an exercise by name
     const findExercise = (idOrName: string): Exercise => {
@@ -1376,7 +1381,7 @@ export class WorkoutService {
     switch (template) {
       case '3x3':
         return [
-          createRoutine('3x3', [
+          createRoutine(customRoutineName ? customRoutineName : '3x3', [
             { idOrName: 'barbell-squat', sets: [createSet(3, 40), createSet(3, 40), createSet(3, 40)] },
             { idOrName: 'barbell-bench-press', sets: [createSet(3, 20), createSet(3, 20), createSet(3, 20)] },
             { idOrName: 'bent-over-row-barbell', sets: [createSet(3, 30), createSet(3, 30), createSet(3, 30)] }
@@ -1384,7 +1389,7 @@ export class WorkoutService {
         ];
       case '5x5':
         return [
-          createRoutine('5x5', [
+          createRoutine(customRoutineName ? customRoutineName : '5x5', [
             { idOrName: 'barbell-squat', sets: Array(5).fill(null).map(() => createSet(5, 40)) },
             { idOrName: 'barbell-bench-press', sets: Array(5).fill(null).map(() => createSet(5, 20)) },
             { idOrName: 'bent-over-row-barbell', sets: Array(5).fill(null).map(() => createSet(5, 30)) }
@@ -1392,17 +1397,17 @@ export class WorkoutService {
         ];
       case 'ppl':
         return [
-          createRoutine('Push', [
+          createRoutine(customRoutineName ? customRoutineName : 'Push', [
             { idOrName: 'barbell-bench-press', sets: [createSet(8, 20), createSet(8, 20), createSet(8, 20)] },
             { idOrName: 'barbell-military-press', sets: [createSet(10, 40), createSet(10, 40)] },
             { idOrName: 'bench-dips', sets: [createSet(12, 'bodyweight'), createSet(12, 'bodyweight')] }
           ]),
-          createRoutine('Pull', [
+          createRoutine(customRoutineName ? customRoutineName : 'Pull', [
             { idOrName: 'bent-over-row-barbell', sets: [createSet(8, 30), createSet(8, 30), createSet(8, 30)] },
             { idOrName: 'pull-up', sets: [createSet(8, 'bodyweight'), createSet(8, 'bodyweight')] },
             { idOrName: 'barbell-bicep-curl', sets: [createSet(12, 20), createSet(12, 20)] }
           ]),
-          createRoutine('Legs', [
+          createRoutine(customRoutineName ? customRoutineName : 'Legs', [
             { idOrName: 'barbell-squat', sets: [createSet(10, 40), createSet(10, 40), createSet(10, 40)] },
             { idOrName: 'barbell-deadlift', sets: [createSet(6, 40), createSet(6, 40)] },
             { idOrName: 'leg-curl-machine', sets: [createSet(12, 30), createSet(12, 30)] }
@@ -1410,22 +1415,22 @@ export class WorkoutService {
         ];
       case '531':
         return [
-          createRoutine('5/3/1 Overhead Press', [
+          createRoutine(customRoutineName ? customRoutineName : '5/3/1 Overhead Press', [
             { idOrName: 'barbell-military-press', sets: [createSet(5, { percent1rm: 75 }), createSet([3, 3], { percent1rm: 85 }), createSet('amrap', { percent1rm: 95 })] },
             { idOrName: 'pull-up', sets: [createSet(10, 'bodyweight'), createSet(10, 'bodyweight')] },
             { idOrName: 'bench-dips', sets: [createSet(12, 'bodyweight'), createSet(12, 'bodyweight')] }
           ]),
-          createRoutine('5/3/1 Deadlift', [
+          createRoutine(customRoutineName ? customRoutineName : '5/3/1 Deadlift', [
             { idOrName: 'barbell-deadlift', sets: [createSet(5, { percent1rm: 75 }), createSet([3, 3], { percent1rm: 85 }), createSet('amrap', { percent1rm: 95 })] },
             { idOrName: 'leg-curl-machine', sets: [createSet(12, 30), createSet(12, 30)] },
             { idOrName: 'Plank', sets: [createSet('amrap', 'bodyweight')] }
           ]),
-          createRoutine('5/3/1 Bench Press', [
+          createRoutine(customRoutineName ? customRoutineName : '5/3/1 Bench Press', [
             { idOrName: 'barbell-bench-press', sets: [createSet(5, { percent1rm: 75 }), createSet([3, 3], { percent1rm: 85 }), createSet('amrap', { percent1rm: 95 })] },
             { idOrName: 'bent-over-row-barbell', sets: [createSet(10, 50), createSet(10, 50)] },
             { idOrName: 'barbell-bicep-curl', sets: [createSet(12, 20), createSet(12, 20)] }
           ]),
-          createRoutine('5/3/1 Squat', [
+          createRoutine(customRoutineName ? customRoutineName : '5/3/1 Squat', [
             { idOrName: 'barbell-squat', sets: [createSet(5, { percent1rm: 75 }), createSet([3, 3], { percent1rm: 85 }), createSet('amrap', { percent1rm: 95 })] },
             { idOrName: 'Leg Extension', sets: [createSet(12, 30), createSet(12, 30)] },
             { idOrName: 'Calf Raise', sets: [createSet(15, 40), createSet(15, 40)] }
