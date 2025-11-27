@@ -166,7 +166,7 @@
                       [ngClass]="{ 'text-white px-3 w-fit rounded-full inline-flex': true }">
                       {{ getExerciseDisplayIndex(exIndex) }}
                     </span> -->
-                    <span class="flex items-center px-1 rounded-md p-1">
+                    <span class="flex items-center px-1 rounded-md p-1 text-gray-800 dark:text-gray-100">
                       <!-- [ngStyle]="{ background: getSectionProgressColor(getSectionForExercise(exIndex)) }" -->
                       <img *ngIf="exercise" [src]="getIconPath(exIndex)"
                         class="w-7 h-7 sm:w-8 sm:h-8 object-contain mr-2 mt-0.5 sm:mt-1 filter dark:invert">
@@ -186,6 +186,9 @@
                     *ngIf="getExerciseTotalLoggedSets(exIndex) > 0 && getExerciseTotalLoggedSets(exIndex) < getExerciseTotalSets(exIndex)"
                     name="target" class="h-4 w-4 text-yellow-500 ml-1"></app-icon>
                 </ng-container>
+                <!-- <ng-container *ngIf="isSuperSet(exIndex)">
+                  <p>{{ getSupersetRoundSummary(exIndex) }}</p>
+                </ng-container> -->
               </div>
             </div>
 
@@ -344,8 +347,7 @@
                       </div>
 
                       <!-- Summary for collapsed view -->
-                      <div
-                        class="flex-1 grid gap-1 content-center text-sm text-gray-700 dark:text-gray-200 font-medium"
+                      <div class="flex-1 grid gap-1 content-center text-sm text-gray-700 dark:text-gray-200 font-medium"
                         [ngClass]="{
                           'grid-cols-1': getVisibleSetColumnsCount(exIndex, setIndex) <= 2,
                           'grid-cols-2': getVisibleSetColumnsCount(exIndex, setIndex) > 2,
@@ -365,7 +367,7 @@
                             <ng-container *ngTemplateOutlet="metricInputSpan;
                               context: {
                                 icon: 'reps',
-                                iconClass: 'h-4 w-4 mr-0.5 inline-block',
+                                iconClass: 'h-4 w-4 mr-0.5 inline-block text-black dark:text-white',
                                 metric: metricEnum.reps,
                                 value: values.reps,
                                 exIndex: exIndex,
@@ -389,7 +391,7 @@
                             <ng-container *ngTemplateOutlet="metricInputSpan;
                               context: {
                                 icon: 'distance',
-                                iconClass: 'h-4 w-4 mr-0.5 inline-block',
+                                iconClass: 'h-4 w-4 mr-0.5 inline-block text-black dark:text-white',
                                 metric: metricEnum.distance,
                                 value: values.distance,
                                 exIndex: exIndex,
@@ -401,7 +403,7 @@
                             <ng-container *ngTemplateOutlet="metricInputSpan;
                               context: {
                                 icon: 'duration',
-                                iconClass: 'h-4 w-4 mr-0.5 inline-block',
+                                iconClass: 'h-4 w-4 mr-0.5 inline-block text-black dark:text-white',
                                 metric: metricEnum.duration,
                                 value: values.duration,
                                 exIndex: exIndex,
@@ -429,8 +431,7 @@
                         </div> -->
                       </div>
 
-                      <div
-                        class="flex-1 grid gap-1 content-center text-sm text-gray-700 dark:text-gray-200 font-medium"
+                      <div class="flex-1 grid gap-1 content-center text-sm text-gray-700 dark:text-gray-200 font-medium"
                         [ngClass]="{
                           'grid-cols-1': getVisibleSetColumnsCount(exIndex, setIndex) <= 2,
                           'grid-cols-2': getVisibleSetColumnsCount(exIndex, setIndex) > 2,
@@ -449,7 +450,7 @@
                             <ng-container *ngTemplateOutlet="metricInputSpan;
                               context: {
                                 icon: 'reps',
-                                iconClass: 'h-4 w-4 mr-0.5 inline-block',
+                                iconClass: 'h-4 w-4 mr-0.5 inline-block text-black dark:text-white',
                                 metric: metricEnum.reps,
                                 value: values.reps,
                                 exIndex: exIndex,
@@ -473,7 +474,7 @@
                             <ng-container *ngTemplateOutlet="metricInputSpan;
                               context: {
                                 icon: 'distance',
-                                iconClass: 'h-4 w-4 mr-0.5 inline-block',
+                                iconClass: 'h-4 w-4 mr-0.5 inline-block text-black dark:text-white',
                                 metric: metricEnum.distance,
                                 value: values.distance,
                                 exIndex: exIndex,
@@ -485,7 +486,7 @@
                             <ng-container *ngTemplateOutlet="metricInputSpan;
                               context: {
                                 icon: 'duration',
-                                iconClass: 'h-4 w-4 mr-0.5 inline-block',
+                                iconClass: 'h-4 w-4 mr-0.5 inline-block text-black dark:text-white',
                                 metric: metricEnum.duration,
                                 value: values.duration,
                                 exIndex: exIndex,
@@ -839,7 +840,7 @@
                     <div (click)="toggleRoundExpansion(exIndex, roundIndex, $event)"
                       class="flex items-center justify-between p-1 cursor-pointer">
 
-                      <div class="flex items-start gap-2">
+                      <div class="flex items-start gap-2 w-full">
                         <ng-container *ngIf="!isRoundExpanded(exIndex, roundIndex); else expandedRoundHeader">
                           <div class="flex flex-col flex-1 gap-0.5">
                             <div class="flex-shrink-0 px-1 text-center rounded-lg w-fit text-white" [ngClass]="{
@@ -850,17 +851,35 @@
                                 #{{ 'compactPlayer.roundHeader' | translate:{number: roundIndex + 1} }}
                               </span>
                             </div>
-                            <div
-                              class="text-sm text-gray-700 dark:text-gray-200 font-medium inline-flex items-center gap-1">
-                              {{ getSupersetRoundSummary(exIndex, roundIndex) }}
-                              <div (click)="$event.stopPropagation()">
-                                <ng-container *ngIf="!isRoundCompleted(exIndex, roundIndex)">
-                                  <span *ngIf="roundIndex !== findFirstIncompleteRoundIndex(exIndex)"
-                                    class="inline-flex items-center gap-1 rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400">
-                                    {{ 'compactPlayer.pending' | translate }}
-                                  </span>
+                            <!-- Render a row for each exercise in the superset for this round -->
+                            <div class="flex flex-col gap-1 flex-1">
+                              <ng-container *ngFor="let ssExercise of getSupersetExercises(exercise.supersetId!)">
+                                <ng-container *ngLet="getOriginalExIndex(ssExercise.id) as ssOriginalIndex">
+                                  <div *ngIf="ssOriginalIndex > -1" class="flex flex-col gap-0.5">
+                                    <!-- Exercise name or index (now above metrics) -->
+                                    <span class="font-semibold text-xs text-gray-500 dark:text-gray-400 min-w-[60px]">
+                                      {{ getExerciseDisplayIndex(ssOriginalIndex, true) }} - {{ ssExercise.exerciseName }}
+                                    </span>
+                                    <!-- Metrics for this exercise and round -->
+                                    <div class="flex items-center justify-between px-4">
+                                      <ng-container *ngFor="let metric of supersetSummaryMetrics()[ssOriginalIndex + '-' + roundIndex]; trackBy: trackByMetric">
+                                        <ng-container *ngTemplateOutlet="metricInputSpan;
+                                          context: {
+                                            icon: metric.icon,
+                                            iconClass: metric.iconClass,
+                                            metric: metric.metric,
+                                            value: metric.value,
+                                            exIndex: ssOriginalIndex,
+                                            setIndex: roundIndex,
+                                            suffix: metric.suffix,
+                                            iconActive: true
+                                          }">
+                                        </ng-container>
+                                      </ng-container>
+                                    </div>
+                                  </div>
                                 </ng-container>
-                              </div>
+                              </ng-container>
                             </div>
                           </div>
                         </ng-container>
@@ -1503,21 +1522,20 @@
 <!-- SIMPLE INPUT SPAN FOR ONLY WEIGHT/REPS -->
 <ng-template #metricInputSpan let-icon="icon" let-iconClass="iconClass" let-metric="metric" let-value="value"
   let-iconActive="iconActive" let-exIndex="exIndex" let-setIndex="setIndex" let-suffix="suffix">
-  <span class="inline-flex items-center " *ngIf="value"
-  [ngClass]="{
+  <span class="inline-flex items-center " *ngIf="value" [ngClass]="{
                           'justify-center': getVisibleSetColumnsCount(exIndex, setIndex) <= 2,
                           'justify-start': getVisibleSetColumnsCount(exIndex, setIndex) > 2,
                         }">
-    <app-icon *ngIf="iconActive" [name]="icon" [ngClass]="iconClass"></app-icon>
+    <app-icon class="h-5 w-5 text-gray-800 dark:text-white" *ngIf="iconActive" [name]="icon" [ngClass]="iconClass"></app-icon>
     <input type="text" inputmode="decimal" pattern="[0-9]*" numbersOnly
       class="w-14 px-1 py-0.5 text-black dark:text-white text-center font-bold" [ngClass]="{
-    'border-0 pointer-events-none disabled-div-lower-opacity bg-green-300 dark:bg-green-700': isSetCompleted(exIndex, setIndex),
-    'border-b-2 border-gray-300 dark:border-gray-600 focus:border-primary bg-white dark:bg-gray-800': !isSetCompleted(exIndex, setIndex) && !isSetWarmup(exIndex, setIndex),
+    'border-0 pointer-events-none disabled-div-lower-opacity bg-green-300 dark:bg-green-700': isSetOrRoundCompleted(exIndex, setIndex),
+    'border-b-2 border-gray-300 dark:border-gray-600 focus:border-primary bg-white dark:bg-gray-800': !isSetOrRoundCompleted(exIndex, setIndex) && !isSetWarmup(exIndex, setIndex),
     'bg-blue-100 dark:bg-blue-700/80': isSetWarmup(exIndex, setIndex)
   }" [ngModel]="getMetricInputValue()(exIndex, setIndex, metric)"
       (ngModelChange)="setMetricInputValue(exIndex, setIndex, metric, $event)"
-      [attr.readonly]="isSetCompleted(exIndex, setIndex) ? true : null" [attr.disabled]="null" min="1" />
-    <span *ngIf="suffix || !iconActive" class="ml-1">{{ suffix }}</span>
+      [attr.readonly]="isSetOrRoundCompleted(exIndex, setIndex) ? true : null" [attr.disabled]="null" min="1" />
+    <span *ngIf="suffix || !iconActive" class="ml-1 text-black dark:text-white">{{ suffix }}</span>
   </span>
 </ng-template>
 

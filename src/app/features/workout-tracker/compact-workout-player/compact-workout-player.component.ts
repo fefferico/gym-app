@@ -1168,12 +1168,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       if (exercise) {
         // If it's a superset, handle round expansion
         if (this.isSupersetStart(exIndex)) {
-          const firstIncompleteRoundIndex = exercise.sets.findIndex((set, roundIdx) => !this.isRoundCompleted(exIndex, roundIdx));
-          const newExpandedRounds = new Set<string>();
-          if (firstIncompleteRoundIndex > -1) {
-            newExpandedRounds.add(`${exIndex}-${firstIncompleteRoundIndex}`);
-          }
-          this.expandedRounds.set(newExpandedRounds);
+          // const firstIncompleteRoundIndex = exercise.sets.findIndex((set, roundIdx) => !this.isRoundCompleted(exIndex, roundIdx));
+          // const newExpandedRounds = new Set<string>();
+          // if (firstIncompleteRoundIndex > -1) {
+          //   newExpandedRounds.add(`${exIndex}-${firstIncompleteRoundIndex}`);
+          // }
+          // this.expandedRounds.set(newExpandedRounds);
         }
         // If it's a standard exercise, handle set expansion
         else if (!this.isSuperSet(exIndex)) {
@@ -1240,7 +1240,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
             }
 
             // window.scrollTo({ top: scrollTopPosition, behavior: 'smooth' });
-            this.scrollCurrentElementIntoView(exIndex, undefined);
+            this.scrollCurrentElementIntoView(exIndex, 0);
           });
         });
       });
@@ -3906,6 +3906,19 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   /** Toggles the expanded/collapsed state of a specific round. */
   toggleRoundExpansion(exIndex: number, roundIndex: number, event: Event): void {
+    if (event) {
+      const target = event.target as HTMLElement;
+      if (target.closest('button') || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) {
+        return;
+      }
+
+
+      // Ignore clicks inside the #exerciseCard
+      if (target.closest('#exerciseCard')) {
+        return;
+      }
+
+    }
     event.stopPropagation(); // Prevent the main card from toggling
     const key = `${exIndex}-${roundIndex}`;
 
@@ -6859,6 +6872,279 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.exerciseDetailsName = 'Exercise details';
     this.isSimpleModalOpen.set(true);
   }
+
+  private supersetSummaryCache = new Map<string, SetInfo[]>();
+  /**
+   * Returns an array of objects for each exercise in a superset round,
+   * containing all info needed for metricInputSpan.
+   * Each entry is for the set at roundIndex for each exercise in the superset group.
+   * @param exIndex The index of any exercise in the superset group
+   * @param roundIndex The round (set) index within the superset
+   */
+  getSupersetSummaryMetricsDetailed(
+    exIndex: number,
+    roundIndex: number
+  ): SetInfo[] {
+    // const cacheKey = `${exIndex}-${roundIndex}-${this.routine()?.exercises?.length ?? 0}`;
+    // if (this.supersetSummaryCache.has(cacheKey)) {
+    //   return this.supersetSummaryCache.get(cacheKey)!;
+    // }
+
+    const routine = this.routine();
+    if (!routine) return [];
+    const exercise = routine.exercises[exIndex];
+    if (!exercise.supersetId) return [];
+
+    const exercisesInGroup = this.getSupersetExercises(exercise.supersetId);
+
+    // const result = exercisesInGroup
+    return exercisesInGroup
+      .map((ex): SetInfo[] => {
+        const exIdx = this.getOriginalExIndex(ex.id);
+        if (exIdx === -1) return [];
+        const plannedSet = ex.sets[roundIndex];
+        if (!plannedSet) return [];
+        const loggedSet = this.getLoggedSet(exIdx, roundIndex);
+        const key = this.getSetOrderId(exIdx, roundIndex);
+        const userInputs = this.performanceInputValues()[key] || {};
+
+        let weightIcon = 'body';
+        let weightValue: any = this.workoutUtilsService.weightTargetAsString(
+          userInputs.actualWeight ?? loggedSet?.weightLogged ?? plannedSet.targetWeight
+        );
+        const weightTargetType = this.getWeightTargetType(
+          userInputs.actualWeight ?? loggedSet?.weightLogged ?? plannedSet.targetWeight
+        );
+        switch (weightTargetType) {
+          case WeightTargetType.exact:
+          case WeightTargetType.range:
+          case WeightTargetType.percentage_1rm:
+            weightIcon = 'weight';
+            break;
+          case WeightTargetType.bodyweight:
+            break;
+        }
+        if (!isNaN(Number(weightValue)) && weightValue !== '') {
+          weightValue = `${weightValue} ${this.unitsService.getWeightUnitSuffix()}`;
+          weightIcon = 'weight';
+        }
+
+        const repsValue = this.workoutUtilsService.repsTargetAsString(
+          userInputs.actualReps ?? loggedSet?.repsLogged ?? plannedSet.targetReps
+        );
+        const distanceValue = this.getDistanceValue(
+          userInputs.actualDistance ?? loggedSet?.distanceLogged ?? plannedSet.targetDistance
+        );
+        const durationValue = this.workoutUtilsService.durationTargetAsString(
+          userInputs.actualDuration ?? loggedSet?.durationLogged ?? plannedSet.targetDuration
+        );
+
+        return [
+          {
+            icon: 'repeat',
+            iconClass: 'h-4 w-4 mr-0.5 inline-block',
+            metric: METRIC.reps,
+            value: repsValue,
+            exIndex: exIdx,
+            setIndex: roundIndex,
+            suffix: this.translate.instant('compactPlayer.repsLabel'),
+          },
+          {
+            icon: weightIcon,
+            iconClass: 'h-5 w-5 mr-0.5 inline-block',
+            metric: METRIC.weight,
+            value: weightValue,
+            exIndex: exIdx,
+            setIndex: roundIndex,
+            suffix: this.unitsService.getWeightUnitSuffix(),
+          },
+          {
+            icon: 'distance',
+            iconClass: 'h-4 w-4 mr-0.5 inline-block',
+            metric: METRIC.distance,
+            value: distanceValue,
+            exIndex: exIdx,
+            setIndex: roundIndex,
+            suffix: this.unitsService.getDistanceUnitSuffix(),
+          },
+          {
+            icon: 'timer',
+            iconClass: 'h-4 w-4 mr-0.5 inline-block',
+            metric: METRIC.duration,
+            value: durationValue,
+            exIndex: exIdx,
+            setIndex: roundIndex,
+            suffix: 's',
+          },
+        ];
+      })
+      .flat()
+      .filter(
+        (entry): entry is SetInfo =>
+          !!entry &&
+          entry.value !== undefined &&
+          entry.value !== null &&
+          entry.value !== '' &&
+          entry.value !== 0
+      );
+
+    // this.supersetSummaryCache.set(cacheKey, result);
+    // return result;
+  }
+
+  trackByMetric(index: number, metric: SetInfo) {
+    // Use a unique combination of exIndex, setIndex, and metric type
+    return `${metric.exIndex}-${metric.setIndex}-${metric.metric}`;
+  }
+  supersetSummaryMetrics = computed(() => {
+    const routine = this.routine();
+    const perfInputs = this.performanceInputValues();
+    if (!routine) return {};
+
+    const result: { [key: string]: SetInfo[] } = {};
+
+    routine.exercises.forEach((exercise, exIndex) => {
+      if (!exercise.supersetId) return;
+      exercise.sets.forEach((set, roundIndex) => {
+        const key = `${exIndex}-${roundIndex}`;
+        result[key] = this._computeSupersetSummaryMetrics(exIndex, roundIndex, routine, perfInputs);
+      });
+    });
+
+    return result;
+  });
+
+  private _computeSupersetSummaryMetrics(
+    exIndex: number,
+    roundIndex: number,
+    routine: Routine,
+    perfInputs: { [key: string]: Partial<ExerciseCurrentExecutionSetParams> }
+  ): SetInfo[] {
+    const exercise = routine.exercises[exIndex];
+    if (!exercise.supersetId) return [];
+
+    // Only get the metrics for THIS exercise at this round
+    const plannedSet = exercise.sets[roundIndex];
+    if (!plannedSet) return [];
+
+    const loggedSet = this.getLoggedSet(exIndex, roundIndex);
+    const key = this.getSetOrderId(exIndex, roundIndex);
+    const userInputs = perfInputs[key] || {};
+
+    let weightIcon = 'body';
+    let weightValue: any = this.workoutUtilsService.weightTargetAsString(
+      userInputs.actualWeight ?? loggedSet?.weightLogged ?? plannedSet.targetWeight
+    );
+    const weightTargetType = this.getWeightTargetType(
+      userInputs.actualWeight ?? loggedSet?.weightLogged ?? plannedSet.targetWeight
+    );
+    switch (weightTargetType) {
+      case WeightTargetType.exact:
+      case WeightTargetType.range:
+      case WeightTargetType.percentage_1rm:
+        weightIcon = 'weight';
+        break;
+      case WeightTargetType.bodyweight:
+        break;
+    }
+    if (!isNaN(Number(weightValue)) && weightValue !== '') {
+      weightValue = `${weightValue} ${this.unitsService.getWeightUnitSuffix()}`;
+      weightIcon = 'weight';
+    }
+
+    const repsValue = this.workoutUtilsService.repsTargetAsString(
+      userInputs.actualReps ?? loggedSet?.repsLogged ?? plannedSet.targetReps
+    );
+    const distanceValue = this.getDistanceValue(
+      userInputs.actualDistance ?? loggedSet?.distanceLogged ?? plannedSet.targetDistance
+    );
+    const durationValue = this.workoutUtilsService.durationTargetAsString(
+      userInputs.actualDuration ?? loggedSet?.durationLogged ?? plannedSet.targetDuration
+    );
+
+    return [
+      {
+        icon: 'reps',
+        iconClass: 'h-4 w-4 mr-0.5 inline-block',
+        metric: METRIC.reps,
+        value: repsValue,
+        exIndex: exIndex,
+        setIndex: roundIndex,
+        suffix: this.translate.instant('compactPlayer.repsLabel'),
+      },
+      {
+        icon: weightIcon,
+        iconClass: 'h-4 w-4 mr-0.5 inline-block',
+        metric: METRIC.weight,
+        value: weightValue,
+        exIndex: exIndex,
+        setIndex: roundIndex,
+        suffix: this.unitsService.getWeightUnitSuffix(),
+      },
+      {
+        icon: 'distance',
+        iconClass: 'h-4 w-4 mr-0.5 inline-block',
+        metric: METRIC.distance,
+        value: distanceValue,
+        exIndex: exIndex,
+        setIndex: roundIndex,
+        suffix: this.unitsService.getDistanceUnitSuffix(),
+      },
+      {
+        icon: 'timer',
+        iconClass: 'h-4 w-4 mr-0.5 inline-block',
+        metric: METRIC.duration,
+        value: durationValue,
+        exIndex: exIndex,
+        setIndex: roundIndex,
+        suffix: 's',
+      },
+    ].filter(
+      (entry): entry is SetInfo =>
+        !!entry &&
+        entry.value !== undefined &&
+        entry.value !== null &&
+        entry.value !== '' &&
+        entry.value !== 0
+    );
+  }
+
+  /**
+ * Checks if a set (standard) or round (superset) is completed.
+ * For standard exercises, checks the set at setOrRoundIndex.
+ * For supersets, checks all exercises in the group at setOrRoundIndex.
+ * @param exIndex Index of the exercise in the routine
+ * @param setOrRoundIndex Index of the set (for standard) or round (for superset)
+ */
+  isSetOrRoundCompleted(exIndex: number, setOrRoundIndex: number): boolean {
+    const routine = this.routine();
+    if (!routine) return false;
+    const exercise = routine.exercises[exIndex];
+    if (!exercise) return false;
+
+    if (exercise.supersetId) {
+      // Superset: check all exercises in the group for this round
+      const exercisesInGroup = this.getSupersetExercises(exercise.supersetId);
+      return exercisesInGroup.every(ex => {
+        const originalExIndex = this.getOriginalExIndex(ex.id);
+        return this.getLoggedSet(originalExIndex, setOrRoundIndex, setOrRoundIndex) !== undefined;
+      });
+    } else {
+      // Standard: check just this set
+      return this.getLoggedSet(exIndex, setOrRoundIndex) !== undefined;
+    }
+  }
+
+}
+
+export interface SetInfo {
+  icon: string;
+  iconClass: string;
+  metric: METRIC;
+  value: any;
+  exIndex: number;
+  setIndex: number;
+  suffix: string;
 }
 
 // this.isSetCompleted(exIndex, setIndex)
