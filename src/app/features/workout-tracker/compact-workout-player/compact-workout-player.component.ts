@@ -58,7 +58,7 @@ import { AppSettingsService } from '../../../core/services/app-settings.service'
 import { TrainingProgram } from '../../../core/models/training-program.model';
 import { AlertButton, AlertInput } from '../../../core/models/alert.model';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { addExerciseBtn, addRoundToExerciseBtn, addSetToExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, calculatorBtn, createSuperSetBtn, exerciseNotesBtn, finishEarlyBtn, metricsBtn, openSessionPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeExerciseBtn, removeFromSuperSetBtn, removeRoundFromExerciseBtn, removeSetFromExerciseBtn, restBtn, resumeSessionBtn, sectionExerciseBtn, sessionNotesBtn, setNotesBtn, switchExerciseBtn, timerBtn } from '../../../core/services/buttons-data';
+import { addExerciseBtn, addRoundToExerciseBtn, addSetToExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, calculatorBtn, createSuperSetBtn, exerciseInfoBtn, exerciseNotesBtn, finishEarlyBtn, metricsBtn, openSessionPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeExerciseBtn, removeFromSuperSetBtn, removeRoundFromExerciseBtn, removeSetFromExerciseBtn, restBtn, resumeSessionBtn, sectionExerciseBtn, sessionNotesBtn, setNotesBtn, switchExerciseBtn, timerBtn } from '../../../core/services/buttons-data';
 import { mapExerciseTargetSetParamsToExerciseExecutedSetParams } from '../../../core/models/workout-mapper';
 import { ProgressiveOverloadService } from '../../../core/services/progressive-overload.service.ts';
 import { BarbellCalculatorModalComponent } from '../../../shared/components/barbell-calculator-modal/barbell-calculator-modal.component';
@@ -79,6 +79,8 @@ import { ModalService } from '../../../core/services/modal.service';
 import { EXERCISE_CATEGORY_TYPES } from '../../../core/models/exercise-category.model';
 import { ThemeService } from '../../../core/services/theme.service';
 import { NumbersOnlyDirective } from '../../../shared/directives/onlyNumbers.directive';
+import { ModalComponent } from '../../../shared/components/modal/modal.component';
+import { ExerciseDetailComponent } from '../../exercise-library/exercise-detail';
 
 // Interface for saving the paused state
 
@@ -119,7 +121,7 @@ export interface NextStepInfo {
     CommonModule, DatePipe, IconComponent,
     ExerciseSelectionModalComponent, FormsModule, ActionMenuComponent, FullScreenRestTimerComponent, NgLetDirective,
     DragDropModule, BarbellCalculatorModalComponent, TranslateModule, SessionOverviewModalComponent, PressDirective,
-    BumpClickDirective, NumbersOnlyDirective
+    BumpClickDirective, NumbersOnlyDirective, ModalComponent, ExerciseDetailComponent
   ],
   templateUrl: './compact-workout-player.component.html',
   styleUrls: ['./compact-workout-player.component.scss'],
@@ -446,7 +448,15 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private isDestroyed = false;
   ngOnDestroy(): void {
     this.isDestroyed = true;
-    if (!this.isSessionConcluded && (this.sessionState() === SessionState.Playing || this.sessionState() === SessionState.Paused)) {
+    // Save paused session if there is a routine with at least one exercise,
+    // and the session is not ended (even if no sets have been logged)
+    if (
+      !this.isSessionConcluded &&
+      this.routine() &&
+      this.routine()?.exercises &&
+      this.routine()!.exercises.length > 0 &&
+      this.sessionState() !== SessionState.End
+    ) {
       this.savePausedSessionState();
     }
     this.timerSub?.unsubscribe();
@@ -1459,18 +1469,19 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   handleExerciseMenuItemClick(event: { actionKey: string, data?: any }) {
     const { actionKey, data: { exIndex } } = event;
     switch (actionKey) {
+      case 'exerciseInfo': this.openModal(exIndex); break;
       case 'switchExercise': this.openSwitchExerciseModal(exIndex); break;
       case 'insights': this.openPerformanceInsightsModal(exIndex); break;
-      // 'add_round' is now handled by 'add_set'
-      case 'add_set': this.addSet(exIndex); break;
-      case 'exercise_notes': this.toggleExerciseNotes(exIndex); break;
-      case 'remove_set': this.removeSet(exIndex, 0); break;
+      // 'add_round' is now handled by 'addSet'
+      case 'addSet': this.addSet(exIndex); break;
+      case 'exerciseNotes': this.toggleExerciseNotes(exIndex); break;
+      case 'removeSet': this.removeSet(exIndex, 0); break;
       case 'section': this.addSectionExercise(exIndex); break;
-      case 'add_warmup_set': this.addWarmupSet(exIndex); break;
+      case 'addWarmupSet': this.addWarmupSet(exIndex); break;
       case 'remove': this.removeExercise(exIndex); break;
-      case 'create_superset': this.openCreateSupersetModal(exIndex); break;
-      case 'add_to_superset': this.addToSupersetModal(exIndex); break;
-      // case 'remove_from_superset': this.removeFromSuperset(exIndex); break;
+      case 'createSuperset': this.openCreateSupersetModal(exIndex); break;
+      case 'addToSuperset': this.addToSupersetModal(exIndex); break;
+      // case 'removeFromSuperset': this.removeFromSuperset(exIndex); break;
     }
   }
 
@@ -2459,6 +2470,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         data: { exIndex },
         overrideCssButtonClass: switchExerciseBtn.buttonClass + commonModalButtonClass
       };
+      const currExerciseInfoBtn = {
+        ...exerciseInfoBtn,
+        data: { exIndex: exercise.exerciseId },
+        overrideCssButtonClass: exerciseInfoBtn.buttonClass + commonModalButtonClass
+      };
       const addSectionExerciseBtn = {
         ...sectionExerciseBtn,
         data: { exIndex },
@@ -2475,8 +2491,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         overrideCssButtonClass: exerciseNotesBtn.buttonClass + commonModalButtonClass
       };
 
-      const baseAddSetRoundBtn = !this.isSuperSet(exIndex) ? addSetToExerciseBtn : { ...addRoundToExerciseBtn, actionKey: 'add_set' };
-      // const baseRemoveSetRoundBtn = !this.isSuperSet(exIndex) ? removeSetFromExerciseBtn : { ...removeRoundFromExerciseBtn, actionKey: 'remove_set' };
+      const baseAddSetRoundBtn = !this.isSuperSet(exIndex) ? addSetToExerciseBtn : { ...addRoundToExerciseBtn, actionKey: 'addSet' };
+      // const baseRemoveSetRoundBtn = !this.isSuperSet(exIndex) ? removeSetFromExerciseBtn : { ...removeRoundFromExerciseBtn, actionKey: 'removeSet' };
       // const addSetRoundBtn = {
       //   ...baseAddSetRoundBtn,
       //   data: { exIndex },
@@ -2502,6 +2518,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       } as ActionMenuItem;
 
       let actionsArray: ActionMenuItem[] = [
+        currExerciseInfoBtn,
         currOpenPerformanceInsightsBtn,
         addExerciseNotesBtn,
         addSectionExerciseBtn
@@ -2886,7 +2903,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const exerciseSelector = `[data-exercise-index="${exIndex}"]`;
     const setSelector = `[data-set-index="${setIndex}"]`;
     let element = null;
-    if (setIndex !== undefined){
+    if (setIndex !== undefined) {
       element = document.querySelector(setSelector) as HTMLElement | null;
     } else {
       element = document.querySelector(exerciseSelector) as HTMLElement | null;
@@ -6162,7 +6179,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       case 'rest':
         this.openRestModal(exIndex, setIndex, new Event('click'));
         break;
-      case 'remove_set':
+      case 'removeSet':
         this.removeSet(exIndex, setIndex);
         break;
     }
@@ -6825,11 +6842,22 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     // Set the routine signal with the template routine
-    this.routine.set({ ...routine });
-    this.originalRoutineSnapshot.set({ ...routine });
+    this.routine.set({ ...routine, createdAt: new Date().toISOString() });
+    this.originalRoutineSnapshot.set({ ...routine, createdAt: new Date().toISOString() });
     this._prefillPerformanceInputs();
     this.cdr.detectChanges();
     this.toastService.success(this.translate.instant('workoutBuilder.wizard.templateCreated'), 3000);
+  }
+
+  isExerciseDetailModalOpen = signal(false);
+  isSimpleModalOpen = signal(false);
+  exerciseDetailsId: string = '';
+  exerciseDetailsName: string = '';
+  openModal(exerciseId: string, event?: Event) {
+    event?.stopPropagation();
+    this.exerciseDetailsId = exerciseId;
+    this.exerciseDetailsName = 'Exercise details';
+    this.isSimpleModalOpen.set(true);
   }
 }
 

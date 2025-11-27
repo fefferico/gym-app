@@ -532,5 +532,4 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     }
     return null;
   }
-
 }

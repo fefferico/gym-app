@@ -28,17 +28,17 @@
   <!-- ========================
        CALENDAR STRUCTURE
        ======================== -->
-  <!-- Main Body Outline with folded corner -->
-  <path class="cls-1" d="M60,140 L452,140 L452,390 L390,452 L60,452 Z" />
+  <!-- Main Body Outline -->
+  <path class="cls-1" d="M60,140 L60,432 A20,20 0 0,0 80,452 L432,452 A20,20 0 0,0 452,432 L452,140" />
 
   <!-- Header Top Border (Rounded) -->
   <path class="cls-1" d="M60,140 L60,80 A20,20 0 0,1 80,60 L432,60 A20,20 0 0,1 452,80 L452,140" />
 
   <!-- Binder Rings -->
   <!-- Left -->
-  <path class="cls-1" d="M116,40 L116,90 A10,10 0 0,0 136,90 L136,40 A10,10 0 0,0 116,40" />
+  <path class="cls-1" d="M140,40 L140,90 A10,10 0 0,0 160,90 L160,40 A10,10 0 0,0 140,40" />
   <!-- Center -->
-  <path class="cls-1" d="M236,40 L236,90 A10,10 0 0,0 256,90 L256,40 A10,10 0 0,0 236,40" />
+  <path class="cls-1" d="M250,40 L250,90 A10,10 0 0,0 270,90 L270,40 A10,10 0 0,0 250,40" />
   <!-- Right -->
   <path class="cls-1" d="M356,40 L356,90 A10,10 0 0,0 376,90 L376,40 A10,10 0 0,0 356,40" />
 
@@ -49,19 +49,19 @@
     <!-- Centered grid: 4 columns, 2 rows, bigger cells -->
     <!-- Cell size: 56x56, gap: 20, grid starts at x=92, y=170 -->
     <!-- Row 1 -->
-    <rect class="cls-2" x="92"  y="170" width="56" height="56" rx="8" />
-    <rect class="cls-2" x="168" y="170" width="56" height="56" rx="8" />
+    <rect class="cls-2" x="92"  y="150" width="56" height="56" rx="8" />
+    <rect class="cls-2" x="168" y="150" width="56" height="56" rx="8" />
     <!-- Checkmarks adjusted for new cell size -->
-    <path class="cls-3" d="M104 200 l16 24 l28 -60" />
-    <path class="cls-3" d="M180 200 l16 24 l28 -60" />
-    <rect class="cls-2" x="244" y="170" width="56" height="56" rx="8" />
-    <rect class="cls-2" x="320" y="170" width="56" height="56" rx="8" />
+    <path class="cls-3" d="M104 170 l16 24 l28 -60" />
+    <path class="cls-3" d="M180 170 l16 24 l28 -60" />
+    <rect class="cls-2" x="244" y="150" width="56" height="56" rx="8" />
+    <rect class="cls-2" x="320" y="150" width="56" height="56" rx="8" />
 
     <!-- Row 2 -->
-    <rect class="cls-2" x="92"  y="246" width="56" height="56" rx="8" />
-    <rect class="cls-2" x="168" y="246" width="56" height="56" rx="8" />
-    <rect class="cls-2" x="244" y="246" width="56" height="56" rx="8" />
-    <rect class="cls-2" x="320" y="246" width="56" height="56" rx="8" />
+    <rect class="cls-2" x="92"  y="230" width="56" height="56" rx="8" />
+    <rect class="cls-2" x="168" y="230" width="56" height="56" rx="8" />
+    <rect class="cls-2" x="244" y="230" width="56" height="56" rx="8" />
+    <rect class="cls-2" x="320" y="230" width="56" height="56" rx="8" />
   </g>
 
   <!-- ========================

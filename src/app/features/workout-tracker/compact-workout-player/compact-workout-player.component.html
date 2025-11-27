@@ -855,11 +855,6 @@
                               {{ getSupersetRoundSummary(exIndex, roundIndex) }}
                               <div (click)="$event.stopPropagation()">
                                 <ng-container *ngIf="!isRoundCompleted(exIndex, roundIndex)">
-                                  <!-- <span *ngIf="roundIndex === findFirstIncompleteRoundIndex(exIndex)"
-                                    class="inline-flex items-center gap-1 rounded-full bg-yellow-100 dark:bg-yellow-900/70 px-2 py-1 text-xs font-medium text-yellow-800 dark:text-yellow-300 animate-pulse">
-                                    <app-icon name="target" class="h-4 w-4"></app-icon>
-                                    {{ 'compactPlayer.nextUp' | translate }}
-                                  </span> -->
                                   <span *ngIf="roundIndex !== findFirstIncompleteRoundIndex(exIndex)"
                                     class="inline-flex items-center gap-1 rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400">
                                     {{ 'compactPlayer.pending' | translate }}
@@ -1168,6 +1163,11 @@
     (timerSkipped)="handleRestTimerSkipped($event)" (stopwatchStopped)="handleStopwatchStopped()"
     (modeChanged)="restTimerMode.set($event)">
   </app-full-screen-rest-timer>
+
+  <app-modal [forceFullScreen]="true" *ngIf="exerciseDetailsId" [(isOpen)]="isSimpleModalOpen"
+    [modalTitle]="exerciseDetailsName">
+    <app-exercise-detail [id]="exerciseDetailsId" [isModal]="true"></app-exercise-detail>
+  </app-modal>
 
   <!-- Performance Insights Modal -->
   <div *ngIf="isPerformanceInsightsModalOpen()" style="z-index: 100"

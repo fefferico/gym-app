@@ -43,7 +43,7 @@ export class NavigationComponent {
     { path: '/home', label: 'navigation.home', iconName: 'home', exact: true },
     { path: this.routinesPath, label: 'navigation.routines', iconName: 'routines', exact: false },
     { path: this.historyPath, label: 'navigation.history', iconName: 'clock', exact: false },
-    { path: this.trainingProgramsPath, label: 'navigation.programs', iconName: 'program', exact: false, premiumFeature: PremiumFeature.TRAINING_PROGRAMS },
+    { path: this.trainingProgramsPath, label: 'navigation.programs', iconName: 'calendar', exact: false, premiumFeature: PremiumFeature.TRAINING_PROGRAMS },
     { path: this.statsPath, label: 'navigation.stats', iconName: 'stats-new', exact: true },
     { path: this.profilePath, label: 'navigation.profile', iconName: 'profile', exact: true },
   ];

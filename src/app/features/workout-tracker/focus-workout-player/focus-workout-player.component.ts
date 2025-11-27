@@ -4518,8 +4518,8 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
         if (activeInfo?.exerciseIndex !== undefined) {
           const exerciseIndex = activeInfo?.exerciseIndex;
-          const baseAddSetRoundBtn = !this.isSuperSet(exerciseIndex) ? addSetToExerciseBtn : { ...addRoundToExerciseBtn, actionKey: 'add_set' };
-          const baseRemoveSetRoundBtn = !this.isSuperSet(exerciseIndex) ? removeSetFromExerciseBtn : { ...removeRoundFromExerciseBtn, actionKey: 'remove_set' };
+          const baseAddSetRoundBtn = !this.isSuperSet(exerciseIndex) ? addSetToExerciseBtn : { ...addRoundToExerciseBtn, actionKey: 'addSet' };
+          const baseRemoveSetRoundBtn = !this.isSuperSet(exerciseIndex) ? removeSetFromExerciseBtn : { ...removeRoundFromExerciseBtn, actionKey: 'removeSet' };
           const addSetRoundBtn = {
             ...baseAddSetRoundBtn,
             data: { exerciseIndex },
@@ -4559,16 +4559,16 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       case 'switchExercise': this.openSwitchExerciseModal(); break;
       case 'insights': this.openSessionOverviewModal(); break;
       case 'exerciseInsights': this.openPerformanceInsightsFromMenu(); break;
-      case 'add_warmup_set': this.addWarmupSet(); break;
+      case 'addWarmupSet': this.addWarmupSet(); break;
       case 'skipSet': this.skipCurrentSet(); break;
       case 'skipExercise': this.skipCurrentExercise(); break;
       case 'later': this.markCurrentExerciseDoLater(); break;
       case 'finish': this.finishWorkoutEarly(); break;
       case 'exit': this.quitWorkout(); break;
       case 'weight_toolkit': this.openCalculatorModal(); break;
-      case 'create_superset': this.openCreateSupersetModal(); break;
-      case 'add_to_superset': this.addToSupersetModal(); break;
-      case 'remove_from_superset': this.removeFromSuperset(); break;
+      case 'createSuperset': this.openCreateSupersetModal(); break;
+      case 'addToSuperset': this.addToSupersetModal(); break;
+      case 'removeFromSuperset': this.removeFromSuperset(); break;
     }
 
     this.isWorkoutMenuVisible.set(false); // Close the menu

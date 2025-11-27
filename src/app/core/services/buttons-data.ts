@@ -11,6 +11,35 @@ export const pauseSessionBtn = {
     buttonClass: ' hover:bg-yellow-500 ',
 } as ActionMenuItem;
 
+export const exerciseInfoBtn = {
+    label: 'actionButtons.info',
+    actionKey: 'exerciseInfo',
+    iconName: [
+        // Layer 1: Base icon (fills the container)
+        { name: 'dumbbell' },
+
+        // Layer 2: Padded white background circle, centered
+        {
+            name: 'none',
+            display: 'filled-padded', // Makes it 125% of the container size
+            position: 'bottom-right',       // Ensures it's centered
+            class: 'bg-white dark:bg-gray-800'
+            ,
+        },
+
+        // Layer 3: The 'change' icon, centered on top of the circle
+        {
+            name: 'info',
+            position: 'bottom-right',       // Ensures it's centered
+            size: 'w-4 h-4',      // Now this will work! Size is relative to the host.
+            class: 'text-primary',
+            strokeWidth: 2.5
+        }
+    ],
+    iconClass: 'w-8 h-8 mr-2', // This class is applied to the <app-icon> host
+    buttonClass: ' hover:bg-cyan-600 ',
+} as ActionMenuItem;
+
 export const addExerciseBtn = {
     label: 'actionButtons.addExercise',
     actionKey: 'addExercise',
@@ -90,7 +119,7 @@ export const quitWorkoutBtn = {
 
 export const addWarmupSetBtn = {
     label: 'actionButtons.warmupSet',
-    actionKey: 'add_warmup_set',
+    actionKey: 'addWarmupSet',
     iconName: [
         { name: 'flame' },
         {
@@ -143,7 +172,7 @@ export const finishEarlyBtn = {
 
 export const createSuperSetBtn = {
     label: 'actionButtons.createSuperset',
-    actionKey: 'create_superset',
+    actionKey: 'createSuperset',
     iconName: [
         { name: 'link' },
         {
@@ -163,7 +192,7 @@ export const createSuperSetBtn = {
 
 export const addToSuperSetBtn = {
     label: 'actionButtons.addToSuperset',
-    actionKey: 'add_to_superset', // Assumes this might trigger a different UI flow
+    actionKey: 'addToSuperset', // Assumes this might trigger a different UI flow
     iconName: 'link',
     buttonClass: ' hover:bg-primary ',
     iconClass: 'w-8 h-8 mr-2'
@@ -171,7 +200,7 @@ export const addToSuperSetBtn = {
 
 export const removeFromSuperSetBtn = {
     label: 'actionButtons.removeFromSuperset',
-    actionKey: 'remove_from_superset',
+    actionKey: 'removeFromSuperset',
     iconName: [
         { name: 'unlink' },
         {
@@ -199,7 +228,7 @@ export const removeExerciseBtn = {
 }
 
 export const addSetToExerciseBtn = {
-    label: 'actionButtons.addSet', actionKey: 'add_set',
+    label: 'actionButtons.addSet', actionKey: 'addSet',
     iconName: [
         { name: 'dumbbell' },
         {
@@ -219,7 +248,7 @@ export const addSetToExerciseBtn = {
 }
 
 export const removeSetFromExerciseBtn = {
-    label: 'actionButtons.removeSet', actionKey: 'remove_set',
+    label: 'actionButtons.removeSet', actionKey: 'removeSet',
     iconName: [
         { name: 'dumbbell' },
         {
@@ -312,7 +341,7 @@ export const sessionNotesBtn = {
 
 export const exerciseNotesBtn = {
     label: 'actionButtons.exerciseNotes',
-    actionKey: 'exercise_notes',
+    actionKey: 'exerciseNotes',
     iconName: 'clipboard-list',
     buttonClass: ' hover:bg-purple-600 ',
     iconClass: 'w-8 h-8 mr-2'

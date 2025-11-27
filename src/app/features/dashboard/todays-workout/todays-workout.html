@@ -100,7 +100,8 @@
                     }}</span>
                 </ng-template>
 
-                <div class="my-2 text-xs font-semibold text-white bg-primary rounded-md p-1 flex-shrink w-fit flex items-center gap-x-1"> 
+                <div class="my-2 text-xs font-semibold text-white bg-primary rounded-md p-1 flex-shrink w-fit flex items-center gap-x-1 cursor-pointer" 
+                  (click)="viewRoutineDetails(workoutInfo.routine.id, workoutInfo.scheduledDayInfo?.programId)"> 
                   <app-icon name="calendar"></app-icon>
                   {{
                   'todaysWorkout.program' | translate }}: 
@@ -108,7 +109,7 @@
                     workoutInfo.scheduledDayInfo.iterationId }}</strong>
                   <div *ngIf="getCurrentWeekInfo(workoutInfo.scheduledDayInfo.programId) as weekInfo"
                     class="flex items-center gap-1 text-green-700 dark:text-green-300 font-semibold animate-pulse">
-                    <app-icon name="calendar-page" class="w-5 h-5" [strokeWidth]="2"></app-icon>
+                    <app-icon name="calendar" class="w-5 h-5" [strokeWidth]="2"></app-icon>
                     <span class="font-medium">{{ 'todaysWorkout.currentWeek' | translate }}</span> {{ weekInfo.name }}
                   </div>
                   <span>{{workoutInfo.scheduledDayInfo.dayName ? ( ' - ' + workoutInfo.scheduledDayInfo.dayName) :

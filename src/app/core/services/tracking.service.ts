@@ -361,10 +361,12 @@ export class TrackingService {
     }
   }
 
-  public async recalculateAllPersonalBests(): Promise<void> {
-    const title = this.translate.instant('trackingService.recalcPbs.title');
-    const message = this.translate.instant('trackingService.recalcPbs.message');
-    await this.alertService.showAlert(title, message);
+  public async recalculateAllPersonalBests(noPrompt: boolean = false): Promise<void> {
+    if (!noPrompt) {
+      const title = this.translate.instant('trackingService.recalcPbs.title');
+      const message = this.translate.instant('trackingService.recalcPbs.message');
+      await this.alertService.showAlert(title, message);
+    }
     this.savePBsToStorage({});
 
     const allLogs = this.workoutLogsSubject.getValue();
@@ -438,11 +440,12 @@ export class TrackingService {
 
     this.savePBsToStorage(newPBsMaster);
     console.log('Personal Bests recalculated from all logs:', newPBsMaster);
-    const successTitle = this.translate.instant('trackingService.recalcPbs.successTitle');
-    const successMessage = this.translate.instant('trackingService.recalcPbs.successMessage');
-    this.alertService.showAlert(successTitle, successMessage);
+    if (!noPrompt) {
+      const successTitle = this.translate.instant('trackingService.recalcPbs.successTitle');
+      const successMessage = this.translate.instant('trackingService.recalcPbs.successMessage');
+      this.alertService.showAlert(successTitle, successMessage);
+    }
   }
-
   getPersonalBestForExerciseByType(exerciseId: string, pbType: string): Observable<PersonalBestSet | null> {
     return this.personalBests$.pipe(map(allPBs => allPBs[exerciseId]?.find(pb => pb.pbType === pbType) || null));
   }
@@ -889,7 +892,7 @@ export class TrackingService {
     await this.recalculateAllPersonalBests();
   }
 
-  async deleteWorkoutLog(logId: string): Promise<void> {
+  async deleteWorkoutLog(logId: string, noPrompt: boolean = false): Promise<void> {
     if (!logId) { throw new Error('Invalid log ID for deletion.'); }
     const currentLogs = this.workoutLogsSubject.getValue();
     const logExists = currentLogs.some(log => log.id === logId);
@@ -902,13 +905,13 @@ export class TrackingService {
     this.saveWorkoutLogsToStorage(updatedLogs);
     console.log(`Workout log with ID ${logId} deleted. Recalculating PBs...`);
 
-    await this.recalculateAllPersonalBests();
+    await this.recalculateAllPersonalBests(noPrompt);
 
     // =================== START OF CORRECTION ===================
     // After deleting a log and recalculating PBs, we must also
     // resync the last used timestamps to ensure consistency.
     console.log(`Syncing exercise timestamps after log deletion...`);
-    await this.backfillLastUsedExerciseTimestamps();
+    await this.backfillLastUsedExerciseTimestamps(noPrompt);
     // =================== END OF CORRECTION ===================
   }
 
@@ -1002,9 +1005,11 @@ export class TrackingService {
    * and updates the `lastUsedAt` property on the exercises via the ExerciseService.
    * This is an intensive operation and should be run manually or after data imports.
    */
-  public async backfillLastUsedExerciseTimestamps(): Promise<void> {
+  public async backfillLastUsedExerciseTimestamps(noPrompt: boolean = false): Promise<void> {
     console.log('Starting backfill of lastUsedAt timestamps for all exercises...');
-    this.toastService.info('Updating exercise history...', 2000, "Please Wait");
+    if (!noPrompt) {
+      this.toastService.info('Updating exercise history...', 2000, "Please Wait");
+    }
 
     const allLogs = this.workoutLogsSubject.getValue();
     if (!allLogs || allLogs.length === 0) {
@@ -1029,7 +1034,9 @@ export class TrackingService {
     await this.exerciseService.batchUpdateLastUsedTimestamps(lastUsedMap);
 
     console.log(`Backfill complete. Updated timestamps for ${lastUsedMap.size} exercises.`);
-    this.toastService.success('Exercise history has been updated!', 3000, "Update Complete");
+    if (!noPrompt) {
+      this.toastService.success(this.translate.instant('trackingService.history.backfillSuccessMessage'), 3000, this.translate.instant('trackingService.history.backfillSuccessTitle'));
+    }
   }
 
 

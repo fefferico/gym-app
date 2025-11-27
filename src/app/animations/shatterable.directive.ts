@@ -1,4 +1,4 @@
-import { Directive, ElementRef, Renderer2, inject } from '@angular/core';
+import { Directive, ElementRef, Input, Renderer2, inject } from '@angular/core';
 import { ThemeService } from '../core/services/theme.service';
 
 @Directive({
@@ -6,7 +6,6 @@ import { ThemeService } from '../core/services/theme.service';
   standalone: true
 })
 export class ShatterableDirective {
-
   private themeService = inject(ThemeService);
 
   constructor(

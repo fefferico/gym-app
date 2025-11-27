@@ -3,6 +3,8 @@ import {
   Component, inject, OnInit, signal, computed, PLATFORM_ID, OnDestroy,
   ChangeDetectorRef, ElementRef, AfterViewInit, NgZone, ViewChild,
   HostListener,
+  ViewChildren,
+  QueryList,
 } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -52,6 +54,7 @@ import { repsTypeToReps, genRepsTypeFromRepsNumber, getDurationValue, getWeightV
 import { LocationService } from '../../../core/services/location.service';
 import { CdkVirtualForOf, CdkVirtualScrollViewport, ScrollingModule } from '@angular/cdk/scrolling';
 import { WorkoutUtilsService } from '../../../core/services/workout-utils.service';
+import { ShatterableDirective } from '../../../animations/shatterable.directive';
 
 
 interface CalendarMonth {
@@ -86,11 +89,27 @@ type EnrichedHistoryListItem = HistoryListItem & {
 @Component({
   selector: 'app-history-list',
   standalone: true,
-  imports: [CdkVirtualScrollViewport, CdkVirtualForOf, ScrollingModule, CommonModule, DatePipe, FormsModule, ReactiveFormsModule, ActionMenuComponent, PressDirective, IconComponent, FabMenuComponent, TranslateModule, BumpClickDirective],
+  imports: [CdkVirtualScrollViewport, CdkVirtualForOf, ScrollingModule, CommonModule, DatePipe,
+    FormsModule, ReactiveFormsModule, ActionMenuComponent, PressDirective, IconComponent,
+    FabMenuComponent, TranslateModule, BumpClickDirective, ShatterableDirective],
   templateUrl: './history-list.html',
   styleUrl: './history-list.scss',
   providers: [DecimalPipe],
   animations: [
+    trigger('listItemShift', [
+      transition(':leave', [
+        animate('600ms cubic-bezier(0.4,0,0.2,1)', style({
+          opacity: 0,
+          transform: 'translateY(-40px) scaleY(0.7)'
+        }))
+      ])
+    ]),
+    trigger('collapse', [
+      transition(':leave', [
+        style({ height: '*', opacity: 1, marginBottom: '*' }),
+        animate('50ms linear', style({ height: 0, opacity: 0, marginBottom: 0 }))
+      ])
+    ]),
     trigger('slideView', [
       transition('list => calendar', [
         style({ position: 'relative' }),
@@ -575,6 +594,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  logsToShowCount = signal(50);
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo(0, 0);
@@ -646,6 +666,14 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
     this.refreshFabMenuItems();
+    this.setDeferredLogLoading();
+  }
+
+  setDeferredLogLoading(): void {
+    this.logsToShowCount.set(50); // Show first 50 logs
+    setTimeout(() => {
+      this.logsToShowCount.set(this.filteredHistoryItems().length);
+    }, 1500); // 1.5 seconds after initial render
   }
 
   // Update the function signature to accept `allRoutines` as an argument
@@ -712,6 +740,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     if (current === view) return;
     let enterTransform = 'translateX(100%)', leaveTransform = 'translateX(-100%)';
     if (view === 'list') {
+      this.setDeferredLogLoading();
       enterTransform = (current === 'calendar') ? 'translateX(-100%)' : 'translateX(100%)';
       leaveTransform = (current === 'calendar') ? 'translateX(100%)' : 'translateX(-100%)';
       this.resetFilters();
@@ -806,8 +835,12 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  @ViewChildren(ShatterableDirective) shatterables!: QueryList<ShatterableDirective>;
+  shrinkingPausedCard = signal(false);
+  shatteringIds = new Set<string>();
   async deleteLogDetails(logId: string, event?: MouseEvent): Promise<void> {
     event?.stopPropagation(); this.visibleActionsRutineId.set(null);
+    this.shatteringIds.add(logId); // Mark as shattering
 
     const confirm = await this.alertService.showConfirmationDialog(
       this.translate.instant('historyList.alerts.deleteLogTitle'),
@@ -819,11 +852,24 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     );
     if (confirm && confirm.data) {
       try {
-        this.spinnerService.show(); await this.trackingService.deleteWorkoutLog(logId);
-        this.toastService.success(this.translate.instant('historyList.toasts.logDeleted'));
+        // Find the correct directive instance
+        const shatterable = this.shatterables.find(dir => dir.el.nativeElement.id === `logItem-${logId}`);
+        if (shatterable) shatterable.shatter();
+        const ANIMATION_DURATION = 400; // ms, match your animation
+
+        // Wait for the animation, then remove the item
+        setTimeout(async () => {
+          await this.trackingService.deleteWorkoutLog(logId, true);
+          // this.toastService.success(this.translate.instant('historyList.toasts.logDeleted'));
+        }, ANIMATION_DURATION + 100); // +100ms for a relaxed shift
+
+
       } catch (err) { this.toastService.error(this.translate.instant('historyList.toasts.logDeleteFailed')); }
-      finally { this.spinnerService.hide(); }
     }
+  }
+
+  trackById(index: number, item: { id: string }) {
+    return item.id;
   }
 
   async clearAllLogsForDev(): Promise<void> {
@@ -1311,5 +1357,6 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       this.cdr.detectChanges();
     }
   }
+
 
 }

@@ -174,9 +174,11 @@
 
         <div *ngIf="allHistoryItems().length > 0; else loadingOrInitialLogs_List">
           <div *ngIf="filteredHistoryItems().length > 0; else noLogsAfterFilter_List" class="space-y-4">
-            <cdk-virtual-scroll-viewport itemSize="80" class="h-[80vh]">
-              <div *cdkVirtualFor="let item of filteredHistoryItems()">
-                <!-- <div *ngFor="let item of filteredHistoryItems()"> -->
+            <!-- <cdk-virtual-scroll-viewport itemSize="80" class="h-[80vh]"> -->
+              <!-- *cdkVirtualFor="let item of filteredHistoryItems(); trackBy: trackById" [@listItemShift]> -->
+              <div appShatterable [id]="'logItem-' + item.id"
+                *ngFor="let item of filteredHistoryItems().slice(0, logsToShowCount()); trackBy: trackById">
+                <!-- *ngFor="let item of filteredHistoryItems(); trackBy: trackById" [@collapse]> -->
                 <!-- WORKOUT LOG CARD -->
                 <div *ngIf="item.itemType === 'workout'"
                   class="rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-yellow-200 dark:hover:bg-gray-600"
@@ -336,7 +338,7 @@
                   </app-action-menu>
                 </div>
               </div>
-            </cdk-virtual-scroll-viewport>
+            <!-- </cdk-virtual-scroll-viewport> -->
           </div>
           <ng-template #noLogsAfterFilter_List>
             <div class="text-center py-12 px-6 bg-white dark:bg-gray-700 rounded-md shadow-md"><svg
@@ -510,7 +512,7 @@
     </div>
   </div>
 
-  <app-fab-menu *ngIf="!isFilterAccordionOpen() && !areActionsOpen() && virtualScroll" [actions]="fabMenuItems"
-    [virtualScrollViewport]="virtualScroll" (actionClicked)="onFabAction($event)">
+  <app-fab-menu *ngIf="!isFilterAccordionOpen() && !areActionsOpen() && currentHistoryView() === 'list'"
+    [actions]="fabMenuItems" [virtualScrollViewport]="virtualScroll" (actionClicked)="onFabAction($event)">
   </app-fab-menu>
 </div>
