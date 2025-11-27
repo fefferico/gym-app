@@ -475,46 +475,101 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (!routine) return;
 
     const exercises = [...routine.exercises];
-    const draggedItem = exercises[event.previousIndex];
-    const targetItem = exercises[event.currentIndex];
 
-    // Case 1: Dragging within the same superset (intra-superset reorder)
-    if (draggedItem.supersetId && draggedItem.supersetId === targetItem.supersetId) {
-      moveItemInArray(exercises, event.previousIndex, event.currentIndex);
-      // After moving, re-calculate and update the `supersetOrder` for the affected group
-      const group = exercises.filter(ex => ex.supersetId === draggedItem.supersetId);
-      group.forEach((ex, index) => {
-        const originalIndexInMainArray = exercises.findIndex(e => e.id === ex.id);
-        if (originalIndexInMainArray > -1) {
-          exercises[originalIndexInMainArray].supersetOrder = index;
+    // FIX: Mappa ENTRAMBI event.previousIndex e event.currentIndex dal DOM filtrato agli indici reali
+    // Esempio:
+    // Array reale: [A, B₁, B₂, C, D, E, F₁, F₂] (B=superset, E=superset)
+    // Array visibile: [A, B, C, D, E] (solo start di superset + standalone)
+    // Se trascini da index 1 (B nel DOM) a index 4 (E nel DOM):
+    // - draggedIndex deve essere 0 (B nel vero array)
+    // - targetIndex deve essere 6 (E nel vero array)
+
+    // Mappa evento.previousIndex (da dove è stato trascinato) all'indice reale
+    let draggedIndex = event.previousIndex;
+    let visibleCount = 0;
+    for (let i = 0; i < exercises.length; i++) {
+      if (!exercises[i].supersetId || exercises[i].supersetOrder === 0) {
+        if (visibleCount === event.previousIndex) {
+          draggedIndex = i;
+          break;
         }
-      });
-      // The overall list must be sorted again to keep the group visually contiguous
-      routine.exercises = this.reorderExercisesForSupersets(exercises);
-      this.toastService.info('Exercise reordered within superset.');
-    }
-    // Case 2: Dragging a whole superset group (identified by dragging its first item)
-    else if (draggedItem.supersetId) {
-      // Find the entire group to move
-      const supersetGroup = exercises.filter(ex => ex.supersetId === draggedItem.supersetId);
-      // Create a new array without the group
-      const exercisesWithoutGroup = exercises.filter(ex => ex.supersetId !== draggedItem.supersetId);
-      // Calculate the correct insertion index in the new, shorter array
-      let insertionIndex = 0;
-      for (let i = 0; i < event.currentIndex; i++) {
-        if (exercises[i].supersetId !== draggedItem.supersetId) {
-          insertionIndex++;
-        }
+        visibleCount++;
       }
-      // Insert the entire group at the new position
+    }
+
+    // Mappa event.currentIndex (dove è stato droppato) all'indice reale
+    let targetIndex = event.currentIndex;
+    visibleCount = 0;
+    for (let i = 0; i < exercises.length; i++) {
+      if (!exercises[i].supersetId || exercises[i].supersetOrder === 0) {
+        if (visibleCount === event.currentIndex) {
+          targetIndex = i;
+          break;
+        }
+        visibleCount++;
+      }
+    }
+
+    const draggedItem = exercises[draggedIndex];
+    const targetItem = exercises[targetIndex];
+
+    const draggedIsSupersetStart = draggedItem.supersetId && draggedItem.supersetOrder === 0;
+    const draggedIsStandalone = !draggedItem.supersetId;
+    const targetIsStandalone = !targetItem.supersetId;
+
+    // Case 1: Block dragging within the same superset
+    if (draggedItem.supersetId && draggedItem.supersetId === targetItem.supersetId) {
+      this.toastService.info('Superset exercises cannot be reordered via drag. Use the edit menu instead.');
+      return;
+    }
+        // Case 2: Dragging a whole superset group (only if dragging the first item of the group)
+    else if (draggedIsSupersetStart) {
+      const draggedSupersetFirstIndex = exercises.findIndex(ex => ex.supersetId === draggedItem.supersetId && ex.supersetOrder === 0);
+      const supersetGroup = exercises.filter(ex => ex.supersetId === draggedItem.supersetId);
+      const draggedSupersetLastIndex = draggedSupersetFirstIndex + supersetGroup.length - 1;
+    
+      // Remove the superset group from the array
+      const exercisesWithoutGroup = exercises.filter(ex => ex.supersetId !== draggedItem.supersetId);
+    
+      // Determine the insertion index in the array WITHOUT the group
+      let insertionIndex: number;
+    
+      if (targetIndex < draggedSupersetFirstIndex) {
+        // Dropping BEFORE the superset's original position
+        // targetIndex is already correct (not affected by removal)
+        insertionIndex = targetIndex;
+      } else if (targetIndex > draggedSupersetLastIndex) {
+        // Dropping AFTER the superset's original position
+        // Need to account for the group that was removed
+        // If targetIndex=4 and group was at indices 0-2 (3 items), 
+        // then in the filtered array it should be at index 4-3=1
+        insertionIndex = targetIndex - 1;
+      } else {
+        // Dropping within the superset itself (edge case)
+        insertionIndex = draggedSupersetFirstIndex;
+      }
+    
+      // Insert the group at the calculated position
       exercisesWithoutGroup.splice(insertionIndex, 0, ...supersetGroup);
       routine.exercises = exercisesWithoutGroup;
+      this.toastService.info('Superset group moved.');
     }
-    // Case 3: Dragging a standalone exercise
+    // Case 3: Dragging a standalone exercise (both dragged and target are standalone)
+    else if (draggedIsStandalone && targetIsStandalone) {
+      moveItemInArray(exercises, draggedIndex, targetIndex);
+      routine.exercises = exercises;
+      this.toastService.info('Exercise moved.');
+    }
+    // Case 4: Dragging standalone exercise next to a superset group, or vice versa
+    else if ((draggedIsStandalone && !targetIsStandalone) || (!draggedIsStandalone && targetIsStandalone)) {
+      moveItemInArray(exercises, draggedIndex, targetIndex);
+      routine.exercises = exercises;
+      this.toastService.info('Block reordered.');
+    }
+    // Case 5: Invalid drag
     else {
-      moveItemInArray(exercises, event.previousIndex, event.currentIndex);
-      // Re-sort the list to ensure superset groups remain together
-      routine.exercises = this.reorderExercisesForSupersets(exercises);
+      this.toastService.info('Cannot move this exercise. Only drag the first exercise of a superset group, or drag standalone exercises.');
+      return;
     }
 
     this.routine.set({ ...routine });
