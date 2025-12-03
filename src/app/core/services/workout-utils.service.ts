@@ -988,6 +988,28 @@ export class WorkoutUtilsService {
         return newRoutine;
     }
 
+    public getSetFieldOrderByStrings(routine: Routine, exerciseId: string, setId: string): string[] | null {
+        // Safely access the nested properties
+        const exercise = this.getExerciseById(routine, exerciseId);
+        const set = exercise?.sets?.find(s => s.id === setId);
+
+        // If fieldOrder exists and is an array, sort it according to the default metrics order
+        if (set && Array.isArray(set.fieldOrder)) {
+            const defaultOrder = this.getDefaultFields();
+            // Sort fieldOrder by the index in defaultOrder, unknown fields go last
+            return [...set.fieldOrder].sort((a, b) => {
+                const idxA = defaultOrder.indexOf(a as any);
+                const idxB = defaultOrder.indexOf(b as any);
+                if (idxA === -1 && idxB === -1) return 0;
+                if (idxA === -1) return 1;
+                if (idxB === -1) return -1;
+                return idxA - idxB;
+            });
+        }
+
+        return null;
+    }
+
     /**
        * Safely retrieves the 'fieldOrder' array for a specific set within a routine.
        * This is used by the UI to render metric inputs in their correct, user-defined order.
@@ -1504,5 +1526,511 @@ export class WorkoutUtilsService {
     private isLoggedRoutine(routine: Routine | LoggedRoutine): routine is LoggedRoutine {
         return 'workoutLogId' in routine;
     }
+
+
+     public getVisibleSetColumnsByStrings(routine: Routine, exerciseId: string, setId: string): { [key: string]: boolean } {
+        const exercise = routine.exercises.find(ex => ex.id === exerciseId);
+        const set = exercise?.sets.find(set => set.id === setId);
+
+        if (!set) {
+            // Fallback for safety, though it should always find a set.
+            return { weight: false, reps: false, distance: false, duration: false, tempo: false };
+        }
+
+        // --- The Smart Implementation: Use the type guard ---
+        let visibleSetFieldsObj;
+        if (this.isLoggedSet(set)) {
+            // It's a LoggedSet, so we check the performance fields.
+            visibleSetFieldsObj = {
+                [METRIC.weight]: !!set.fieldOrder?.includes(METRIC.weight),
+                [METRIC.reps]: !!set.fieldOrder?.includes(METRIC.reps),
+                [METRIC.distance]: !!(set.fieldOrder?.includes(METRIC.distance)),
+                [METRIC.duration]: !!(set.fieldOrder?.includes(METRIC.duration)),
+                [METRIC.tempo]: !!(set.targetTempo?.trim() || set.fieldOrder?.includes(METRIC.tempo)),
+                [METRIC.rest]: !!set.fieldOrder?.includes(METRIC.rest),
+                // [METRIC.weight]: !!((this.getWeightValue(set.weightLogged) ?? 0) > 0 || set.fieldOrder?.includes(METRIC.weight)),
+                // [METRIC.reps]: !!((this.getRepsValue(set.repsLogged) ?? 0) > 0 || set.fieldOrder?.includes(METRIC.reps)),
+                // [METRIC.distance]: !!((this.getDistanceValue(set.distanceLogged) ?? 0) > 0 || set.fieldOrder?.includes(METRIC.distance)),
+                // [METRIC.duration]: !!((this.getDurationValue(set.durationLogged) ?? 0) > 0 || set.fieldOrder?.includes(METRIC.duration)),
+                // [METRIC.tempo]: !!(set.targetTempo?.trim() || set.fieldOrder?.includes(METRIC.tempo)),
+                // [METRIC.rest]: !!((this.getRestValue(set.restLogged) ?? 0) > 0 || set.fieldOrder?.includes(METRIC.rest)),
+            };
+        } else {
+            // It's an ExerciseTargetSetParams, so we check the target fields.
+            const plannedSet = set as ExerciseTargetSetParams; // We can now safely cast it.
+            visibleSetFieldsObj = {
+                [METRIC.weight]: !!((plannedSet.targetWeight) || plannedSet.fieldOrder?.includes(METRIC.weight)),
+                [METRIC.reps]: !!((plannedSet.targetReps) || plannedSet.fieldOrder?.includes(METRIC.reps)),
+                [METRIC.distance]: !!((plannedSet.targetDistance) || plannedSet.fieldOrder?.includes(METRIC.distance)),
+                [METRIC.duration]: !!((plannedSet.targetDuration) || plannedSet.fieldOrder?.includes(METRIC.duration)),
+                [METRIC.tempo]: !!(plannedSet.targetTempo?.trim() || plannedSet.fieldOrder?.includes(METRIC.tempo)),
+                [METRIC.rest]: !!((plannedSet.targetRest) || plannedSet.fieldOrder?.includes(METRIC.rest)),
+            };
+        }
+        return visibleSetFieldsObj;
+    }
+
+        public isExerciseInSuperset(routine: Routine, exerciseId: string): boolean {
+        // If routine has blocks structure
+        if (routine.exercises && Array.isArray(routine.exercises)) {
+            for (const exercise of routine.exercises) {
+                if (exercise.supersetId && exercise.id === exerciseId) {
+                    return true;
+                }
+            }
+        }
+
+        // Fallback for legacy flat structure
+        return false;
+    }
+
+        public async promptAddFieldByStrings(routine: Routine | LoggedRoutine, exerciseId: string, setId: string, isPlayer: boolean = false): Promise<Routine | null> {
+        const { visible, hidden } = this.getFieldsForSetByStrings(routine, exerciseId, setId);
+
+        if (hidden.length === 0) {
+            this.toastService.info(this.translate.instant('toasts.allMetricsAdded'));
+            return null;
+        }
+
+        // Check if exercise is in a group block by looking at routine structure
+        const exercise = routine.exercises.find(ex => ex.id === exerciseId);
+        const isInGroupBlock = exercise ? this.isExerciseInSuperset(routine, exerciseId) : false;
+
+        let filteredHidden;
+        if (isInGroupBlock) {
+            // check that group block exercise must have only "reps" and "weight" as metrics
+            const allowedFields = [METRIC.weight, METRIC.reps];
+            filteredHidden = hidden.filter(field => allowedFields.includes(field));
+            if (filteredHidden.length === 0) {
+                this.toastService.info("Only 'Weight' and 'Reps' can be added to sets within a supersets group.");
+                return null;
+            }
+        }
+
+        let availableMetrics = filteredHidden ? filteredHidden : hidden;
+
+        if (availableMetrics.length === 0) {
+            this.toastService.info(this.translate.instant('toasts.trueGymModeNoMetrics'));
+            return null;
+        }
+
+        // --- Step 1: Ask WHICH field to add ---
+        const buttons: AlertButton[] = availableMetrics.map(field => ({
+            text: this.translate.instant('metrics.' + field),
+            role: 'add', data: field,
+            icon: field
+        }));
+        buttons.push({ text: this.translate.instant('common.cancel'), role: 'cancel', data: null, icon: 'cancel' });
+
+        const setIndex = routine.exercises.find(ex => ex.id === exerciseId)?.sets.findIndex(set => set.id === setId) ?? 0;
+        const choice = await this.alertService.showConfirmationDialog(
+            this.translate.instant('workoutBuilder.prompts.addField.title'),
+            this.translate.instant('workoutBuilder.prompts.addField.message', { setNumber: setIndex + 1 }),
+            buttons,
+            { showCloseButton: true }
+        );
+
+        if (!choice || !choice.data) {
+            return null;
+        }
+
+        const fieldToAdd = choice.data as METRIC;
+        const translatedFieldToAdd = this.translate.instant('metrics.' + fieldToAdd);
+
+        // --- Step 2: Ask for the VALUE of the chosen field ---
+        let inputLabel = this.translate.instant('workoutBuilder.prompts.setTarget.title', { field: translatedFieldToAdd });
+        let placeholderValue: number | string = 0;
+
+        switch (fieldToAdd) {
+            case METRIC.weight:
+                inputLabel += ` (${this.unitsService.getWeightUnitSuffix()})`;
+                placeholderValue = 10;
+                break;
+            case METRIC.reps:
+                placeholderValue = 8;
+                break;
+            case METRIC.duration:
+                inputLabel += ' (s)';
+                placeholderValue = 60;
+                break;
+            case METRIC.rest:
+                inputLabel += ' (s)';
+                placeholderValue = 60;
+                break;
+            case METRIC.distance:
+                inputLabel += ` (${this.unitsService.getDistanceUnitSuffix()})`;
+                placeholderValue = 1;
+                break;
+            case METRIC.tempo:
+                placeholderValue = '2-0-1-0';
+                break;
+        }
+
+        const correctAttribute = fieldToAdd !== METRIC.tempo ? { min: '0', step: 'any' } : {};
+        const valueResult = await this.alertService.showPromptDialog(
+            this.translate.instant('workoutBuilder.prompts.setTarget.title', { field: translatedFieldToAdd }),
+            this.translate.instant('workoutBuilder.prompts.setTarget.message', { setNumber: setIndex + 1 }),
+            [{
+                name: 'targetValue',
+                type: fieldToAdd === METRIC.tempo ? 'text' : 'number',
+                label: this.translate.instant('metrics.' + fieldToAdd),
+                value: placeholderValue,
+                attributes: correctAttribute
+            }] as AlertInput[],
+            this.translate.instant('workoutBuilder.prompts.setTarget.applyButton')
+        );
+
+        if (!valueResult || valueResult['targetValue'] === null || valueResult['targetValue'] === undefined) {
+            return null;
+        }
+
+        let targetValue = valueResult['targetValue'];
+        if (Array.isArray(targetValue)) {
+            targetValue = targetValue[0] ?? 0;
+        }
+
+        const updatedRoutine = this.addFieldToSetByStrings(routine, exerciseId, setId, fieldToAdd, targetValue);
+        return updatedRoutine;
+    }
+
+    public getFieldsForSetByStrings(routine: Routine, exerciseId: string, setId: string): { visible: METRIC[], hidden: METRIC[] } {
+        const allFields = this.getDefaultFields();
+        const visibleCols = this.getVisibleSetColumnsByStrings(routine, exerciseId, setId);
+
+        const visible = allFields.filter(field => visibleCols[field as keyof typeof visibleCols]);
+        const hidden = allFields.filter(field => !visible.includes(field));
+
+        return { visible, hidden };
+    }
+
+public async promptRemoveFieldByStrings(routine: Routine, exerciseId: string, setId: string, isPlayer: boolean = false): Promise<Routine | null> {
+        const cols = this.getVisibleSetColumnsByStrings(routine, exerciseId, setId);
+        let removableFields = Object.keys(cols).filter(key => cols[key as keyof typeof cols]);
+
+        const appSettings = this.appSettingsService.getSettings();
+
+        // If the call is coming from the workout player, filter out the 'rest' metric
+        // If in the player and True GYM mode is on, filter the available metrics
+        if (isPlayer) {
+            removableFields = removableFields.filter(field => field !== METRIC.rest);
+
+            // if (appSettings.enableTrueGymMode) {
+            //     const baseExercise = await firstValueFrom(this.exerciseService.getExerciseById(routine.exercises[exIndex].exerciseId));
+            //     const isCardio = baseExercise?.category === 'cardio';
+
+            //     const allowedFields = isCardio
+            //         ? [METRIC.duration, METRIC.distance] // Rest is handled by its own modal now
+            //         : [METRIC.weight, METRIC.reps];
+
+            //     removableFields = removableFields.filter(field => allowedFields.includes(field as METRIC));
+            // }
+        }
+
+        if (removableFields.length === 0) {
+            // Get translated toast message
+            const toastMessage = await firstValueFrom(this.translate.get("workoutService.alerts.removeField.noFieldsToast"));
+            this.toastService.info(toastMessage);
+            return routine;
+        };
+
+        // even if length it's equal to 1 do nothing
+        if (removableFields.length === 1) {
+            // Get translated toast message
+            const toastMessage = await firstValueFrom(this.translate.get("workoutService.alerts.removeField.atLeastOneMetric"));
+            this.toastService.info(toastMessage);
+            return routine;
+        };
+
+        // --- START OF TRANSLATION IMPLEMENTATION ---
+
+        // 1. Prepare all the translation keys we will need.
+        const metricTranslationKeys = removableFields.map(field => `metrics.${field}`);
+        const requiredKeys = [
+            'workoutService.alerts.removeField.title',
+            'workoutService.alerts.removeField.message',
+            'common.cancel',
+            ...metricTranslationKeys
+        ];
+
+        // 2. Fetch all translations in one network call for efficiency.
+        const translations = await firstValueFrom(this.translate.get(requiredKeys));
+
+        // 3. Build the buttons using the fetched translations.
+        const buttons: AlertButton[] = removableFields.map(field => ({
+            text: translations[`metrics.${field}`], // Use translated metric name
+            role: 'remove',
+            data: field,
+            icon: field,
+            cssClass: 'bg-red-500 hover:bg-red-600'
+        }));
+
+        // Add a dedicated "Cancel" button with its translation.
+        buttons.push({
+            text: translations['common.cancel'],
+            role: 'cancel',
+            data: null,
+            icon: 'cancel'
+        });
+
+        // 4. Show the confirmation dialog with translated content.
+        const choice = await this.alertService.showConfirmationDialog(
+            translations['workoutService.alerts.removeField.title'],
+            translations['workoutService.alerts.removeField.message'],
+            buttons,
+            { showCloseButton: true }
+        );
+
+        // --- END OF TRANSLATION IMPLEMENTATION ---
+
+        if (!choice || !choice.data) {
+            return null; // User cancelled
+        }
+
+        const fieldToRemove = choice.data;
+        const updatedRoutine = this.removeMetricFromSetByStrings(routine, exerciseId, setId, fieldToRemove);
+        return updatedRoutine;
+    }
+
+    public removeMetricFromSetByStrings(routine: Routine, exerciseId: string, setId: string, fieldToRemove: METRIC): Routine {
+        // Create a deep copy to avoid mutating the original object
+        const newRoutine = JSON.parse(JSON.stringify(routine)) as Routine;
+
+        const setToUpdate: any = newRoutine.exercises.find(ex => ex.id === exerciseId)?.sets.find(set => set.id === setId);
+        if (!this.isLoggedRoutine(newRoutine)) {
+            // 1. Remove the field's value
+            setToUpdate[`target${fieldToRemove.charAt(0).toUpperCase() + fieldToRemove.slice(1)}`] = undefined;
+            setToUpdate[`target${fieldToRemove.charAt(0).toUpperCase() + fieldToRemove.slice(1)}Min`] = undefined;
+            setToUpdate[`target${fieldToRemove.charAt(0).toUpperCase() + fieldToRemove.slice(1)}Max`] = undefined;
+            setToUpdate[`${fieldToRemove}Used`] = undefined;
+            setToUpdate[`${fieldToRemove}Achieved`] = undefined;
+
+            // OLD REST
+            setToUpdate[`${fieldToRemove}AfterSet`] = undefined;
+        } else {
+            // 1. Remove the logged field's value
+            setToUpdate[`${fieldToRemove}Logged`] = undefined;
+        }
+
+
+
+        // 2. Also remove the field from the order array
+        if (setToUpdate.fieldOrder) {
+            setToUpdate.fieldOrder = setToUpdate.fieldOrder.filter((field: string) => field !== fieldToRemove);
+        }
+
+        const setIndex = newRoutine.exercises.find(ex => ex.id === exerciseId)?.sets.findIndex(set => set.id === setId) ?? 0;
+        this.toastService.info(this.translate.instant("toasts.fieldRemovedFromSet", { fieldToRemove: this.translate.instant(`metrics.${fieldToRemove}`).toUpperCase(), setIndex: setIndex + 1 }));
+
+        // 3. Return the fully modified new routine object
+        return newRoutine;
+    }
+
+    private addFieldToSetByStrings(
+        routine: Routine | LoggedRoutine,
+        exerciseId: string,
+        setId: string,
+        fieldToAdd: METRIC,
+        targetValue: AnyTarget | string | number | boolean
+    ): Routine | null {
+        const updatedRoutine = JSON.parse(JSON.stringify(routine)) as Routine;
+        const setData: any = updatedRoutine.exercises.find(ex => ex.id === exerciseId)?.sets.find(s => s.id === setId);
+        if (!setData) return null;
+        const setToUpdate: ExerciseTargetSetParams | LoggedSet = setData;
+
+        // Ensure fieldOrder exists and includes the new field
+        if (!setToUpdate.fieldOrder) {
+            const { visible } = this.getFieldsForSetByStrings(routine, exerciseId, setId);
+            setToUpdate.fieldOrder = visible;
+        }
+        if (!setToUpdate.fieldOrder.includes(fieldToAdd)) {
+            setToUpdate.fieldOrder.push(fieldToAdd);
+        }
+
+        // Type-aware assignment for each metric
+        switch (fieldToAdd) {
+            case METRIC.weight: {
+                let weightTarget: WeightTarget;
+                if (typeof targetValue === 'number') {
+                    weightTarget = weightToExact(targetValue);
+                } else if (typeof targetValue === 'string' && !isNaN(Number(targetValue))) {
+                    weightTarget = weightToExact(Number(targetValue));
+                } else if (typeof targetValue === 'object' && targetValue && 'type' in targetValue) {
+                    weightTarget = targetValue as WeightTarget;
+                } else {
+                    weightTarget = weightToExact(0);
+                }
+                setToUpdate.targetWeight = weightTarget;
+
+                if (this.isLoggedRoutine(routine)) {
+                    (setToUpdate as LoggedSet).weightLogged = weightTarget;
+                    delete setToUpdate.targetWeight;
+                }
+                break;
+            }
+            case METRIC.reps: {
+                let repsTarget: RepsTarget;
+                if (typeof targetValue === 'number') {
+                    repsTarget = repsToExact(targetValue);
+                } else if (typeof targetValue === 'string' && !isNaN(Number(targetValue))) {
+                    repsTarget = repsToExact(Number(targetValue));
+                } else if (typeof targetValue === 'object' && targetValue && 'type' in targetValue) {
+                    repsTarget = targetValue as RepsTarget;
+                } else {
+                    repsTarget = repsToExact(0);
+                }
+                setToUpdate.targetReps = repsTarget;
+
+                if (this.isLoggedRoutine(routine)) {
+                    (setToUpdate as LoggedSet).repsLogged = repsTarget;
+                    delete setToUpdate.targetReps;
+                }
+                break;
+            }
+            case METRIC.distance: {
+                let distanceTarget: DistanceTarget;
+                if (typeof targetValue === 'number') {
+                    distanceTarget = distanceToExact(targetValue);
+                } else if (typeof targetValue === 'string' && !isNaN(Number(targetValue))) {
+                    distanceTarget = distanceToExact(Number(targetValue));
+                } else if (typeof targetValue === 'object' && targetValue && 'type' in targetValue) {
+                    distanceTarget = targetValue as DistanceTarget;
+                } else {
+                    distanceTarget = distanceToExact(0);
+                }
+                setToUpdate.targetDistance = distanceTarget;
+
+                if (this.isLoggedRoutine(routine)) {
+                    (setToUpdate as LoggedSet).distanceLogged = distanceTarget;
+                    delete setToUpdate.targetDistance;
+                }
+                break;
+            }
+            case METRIC.duration: {
+                let durationTarget: DurationTarget;
+                if (typeof targetValue === 'number') {
+                    durationTarget = durationToExact(targetValue);
+                } else if (typeof targetValue === 'string' && !isNaN(Number(targetValue))) {
+                    durationTarget = durationToExact(Number(targetValue));
+                } else if (typeof targetValue === 'object' && targetValue && 'type' in targetValue) {
+                    durationTarget = targetValue as DurationTarget;
+                } else {
+                    durationTarget = durationToExact(0);
+                }
+                setToUpdate.targetDuration = durationTarget;
+
+                if (this.isLoggedRoutine(routine)) {
+                    (setToUpdate as LoggedSet).durationLogged = durationTarget;
+                    delete setToUpdate.targetDuration;
+                }
+                break;
+            }
+            case METRIC.rest: {
+                let restTarget: RestTarget;
+                if (typeof targetValue === 'number') {
+                    restTarget = restToExact(targetValue);
+                } else if (typeof targetValue === 'string' && !isNaN(Number(targetValue))) {
+                    restTarget = restToExact(Number(targetValue));
+                } else if (typeof targetValue === 'object' && targetValue && 'type' in targetValue) {
+                    restTarget = targetValue as RestTarget;
+                } else {
+                    restTarget = restToExact(0);
+                }
+                setToUpdate.targetRest = restTarget;
+
+                if (this.isLoggedRoutine(routine)) {
+                    (setToUpdate as LoggedSet).restLogged = restTarget;
+                    delete setToUpdate.targetRest;
+                }
+                break;
+            }
+            case METRIC.tempo: {
+                const tempoValue = typeof targetValue === 'string' ? targetValue : '';
+                setToUpdate.targetTempo = tempoValue;
+                if (this.isLoggedRoutine(routine)) {
+                    (setToUpdate as LoggedSet).tempoLogged = tempoValue;
+                }
+                break;
+            }
+            default: {
+                if (fieldToAdd in setToUpdate) {
+                    (setToUpdate as any)[fieldToAdd] = targetValue;
+                }
+                break;
+            }
+        }
+
+        return updatedRoutine;
+    }
+
+
+    public getVisibleExerciseColumnsByStrings(routine: Routine, exerciseId: string, isLogged: boolean = false): { [key: string]: boolean } {
+        const exercise = routine.exercises.find(ex => ex.id === exerciseId);
+
+        if (!exercise || exercise.sets?.length === 0) {
+            // Fallback for safety, though it should always find a set.
+            return { [METRIC.weight]: false, [METRIC.reps]: false, [METRIC.distance]: false, [METRIC.duration]: false, [METRIC.tempo]: false, [METRIC.rest]: false };
+        }
+
+        const wkEx = { ...exercise } as WorkoutExercise;
+        const wkExFromLog = { ...mapLoggedWorkoutExerciseToWorkoutExercise(exercise as any) } as WorkoutExercise;
+
+        let visibleExerciseFieldsObj = {};
+        if (!isLogged) {
+            visibleExerciseFieldsObj = {
+                [METRIC.weight]: wkEx.sets.some(set => (set.targetWeight)) || wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.weight)),
+                [METRIC.reps]: wkEx.sets.some(set => (set.targetReps)) || wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.reps)),
+                [METRIC.distance]: wkEx.sets.some(set => (set.targetDistance)) || wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.distance)),
+                [METRIC.duration]: wkEx.sets.some(set => (set.targetDuration)) || wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.duration)),
+                [METRIC.rest]: wkEx.sets.some(set => (set.targetRest)) || wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.rest)),
+                [METRIC.tempo]: wkEx.sets.some(set => (set.targetTempo)) || wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.tempo)),
+            };
+        } else {
+            visibleExerciseFieldsObj = {
+                [METRIC.weight]: wkExFromLog.sets.some(set => (set.targetWeight)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.weight)),
+                [METRIC.reps]: wkExFromLog.sets.some(set => (set.targetReps)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.reps)),
+                [METRIC.distance]: wkExFromLog.sets.some(set => (set.targetDistance)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.distance)),
+                [METRIC.duration]: wkExFromLog.sets.some(set => (set.targetDuration)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.duration)),
+                [METRIC.rest]: wkExFromLog.sets.some(set => (set.targetRest)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.rest)),
+                [METRIC.tempo]: wkExFromLog.sets.some(set => (set.targetTempo)) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes(METRIC.tempo)),
+            };
+        }
+
+
+
+        return visibleExerciseFieldsObj;
+    }
+
+
+     /**
+     * Retrieves an exercise from the routine by its exerciseId.
+     * @param routine The Routine object to search within.
+     * @param exerciseId The id of the exercise to find.
+     * @returns The matching exercise or undefined if not found.
+     */
+    private getExerciseById(routine: Routine | null | undefined, exerciseId: string): WorkoutExercise | undefined {
+        if (!routine || !routine.exercises) return undefined;
+        return routine.exercises.find(ex => ex.id === exerciseId);
+    }
+
+    
+    /**
+     * Helper to convert LoggedSet array to ExerciseTargetSetParams array
+     */
+    private _convertLoggedSetsToPlanned(loggedSets: LoggedSet[]): ExerciseTargetSetParams[] {
+      return loggedSets.map(loggedSet => ({
+        id: loggedSet.id,
+        targetReps: loggedSet.repsLogged,
+        targetWeight: loggedSet.weightLogged,
+        targetDuration: loggedSet.durationLogged,
+        targetDistance: loggedSet.distanceLogged,
+        targetRest: loggedSet.restLogged,
+        targetTempo: loggedSet.tempoLogged,
+        notes: loggedSet.notes,
+        type: loggedSet.type as any,
+        fieldOrder: loggedSet.fieldOrder
+      }));
+    }
+
+    
 
 }

@@ -171,6 +171,31 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
+  async restorePausedWorkout(): Promise<void> {
+    const pausedInfo = this.pausedWorkoutInfo();
+    if (pausedInfo) {
+      this.workoutService.vibrate();
+
+      const buttons: AlertButton[] = [
+        { text: this.translate.instant('common.cancel'), role: 'cancel', data: false, icon: 'cancel' },
+        { text: this.translate.instant('common.restart'), role: 'confirm', data: true, cssClass: 'bg-green-500 hover:bg-green-600 text-white', icon: 'restore' },
+      ];
+
+      const confirm = await this.alertService.showConfirmationDialog(
+        this.translate.instant('pausedWorkout.restorePromptTitle'),
+        this.translate.instant('pausedWorkout.restorePromptMessage'),
+        buttons
+      );
+
+      if (confirm && confirm.data) {
+        const routineId = pausedInfo.routineId || '';
+        this.workoutService.navigateToPlayer(routineId, { forceNavigation: true });
+      }
+    } else {
+      this.toastService.warning(this.translate.instant('pausedWorkout.noPausedWorkoutFound'), 3000);
+    }
+  }
+
   viewPausedSummary(): void {
     // This is a bit tricky because PausedWorkoutState has the *in-progress* log.
     // A full summary usually means a *completed* log.

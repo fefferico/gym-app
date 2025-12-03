@@ -1,0 +1,1449 @@
+<div class="compact-player-container bg-gray-200 dark:bg-gray-900 min-h-screen">
+
+  <!-- PAUSED OVERLAY -->
+  <div *ngIf="sessionState() === sessionStateEnum.Paused"
+    class="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center space-y-6 p-4">
+    <h2 class="text-4xl font-bold text-white">{{ 'compactPlayer.pausedScreen.sessionPaused' | translate }}</h2>
+    <p class="text-lg text-gray-200">{{ 'compactPlayer.pausedScreen.elapsedTime' | translate }}: {{
+      sessionTimerDisplay() }}</p>
+    <button appPress (shortPress)="resumeSession()"
+      class="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-md text-xl shadow-lg w-full max-w-xs">
+      <app-icon name="play" class="w-7 h-7 mr-1"></app-icon>
+      {{ 'compactPlayer.pausedScreen.resumeWorkout' | translate }}
+    </button>
+    <button appPress (shortPress)="quitWorkout()"
+      class="flex items-center justify-center text-m text-red-300 hover:text-red-100 font-medium py-2 px-4 rounded-md border border-red-300 hover:bg-red-700/30 w-full max-w-xs mt-2">
+      <app-icon name="exit-door" class="w-7 h-7 mr-1"></app-icon>
+      {{ 'compactPlayer.pausedScreen.quitWorkoutNoSave' | translate }}
+    </button>
+  </div>
+
+  <!-- Header -->
+  <header #header
+    class="sticky top-0 z-20 bg-white dark:bg-gray-800 shadow-md px-3 pt-3 pb-2 flex flex-col justify-between rounded-b-md">
+
+    <!-- Top part of header -->
+    <div class="flex items-center justify-between w-full">
+      <button appBumpClick (click)="goBack()"
+        class="p-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light">
+        <app-icon name="cancel" class="h-6 w-6"></app-icon>
+      </button>
+      <div class="text-center cursor-pointer" (click)="openSessionOverviewModal()">
+        <h1 class="text-lg font-bold text-gray-800 dark:text-gray-100 truncate max-w-xs">
+          {{ routine()?.name || ('compactPlayer.defaultWorkoutName' | translate) }}
+        </h1>
+        <div class="flex-col text-xl font-mono font-semibold text-primary dark:text-primary-light tracking-wider">
+          {{ sessionTimerDisplay() }}
+          <p>{{ sessionState() === sessionStateEnum.Paused ? ('compactPlayer.paused' | translate):''}}</p>
+        </div>
+      </div>
+      <!-- MODIFIED: Container for Pause/Resume and Notes buttons -->
+      <div class="relative flex items-center">
+        <button appBumpClick (click)="toggleMainSessionActionMenu($event)"
+          class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
+          <app-icon name="menu-action" class="h-10 w-10"></app-icon>
+        </button>
+        <app-action-menu [isVisible]="mainSessionActionMenuOpened() === true && getMenuMode() !== 'compact'"
+          class="action-menu-container" [modalTitle]="''" [displayMode]="getMenuMode()" [modalTitle]="''"
+          [items]="mainSessionActionItems()" (itemClick)="handleMainSessionActionMenuItemClick($event)"
+          (closeMenu)="closeMainSessionActionMenu()">
+        </app-action-menu>
+      </div>
+    </div>
+    <app-action-menu [isVisible]="mainSessionActionMenuOpened() === true && getMenuMode() === 'compact'"
+      class="action-menu-container" [modalTitle]="''" [displayMode]="getMenuMode()" [modalTitle]="''"
+      [items]="mainSessionActionItems()" (itemClick)="handleMainSessionActionMenuItemClick($event)"
+      (closeMenu)="closeMainSessionActionMenu()">
+    </app-action-menu>
+
+    <!-- Workout Progress Bar -->
+    <div class="w-full mt-2">
+      <span class="flex justify-center text-primary font-mono font-semibold text-md">{{ 'compactPlayer.overallProgress'
+        | translate
+        }}</span>
+      <div
+        class="progress-bar-container w-full bg-gray-300 dark:bg-gray-700 rounded-full h-5 relative flex items-center">
+        <div class="progress-bar bg-primary h-3 rounded-full my-1 mx-1" [style.width.%]="workoutProgress()"></div>
+        <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white" [ngClass]="{
+                'text-black': !isDarkTheme() && workoutProgress() <= 45,
+                'text-white': isDarkTheme() || workoutProgress() > 45
+              }">
+          {{ workoutProgress() | number:'1.0-0' }}%
+        </span>
+      </div>
+    </div>
+
+    <!-- Section Progress Bar -->
+    <div class="w-full mt-2" *ngIf="orderedSections.length">
+      <span class="flex justify-center text-secondary font-mono font-semibold text-md">
+        {{ 'compactPlayer.overallSectionProgress' | translate }}
+      </span>
+      <div
+        class="flex w-full h-5 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600 bg-gray-200 dark:bg-gray-700 px-1">
+        <ng-container *ngFor="let section of orderedSections">
+          <div class="relative flex-1 border-r border-gray-300 dark:border-gray-600 last:border-r-0">
+            <!-- Background (unfilled) -->
+            <div class="absolute inset-0 bg-gray-200 dark:bg-gray-700"></div>
+            <!-- Centered percentage -->
+            <span
+              class="absolute inset-0 z-10 flex items-center justify-center text-[10px] font-bold pointer-events-none"
+              [ngClass]="{
+                'text-black': !isDarkTheme() && sectionProgress(section, currentWorkoutLog()) <= 45,
+                'text-white': isDarkTheme() || sectionProgress(section, currentWorkoutLog()) > 45
+              }">
+              {{ sectionProgress(section, currentWorkoutLog()) | number:'1.0-0' }}%
+            </span>
+            <!-- Foreground (progress fill) -->
+            <div class="h-3 transition-all duration-300 absolute top-1 bottom-0 rounded-full"
+              [style.width.%]="sectionProgress(section, currentWorkoutLog())"
+              [style.background]="getSectionProgressColor(section)"
+              [title]="(section.titleI18nKey | translate) + ': ' + sectionProgress(section, currentWorkoutLog()) + '%'">
+            </div>
+          </div>
+        </ng-container>
+      </div>
+      <!-- Section Names Row -->
+      <div class="flex w-full text-[8px] font-semibold text-gray-600 dark:text-gray-300 mt-1 px-1">
+        <ng-container *ngFor="let section of orderedSections">
+          <div class="flex-1 flex flex-col justify-center items-center">
+            <span class="inline-flex px-1 py-0.5 text-white rounded-full mb-0.5"
+              [style.background]="getSectionProgressColor(section)">
+              {{ section.titleI18nKey | translate }}
+            </span>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </header>
+
+
+
+  <!-- Main Content: Exercises List -->
+  <main class="mt-4 px-1 pb-36 bg-gray-200 dark:bg-gray-900">
+    <div *ngIf="routine() as currentRoutine; else loading" cdkDropList [cdkDropListData]="displayExercises()"
+      (cdkDropListDropped)="onExerciseDrop($event)" class="">
+      <ng-container *ngFor="let exercise of displayExercises(); let exIndex = index;">
+        <!-- Exercise Card -->
+        <div #exerciseCard cdkDrag *ngIf="!isSuperSet(exercise.id) || isSupersetStart(exercise.id)" appShatterable
+          [id]="'appShatterable-' + exercise.id" class="transition-all duration-300 relative"
+          [ngClass]="getExerciseClasses(exercise, exercise.id)"
+          [style.zIndex]="areActionsVisible(exercise.id) ? 50 : 'auto'" [attr.data-exercise-id]="exercise.id"
+          [ngStyle]="{ border: '3px solid ' + getSectionProgressColor(getSectionForExercise(exercise.id)) }">
+
+          <!-- Ghost element for drop placeholder -->
+          <div *cdkDragPlaceholder></div>
+
+          <!-- Superset Indicator Ribbon -->
+          <div *ngIf="isSupersetStart(exercise.id)"
+            class="absolute -left-[5px] top-2 text-white text-xs font-bold px-2 py-1 rounded-md shadow-lg z-10 transform translate-x-0 -translate-y-5"
+            [ngClass]="{
+            'bg-teal-500 dark:bg-teal-600': isEmom(exercise.id),
+            'bg-primary dark:bg-primary-dark': !isEmom(exercise.id)
+          }">
+            {{ (isEmom(exercise.id) ? 'compactPlayer.emom' : 'compactPlayer.superset') | translate}}
+          </div>
+
+          <!-- Exercise Header -->
+          <div (click)="toggleExerciseExpansion(exercise.id)"
+            class="py-2 px-1 my-1 flex-col items-center justify-between cursor-pointer hover:bg-gray-100/50 dark:hover:bg-gray-700/50 hover:rounded-md">
+            <div class="flex-col justify-start items-start space-x-3 min-w-0">
+              <div class="flex items-start pt-1">
+                <div cdkDragHandle class="cursor-move pr-2">
+                  <app-icon name="reorder" class="h-6 w-6 text-gray-400"></app-icon>
+                </div>
+                <h2 #exerciseHeader
+                  class="flex items-center max-w-[75vw] sm:max-w-[350px] text-md font-semibold text-gray-800 dark:text-gray-100 break-words">
+                  <ng-container *ngIf="isSuperSet(exercise.id); else standardHeader">
+                    <span [ngClass]="{ 'dark:text-white inline-flex flex-col items-start': true }">
+                      <span class="w-fit rounded-full">
+                        <!-- [ngStyle]="{ background: getSectionProgressColor(getSectionForExercise(exercise.id)) }" -->
+                        {{
+                        getExerciseDisplayIndex(exercise.id) }}</span>
+                      <span style="white-space: pre-line;">{{ getSupersetDisplayName(exercise.id!) }}</span>
+                    </span>
+                  </ng-container>
+                  <ng-template #standardHeader>
+                    <span class="flex items-center px-1 rounded-md p-1 text-gray-800 dark:text-gray-100">
+                      <!-- [ngStyle]="{ background: getSectionProgressColor(getSectionForExercise(exercise.id)) }" -->
+                      <img *ngIf="exercise" [src]="getIconPath(exercise.exerciseId)"
+                        class="w-7 h-7 sm:w-8 sm:h-8 object-contain mr-2 mt-0.5 sm:mt-1 filter dark:invert">
+                      {{ exercise.exerciseName || exercise.exerciseId }}</span>
+                  </ng-template>
+                </h2>
+              </div>
+              <div class="px-5 py-1 flex items-center text-black dark:text-gray-400 text-sm"
+                *ngIf="expandedExerciseId() !== exercise.id">
+                {{ (isSuperSet(exercise.id) ? 'compactPlayer.rounds' : 'compactPlayer.sets') | translate }}: {{
+                getExerciseTotalLoggedSets(exercise.id) + '/' +
+                getExerciseTotalSets(exercise.id)}}
+                <ng-container *ngIf="getExerciseTotalSets(exercise.id) > 0">
+                  <app-icon *ngIf="getExerciseTotalLoggedSets(exercise.id) === getExerciseTotalSets(exercise.id)"
+                    name="done" class="w-5 h-5 text-green-500 ml-1"></app-icon>
+                  <app-icon
+                    *ngIf="getExerciseTotalLoggedSets(exercise.id) > 0 && getExerciseTotalLoggedSets(exercise.id) < getExerciseTotalSets(exercise.id)"
+                    name="target" class="h-4 w-4 text-yellow-500 ml-1"></app-icon>
+                </ng-container>
+                <!-- <ng-container *ngIf="isSuperSet(exercise.id)">
+                  <p>{{ getSupersetRoundSummary(exercise.id) }}</p>
+                </ng-container> -->
+              </div>
+            </div>
+
+            <!-- Action Menu Container -->
+            <div class="absolute top-2 right-2 z-60" appClickOutside (clickOutside)="closeExerciseActionMenu()">
+              <div class="relative">
+                <div class="flex">
+                  <!-- <button appBumpClick (click)="toggleExerciseNotes(exercise.id, $event)"
+                    [title]="'compactPlayer.toggleNotes' | translate"
+                    class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center p-2">
+                    <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
+                  </button> -->
+                  <button appBumpClick (click)="toggleExerciseActionMenu(exercise.id, $event)"
+                    class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
+                    <app-icon name="menu-action" class="h-8 w-8"></app-icon>
+                  </button>
+                </div>
+                <app-action-menu [isVisible]="activeExerciseMenuId() === exercise.id && getMenuMode()  !== 'compact'"
+                  [modalTitle]="''" class="action-menu-container" [displayMode]="getMenuMode()"
+                  [items]="exerciseActionItemsMap().get(exercise.id)!" (itemClick)="handleExerciseMenuItemClick($event)"
+                  (closeMenu)="closeExerciseActionMenu()">
+                </app-action-menu>
+              </div>
+            </div>
+            <app-action-menu [isVisible]="activeExerciseMenuId() === exercise.id && getMenuMode() === 'compact'"
+              [modalTitle]="''" class="action-menu-container" [displayMode]="getMenuMode()"
+              [items]="exerciseActionItemsMap().get(exercise.id)!" (itemClick)="handleExerciseMenuItemClick($event)"
+              (closeMenu)="closeExerciseActionMenu()">
+            </app-action-menu>
+          </div>
+
+
+
+          <!-- Sets Container -->
+          <div *ngIf="expandedExerciseId() === exercise.id"
+            class="bg-gray-100 dark:bg-gray-700/50 pt-2 pb-1 px-1 border-t border-gray-200 dark:border-gray-700 rounded-b-md"
+            [ngClass]="{' mb-8':!isSuperSet(exercise.id)}">
+
+            <!-- SET INFO FOR ALL THE SETS -->
+            <!-- <div *ngIf="getExerciseSetsLength(exercise.id) > 1" class="px-2 pb-2"> -->
+            <div *ngIf="getExerciseSetsLength(exercise.id) > 1" class="px-2 pb-2">
+              <!-- Toggle Button -->
+              <button (click)="toggleSetAllPanel(exercise.id, $event)"
+                class="w-full flex justify-between items-center p-2 text-sm font-semibold text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-gray-800 rounded-xl  transition-transform duration-200"
+                [ngClass]="{'rounded-b-none' : expandedSetAllPanel() === exercise.id}">
+                <span>{{'setValueForAllSets' |translate}}</span>
+                <app-icon name="chevron-down" class="h-5 w-5 transition-transform duration-200"
+                  [class.rotate-180]="expandedSetAllPanel() === exercise.id"></app-icon>
+              </button>
+
+              <!-- Collapsible Content -->
+              <div class="overflow-hidden transition-all duration-300 ease-in-out"
+                [style.maxHeight]="expandedSetAllPanel() === exercise.id ? '500px' : '0px'">
+                <!-- METRIC CHIPS -->
+                <div class="flex flex-wrap gap-2 py-3 justify-center bg-gray-200 dark:bg-gray-800">
+                  <ng-container *ngFor="let metric of getAvailableMetricsForSet(exercise.id)">
+                    <button type="button" class="px-3 py-1 rounded-full border font-semibold text-xs transition"
+                      [ngClass]="{
+                        'bg-primary text-white border-primary-light': isMetricActiveForAllSets(exercise.id, metric),
+                        'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600': !isMetricActiveForAllSets(exercise.id, metric)
+                      }" (click)="toggleMetricForAllSets(exercise.id, metric)">
+                      {{ 'metrics.' + metric | translate }}
+                    </button>
+                  </ng-container>
+                </div>
+
+                <div
+                  class="px-4 py-2 border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-xl bg-white dark:bg-gray-800">
+                  <div class="grid grid-cols-2 gap-4">
+                    <!-- Reps Input -->
+                    <div *ngIf="getVisibleColumnsForExercise(exercise.id)[metricEnum.reps]">
+                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{ 'metrics.reps' |
+                        translate }}</label>
+                      <input type="number" [(ngModel)]="repsToSetForAll" [ngModelOptions]="{standalone: true}" min="1"
+                        [step]="repsStep"
+                        class="mt-1 w-full p-1.5 text-sm border border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
+                    </div>
+
+                    <!-- Weight Input -->
+                    <div *ngIf="getVisibleColumnsForExercise(exercise.id)[metricEnum.weight]">
+                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{ 'metrics.weight' |
+                        translate }}
+                        ({{ unitsService.getWeightUnitSuffix() }})</label>
+                      <input type="number" [(ngModel)]="weightToSetForAll" [ngModelOptions]="{standalone: true}" min="0"
+                        [step]="weightStep"
+                        class="mt-1 w-full p-1.5 text-sm border border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
+                    </div>
+
+                    <!-- Duration Input -->
+                    <div *ngIf="getVisibleColumnsForExercise(exercise.id)[metricEnum.duration]">
+                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{ 'metrics.duration' |
+                        translate }}
+                        (s)</label>
+                      <input type="number" [(ngModel)]="durationToSetForAll" [ngModelOptions]="{standalone: true}"
+                        min="1" [step]="durationStep"
+                        class="mt-1 w-full p-1.5 text-sm border border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
+                    </div>
+
+                    <!-- Distance Input -->
+                    <div *ngIf="getVisibleColumnsForExercise(exercise.id)[metricEnum.distance]">
+                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{ 'metrics.distance' |
+                        translate }}
+                        ({{ unitsService.getDistanceUnitSuffix()
+                        }})</label>
+                      <input type="number" [(ngModel)]="distanceToSetForAll" [ngModelOptions]="{standalone: true}"
+                        min="1" [step]="distanceStep"
+                        class="mt-1 w-full p-1.5 text-sm border border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
+                    </div>
+
+                    <!-- Rest Input -->
+                    <div *ngIf="getVisibleColumnsForExercise(exercise.id)[metricEnum.rest]">
+                      <label class="block text-xs font-medium text-gray-500 dark:text-gray-200">{{ 'metrics.rest' |
+                        translate }}
+                        (s)</label>
+                      <input type="number" [(ngModel)]="restToSetForAll" [ngModelOptions]="{standalone: true}" min="1"
+                        [step]="restStep"
+                        class="mt-1 w-full p-1.5 text-sm border border-gray-300 dark:border-gray-500 rounded-xl dark:bg-gray-600 dark:text-gray-200">
+                    </div>
+                  </div>
+
+                  <!-- Apply Button -->
+                  <div class="mt-4 text-right">
+                    <button (click)="applyToAllSets(exercise.id)"
+                      [disabled]="repsToSetForAll() === null && weightToSetForAll() === null && durationToSetForAll() === null && distanceToSetForAll() === null && restToSetForAll() === null"
+                      class="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-xl shadow-sm hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed">
+                      {{ 'applyToAllSets' | translate }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+            <!-- Sets List -->
+            <div class="space-y-2 pb-5">
+
+              <!-- CASE 1: Standard Exercise (Not a Superset) -->
+              <ng-container *ngIf="!isSuperSet(exercise.id)">
+                <ng-container *ngFor="let set of exercise.sets; let setIndex = index;">
+                  <!-- START: Set Card Layout -->
+                  <div [attr.data-set-id]="set.id" #setCard [ngClass]="getSetClasses(exercise.id, set.id, set)"
+                    appClickOutside (clickOutside)="closeSetActionMenu()">
+                    <!-- Set Header (Always visible, now clickable) -->
+
+
+
+
+                    <div class="flex items-center gap-1 p-1 cursor-pointer relative"
+                      (click)="toggleSetExpansion(exercise.id, set.id, $event)">
+                      <!-- Set Number -->
+                      <div class="flex-shrink-0 w-8 text-center rounded-xl " [ngClass]="{
+                          'text-white bg-primary' : isSetExpanded(exercise.id,set.id),
+                          'text-gray-700 dark:text-gray-200' : !isSetExpanded(exercise.id,set.id),
+                          }">
+                        <span class="font-bold text-lg">#{{ setIndex + 1 }}</span>
+                      </div>
+
+                      <!-- Summary for collapsed view - STANDARD EXERCISE  TEXT MODE -->
+                      <div class="flex-1 grid gap-1 content-center text-sm text-gray-700 dark:text-gray-200 font-medium"
+                        [ngClass]="{
+                          'grid-cols-1': getVisibleSetColumnsCountForGrid(exercise.id, set.id) <= 2,
+                          'grid-cols-2': getVisibleSetColumnsCountForGrid(exercise.id, set.id) > 2,
+                        }" *ngIf="!isSetExpanded(exercise.id, set.id)">
+                        <ng-container *ngIf="getSetUniformValues(exercise.id, set.id) as values">
+                          <!-- If only reps, only weight, or both reps and weight (rest is ignored) -->
+                          <!-- *ngIf="(values.reps && !values.weight && !values.distance) || (!values.reps && values.weight && !values.distance) || (values.reps && values.weight && !values.distance); else summaryText" -->
+                          <div *ngIf="isSetWarmup(exercise.id, set.id)" class="col-span-2 flex flex-col mb-1">
+                            <p class="font-bold">
+                              <app-icon name="flame" class="h-4 w-4 inline-block mr-1"></app-icon>
+                              {{ 'compactPlayer.warmupSet' | translate }}
+                            </p>
+                          </div>
+                          <ng-container
+                            *ngIf="(values.reps || values.weight || values.distance || values.duration); else summaryText">
+                            <ng-container *ngTemplateOutlet="metricInputSpan;
+                              context: {
+                                icon: 'reps',
+                                iconClass: 'h-4 w-4 mr-0.5 inline-block text-black dark:text-white',
+                                metric: metricEnum.reps,
+                                value: values.reps,
+                                exerciseId: exercise.id,
+                                setId: set.id,
+                                suffix: 'compactPlayer.repsLabel' | translate,
+                                iconActive: getSummaryDisplayMode() === summaryDisplayModeEnum.Icons
+                              }">
+                            </ng-container>
+                            <ng-container *ngTemplateOutlet="metricInputSpan;
+                              context: {
+                                icon: values.weightIcon,
+                                iconClass: 'h-5 w-5 mr-0.5 inline-block',
+                                metric: metricEnum.weight,
+                                value: values.weight,
+                                exerciseId: exercise.id,
+                                setId: set.id,
+                                suffix: unitsService.getWeightUnitSuffix(),
+                                iconActive: getSummaryDisplayMode() === summaryDisplayModeEnum.Icons
+                              }">
+                            </ng-container>
+                            <ng-container *ngTemplateOutlet="metricInputSpan;
+                              context: {
+                                icon: 'distance',
+                                iconClass: 'h-4 w-4 mr-0.5 inline-block text-black dark:text-white',
+                                metric: metricEnum.distance,
+                                value: values.distance,
+                                exerciseId: exercise.id,
+                                setId: set.id,
+                                suffix: unitsService.getDistanceUnitSuffix(),
+                                iconActive: getSummaryDisplayMode() === summaryDisplayModeEnum.Icons
+                              }">
+                            </ng-container>
+                            <ng-container *ngTemplateOutlet="metricInputSpan;
+                              context: {
+                                icon: 'duration',
+                                iconClass: 'h-4 w-4 mr-0.5 inline-block text-black dark:text-white',
+                                metric: metricEnum.duration,
+                                value: values.duration,
+                                exerciseId: exercise.id,
+                                setId: set.id,
+                                suffix: 's',
+                                iconActive: getSummaryDisplayMode() === summaryDisplayModeEnum.Icons
+                              }">
+                            </ng-container>
+                          </ng-container>
+                          <ng-template #summaryText>
+                            {{ getSetSummary(exercise.id, set.id) }}
+                          </ng-template>
+                        </ng-container>
+                        <!-- <div class="flex flex-col">
+                           <ng-container *ngIf="!isSetCompleted(exercise.id, set.id)">
+                            <span *ngIf="setIndex !== findFirstIncompleteSetIndex(exercise.id)"
+                              class="w-fit inline-flex items-center gap-1 rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400">
+                              {{ 'compactPlayer.pending' | translate }}
+                            </span>
+                          </ng-container> 
+                          <p *ngIf="isSetWarmup(exercise.id, set.id)" class="font-bold">
+                            <app-icon name="flame" class="h-4 w-4 inline-block mr-1"></app-icon>
+                            {{ 'compactPlayer.warmupSet' | translate }}
+                          </p>
+                        </div> -->
+                      </div>
+
+                      <!-- Placeholder text for expanded view -->
+                      <div class="flex-1 text-xs text-black dark:text-gray-300"
+                        *ngIf="isSetExpanded(exercise.id, set.id)">
+                        {{ (isSetCompleted(exercise.id, set.id)? 'compactPlayer.loggedPerformance' :
+                        'compactPlayer.logPerformance' ) | translate}}:
+                        <p *ngIf="isSetCompleted(exercise.id, set.id)" class="italic font-bold">{{
+                          'compactPlayer.markAsUndone' | translate }}</p>
+                        <p *ngIf="isSetWarmup(exercise.id, set.id)" class="font-bold">
+                          <app-icon name="flame" class="h-4 w-4 inline-block mr-1"></app-icon>
+                          {{ 'compactPlayer.warmupSet' | translate }}
+                        </p>
+                      </div>
+
+
+                      <!-- RIGHT Quick Complete Button -->
+                      <button *ngIf="!isTimedSet(exercise.id, set.id) && !isSetExpanded(exercise.id, set.id)"
+                        (click)="toggleSetCompletion(exercise, set, exercise.id, set.id); $event.stopPropagation()"
+                        [disabled]="!isSetDataValid(exercise.id, set.id) || hasInvalidInput(exercise.id, set.id)"
+                        class="h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 ease-in-out transform active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none complete-set-button-animated"
+                        [ngClass]="isSetCompleted(exercise.id, set.id) ? 'bg-green-500 text-white shadow-lg' : 'bg-gray-200 dark:bg-gray-700 text-white'">
+                        <app-icon name="done" class="h-6 w-6"></app-icon>
+                      </button>
+
+                      <div *ngIf="isTimedSet(exercise.id, set.id) && !isSetCompleted(exercise.id, set.id)"
+                        class="flex flex-col items-center gap-2 text-white font-semibold">
+                        <!-- Play/Pause Button -->
+                        <button appBumpClick (click)="handleSetTimerAction(exercise.id, set.id, $event)"
+                          class="h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 ease-in-out transform active:scale-90 focus:outline-none"
+                          [ngClass]="getSetTimerButtonClass(exercise.id, set.id)">
+                          <app-icon [name]="getSetTimerButtonIcon(exercise.id, set.id)" class="h-6 w-6"></app-icon>
+                        </button>
+                        <!-- Timer Display -->
+                        <span class="text-lg font-mono text-gray-800 dark:text-gray-100 w-14 text-center">
+                          {{ formatSecondsToTime(getSetTimerState(exercise.id, set.id).remainingTime) }}
+                        </span>
+                      </div>
+
+                      <!-- Completed Indicator BUTTON (Shows for timed sets that are complete) -->
+                      <button appBumpClick
+                        *ngIf="isTimedSet(exercise.id, set.id) && isSetCompleted(exercise.id, set.id)"
+                        [disabled]="hasInvalidInput(exercise.id, set.id)"
+                        (click)="toggleSetCompletion(exercise, set, exercise.id, set.id); $event.stopPropagation()"
+                        class="h-10 w-10 rounded-full flex items-center justify-center bg-green-500 text-white shadow-lg transition-transform active:scale-90">
+                        <app-icon name="done" class="h-6 w-6"></app-icon>
+                      </button>
+
+                      <button appBumpClick (click)="toggleSetActionMenu(exercise.id, set.id, $event)"
+                        class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center">
+                        <app-icon name="menu-action" class="h-6 w-6 text-gray-500 dark:text-gray-400"></app-icon>
+                      </button>
+
+                      <!-- Action Menu Component - DROPDOW -->
+                      <app-action-menu
+                        [isVisible]="activeSetActionMenuKey() === getSetKey(exercise.id, set.id) && getMenuMode() !== 'compact'"
+                        [modalTitle]="''" [displayMode]="getMenuMode()"
+                        [items]="setActionItemsMap().get(getSetKey(exercise.id, set.id)) || []"
+                        (itemClick)="handleSetActionMenuItemClick($event)" (closeMenu)="closeSetActionMenu()">
+                      </app-action-menu>
+
+                      <!-- Set actions - STANDARD SET -->
+                      <div *ngIf="isSetExpanded(exercise.id, set.id)" class="flex-shrink-0 flex">
+                        <div class="relative">
+                          <div #setButtons *ngIf="!isSetCompleted(exercise.id, set.id)"
+                            class="flex items-center justify-center gap-1 relative">
+
+                          </div>
+                        </div>
+                      </div>
+
+
+
+                    </div>
+
+                    <div
+                      *ngIf="activeSetActionMenuKey() === getSetKey(exercise.id, set.id) && getMenuMode() === 'compact'">
+                      <app-action-menu [isVisible]="true" [modalTitle]="''" [displayMode]="'compact'"
+                        [items]="setActionItemsMap().get(getSetKey(exercise.id, set.id)) || []"
+                        (itemClick)="handleSetActionMenuItemClick($event)"
+                        (closeMenu)="activeSetActionMenuKey.set(null)">
+                      </app-action-menu>
+                    </div>
+
+                    <div *ngIf="isTimedSet(exercise.id, set.id)"
+                      class="relative flex items-center px-2 py-0.5 transition-all">
+                      <!-- Timed set Progress Bar -->
+                      <div
+                        class="progress-bar-container w-full bg-gray-300 dark:bg-gray-700 rounded-full h-5 relative flex items-center">
+                        <div class="progress-bar bg-secondary h-3 rounded-full my-1 mx-1"
+                          [style.width.%]="getSetTimerProgress(exercise.id, set.id)">
+                        </div>
+                        <!-- Percentage label, centered absolutely -->
+                        <span
+                          class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
+                          {{ getSetTimerProgress(exercise.id, set.id) | number:'1.0-0' }}%
+                        </span>
+                      </div>
+
+                      <app-icon name="duration" class="h-6 w-6 text-teal-500 ml-2" [strokeWidth]="2.5"></app-icon>
+                      <!--  RESET SET TIMER IF PAUSED -->
+                      <button *ngIf="getSetTimerState(exercise.id, set.id).status === timerSetEnum.Paused"
+                        (click)="resetTimerIfActive(exercise.id, set.id); $event.stopPropagation()"
+                        class="ml-2 px-2 h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 ease-in-out transform active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none bg-purple-200 dark:bg-purple-700 text-white'">
+                        <app-icon name="restore" class="h-6 w-6 text-white"></app-icon>
+                      </button>
+                      <!-- INSTANTLY TOGGLE SET COMPLETION REGARDLESS REMAINING TIMER -->
+                      <button *ngIf="getSetTimerState(exercise.id, set.id).status !== timerSetEnum.Completed"
+                        (click)="toggleSetCompletion(exercise, set, exercise.id, set.id); $event.stopPropagation()"
+                        [disabled]="!isSetDataValid(exercise.id, set.id)"
+                        class="ml-2 px-2 h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 ease-in-out transform active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
+                        [ngClass]="isSetCompleted(exercise.id, set.id) ? 'bg-green-500 text-white shadow-lg' : 'bg-gray-200 dark:bg-gray-700 text-white'">
+                        <app-icon name="done" class="h-6 w-6"></app-icon>
+                      </button>
+                    </div>
+
+
+
+
+                    <div *ngIf="isSetExpanded(exercise.id, set.id)">
+
+                      <!-- Set ADD/REMOVE METRICS - STANDARD SET -->
+                      <div #metricsSectionStandard [attr.data-metrics-section]="getSetKey(exercise.id, set.id)"
+                        class="flex-shrink-0 flex flex-col items-center justify-center gap-1">
+                        <div
+                          *ngIf="!isSetCompleted(exercise.id, set.id) && isMetricsSectionExpanded(exercise.id, set.id)"
+                          class="flex items-center">
+                          <div
+                            class="flex w-fit items-center justify-center gap-2 bg-gray-300 dark:bg-gray-900/50 p-1 px-2 rounded-full mt-1">
+                            <label
+                              class="flex items-center justify-between text-s font-medium text-white dark:text-gray-400">
+                              {{ 'workoutBuilder.set.metrics' | translate }}:
+                            </label>
+                            <!-- Remove metric button -->
+                            <button appBumpClick *ngIf="canRemoveAnyField(exercise.id, set.id)"
+                              (click)="promptRemoveField(exercise.id, set.id); $event.stopPropagation()"
+                              class="p-1.5 rounded-full bg-red-500 dark:bg-red-500/80 hover:bg-red-500 text-white flex items-center">
+                              <app-icon name="minus" class="h-5 w-5"></app-icon>
+                            </button>
+                            <!-- ADD metric -->
+                            <button appBumpClick *ngIf="getFieldsForSet(exercise.id, set.id).hidden.length > 0"
+                              (click)="promptAddField(exercise.id, set.id); $event.stopPropagation()"
+                              class="p-1.5 rounded-full bg-blue-500 dark:bg-blue-500/80 hover:bg-blue-500 text-white flex items-center">
+                              <app-icon name="plus" class="h-5 w-5"></app-icon>
+                            </button>
+                          </div>
+                        </div>
+                        <!-- <div *ngIf="getSetType(exercise.id, set.id)" class="flex justify-start w-full">
+                          <div class="w-full px-1">
+                            <label [for]="'setType-exp-' + getSetKey(exercise.id, set.id)"
+                              class="block text-s font-medium text-gray-600 dark:text-gray-400">{{
+                              'workoutBuilder.set.type' | translate }}</label>
+                            <select [id]="'setType-exp-' + getSetKey(exercise.id, set.id)"
+                              [disabled]="isSetCompleted(exercise.id, set.id)" [ngModel]="getSetType(exercise.id, set.id)"
+                              (ngModelChange)="updateSetType(exercise.id, set.id, $event)"
+                              class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed"
+                              [ngClass]="{'disabled-div-lower-opacity': isSetCompleted(exercise.id, set.id)}">
+                              <option *ngFor="let typeOpt of availableSetTypes" [value]="typeOpt.value">{{ typeOpt.label
+                                }}</option>
+                            </select>
+                          </div>
+                        </div> -->
+                      </div>
+
+                      <!-- Inputs Grid -->
+                      <div [class]="getSetFieldOrderNoRest(exercise.id, set.id)?.length === 1 ?
+                        'flex justify-center'
+                        : 'grid gap-x-4 gap-y-2 p-1 grid-cols-2'"
+                        [class.disabled-div-lower-opacity]="isSetCompleted(exercise.id, set.id)">
+                        <ng-container *ngIf="getFieldsForSet(exercise.id, set.id).visible as visibleFields">
+                          <!-- Loop through the visible fields in their defined order -->
+                          <ng-container
+                            *ngFor="let field of (workoutUtilsService.getSetFieldOrderByStrings(routine()!, exercise.id, set.id) || visibleFields)">
+                            <ng-container [ngSwitch]="field">
+                              <div *ngSwitchCase="'reps'">
+                                <ng-container [ngTemplateOutlet]="repsInputTemplate"
+                                  [ngTemplateOutletContext]="{ exerciseId: exercise.id, setId: set.id, set: set }"></ng-container>
+                              </div>
+                              <div *ngSwitchCase="'weight'">
+                                <ng-container [ngTemplateOutlet]="weightInputTemplate"
+                                  [ngTemplateOutletContext]="{ exerciseId: exercise.id, setId: set.id, set: set }"></ng-container>
+                              </div>
+                              <div *ngSwitchCase="'distance'">
+                                <ng-container [ngTemplateOutlet]="distanceInputTemplate"
+                                  [ngTemplateOutletContext]="{ exerciseId: exercise.id, setId: set.id, set: set }"></ng-container>
+                              </div>
+                              <div *ngSwitchCase="'duration'">
+                                <ng-container [ngTemplateOutlet]="durationInputTemplate"
+                                  [ngTemplateOutletContext]="{ exerciseId: exercise.id, setId: set.id, set: set }"></ng-container>
+                              </div>
+                              <div *ngSwitchCase="'tempo'">
+                                <ng-container [ngTemplateOutlet]="tempoInputTemplate"
+                                  [ngTemplateOutletContext]="{ exerciseId: exercise.id, setId: set.id, set: set }"></ng-container>
+                              </div>
+                              <!-- <div *ngSwitchCase="'rest'">
+                                <ng-container [ngTemplateOutlet]="restInputTemplate"
+                                  [ngTemplateOutletContext]="{ exerciseId: exercise.id, setId: set.id, set: set }"></ng-container>
+                              </div> -->
+                            </ng-container>
+                          </ng-container>
+
+                          <!-- "Add GHOST Field" Button - STANDARD SET -->
+                          <div *ngIf="isGhostFieldVisible(exercise.id, set.id)"
+                            class="flex items-center justify-center h-full">
+                            <button appBumpClick (click)="promptAddField(exercise.id, set.id); $event.stopPropagation()"
+                              class="flex items-center justify-center w-full p-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                              <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
+                            </button>
+                          </div>
+                        </ng-container>
+                      </div>
+                      <!-- LOWER EXPANDED SET COMPLETE BUTTON -->
+                      <div class="flex flex-col items-center text-center py-2">
+                        <div class="">
+                          <button *ngIf="!isTimedSet(exercise.id, set.id)"
+                            (click)="toggleSetCompletion(exercise, set, exercise.id, set.id); $event.stopPropagation()"
+                            [disabled]="!isSetDataValid(exercise.id, set.id)"
+                            class="py-2 px-4 rounded-full flex items-center font-semibold justify-center transition-all duration-200 ease-in-out transform active:scale-90 disabled:cursor-not-allowed focus:outline-none complete-set-button-animated text-white"
+                            [ngClass]="
+                                  {
+                                    'bg-green-500 shadow-lg disabled:bg-opacity-50': isSetCompleted(exercise.id, set.id),
+                                    'bg-primary border-2 border-primary-dark disabled:bg-opacity-50': !isSetCompleted(exercise.id, set.id)
+                                  }">
+                            <app-icon name="done" class="h-6 w-6 mr-1"></app-icon>
+                            <span>
+                              {{ (isSetCompleted(exercise.id, set.id) ? 'compactPlayer.completedSet' :
+                              'compactPlayer.completeSet') | translate }}
+                            </span>
+                          </button>
+                        </div>
+                        <p *ngIf="!isSetDataValid(exercise.id, set.id)"
+                          class="text-red dark:text-primary-light font-semibold text-sm">
+                          {{ 'compactPlayer.allMetricMustBeValid' | translate}}
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- Compact Rest Timer Progress Bar (per set, styled like timed set) STANDARD SET -->
+                    <div #restTimerStandardProgressBar
+                      *ngIf="getRestTimerMode() === restTimerModeEnum.Compact && isRestTimerVisibleForSet(exercise.id, set.id)"
+                      class="relative flex items-center px-2 py-0.5 transition-all"
+                      [ngClass]="{'disabled-div-lower-opacity-70': restTimerRemainingForSet(exercise.id, set.id) === 0}">
+                      <app-icon class="h-6 w-6 text-yellow-600 ml-2 pb-1" [strokeWidth]="2.5"></app-icon>
+                      <div
+                        class="progress-bar-container w-full bg-gray-300 dark:bg-gray-700 rounded-full h-4 relative flex items-center">
+                        <div class="progress-bar bg-yellow-400 h-3 rounded-full my-1 mx-1"
+                          [style.width.%]="restTimerProgressForSet(exercise.id, set.id)">
+                        </div>
+                        <!-- Percentage label, centered absolutely -->
+                        <span
+                          class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
+                          {{ formatSecondsToTime(restTimerElapsedForSet(exercise.id, set.id)) }} / {{
+                          formatSecondsToTime(getSetRestDuration(exercise.id, set.id)) }}
+                        </span>
+                      </div>
+                      <app-icon name="rest" class="h-6 w-6 text-yellow-600 ml-2 pb-1" [strokeWidth]="2.5"></app-icon>
+                    </div>
+                    <!-- END: Set Card Layout -->
+
+                  </div>
+
+                </ng-container>
+                <!-- Col 2: Set +/- Buttons STANDAR SET -->
+                <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-5 pt-3">
+                  <div
+                    class="flex w-fit items-center justify-center gap-2 bg-gray-200 dark:bg-gray-800 backdrop-blur-sm border-4 border-gray-300 dark:border-gray-700 py-1 px-3 rounded-full">
+                    <label class="text-sm font-medium text-gray-800 dark:text-gray-300">{{'compactPlayer.setLabel' |
+                      translate}}:</label>
+                    <button appBumpClick type="button" (click)="removeSet(exercise.id, '')"
+                      class="p-1.5 rounded-full bg-red-500/80 dark:bg-red-500/80 hover:bg-red-500 text-white disabled:opacity-50 flex items-center"
+                      [aria-label]="'compactPlayer.removeLastSet' | translate">
+                      <app-icon name="minus" class="h-5 w-5"></app-icon>
+                    </button>
+                    <button appBumpClick type="button"
+                      (click)="addSet(exercise.id, 'standard'); $event.stopPropagation()"
+                      class="p-1.5 rounded-full bg-green-500 dark:bg-green-500/80 hover:bg-green-500 text-white flex items-center"
+                      [aria-label]="'compactPlayer.addSet' | translate">
+                      <app-icon name="plus" class="h-5 w-5"></app-icon>
+                    </button>
+                  </div>
+                </div>
+
+              </ng-container>
+
+              <!-- CASE 2: Superset (uses a similar card logic for each exercise within the round) -->
+              <ng-container *ngIf="isSupersetStart(exercise.id)">
+                <ng-container *ngFor="let roundSet of exercise.sets; let roundIndex = index">
+                  <div #roundCard [attr.data-round-id]="roundSet.id"
+                    [ngClass]="getRoundClasses(exercise.id, roundSet.id)">
+                    <!-- Round Header -->
+                    <div (click)="toggleRoundExpansion(exercise.id, roundSet.id, $event)"
+                      class="flex items-start justify-between p-1 cursor-pointer">
+
+                      <div class="flex items-start gap-2 w-full">
+                        <ng-container *ngIf="!isRoundExpanded(exercise.id, roundSet.id); else expandedRoundHeader">
+                          <div class="flex flex-col flex-1 gap-0.5">
+                            <div class="flex-shrink-0 px-1 text-center rounded-lg w-fit text-white" [ngClass]="{
+                              'bg-primary ': isSuperSet(exercise.id) && !isEmom(exercise.id),
+                              'bg-teal-500': isEmom(exercise.id)
+                              }">
+                              <span class="font-bold text-lg ">
+                                #{{ 'compactPlayer.roundHeader' | translate:{number: roundIndex + 1} }}
+                              </span>
+                            </div>
+                            <!-- Render a row for each exercise in the superset for this round -->
+                            <div class="flex flex-col gap-1 flex-1">
+                              <ng-container *ngFor="let ssExercise of getSupersetExercises(exercise.id!)">
+                                <div class="flex flex-col gap-0.5">
+                                  <!-- Exercise name or index (now above metrics) -->
+                                  <span class="font-semibold text-xs text-gray-500 dark:text-gray-400 min-w-[60px]">
+                                    {{ getExerciseDisplayIndex(ssExercise.id, true) }} - {{ ssExercise.exerciseName
+                                    }}
+                                  </span>
+                                  <!-- Metrics for this exercise and round -->
+                                  <!-- Summary for collapsed view - SUPERSET EXERCISE  ICON MODE -->
+                                  <div
+                                    class="flex-1 grid gap-1 content-center text-sm text-gray-700 dark:text-gray-200 font-medium"
+                                    [ngClass]="{
+                                        'grid-cols-1': getVisibleSetColumnsCountForGrid(ssExercise.id, roundSet.id) <= 2,
+                                        'grid-cols-2': getVisibleSetColumnsCountForGrid(ssExercise.id, roundSet.id) > 2,
+                                      }">
+                                    <!-- get the summary by the first exercise in the superset block
+                                       but the DETAILS with each exercise -->
+                                    <ng-container
+                                      *ngLet="getSupersetExerciseSetAtRoundIndex(ssExercise.id, roundIndex) as actualSet">                                      <ng-container *ngIf="actualSet">
+                                        <ng-container
+                                          *ngFor="let metric of supersetSummaryMetrics()[getSetKey(ssExercise.id, actualSet.id)]; trackBy: trackByMetric">
+                                          <ng-container *ngTemplateOutlet="metricInputSpan;
+                                            context: {
+                                              icon: metric.icon,
+                                              iconClass: metric.iconClass,
+                                              metric: metric.metric,
+                                              value: metric.value,
+                                              exerciseId: ssExercise.id,
+                                              setId: actualSet.id,
+                                              suffix: metric.suffix,
+                                              iconActive: true
+                                            }">
+                                          </ng-container>
+                                        </ng-container>
+                                      </ng-container>
+                                    </ng-container>
+                                  </div>
+                                </div>
+                              </ng-container>
+                            </div>
+                          </div>
+                        </ng-container>
+                        <ng-template #expandedRoundHeader>
+                          <div class="flex-shrink-0 px-1 text-center rounded-lg w-fit text-white" [ngClass]="{
+                              'bg-primary ': isSuperSet(exercise.id) && !isEmom(exercise.id),
+                              'bg-teal-500': isEmom(exercise.id)
+                            }">
+                            <span class="font-bold text-lg">
+                              #{{ 'compactPlayer.roundHeader' | translate:{number: roundIndex + 1} }}
+                            </span>
+                          </div>
+                        </ng-template>
+                      </div>
+
+
+                      <div class="flex items-center relative gap-1">
+                        <!-- +++ NEW BUTTON/STATUS ELEMENT +++ -->
+
+                        <!-- ROUND NOTES BUTTON -->
+                        <!-- <button *ngIf="!isEmom(exercise.id)" appBumpClick
+                          (click)="toggleSetNotes(exercise.id, roundSet.id, $event)"
+                          [title]="'compactPlayer.toggleNotes' | translate"
+                          class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center p-2">
+                          <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
+                        </button> -->
+
+                        <!-- EMOM Controls (for EMOM supersets) -->
+                        <div *ngIf="isEmom(exercise.id)" class="flex items-center gap-2 text-white font-semibold">
+                          <!-- Timer Display (for EMOM) -->
+                          <span class="text-lg font-mono text-gray-800 dark:text-gray-100 w-14 text-center">
+                            {{ formatSecondsToTime(getEmomState(exercise.id, roundSet.id).remainingTime) }}
+                          </span>
+                          <!-- Play/Pause Button (for EMOM) -->
+                          <button appBumpClick
+                            (click)="handleEmomAction(exercise.id, roundSet.id); $event.stopPropagation()"
+                            [disabled]="getEmomState(exercise.id, roundSet.id).status === timerSetEnum.Completed"
+                            class="h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 ease-in-out transform active:scale-90 focus:outline-none disabled:opacity-50"
+                            [ngClass]="getEmomButtonClass(exercise.id, roundSet.id)">
+                            <app-icon [name]="getEmomButtonIcon(exercise.id, roundSet.id)" class="h-6 w-6"></app-icon>
+                          </button>
+                        </div>
+
+                        <!-- Quick Complete Button (for STANDARD supersets) -->
+                        <button appBumpClick *ngIf="!isEmom(exercise.id)"
+                          (click)="completeRoundOrSet(exercise, roundSet.id, $event)"
+                          class="h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 ease-in-out transform active:scale-90 focus:outline-none"
+                          [ngClass]="isRoundCompleted(exercise.id, roundSet.id) ? 'bg-green-500 text-white shadow-lg' : 'bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-300'">
+                          <app-icon name="done" class="h-6 w-6"></app-icon>
+                        </button>
+                        <button appBumpClick (click)="toggleSetActionMenu(exercise.id, roundSet.id, $event)"
+                          class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center">
+                          <app-icon name="menu-action" class="h-6 w-6 text-gray-500 dark:text-gray-400"></app-icon>
+                        </button>
+
+                        <!-- SUPER SET ACTION MENU -->
+                        <app-action-menu
+                          [isVisible]="activeSetActionMenuKey() === getSetKey(exercise.id, roundSet.id) && getMenuMode() !== 'compact'"
+                          [modalTitle]="''" [displayMode]="getMenuMode()"
+                          [items]="setActionItemsMap().get(getSetKey(exercise.id, roundSet.id)) || []"
+                          (itemClick)="handleSetActionMenuItemClick($event)" (closeMenu)="closeSetActionMenu()">
+                        </app-action-menu>
+                      </div>
+                    </div>
+
+                    <div
+                      *ngIf="activeSetActionMenuKey() === getSetKey(exercise.id, roundSet.id) && getMenuMode() === 'compact'">
+                      <app-action-menu [isVisible]="true" [modalTitle]="''" [displayMode]="'compact'"
+                        [items]="setActionItemsMap().get(getSetKey(exercise.id, roundSet.id)) || []"
+                        (itemClick)="handleSetActionMenuItemClick($event)"
+                        (closeMenu)="activeSetActionMenuKey.set(null)">
+                      </app-action-menu>
+                    </div>
+
+                    <!-- Compact Rest Timer Progress Bar (per set, styled like timed set) SUPERSET -->
+                    <div
+                      *ngIf="getRestTimerMode() === restTimerModeEnum.Compact && isRestTimerVisibleForSet(exercise.id, roundSet.id)"
+                      class="relative flex items-center px-2 py-0.5 transition-all"
+                      [ngClass]="{'disabled-div-lower-opacity-70': restTimerRemainingForSet(exercise.id, roundSet.id) === 0}">
+                      <app-icon class="h-6 w-6 text-yellow-600 ml-2 pb-1" [strokeWidth]="2.5"></app-icon>
+                      <div
+                        class="progress-bar-container w-full bg-gray-300 dark:bg-gray-700 rounded-full h-4 relative flex items-center">
+                        <div class="progress-bar bg-yellow-400 h-3 rounded-full my-1 mx-1"
+                          [style.width.%]="restTimerProgressForSet(exercise.id, roundSet.id)">
+                        </div>
+                        <!-- Percentage label, centered absolutely -->
+                        <span
+                          class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
+                          {{ formatSecondsToTime(restTimerElapsedForSet(exercise.id, roundSet.id)) }} / {{
+                          formatSecondsToTime(getSetRestDuration(exercise.id, roundSet.id)) }}
+                        </span>
+                      </div>
+                      <app-icon name="rest" class="h-6 w-6 text-yellow-600 ml-2 pb-1" [strokeWidth]="2.5"></app-icon>
+                    </div>
+
+                    <!-- Collapsible Round Body -->
+                    <ng-container *ngIf="isRoundExpanded(exercise.id, roundSet.id)">
+                      <div *ngIf="isRoundCompleted(exercise.id, roundSet.id)"
+                        class="flex items-start text-xs text-white italic font-bold">{{ 'compactPlayer.markAsUndone' |
+                        translate }}</div>
+
+
+
+                      <div class="mt-2 space-y-3">
+                        <ng-container *ngFor="let ssExercise of getSupersetExercises(exercise.id!)">
+                          <ng-container *ngLet="getOriginalExId(ssExercise.id) as ssOriginalId">
+                            <div *ngIf="ssOriginalId" class="py-2 px-1 rounded-xl bg-white dark:bg-gray-800 shadow-sm">
+                              <div class="flex justify-between">
+                                <!-- Exercise Name -->
+                                <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-1">
+                                  {{ getExerciseDisplayIndex(ssOriginalId, true) }} - {{ ssExercise.exerciseName }}
+                                </p>
+                              </div>
+
+
+                              <!-- Dynamic Inputs Grid -->
+                              <div class="grid grid-cols-2 gap-x-4 gap-y-2"
+                                [ngClass]="{'disabled-div-lower-opacity': isRoundCompleted(exercise.id, roundSet.id)}">
+
+                                <ng-container
+                                  *ngIf="getFieldsForSet(ssOriginalId, roundSet.id).visible as visibleFields">
+                                  <!-- Loop through the visible fields in their defined order -->
+                                  <ng-container
+                                    *ngFor="let field of (workoutUtilsService.getSetFieldOrderByStrings(routine()!, ssOriginalId, roundSet.id) || visibleFields)">
+                                    <ng-container [ngSwitch]="field">
+                                      <div *ngSwitchCase="'reps'">
+                                        <ng-container [ngTemplateOutlet]="repsInputTemplate"
+                                          [ngTemplateOutletContext]="{ exerciseId: ssOriginalId, setId: roundSet.id, set: roundSet }"></ng-container>
+                                      </div>
+                                      <div *ngSwitchCase="'weight'">
+                                        <ng-container [ngTemplateOutlet]="weightInputTemplate"
+                                          [ngTemplateOutletContext]="{ exerciseId: ssOriginalId, setId: roundSet.id, set: roundSet }"></ng-container>
+                                      </div>
+                                      <div *ngSwitchCase="'duration'">
+                                        <ng-container [ngTemplateOutlet]="durationInputTemplate"
+                                          [ngTemplateOutletContext]="{ exerciseId: ssOriginalId, setId: roundSet.id, set: roundSet }"></ng-container>
+                                      </div>
+                                      <div *ngSwitchCase="'distance'">
+                                        <ng-container [ngTemplateOutlet]="distanceInputTemplate"
+                                          [ngTemplateOutletContext]="{ exerciseId: ssOriginalId, setId: roundSet.id, set: roundSet }"></ng-container>
+                                      </div>
+                                      <div *ngSwitchCase="'tempo'">
+                                        <ng-container [ngTemplateOutlet]="tempoInputTemplate"
+                                          [ngTemplateOutletContext]="{ exerciseId: ssOriginalId, setId: roundSet.id, set: roundSet }"></ng-container>
+                                      </div>
+                                      <!-- <div *ngSwitchCase="'rest'">
+                                        <ng-container [ngTemplateOutlet]="restInputTemplate"
+                                          [ngTemplateOutletContext]="{ exerciseId: ssOriginalIndex, setId: roundSet.id, set: roundSet }"></ng-container>
+                                      </div> -->
+                                    </ng-container>
+                                  </ng-container>
+
+                                  <!-- "Add GHOST Field" Button for 1 or 3 fields - SUPERSET -->
+                                  <!-- <div
+                                    *ngIf="!isRoundCompleted(exercise.id, roundSet.id) && canAddField(ssOriginalIndex, roundSet.id) && getFieldsForSet(ssOriginalIndex, roundSet.id).visible.length%2===1"
+                                    class="flex items-center justify-center h-full">
+                                    <button (click)="promptAddField(ssOriginalIndex, roundSet.id); $event.stopPropagation()"
+                                      class="flex items-center justify-center w-full p-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                      <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
+                                    </button>
+                                  </div> -->
+                                </ng-container>
+
+
+
+                              </div>
+                            </div>
+                          </ng-container>
+
+                        </ng-container>
+                      </div>
+                    </ng-container>
+
+
+
+                  </div>
+                </ng-container>
+                <!-- Col 2: Set +/- Buttons SUPER SET -->
+                <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-5">
+                  <div
+                    class="flex w-fit items-center justify-center gap-2 bg-gray-800 dark:bg-gray-800 backdrop-blur-sm py-1 px-3 rounded-full border-b-2 "
+                    [ngClass]="{
+                      'border-primary': isSuperSet(exercise.id) && !isEmom(exercise.id),
+                      'border-teal-600': isEmom(exercise.id),
+                    }">
+                    <label class="text-sm font-medium text-gray-300">{{'compactPlayer.roundLabel' | translate}}:</label>
+                    <button appBumpClick type="button" (click)="removeSet(exercise.id, '')"
+                      class="p-1.5 rounded-full bg-red-500/80 hover:bg-red-500 text-white disabled:opacity-50 flex items-center"
+                      [aria-label]="'compactPlayer.removeLastSet' | translate">
+                      <app-icon name="minus" class="h-5 w-5"></app-icon>
+                    </button>
+                    <button appBumpClick type="button"
+                      (click)="addSet(exercise.id, 'standard'); $event.stopPropagation()"
+                      class="p-1.5 rounded-full bg-green-500 dark:bg-green-500/80 hover:bg-green-500 text-white flex items-center"
+                      [aria-label]="'compactPlayer.addSet' | translate">
+                      <app-icon name="plus" class="h-5 w-5"></app-icon>
+                    </button>
+                  </div>
+                </div>
+
+              </ng-container>
+            </div>
+
+
+          </div>
+
+
+
+        </div>
+      </ng-container>
+
+    </div>
+
+    <ng-template #loading>
+      <div class="text-center py-10">
+        <p class="text-gray-500">{{ 'compactPlayer.loading' | translate }}</p>
+      </div>
+    </ng-template>
+  </main>
+  <div class="flex flex-col items-center"
+    *ngIf="!routine() || (routine() !== null && routine() !== undefined && (!routine()?.blocks || routine()?.blocks?.length === 0))">
+    <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-200">
+      {{ sessionState() === sessionStateEnum.Error ? ('compactPlayer.errorLoading' | translate) :
+      (currentWorkoutLog().exercises?.length
+      === 0 ?
+      (routineId === '-1' ? ('compactPlayer.workoutStarted' | translate) : ('compactPlayer.workoutEnded' | translate)) :
+      ('compactPlayer.workoutComplete' | translate)) }}
+    </h2>
+    <p class="text-gray-600 dark:text-gray-400 mt-2" *ngIf="sessionState() !== sessionStateEnum.Error">
+      {{ currentWorkoutLog().exercises?.length === 0 ? ('compactPlayer.noSetsLogged' | translate) :
+      ('compactPlayer.allSetsDone' | translate) }}
+    </p>
+  </div>
+  <!-- Footer with Action Buttons -->
+  <div #footerBar class="flex justify-center fixed left-0 right-0 z-20 bottom-0">
+    <div
+      class="w-full max-w-sm grid grid-cols-2 gap-4 bg-white dark:bg-gray-800/80 dark:backdrop-blur-sm border-t border-x border-gray-200 dark:border-gray-700 p-3 rounded-t-2xl">
+
+      <button appBumpClick (click)="openAddExerciseModal()" [disabled]="sessionState() === sessionStateEnum.Paused"
+        class="flex items-center justify-center space-x-2 bg-blue-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
+        <span>{{ 'compactPlayer.addExercise' | translate }}</span>
+      </button>
+
+      <button appBumpClick (click)="finishWorkout()"
+        [disabled]="!this.currentWorkoutLog() || !this.currentWorkoutLog().exercises || this.currentWorkoutLog().exercises?.length === 0 || sessionState() === sessionStateEnum.Paused"
+        class="flex items-center justify-center space-x-2 bg-green-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        <app-icon name="done" class="h-6 w-6"></app-icon>
+        <span>{{ 'compactPlayer.finish' | translate }}</span>
+      </button>
+      <!-- <button appBumpClick (click)="addExerciseLog()"
+        class="flex items-center justify-center space-x-2 bg-green-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        <span>PROVA</span>
+      </button> -->
+
+    </div>
+  </div>
+
+  <app-exercise-selection-modal [isOpen]="isAddExerciseModalOpen()" [(searchTerm)]="modalSearchTerm"
+    [title]="'compactPlayer.addExerciseTitle' | translate" [isMultiSelect]="true" [exercises]="availableExercises"
+    itemIconName="plus-circle" itemIconClass="text-green-500" (exercisesSelected)="onAddExercisesSelected($event)"
+    (createCustomClicked)="handleTrulyCustomExerciseEntry()" (close)="closeAddExerciseModal()">
+  </app-exercise-selection-modal>
+<!-- 
+  <app-exercise-selection-modal [isOpen]="isSwitchExerciseModalOpen()" [(searchTerm)]="modalSearchTerm"
+    [title]="(isShowingSimilarInSwitchModal() ? 'compactPlayer.similarExercisesTitle' : 'compactPlayer.switchExerciseTitle') | translate"
+    [exercises]="exercisesForSwitchModal()" [searchPlaceholder]="'compactPlayer.searchPlaceholder' | translate"
+    [showSimilarButton]="true" [isShowingSimilarView]="isShowingSimilarInSwitchModal()" itemIconName="change"
+    itemIconClass="text-green-500" (exerciseSelected)="handleExerciseSwitch($event)"
+    (findSimilarClicked)="findAndShowSimilarExercises(exerciseToSwitchIndex)"
+    (backToSearchClicked)="onBackToSearchFromSimilar()" (close)="closeSwitchExerciseModal()">
+  </app-exercise-selection-modal> -->
+
+  <!-- replacing missing exercise modal -->
+  <app-exercise-selection-modal [isOpen]="missingExerciseReplacementModal()" [(searchTerm)]="modalSearchTerm"
+    [title]="('compactPlayer.alerts.selectReplacementTitle' | translate) + ': ' + (missingExerciseToReplace()?.exerciseName || '')"
+    [exercises]="exercisesForSwitchModal()" [searchPlaceholder]="'compactPlayer.searchPlaceholder' | translate"
+    itemIconName="change" itemIconClass="text-green-500" (exerciseSelected)="onMissingExerciseSelected($event)"
+    (close)="closeMissingExerciseReplacementModal()">
+  </app-exercise-selection-modal>
+
+  <app-full-screen-rest-timer [isVisible]="isRestTimerVisible()" [mode]="restTimerMode()"
+    [mainTimer]="sessionTimerDisplay()" [durationSeconds]="restDuration()" [mainText]="restTimerMainText()"
+    [nextUpText]="restTimerNextUpText()" (timerFinished)="handleRestTimerFinished()"
+    (timerSkipped)="handleRestTimerSkipped($event)" (stopwatchStopped)="handleStopwatchStopped()"
+    (modeChanged)="restTimerMode.set($event)">
+  </app-full-screen-rest-timer>
+
+  <app-modal [forceFullScreen]="true" *ngIf="exerciseDetailsId" [(isOpen)]="isSimpleModalOpen"
+    [modalTitle]="exerciseDetailsName">
+    <app-exercise-detail [id]="exerciseDetailsId" [isModal]="true"></app-exercise-detail>
+  </app-modal>
+
+  <!-- Performance Insights Modal -->
+  <div *ngIf="isPerformanceInsightsModalOpen()" style="z-index: 100"
+    class="fixed inset-0 bg-gray-900/70 dark:bg-black/80 backdrop-blur-md flex items-center justify-center p-4 transition-opacity duration-300 ease-in-out">
+    <div *ngIf="insightsData() as data"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all duration-300 ease-in-out">
+      <header class="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <app-icon name="chart" class="h-7 w-7 text-primary dark:text-primary-light"></app-icon>
+          <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">{{ 'compactPlayer.insights.title' |
+            translate }}</h3>
+        </div>
+        <button appBumpClick (click)="closePerformanceInsightsModal()"
+          class="p-1.5 rounded-full text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/70 focus:outline-none transition-colors">
+          <app-icon name="cancel" class="h-6 w-6"></app-icon>
+        </button>
+      </header>
+      <div class="p-5 overflow-y-auto space-y-6 flex-grow">
+        <div class="rounded-md border border-gray-200 dark:border-gray-700/80">
+          <button appBumpClick (click)="toggleCompletedSetsForExerciseInfo()" class="w-full flex items-center justify-between p-2 text-left text-sm font-medium text-gray-700
+          dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors rounded-t-lg">
+            <span class="flex items-center gap-2">
+              <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
+              <span>{{ 'compactPlayer.insights.completedSets' | translate:{count:
+                data.completedSetsInSession.length} }}</span>
+            </span>
+            <app-icon name="chevron-down" class="h-5 w-5 transform transition-transform duration-200"
+              [ngClass]="{'rotate-180': showCompletedSetsForExerciseInfo()}"></app-icon>
+          </button>
+          <div *ngIf="showCompletedSetsForExerciseInfo()"
+            class="bg-gray-50 dark:bg-gray-700/30 p-3 border-t border-gray-200 dark:border-gray-700/80 space-y-3 max-h-48 overflow-y-auto rounded-b-lg">
+            <div *ngFor="let setLog of data.completedSetsInSession; let i = index"
+              class="text-xs p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm border border-gray-200 dark:border-gray-600">
+              <p class="font-semibold text-gray-700 dark:text-gray-200 mb-1">
+                {{ 'compactPlayer.setLabel' | translate }} #{{ i + 1 }}:
+              </p>
+              <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
+                <span *ngIf="setLog.repsLogged">{{ 'compactPlayer.repsLabel' | translate }}: <strong
+                    class="dark:text-gray-100">{{ getRepsValue(setLog.repsLogged)
+                    }}</strong></span>
+                <span *ngIf="setLog.weightLogged != null">{{ 'compactPlayer.weightLabel' | translate:{unit: ''} }}:
+                  <strong class="dark:text-gray-100">{{ getWeightValue(setLog.weightLogged)}}</strong></span>
+                <span *ngIf="setLog.distanceLogged">{{ 'compactPlayer.distanceLabel' | translate }}: <strong
+                    class="dark:text-gray-100">{{
+                    setLog.distanceLogged }} km</strong></span>
+                <span *ngIf="setLog.durationLogged">{{ 'compactPlayer.timeLabel' | translate }}: <strong
+                    class="dark:text-gray-100">{{
+                    formatSecondsToTime(getDurationValue(setLog.durationLogged)) }}</strong></span>
+              </div>
+            </div>
+            <div *ngIf="data.completedSetsInSession.length === 0"
+              class="p-3 text-xs text-center text-gray-500 dark:text-gray-400">
+              {{ 'compactPlayer.insights.noSetsCompleted' | translate }}
+            </div>
+          </div>
+        </div>
+        <div class="rounded-md border border-gray-200 dark:border-gray-700/80">
+          <div class="p-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span class="flex items-center gap-2">
+              <app-icon name="calendar-page" class="h-6 w-6"></app-icon>
+              <span>{{ 'compactPlayer.insights.lastPerformance' | translate:{date:
+                (data.lastPerformance?.lastPerformedDate
+                | date:'shortDate')} }}</span>
+            </span>
+          </div>
+          <div *ngIf="data.lastPerformance as lastPerf"
+            class="bg-gray-50 dark:bg-gray-700/30 p-3 border-t border-gray-200 dark:border-gray-700/80 space-y-3 max-h-48 overflow-y-auto rounded-b-lg">
+            <div *ngFor="let setLog of lastPerf.sets; let i = index"
+              class="text-xs p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm border border-gray-200 dark:border-gray-600">
+              <p class="font-semibold text-gray-700 dark:text-gray-200 mb-1">{{ 'compactPlayer.setLabel' | translate }}
+                #{{ i + 1 }}:</p>
+              <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
+                <span *ngIf="setLog.repsLogged">{{ 'compactPlayer.repsLabel' | translate }}: <strong
+                    class="dark:text-gray-100">{{ getRepsValue(setLog.repsLogged)
+                    }}</strong></span>
+                <span *ngIf="setLog.weightLogged != null">{{ 'compactPlayer.weightLabel' | translate:{unit: 'kg'} }}:
+                  <strong class="dark:text-gray-100">{{ getWeightValue(setLog.weightLogged)}}</strong></span>
+                <span *ngIf="setLog.distanceLogged">{{ 'compactPlayer.distanceLabel' | translate }}: <strong
+                    class="dark:text-gray-100">{{
+                    setLog.distanceLogged }} km</strong></span>
+                <span *ngIf="setLog.durationLogged">{{ 'compactPlayer.timeLabel' | translate }}: <strong
+                    class="dark:text-gray-100">{{
+                    formatSecondsToTime(getDurationValue(setLog.durationLogged)) }}</strong></span>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="!data.lastPerformance"
+            class="p-3 text-xs text-center text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700/80 rounded-b-lg">
+            {{ 'compactPlayer.insights.noPreviousPerformance' | translate }}
+          </div>
+        </div>
+        <div class="rounded-md border border-gray-200 dark:border-gray-700/80">
+          <div class="p-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span class="flex items-center gap-2">
+              <app-icon name="pb" class="h-6 w-6 text-yellow-500"></app-icon>
+              <span>{{ 'compactPlayer.insights.personalBests' | translate }}</span>
+            </span>
+          </div>
+          <div *ngIf="data.personalBests.length > 0"
+            class="bg-gray-50 dark:bg-gray-700/30 p-3 border-t border-gray-200 dark:border-gray-700/80 grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-b-lg">
+            <div *ngFor="let pb of data.personalBests"
+              class="text-xs p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm border border-gray-200 dark:border-gray-600">
+              <p class="font-semibold text-gray-700 dark:text-gray-200">{{ pb.pbType }}</p>
+              <p class="text-lg font-bold text-primary dark:text-primary-light">{{ formatPbValue(pb) }}</p>
+              <p class="text-2xs text-gray-500 dark:text-gray-400">{{ 'compactPlayer.insights.onDate' |
+                translate:{date: (pb.timestamp | date:'shortDate')} }}</p>
+            </div>
+          </div>
+          <div *ngIf="data.personalBests.length === 0"
+            class="p-3 text-xs text-center text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700/80 rounded-b-lg">
+            {{ 'compactPlayer.insights.noPBs' | translate }}
+          </div>
+        </div>
+      </div>
+      <footer
+        class="p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 text-right flex-shrink-0">
+        <button appBumpClick (click)="closePerformanceInsightsModal()"
+          class="inline-flex items-center bg-primary hover:bg-primary-dark focus:ring-4 focus:ring-primary-focus text-white font-semibold py-2.5 px-6 rounded-md text-sm transition-colors shadow-md hover:shadow-lg">
+          <app-icon name="done" class="h-7 w-7 mr-1"></app-icon>
+          {{ 'compactPlayer.insights.done' | translate }}
+        </button>
+      </footer>
+    </div>
+  </div>
+</div>
+
+<!-- Rest Time Editor Modal -->
+<div *ngIf="isRestModalVisible() && activeRestModalContext() as context" (click)="closeRestModal()"
+  class="fixed inset-0 bg-gray-900/70 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-opacity duration-300 ease-in-out">
+  <div (click)="$event.stopPropagation()"
+    class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-xs p-4 flex flex-col transform transition-all duration-300 ease-in-out">
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ 'compactPlayer.restTitle' | translate }}
+      </h3>
+      <button appBumpClick (click)="closeRestModal()"
+        class="flex items-center p-2 rounded-full text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700">
+        <app-icon name="cancel" class="h-6 w-6"></app-icon>
+      </button>
+    </div>
+
+    <!-- Modal Body: Use the template here -->
+    <div class="flex-grow">
+      <ng-container [ngTemplateOutlet]="restInputTemplate"
+        [ngTemplateOutletContext]="{ exerciseId: context.exerciseId, setId: context.setId, set: null }">
+      </ng-container>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="mt-6 text-right flex justify-center">
+      <button appBumpClick (click)="closeRestModal()"
+        class="w-fit inline-flex justify-center bg-primary hover:bg-primary-dark focus:ring-4 focus:ring-primary-focus text-white font-semibold py-2.5 px-6 rounded-md text-sm transition-colors shadow-md hover:shadow-lg">
+        <app-icon name="done" class="h-5 w-5 mr-1"></app-icon>
+        {{ 'compactPlayer.insights.ok' | translate }}
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" *ngIf="isCalculatorModalVisible">
+  <app-barbell-calculator-modal (close)="closeCalculatorModal()"></app-barbell-calculator-modal>
+</div>
+
+<app-session-overview-modal [isOpen]="isSessionOverviewVisible()" [routineSignal]="routine"
+  [loggedExercisesSignal]="currentWorkoutLogExercises"
+  [activeExerciseId]="routine()?.exercises?.[expandedExerciseIndex]?.id"
+  [activeSetIndex]="findFirstIncompleteSetIndex(expandedExerciseId() ?? '')"
+  [activeBlockRound]="isSupersetStart(expandedExerciseId() ?? '') ? findFirstIncompleteRoundIndex(expandedExerciseId() ?? '') : -1"
+  (close)="closeSessionOverviewModal()">
+</app-session-overview-modal>
+
+
+<!-- =================================================================== -->
+<!-- NG-TEMPLATES for Reusable Set Inputs -->
+<!-- =================================================================== -->
+
+
+<!-- TEMPO INPUT TEMPLATE -->
+<ng-template #tempoInputTemplate let-exerciseId="exerciseId" let-setId="setId" let-set="set">
+  <div>
+    <div class="flex items-center justify-center text-gray-500 dark:text-gray-300 ">
+      <app-icon name="tempo" class="h-4 w-4 mr-1"></app-icon>
+      <label class="text-xs font-medium py-1">
+        {{ 'compactPlayer.tempoLabel' | translate }}
+      </label>
+    </div>
+    <input type="text" [ngModel]="getMetricInputValue()(exerciseId, setId, metricEnum.tempo)"
+      (ngModelChange)="setMetricInputValue(exerciseId, setId, metricEnum.tempo, $event)" placeholder="e.g. 4010"
+      class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
+    <div *ngIf="getShowMetricTarget() && getSetTargetDisplay(exerciseId, setId, metricEnum.tempo) as target"
+      class="target-class text-xs">
+      <span class="flex items-center justify-center">
+        <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ target }}
+      </span>
+    </div>
+  </div>
+</ng-template>
+
+<!-- REUSABLE INCREMENTER INPUT TEMPLATE -->
+<ng-template #incrementerInputTemplate let-exerciseId="exerciseId" let-setId="setId" let-field="field" let-label="label"
+  let-target="target">
+  <div>
+    <!-- Label part (unchanged) -->
+    <div class="flex items-center justify-center text-gray-500 dark:text-gray-300">
+      <app-icon [name]="field" class="h-4 w-4 mr-1"></app-icon>
+      <label class="text-xs font-medium py-1">{{ label }}</label>
+      <button *ngIf="!isSetCompleted(exerciseId, setId) && countAvailableMetrics(exerciseId, setId, field) > 0"
+        type="button" (click)="openMetricSchemeModal(exerciseId, setId, field, $event)"
+        [title]="'workoutBuilder.set.editReps' | translate"
+        class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
+        {{ 'common.edit' | translate }}
+        <app-icon name="change" class="h-3 w-3 ml-1"></app-icon>
+      </button>
+    </div>
+
+    <!-- Main input group container -->
+    <div class="flex items-stretch w-full shadow-sm">
+
+      <!-- Column 1: Decrement Button -->
+      <button appBumpClick type="button" appPress (shortPress)="onShortPressDecrement(exerciseId, setId, field)"
+        (longPress)="onLongPressDecrement(exerciseId, setId, field)" (pressRelease)="onPressRelease()"
+        [disabled]="isMetricInputDisabled(exerciseId, setId, field)"
+        class="flex items-center px-3 py-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-l-xl border-y border-l border-gray-300 dark:border-gray-700 transition-colors disabled:cursor-not-allowed">
+        <app-icon name="minus" class="h-5 w-5 pointer-events-none"></app-icon>
+      </button>
+
+      <!-- Column 2: The Input and its Target, stacked vertically -->
+      <div class="relative flex flex-col flex-grow">
+        <!-- Input Field -->
+        <div class="flex items-center justify-center bg-gray-300 dark:bg-gray-700">
+          <input [id]="field + '-' + 'input'  + '-' + getSetKey(exerciseId, setId)" type="text" inputmode="decimal"
+            pattern="[0-9]*" numbersOnly [ngModel]="getMetricInputValue()(exerciseId, setId, field)"
+            (ngModelChange)="setMetricInputValue(exerciseId, setId, field, $event)"
+            class="w-full p-1 mt-1 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-50 dark:border-gray-800 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none focus:z-10 relative rounded-md h-16"
+            [ngClass]="{
+              'ring-2 ring-red-500 border-red-500 focus:ring-red-500': hasInvalidInput(exerciseId, setId),
+              'disabled-div-lower-opacity': isMetricInputDisabled(exerciseId, setId, field)
+            }" [disabled]="isMetricInputDisabled(exerciseId, setId, field)">
+        </div>
+
+        <!-- Target Display (now correctly aligned under the input) -->
+        <div *ngIf="target && target !== '' && target !== '-'"
+          class="relative z-0 bottom-0 w-full bg-gray-300 dark:bg-gray-700 border-gray-300 dark:border-gray-700">
+          <span
+            class="flex items-center justify-center gap-1 py-0.5 text-white dark:text-gray-100 text-xs font-semibold">
+            <ng-container *ngIf="getShowMetricTarget()">
+              <app-icon name="target" class="h-3 w-3"></app-icon>
+              <span>
+                {{ (field === metricEnum.duration || field === metricEnum.rest) ? formatSecondsToTime(target) : target
+                }}
+              </span>
+            </ng-container>
+          </span>
+        </div>
+      </div>
+
+      <!-- Column 3: Increment Button -->
+      <button appBumpClick type="button" appPress (shortPress)="onShortPressIncrement(exerciseId, setId, field)"
+        (longPress)="onLongPressIncrement(exerciseId, setId, field)" (pressRelease)="onPressRelease()"
+        [disabled]="isMetricInputDisabled(exerciseId, setId, field)"
+        class="flex items-center px-3 py-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-r-xl border-y border-r border-gray-300 dark:border-gray-700 transition-colors disabled:cursor-not-allowed">
+        <app-icon name="plus" class="h-5 w-5 pointer-events-none"></app-icon>
+      </button>
+    </div>
+
+    <span class="flex bg-red-400 text-white justify-center rounded-md text-xs font-medium py-0.5"
+      *ngIf="hasInvalidInput(exerciseId, setId, field)">{{ 'common.invalidData' | translate }}</span>
+  </div>
+</ng-template>
+
+<!-- WEIGHT INPUT TEMPLATE -->
+<ng-template #weightInputTemplate let-exerciseId="exerciseId" let-setId="setId" let-set="set">
+  <ng-container [ngTemplateOutlet]="incrementerInputTemplate" [ngTemplateOutletContext]="{
+      exerciseId: exerciseId,
+      setId: setId,
+      field: metricEnum.weight,
+      label: ('compactPlayer.weightLabel' | translate:{unit: unitsService.getWeightUnitSuffix()}),
+      target: getSetTargetDisplay(exerciseId, setId, metricEnum.weight) + unitsService.getWeightUnitSuffix()
+    }">
+  </ng-container>
+</ng-template>
+
+<!-- REPS INPUT TEMPLATE  -->
+<ng-template #repsInputTemplate let-exerciseId="exerciseId" let-setId="setId" let-set="set">
+  <ng-container [ngTemplateOutlet]="incrementerInputTemplate" [ngTemplateOutletContext]="{
+      exerciseId: exerciseId,
+      setId: setId,
+      field: metricEnum.reps,
+      label: ('compactPlayer.repsLabel' | translate),
+      target: 'x' + getSetTargetDisplay(exerciseId, setId, metricEnum.reps)
+    }">
+  </ng-container>
+</ng-template>
+
+<!-- DISTANCE INPUT TEMPLATE -->
+<ng-template #distanceInputTemplate let-exerciseId="exerciseId" let-setId="setId" let-set="set">
+  <ng-container [ngTemplateOutlet]="incrementerInputTemplate" [ngTemplateOutletContext]="{
+      exerciseId: exerciseId,
+      setId: setId,
+      field: metricEnum.distance,
+      label: ('compactPlayer.distanceLabel' | translate),
+      target: getSetTargetDisplay(exerciseId, setId, metricEnum.distance) + unitsService.getDistanceUnitSuffix()
+    }">
+  </ng-container>
+</ng-template>
+
+<!-- DURATION INPUT TEMPLATE -->
+<ng-template #durationInputTemplate let-exerciseId="exerciseId" let-setId="setId" let-set="set">
+  <ng-container [ngTemplateOutlet]="incrementerInputTemplate" [ngTemplateOutletContext]="{
+      exerciseId: exerciseId,
+      setId: setId,
+      field: metricEnum.duration,
+      label: ('compactPlayer.timeLabel' | translate),
+      target: getSetTargetDisplay(exerciseId, setId, metricEnum.duration)
+    }">
+  </ng-container>
+</ng-template>
+
+<!-- REST INPUT TEMPLATE -->
+<ng-template #restInputTemplate let-exerciseId="exerciseId" let-setId="setId" let-set="set">
+  <ng-container [ngTemplateOutlet]="incrementerInputTemplate" [ngTemplateOutletContext]="{
+      exerciseId: exerciseId,
+      setId: setId,
+      field: metricEnum.rest,
+      label: ('compactPlayer.rest' | translate),
+      target: getSetTargetDisplay(exerciseId, setId, metricEnum.rest)
+    }">
+  </ng-container>
+</ng-template>
+
+
+<!-- SIMPLE INPUT SPAN FOR ONLY WEIGHT/REPS -->
+<ng-template #metricInputSpan let-icon="icon" let-iconClass="iconClass" let-metric="metric" let-value="value"
+  let-iconActive="iconActive" let-exerciseId="exerciseId" let-setId="setId" let-suffix="suffix">
+  <span class="inline-flex items-center " *ngIf="value" [ngClass]="{
+                          'justify-center': getVisibleSetColumnsCountForGrid(exerciseId, setId) <= 2,
+                          'justify-start': getVisibleSetColumnsCountForGrid(exerciseId, setId) > 2,
+                        }">
+    <app-icon class="h-5 w-5 text-gray-800 dark:text-white" *ngIf="iconActive" [name]="icon"
+      [ngClass]="iconClass"></app-icon>
+    <input type="text" inputmode="decimal" pattern="[0-9]*" numbersOnly
+      class="w-14 px-1 py-0.5 text-black dark:text-white text-center font-bold" [ngClass]="{
+    'border-0 pointer-events-none disabled-div-lower-opacity bg-green-300 dark:bg-green-700': isSetOrRoundCompleted(exerciseId, setId),
+    'border-b-2 border-gray-300 dark:border-gray-600 focus:border-primary bg-white dark:bg-gray-800': !isSetOrRoundCompleted(exerciseId, setId) && !isSetWarmup(exerciseId, setId),
+    'bg-blue-100 dark:bg-blue-700/80': isSetWarmup(exerciseId, setId)
+  }" [ngModel]="getMetricInputValue()(exerciseId, setId, metric)"
+      (ngModelChange)="setMetricInputValue(exerciseId, setId, metric, $event)"
+      [attr.readonly]="isSetOrRoundCompleted(exerciseId, setId) ? true : null" [attr.disabled]="null" min="1" />
+    <span *ngIf="suffix || !iconActive" class="ml-1 text-black dark:text-white">{{ suffix }}</span>
+  </span>
+</ng-template>
+
+
+<ng-container *ngIf="noteModalVisible()">
+  <div class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-start justify-center">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md mt-8">
+      <h2 class="text-lg font-bold mb-2 text-black dark:text-white">
+        {{ getNoteModalTitle() }}
+      </h2>
+      <textarea
+        class="w-full min-h-[120px] p-2 border border-gray-300 dark:border-gray-600 rounded mb-4 bg-gray-50 dark:bg-gray-900 text-black dark:text-white"
+        [ngModel]="noteModalValue()" (ngModelChange)="noteModalValue.set($event)"
+        placeholder="{{ 'compactPlayer.notesPlaceholder' | translate }}" autofocus></textarea>
+      <div class="flex justify-end gap-2">
+        <button class="px-4 py-2 rounded bg-gray-300 dark:bg-gray-700" (click)="closeNoteModal()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button class="px-4 py-2 rounded bg-primary text-white" (click)="saveNoteModal()">
+          {{ 'common.save' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<div class="hidden bottom-3"></div>
+<div class="hidden p-5"></div>
+<div class="hidden p-6"></div>
+<div class="hidden p-7"></div>
+<div class="hidden p-8"></div>
+<div class="hidden border-3"></div>
+<div class="hidden border-4"></div>
+<div class="hidden border-8"></div>
+<div class="hidden dark:bg-red-200"></div>

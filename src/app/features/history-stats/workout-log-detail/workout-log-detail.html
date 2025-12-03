@@ -189,14 +189,15 @@
                 <!-- Inner container for all the rounds -->
                 <div *ngIf="item.isExpanded" class="bg-white dark:bg-gray-800 p-2 sm:p-3 space-y-3">
                   <!-- Loop through the rounds -->
-                  <div *ngFor="let round of item.rounds" class="border border-gray-200 dark:border-gray-700 rounded-md">
+                  <div *ngFor="let round of item.rounds; let roundIndex = index"
+                    class="border border-gray-200 dark:border-gray-700 rounded-md">
                     <div class="bg-gray-100 dark:bg-gray-700/50 p-1.5">
                       <h4 class="font-semibold text-sm text-gray-700 dark:text-gray-300">{{ 'logDetail.roundHeader' |
                         translate }} {{ round.roundNumber }}
                       </h4>
                     </div>
                     <!-- Loop through exercises within this round -->
-                    <div *ngFor="let loggedEx of round.exercisesForRound;"
+                    <div *ngFor="let loggedEx of round.exercisesForRound; let $index = index"
                       class="p-2 border-t border-gray-200 dark:border-gray-700">
                       <div class="flex items-center min-w-0">
                         <div class="flex-shrink-0 mr-2 w-10 h-10 flex items-center justify-center">
@@ -208,13 +209,9 @@
                             {{ loggedEx.exerciseName }}
                           </h5>
                           <div class="text-xs font-normal text-gray-500 dark:text-gray-400 leading-tight">
-                            {{ 'logDetail.exerciseLabel' | translate:{order: (loggedEx.supersetOrder ?? 0) + 1, total:
+                            {{ 'logDetail.exerciseLabel' | translate:{order: ($index + 1), total:
                             round.totalExercisesForRound} }}
                           </div>
-                        </div>
-                        <div *ngIf="loggedEx.sets.length > 0; else noSetData"
-                          class="text-sm text-gray-700 dark:text-gray-200 font-semibold ml-auto text-right flex-shrink-0">
-                          {{ getTabataSetInfo(loggedEx.sets[0]) }}
                         </div>
                         <ng-template #noSetData><span class="text-gray-400 text-sm ml-auto">{{
                             'logDetail.card.noSetData'

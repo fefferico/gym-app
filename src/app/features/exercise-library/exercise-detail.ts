@@ -26,6 +26,7 @@ import { getDistanceValue, getDurationValue, getRepsValue, getWeightValue, repsT
 import { DistanceTarget, DurationTarget, RepsTarget, WeightTarget } from '../../core/models/workout.model';
 import { SafeUrlPipe } from '../../shared/directives/safeUrl.directive';
 import { EXERCISE_CATEGORY_TYPES } from '../../core/models/exercise-category.model';
+import { WorkoutService } from '../../core/services/workout.service';
 
 
 type RepRecord = {
@@ -99,6 +100,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   private alertService = inject(AlertService);
   unitService = inject(UnitsService);
   protected translate = inject(TranslateService);
+  workoutService = inject(WorkoutService);
 
   // Using a signal for the exercise data
   exercise = signal<HydratedExercise | undefined | null>(undefined);
@@ -737,5 +739,13 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
 
   protected hasCardioCategory(): boolean {
     return this.exercise()?.categories.find(cat => cat === EXERCISE_CATEGORY_TYPES.cardio) !== undefined;
+  }
+
+  viewLogDetails(logId: string | undefined, event?: MouseEvent): void {
+    if (!logId) {
+      return;
+    }
+    this.workoutService.vibrate();
+    event?.stopPropagation(); this.router.navigate(['/history/log', logId]);
   }
 }

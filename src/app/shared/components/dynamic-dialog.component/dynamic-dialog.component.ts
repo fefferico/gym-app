@@ -21,12 +21,24 @@ import { DialogConfig, DialogOutput } from '../../../core/models/dialog.types';
         {{ config.title }}
       </h2>
       
+      <!-- Message - with optional HTML support -->
       @if (config.message) { 
-        <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">
-          {{ config.message }}
-        </p> 
+        @if (config.renderAsHtml) {
+          <div class="mb-6 text-sm text-gray-500 dark:text-gray-400" [innerHTML]="config.message"></div>
+        } @else {
+          <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">
+            {{ config.message }}
+          </p>
+        }
       }
 
+            @if (config.listItems && config.listItems.length > 0) {
+        <ul [ngClass]="config.listClass || 'list-disc pl-6 space-y-1'" class="mb-6 text-sm text-gray-700 dark:text-gray-300">
+          @for (item of config.listItems; track item) {
+            <li>{{ item }}</li>
+          }
+        </ul>
+      }
       <form [formGroup]="form" (ngSubmit)="onConfirm()">
         
         <!-- GRID CONTAINER: Tailwind Grid -->

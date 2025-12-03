@@ -1820,8 +1820,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
   errorMessage = signal<string | null>(null);
 
+  isSaving = signal(false);
   async onSubmit(): Promise<void> {
     if (this.isViewMode) { this.toastService.info(this.translate.instant('workoutBuilder.toasts.viewMode'), 3000, this.translate.instant('workoutBuilder.toasts.viewMode')); return; }
+    this.isSaving.set(true);
     this.recalculateSupersetOrders();
 
     const formValueForValidation = this.builderForm.getRawValue();
@@ -2019,6 +2021,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       console.error("Error saving:", e);
       this.toastService.error(`Failed to save: ${e.message || 'Unknown error'}`, 0, "Save Error");
     } finally {
+      this.isSaving.set(false);
       this.spinnerService.hide();
     }
   }

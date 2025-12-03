@@ -314,7 +314,9 @@ export interface Routine {
 
 export interface ActiveSetInfo {
   exerciseIndex: number;
+  exerciseId?: string;
   setIndex: number;
+  setId?: string;
   supersetId: string | null; // If part of a superset, this is the superset ID
   superSetType: 'standard' | 'emom' | null; // Type of the superset if applicable
   exerciseData: WorkoutExercise; // This WorkoutExercise will have sessionStatus

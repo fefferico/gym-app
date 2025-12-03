@@ -59,6 +59,11 @@
           </app-icon>
           <span class="ml-1"> {{ 'pausedWorkout.discardButton' | translate }} </span>
         </button>
+        <button appBumpClick (click)="restorePausedWorkout()"
+          class="flex justify-center items-center w-full sm:w-auto px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+          <app-icon name="restore" class="w-6 h-6"></app-icon>
+          <span class="ml-1"> {{ 'pausedWorkout.restoreButton' | translate }} </span>
+        </button>
       </div>
     </div>
   </section>

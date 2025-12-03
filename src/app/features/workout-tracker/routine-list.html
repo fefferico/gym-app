@@ -29,7 +29,9 @@
                             'routineList.filters.searchLabel' | translate }}</label>
                         <input type="text" id="routine-search-term"
                             [placeholder]="'routineList.filters.searchPlaceholder' | translate"
-                            [value]="routineSearchTerm()" (input)="onRoutineSearchTermChange($event)"
+                            [value]="routineSearchTerm()" 
+                            (input)="onRoutineSearchTermChange($event)"
+                            (keydown.enter)="toggleFilterAccordion()"
                             class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
                     </div>
                     <div>
@@ -153,7 +155,8 @@
                         </ul>
                     </div>
                 </div>
-                <div class="mt-4" *ngIf="uniqueRoutineEquipments().length > 0">
+                <!-- EQUIPMENT FILTER -->
+                <!-- <div class="mt-4" *ngIf="uniqueRoutineEquipments().length > 0">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         {{ 'routineList.filters.equipmentLabel' | translate }}
                     </label>
@@ -168,7 +171,7 @@
                                       }">
                             {{ equipment.label | translate }} </button>
                     </div>
-                </div>
+                </div> -->
                 <div>
                     <label for="routine-sort-filter"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

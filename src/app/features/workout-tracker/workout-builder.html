@@ -372,7 +372,8 @@
         <section *ngIf="mode === BuilderMode.manualLogEntry || builderForm.get('goal')?.value !== metricEnum.rest">
             <div *ngIf="exercisesFormArray.length>0" cdkDropList [cdkDropListData]="exercisesFormArray.controls"
                 (cdkDropListDropped)="onExerciseDrop($event)" [cdkDropListDisabled]="!isEditableMode()"
-                formArrayName="exercises" class="exercise-list-container">
+                formArrayName="exercises" class="exercise-list-container"
+                [@.disabled]="isSaving()">
                 <ng-container *ngFor="let exerciseControl of exercisesFormArray.controls; let exIndex = index;">
                     <div class="relative group exercise-card-wrapper" #expandedExerciseCard appClickOutside
                         (clickOutside)="closeExerciseActionMenu()" [@exerciseExit]

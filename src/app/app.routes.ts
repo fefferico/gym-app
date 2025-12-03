@@ -8,7 +8,7 @@ export const APP_ROUTES: Routes = [
   
   // The 'home' route is now the single source of truth for the HomeComponent.
   { path: 'home', component: HomeComponent,
-    data: { showPausedWorkoutBanner: true, shouldShowNavigationBanner: true } }, 
+    data: { showPausedWorkoutBanner: false, shouldShowNavigationBanner: true } }, 
 
   {
     path: 'workout',

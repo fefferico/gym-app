@@ -26,7 +26,7 @@ export class WorkoutFormService {
         targetMinValidator?: (min: number) => any,
         createRangeValidator?: () => any
     ): FormGroup {
-        let id = (setData && setData.id) || (typeof crypto !== 'undefined' ? crypto.randomUUID() : '');
+        let id = setData?.id || (typeof crypto !== 'undefined' ? crypto.randomUUID() : '');
         let fieldOrderValue: any = setData?.fieldOrder || [/* default METRIC values */];
         let notesValue = setData?.notes || '';
         let typeValue = setData?.type || 'standard';

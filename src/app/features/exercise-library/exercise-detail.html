@@ -250,6 +250,10 @@
                   </li>
                   <!-- --- END: USE THE NEW HELPER FUNCTION --- -->
                 </ul>
+                <div class="mt-2 text-right">
+                  <button class="text-primary hover:underline text-xs font-medium"
+                    (click)="viewLogDetails(log?.id)">{{ 'common.details' | translate}}</button>
+                </div>
               </div>
             </div>
           </div>

@@ -76,4 +76,17 @@ export class PausedWorkoutComponent implements OnInit {
       }, 150); // Match the animation duration
     }
   }
+
+  /**
+   * Restarts the paused workout by removing the paused session and navigating to the workout player.
+   */
+  restartWorkout(): void {
+    const pausedState = this.workoutService.getPausedSession();
+    let routineId = '';
+    if (pausedState && pausedState.routineId) {
+      routineId = pausedState.routineId;
+    }
+    this.workoutService.removePausedWorkout();
+    this.workoutService.navigateToPlayer(routineId, { forceNavigation: true });
+  }
 }

@@ -22,6 +22,10 @@ export interface DialogConfig {
   confirmText?: string;
   cancelText?: string;
   fields?: DialogField[]; // If empty, it's just a simple alert
+  listItems?: string[];
+  listClass?: string;
+  icon?: string;
+  renderAsHtml?: boolean; // NEW: Allow HTML in both message and listItems
 }
 
 export interface DialogOutput {

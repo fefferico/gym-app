@@ -62,13 +62,16 @@
     "appVersion": "AppVersion:",
     "pausedWorkout": {
       "discardPromptTitle": "Discard Current Workout?",
-      "discardPromptMessage": "You have a paused workout session. Do you want to discard it and start a new one?"
+      "discardPromptMessage": "You have a paused workout session. Do you want to discard it and start a new one?",
+      "restartTooltip": "Restart Workout"
     }
   },
   "user": {
     "defaultName": "Fitness Enthusiast"
   },
   "pausedWorkout": {
+    "restorePromptTitle": "Restart Workout",
+    "restorePromptMessage": "Do you want to restart the paused workout?",
     "inProgress": "You have a workout in progress!",
     "routineLabel": "Routine",
     "programLabel": "Program",
@@ -80,6 +83,7 @@
     "resumeButton": "RESUME WORKOUT",
     "detailsButton": "DETAILS",
     "discardButton": "DISCARD",
+    "restoreButton": "RESTART",
     "discardTitle": "Discard Paused Workout?",
     "discardMessage": "Are you sure you want to discard this paused workout session? This action cannot be undone.",
     "summaryTitle": "Paused: {{routineName}}",
@@ -310,7 +314,9 @@
     "ok": "OK",
     "removed": "removed",
     "confirm": "Confirm",
-    "minutes": "minutes"
+    "minutes": "minutes",
+    "restart": "Restart",
+    "details": "Details"
   },
   "toasts": {
     "statusUpdated": "Status Updated",
@@ -930,6 +936,16 @@
       "progressiveOverloadAppliedMultipleMessage": "The following exercises have been auto-incremented:"
     },
     "alerts": {
+      "missingExercisesTitle": "Missing Exercises Detected",
+      "missingExercisesMessage": "The following exercises in this routine are no longer available:\n\n{{exercises}}\n\nWould you like to replace them with new exercises or remove them?",
+      "replaceExercises": "Replace",
+      "removeExercises": "Remove",
+      "exercisesRemoved": "Removed {{count}} missing exercise(s)",
+      "selectReplacementTitle": "Select Replacement",
+      "selectReplacementMessage": "Select a replacement exercise for: {{name}}",
+      "exerciseReplaced": "Replaced {{old}} with {{new}}",
+      "exerciseRemovedCancelled": "Removed {{name}} (cancelled)",
+      "allExercisesRemovedOrMissing": "All exercises were missing or removed. Starting a new routine.",
       "toughWorkoutTitle": "Last Workout Was Tough",
       "toughWorkoutMessage": "Your last session felt challenging. Would you like to automatically reduce the intensity for today?",
       "lightWorkoutTitle": "Last Workout Felt Light",
@@ -1031,6 +1047,7 @@
     "doLater": "Do later",
     "finishEarly": "Finish early",
     "createSuperset": "Create Superset",
+    "createCircuit": "Create Circuit",
     "addToSuperset": "Add to Superset",
     "removeFromSuperset": "Remove from Superset",
     "removeExercise": "Remove Exercise",
@@ -1217,6 +1234,7 @@
     },
     "changeType": "Change",
     "superset": {
+      "restBetweenRounds": "Rest Between Rounds",
       "nonConsecutiveTitle": "Exercises Not Consecutive",
       "nonConsecutiveMessage": "The selected exercises are not next to each other. Would you like me to automatically reorder them to be consecutive before creating the superset?",
       "reorderAndGroup": "Reorder & Create",
@@ -1224,6 +1242,8 @@
       "removeExercisesButton": "Remove exercises",
       "groupButton": "Group Superset ({{count}})",
       "ungroupButton": "Ungroup Superset ({{count}})",
+      "circuitButton": "Group Circuit ({{count}})",
+      "uncircuitButton": "Ungroup Circuit ({{count}})",
       "exerciseLabel": "Superset exercise [{{order}} of {{total}}]",
       "emomLabel": "EMOM",
       "rounds": "Rounds",
@@ -1324,6 +1344,7 @@
       "start": "START"
     },
     "toasts": {
+      "supersetMaxExercises": "Maximum number of exercises in the superset reached.",
       "viewMode": "View mode. No changes",
       "editMode": "Edit mode enabled",
       "supersetSizeError": "Select at least two exercises",

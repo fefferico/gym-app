@@ -13,14 +13,17 @@
     "quickActionsTitle": "Azioni Rapide",
     "appVersion": "Versione App:",
     "pausedWorkout": {
-      "discardPromptTitle": "Discard Current Workout?",
-      "discardPromptMessage": "You have a paused workout session. Do you want to discard it and start a new one?"
+      "discardPromptTitle": "Scartare l'allenamento in pausa?",
+      "discardPromptMessage": "Hai una sessione di allenamento in pausa. Vuoi scartarla e iniziarne una nuova?",
+      "restartTooltip": "Ricomincia allenamento"
     }
   },
   "user": {
     "defaultName": "Appassionato di Fitness"
   },
   "pausedWorkout": {
+    "restorePromptTitle": "Ricomincia allenamento",
+    "restorePromptMessage": "Vuoi ricominciare l'allenamento in pausa?",
     "inProgress": "Hai un allenamento in corso!",
     "routineLabel": "Routine",
     "programLabel": "Programma",
@@ -31,6 +34,7 @@
     "adHocWorkout": "Allenamento Ad-hoc",
     "resumeButton": "RIPRENDI ALLENAMENTO",
     "detailsButton": "DETTAGLI",
+    "restoreButton": "RICOMINCIA",
     "discardButton": "SCARTA",
     "discardTitle": "Scartare l'allenamento in pausa?",
     "discardMessage": "Confermi di voler scartare questa sessione di allenamento in pausa? L'azione non può essere annullata.",
@@ -262,7 +266,9 @@
     "ok": "OK",
     "removed": "rimosso",
     "confirm": "Conferma",
-    "minutes": "minuti"
+    "minutes": "minuti",
+    "restart": "Ricomincia",
+    "details": "Dettagli"
   },
   "toasts": {
     "statusUpdated": "Stato Aggiornato",
@@ -930,6 +936,16 @@
       "progressiveOverloadAppliedMultipleMessage": "I seguenti esercizi sono stati incrementati automaticamente:"
     },
     "alerts": {
+      "missingExercisesTitle": "Esercizi Mancanti Rilevati",
+      "missingExercisesMessage": "I seguenti esercizi in questa scheda non sono più disponibili:\n\n{{exercises}}\n\nVuoi sostituirli con nuovi esercizi o rimuoverli?",
+      "replaceExercises": "Sostituisci",
+      "removeExercises": "Rimuovi",
+      "exercisesRemoved": "{{count}} esercizio/i mancante/i rimosso/i",
+      "selectReplacementTitle": "Seleziona Sostituto",
+      "selectReplacementMessage": "Seleziona un esercizio sostitutivo per: {{name}}",
+      "exerciseReplaced": "Sostituito {{old}} con {{new}}",
+      "exerciseRemovedCancelled": "Rimosso {{name}} (annullato)",
+      "allExercisesRemovedOrMissing": "Tutti gli esercizi erano mancanti o rimossi. Inizio una nuova scheda.",
       "toughWorkoutTitle": "L'ultimo Allenamento è Stato Duro",
       "toughWorkoutMessage": "La tua ultima sessione è stata impegnativa. Vuoi ridurre automaticamente l'intensità per oggi?",
       "lightWorkoutTitle": "L'ultimo Allenamento è Stato Leggero",
@@ -1030,6 +1046,7 @@
     "doLater": "Fai dopo",
     "finishEarly": "Termina in anticipo",
     "createSuperset": "Crea Superserie",
+    "createCircuit": "Crea Circuito",
     "addToSuperset": "Aggiungi a Superserie",
     "removeFromSuperset": "Rimuovi da Superserie",
     "removeExercise": "Rimuovi Esercizio",
@@ -1108,7 +1125,7 @@
       "keepSeparate": "Mantieni separato",
       "addToSuperset": "Aggiungi a Superserie",
       "chooseAction": "Scegli un'azione per l'esercizio rilasciato",
-      "addExerciseToSuperset": "Aggiungi esercizio alla superserie" ,
+      "addExerciseToSuperset": "Aggiungi esercizio alla superserie",
       "exerciseAddedToSuperset": "Esercizio aggiunto alla superserie"
     },
     "locationTypeLabel": "Tipo di Luogo (opzionale)",
@@ -1216,12 +1233,15 @@
     },
     "changeType": "Cambia",
     "superset": {
+      "restBetweenRounds": "Riposo tra i round",
       "nonConsecutiveTitle": "Esercizi Non Consecutivi",
       "nonConsecutiveMessage": "Gli esercizi selezionati non sono adiacenti. Vuoi che li riordini automaticamente per renderli consecutivi prima di creare la superserie?",
       "reorderAndGroup": "Riordina e Crea",
       "exercisesReordered": "Esercizi riordinati per essere consecutivi",
       "removeExercisesButton": "Rimuovi esercizi",
       "groupButton": "Raggruppa in Superserie ({{count}})",
+      "circuitButton": "Raggruppa in Circuito ({{count}})",
+      "uncircuitButton": "Separa Circuito ({{count}})",
       "ungroupButton": "Separa Superserie ({{count}})",
       "exerciseLabel": "Esercizio della superserie [{{order}} di {{total}}]",
       "emomLabel": "EMOM",
@@ -1324,6 +1344,7 @@
       "start": "INIZIA"
     },
     "toasts": {
+      "supersetMaxExercises": "Numero massimo di esercizi nella superserie raggiunto.",
       "viewMode": "Modalità visualizzazione. Nessuna modifica",
       "editMode": "Modalità modifica attivata",
       "supersetSizeError": "Seleziona almeno due esercizi",

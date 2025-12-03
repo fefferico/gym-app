@@ -170,6 +170,26 @@ export const finishEarlyBtn = {
     buttonClass: ' hover:bg-teal-600 ',
 } as ActionMenuItem;
 
+export const createCircuitBtn = {
+    label: 'actionButtons.createCircuit',
+    actionKey: 'createCircuit',
+    iconName: [
+        { name: 'repeat' },
+        {
+            name: 'none',
+            display: 'filled-padded',
+            class: 'bg-white dark:bg-gray-800'
+        },
+        {
+            name: 'plus-circle',
+            class: 'text-primary',
+            strokeWidth: 3,
+        }
+    ],
+    iconClass: 'w-8 h-8 mr-2',
+    buttonClass: ' hover:bg-primary ',
+} as ActionMenuItem
+
 export const createSuperSetBtn = {
     label: 'actionButtons.createSuperset',
     actionKey: 'createSuperset',
