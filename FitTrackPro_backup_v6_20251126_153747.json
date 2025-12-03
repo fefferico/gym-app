@@ -98,7 +98,7 @@
       "goal": "hypertrophy",
       "primaryCategory": "cardioEndurance",
       "tags": [],
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "c4f8eaa7-5537-412f-8a45-5c862fc6eb32",
           "exerciseId": "running-jogging",
@@ -647,7 +647,7 @@
       "goal": "hypertrophy",
       "primaryCategory": "cardioEndurance",
       "tags": [],
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "c4f8eaa7-5537-412f-8a45-5c862fc6eb32",
           "exerciseId": "running-jogging",
@@ -1196,7 +1196,7 @@
       "goal": "muscular endurance",
       "primaryCategory": "Quick Workouts",
       "tags": [],
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "45e6e48c-e906-4b17-a27b-e9f59455c775",
           "exerciseId": "barbell-back-squat",
@@ -1463,7 +1463,7 @@
       "description": "Generated on 23/10/2025 for a ~45 minute, hypertrophy-focused session.",
       "goal": "tabata",
       "tags": [],
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "2f75e8d5-7138-4b5d-9b34-6050120b00e8",
           "exerciseId": "kettlebell-jefferson-curl",
@@ -1834,7 +1834,7 @@
       "description": "",
       "goal": "custom",
       "tags": [],
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "326e7545-8595-4054-be41-0864bea5db9c",
           "exerciseId": "single-kettlebell-clean-and-press",
@@ -2609,7 +2609,7 @@
       "description": "",
       "goal": "custom",
       "tags": [],
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "0f2e9183-800b-4939-bb46-3903d5086bba",
           "exerciseId": "cycling",
@@ -3089,7 +3089,7 @@
       "name": "Toning 3 - Day 2",
       "description": "Second day of the level 3 toning program.",
       "goal": "hypertrophy",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "routine-2-ex-1",
           "exerciseId": "running-jogging",
@@ -3601,7 +3601,7 @@
       "description": "",
       "goal": "strength",
       "tags": [],
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "3dddcc57-0941-406a-adaf-ad0ab0fada20",
           "exerciseId": "single-kettlebell-clean-and-press",
@@ -4010,7 +4010,7 @@
       "name": "ABC - Complex",
       "description": "",
       "goal": "muscular endurance",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "7060e964-503b-47e6-a77f-db9a3e8e739b",
           "exerciseId": "double-kettlebell-clean",
@@ -5040,7 +5040,7 @@
       "description": "",
       "goal": "muscular endurance",
       "tags": [],
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "30bc0825-ab45-4dee-bd6f-eb1ee7ed191b",
           "exerciseId": "archer-push-up",
@@ -5108,7 +5108,7 @@
       "name": "10x20 Snatches",
       "description": "",
       "goal": "muscular endurance",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "a290f3d0-b81e-427f-9d8d-1d0a9bdee672",
           "exerciseId": "running-jogging",
@@ -5490,7 +5490,7 @@
       "name": "50 Rep Kettlebell \"DEATH SET\" [Total Body Strength Cardio]",
       "description": "A high-repetition, total-body strength and conditioning circuit designed to push your limits.",
       "goal": "tabata",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "263fda61-7943-49dc-885d-a026b0972754",
           "exerciseId": "kettlebell-snatch-to-overhead-reverse-lunge",
@@ -5771,7 +5771,7 @@
       "name": "Routine tonificazione B - Jun 13",
       "description": "Workout performed on Jun 13, 2025",
       "goal": "fat loss / body composition",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "9e8f4721-e948-45a3-8be2-3f6d1e7ab62c",
           "exerciseId": "cycling",
@@ -6270,7 +6270,7 @@
       "name": "Routine tonificazione - Jun 11",
       "description": "Workout performed on Jun 11, 2025",
       "goal": "fat loss / body composition",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "b0d02cbb-a9ac-4c99-98ae-78b8531fdd6d",
           "exerciseId": "cycling",
@@ -6586,7 +6586,7 @@
       "goal": "strength",
       "primaryCategory": "strengthTraining",
       "tags": [],
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "we-10-1",
           "exerciseId": "kettlebell-sumo-deadlift",
@@ -6804,7 +6804,7 @@
       "name": "10 Minute Total Body Kettlebell Workout",
       "description": "A quick and effective total body workout using double kettlebells and loaded carries.",
       "goal": "general health & longevity",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "we-9-1",
           "exerciseId": "kettlebell-strict-press",
@@ -7027,7 +7027,7 @@
       "description": "This routine is centered around the Barbell Bench Press. Accessory work targets the chest from different angles, builds the back for stability, and strengthens the triceps.",
       "goal": "strength",
       "tags": [],
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "w3-ex1",
           "exerciseId": "barbell-bench-press",
@@ -7283,7 +7283,7 @@
       "name": "5/3/1 - Deadlift Day",
       "description": "This routine is built around the Barbell Deadlift. Accessory exercises focus on strengthening the posterior chain, quads, and core to support a heavy pull.",
       "goal": "strength",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "w2-ex1",
           "exerciseId": "barbell-deadlift",
@@ -7495,7 +7495,7 @@
       "name": "5/3/1 - Overhead Press Day",
       "description": "This routine focuses on the Barbell Overhead Press as the main strength lift. Accessory work is designed to build the shoulders and the supporting muscles of the upper back and arms.",
       "goal": "strength",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "w1-ex1",
           "exerciseId": "overhead-press-barbell",
@@ -7690,7 +7690,7 @@
       "name": "5/3/1 - Squat Day",
       "description": "This routine is built around the Barbell Back Squat. Accessory work is included to strengthen the quads, hamstrings, and core, all of which are critical for a strong squat.",
       "goal": "strength",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "w4-ex1",
           "exerciseId": "barbell-back-squat",
@@ -7889,7 +7889,7 @@
       "name": "50 Rep Kettlebell Arm Blaster Build Muscular Biceps & Triceps",
       "description": "Rest no more than 3 minutes between rounds. <italic>Original workout by Chandler Marchman.</italic>",
       "goal": "tabata",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "e3a3b3c3-1",
           "exerciseId": "kettlebell-floor-skullcrusher",
@@ -8119,7 +8119,7 @@
       "id": "50-rep-kettlebell-arm-blaster-build-muscular-biceps-and-triceps",
       "name": "50 Rep Kettlebell Arm Blaster Build Muscular Biceps & Triceps",
       "description": "A high-repetition workout focused on building muscular biceps and triceps using a kettlebell and bodyweight exercises.",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "we-3-1",
           "exerciseId": "kettlebell-slow-eccentric-floor-skullcrusher-to-press",
@@ -8274,7 +8274,7 @@
       "name": "5x5 Strength - Workout A",
       "description": "A full-body routine based on the 5x5 strength training methodology. This workout focuses on the Squat, Bench Press, and Barbell Row. The primary goal is linear progression by adding weight each session.",
       "goal": "strength",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "5x5-a-ex1",
           "exerciseId": "barbell-back-squat",
@@ -8524,7 +8524,7 @@
       "name": "5x5 Strength - Workout B",
       "description": "The second full-body routine in the 5x5 system. This workout features the Squat, Overhead Press, and one heavy set of Deadlifts.",
       "goal": "strength",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "5x5-b-ex1",
           "exerciseId": "barbell-back-squat",
@@ -8719,7 +8719,7 @@
       "name": "Beginner Weight Training - Workout A (V1)",
       "description": "A foundational full-body workout focusing on major compound lifts. Perform this workout on your first training day of the week.",
       "goal": "strength",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "bwa-ex1",
           "exerciseId": "barbell-back-squat",
@@ -8886,7 +8886,7 @@
       "name": "Beginner Weight Training - Workout A (V2)",
       "description": "Version 2 of the foundational full-body workout. Adds accessory work for triceps and calves.",
       "goal": "strength",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "bw2a-ex1",
           "exerciseId": "barbell-back-squat",
@@ -9108,7 +9108,7 @@
       "name": "Beginner Weight Training - Workout B (V1)",
       "description": "A complementary full-body workout to be alternated with Workout A. Focuses on pulling strength and overhead pressing.",
       "goal": "strength",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "bwb-ex1",
           "exerciseId": "barbell-deadlift",
@@ -9273,7 +9273,7 @@
       "name": "Beginner Weight Training - Workout B (V2)",
       "description": "Version 2 of the complementary full-body workout. Adds accessory work for biceps and abs.",
       "goal": "strength",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "bw2b-ex1",
           "exerciseId": "barbell-deadlift",
@@ -9494,7 +9494,7 @@
       "name": "BRUTALLY Intense 4 Minute Kettlebell Fat Loss Routine",
       "description": "Perform as FAST as possible (no rest in between intervals). Original workout by Chandler Marchman.",
       "goal": "tabata",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "e2a2b2c2-1",
           "exerciseId": "goblet-squat",
@@ -9858,7 +9858,7 @@
       "name": "Build 3-Dimensional Shoulders",
       "description": "An intense kettlebell bodybuilding routine from a video by Chandler Marchman. Rest 2-3 minutes between rounds.",
       "goal": "hypertrophy",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "e1a1b2c3-1",
           "exerciseId": "kettlebell-clean-and-overhead-press-complex",
@@ -10001,7 +10001,7 @@
       "id": "build-3-dimensional-shoulders-intense-kettlebell-bodybuilding-routine",
       "name": "Build 3-Dimensional Shoulders [Intense Kettlebell Bodybuilding Routine]",
       "description": "An intense kettlebell circuit designed to build 3-dimensional shoulders, incorporating strength, carries, and bodyweight movements.",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "we-1-1",
           "exerciseId": "single-kettlebell-clean-and-press",
@@ -10122,7 +10122,7 @@
       "description": "",
       "goal": "fat loss / body composition",
       "tags": [],
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "f07c68ca-7e0b-4c63-8cb6-bfdbc307be2b",
           "exerciseId": "lunge",
@@ -10219,7 +10219,7 @@
       "id": "fight-ready-killer-mma-kettlebell-conditioning-routine",
       "name": "Fight Ready! [KILLER MMA Kettlebell Conditioning Routine]",
       "description": "A high-intensity conditioning circuit for fighters, combining kettlebell work with other functional movements.",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "we-8-1",
           "exerciseId": "kettlebell-single-arm-thruster",
@@ -10355,7 +10355,7 @@
       "id": "home-kettlebell-bodybuilding-chest-and-triceps-routine",
       "name": "Home Kettlebell Bodybuilding [Chest & Triceps Routine]",
       "description": "A home-based kettlebell routine focused on building the chest and triceps using bands for added resistance.",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "we-6-1",
           "exerciseId": "double-kettlebell-floor-press",
@@ -10493,7 +10493,7 @@
       "id": "kettlebell-back-attack-builds-monster-lats-and-traps",
       "name": "Kettlebell Back Attack! [Builds MONSTER Lats & Traps]",
       "description": "A circuit designed to build a strong and muscular back, focusing on lats and traps with heavy kettlebell movements.",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "we-4-1",
           "exerciseId": "kettlebell-clean-and-press",
@@ -10631,7 +10631,7 @@
       "id": "kettlebell-core-routine-4-minute-anti-side-bend-oblique-finisher",
       "name": "Kettlebell Core Routine [4 Minute \"Anti-Side Bend\" Oblique Finisher]",
       "description": "A kettlebell circuit focused on anti-rotation and anti-lateral flexion to build a strong, functional core and obliques.",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "we-2-1",
           "exerciseId": "single-kettlebell-clean-press-to-pause-windmill",
@@ -10772,7 +10772,7 @@
       "name": "Muscle Building - Lower Body A (V1)",
       "description": "A lower body focused routine for hypertrophy, emphasizing hamstrings and glutes.",
       "goal": "hypertrophy",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "mb-la-ex1",
           "exerciseId": "barbell-romanian-deadlift",
@@ -11027,7 +11027,7 @@
       "name": "Muscle Building - Lower Body A (V2)",
       "description": "Version 2 of the hamstring-focused lower body routine for hypertrophy.",
       "goal": "hypertrophy",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "mb-v2-la-ex1",
           "exerciseId": "barbell-romanian-deadlift",
@@ -11282,7 +11282,7 @@
       "name": "Muscle Building - Lower Body A (V3)",
       "description": "Version 3 of the hamstring-focused lower body routine for hypertrophy.",
       "goal": "hypertrophy",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "mb-v3-la-ex1",
           "exerciseId": "barbell-romanian-deadlift",
@@ -11537,7 +11537,7 @@
       "name": "Muscle Building - Lower Body A (V4)",
       "description": "Version 4 of the hamstring-focused lower body routine, utilizing supersets.",
       "goal": "hypertrophy",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "mb-v4-la-ex1",
           "exerciseId": "barbell-romanian-deadlift",
@@ -11775,7 +11775,7 @@
       "name": "Muscle Building - Lower Body B (V1)",
       "description": "A second lower body routine for hypertrophy, focusing on the squat pattern and different hamstring/calf exercises.",
       "goal": "hypertrophy",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "mb-lb-ex1",
           "exerciseId": "barbell-back-squat",
@@ -12030,7 +12030,7 @@
       "name": "Muscle Building - Lower Body B (V2)",
       "description": "Version 2 of the squat-focused lower body routine for hypertrophy.",
       "goal": "hypertrophy",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "mb-v2-lb-ex1",
           "exerciseId": "barbell-back-squat",
@@ -12285,7 +12285,7 @@
       "name": "Muscle Building - Lower Body B (V3)",
       "description": "Version 3 of the squat-focused lower body routine for hypertrophy.",
       "goal": "hypertrophy",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "mb-v3-lb-ex1",
           "exerciseId": "barbell-back-squat",
@@ -12540,7 +12540,7 @@
       "name": "Muscle Building - Lower Body B (V4)",
       "description": "Version 4 of the squat-focused lower body routine, featuring supersets.",
       "goal": "hypertrophy",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "mb-v4-lb-ex1",
           "exerciseId": "barbell-back-squat",
@@ -12785,7 +12785,7 @@
       "name": "Muscle Building - Upper Body A (V1)",
       "description": "An upper body focused routine designed for hypertrophy, part of a 4-day split.",
       "goal": "hypertrophy",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "mb-ua-ex1",
           "exerciseId": "barbell-bench-press",
@@ -13130,7 +13130,7 @@
       "name": "Muscle Building - Upper Body A (V2)",
       "description": "Version 2 of the upper body workout, with increased volume on the main compound lifts. Part of a 4-day split for hypertrophy.",
       "goal": "hypertrophy",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "mb-v2-ua-ex1",
           "exerciseId": "barbell-bench-press",
@@ -13475,7 +13475,7 @@
       "name": "Muscle Building - Upper Body A (V3)",
       "description": "Version 3 of the upper body hypertrophy routine. Exercise order is adjusted to group push and pull movements together.",
       "goal": "hypertrophy",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "mb-v3-ua-ex1",
           "exerciseId": "barbell-bench-press",
@@ -13820,7 +13820,7 @@
       "name": "Muscle Building - Upper Body A (V4)",
       "description": "Version 4 of the upper body hypertrophy routine, utilizing supersets to increase workout intensity and density.",
       "goal": "hypertrophy",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "mb-v4-ua-ex1",
           "exerciseId": "barbell-bench-press",
@@ -14144,7 +14144,7 @@
       "name": "Muscle Building - Upper Body B (V1)",
       "description": "The second upper body routine in the hypertrophy program, focusing on different angles and exercises.",
       "goal": "hypertrophy",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "mb-ub-ex1",
           "exerciseId": "pull-up",
@@ -14489,7 +14489,7 @@
       "name": "Muscle Building - Upper Body B (V2)",
       "description": "Version 2 of the second upper body routine, with increased volume on the main vertical push and pull movements.",
       "goal": "hypertrophy",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "mb-v2-ub-ex1",
           "exerciseId": "pull-up",
@@ -14848,7 +14848,7 @@
       "name": "Muscle Building - Upper Body B (V3)",
       "description": "Version 3 of the second upper body routine, grouping pull and push movements.",
       "goal": "hypertrophy",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "mb-v3-ub-ex1",
           "exerciseId": "pull-up",
@@ -15193,7 +15193,7 @@
       "name": "Muscle Building - Upper Body B (V4)",
       "description": "Version 4 of the second upper body routine, featuring supersets.",
       "goal": "hypertrophy",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "mb-v4-ub-ex1",
           "exerciseId": "pull-up",
@@ -15516,7 +15516,7 @@
       "id": "a6fc9bac-59a0-45c7-970e-76ea0f24544e",
       "name": "Quick Surprise Workout",
       "description": "A randomly generated full-body session created on 12/09/2025.",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "24d9d6b1-8807-4104-b7e5-be7c3b9f6267",
           "exerciseId": "leg-raises",
@@ -15770,7 +15770,7 @@
       "goal": "hypertrophy",
       "primaryCategory": "strengthTraining",
       "tags": [],
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "f1f111f6-8a8a-41fb-a11f-3afb22ec1291",
           "exerciseId": "21c5b208-7d92-4607-b4b0-f4390fc2ba1a",
@@ -16042,7 +16042,7 @@
       "name": "Routine tonificazione",
       "description": null,
       "goal": "fat loss / body composition",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "3515ba1b-1627-4729-9bff-ad9c75f2094d",
           "exerciseId": "cycling",
@@ -16493,7 +16493,7 @@
       "name": "Routine tonificazione B",
       "description": "",
       "goal": "fat loss / body composition",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "7c6a3bec-b973-49fa-8114-045c44fea4c6",
           "exerciseId": "cycling",
@@ -16985,7 +16985,7 @@
       "name": "Routine tonificazione B - Jun 13 (Copy)",
       "description": "Workout performed on Jun 13, 2025",
       "goal": "tabata",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "9e8f4721-e948-45a3-8be2-3f6d1e7ab62c",
           "exerciseId": "cycling",
@@ -17509,7 +17509,7 @@
       "name": "SHOCK Your Legs! [Lower Body Kettlebell Strength Circuit]",
       "description": "A lower body circuit that combines weighted kettlebell exercises with bodyweight movements to build strength and endurance in the legs.",
       "goal": "strength",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "we-5-1",
           "exerciseId": "proprioceptive-pause-goblet-squat",
@@ -17702,7 +17702,7 @@
       "description": "",
       "goal": "hypertrophy",
       "tags": [],
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "8927f52b-18ed-42fc-9e86-ba9c51de2ac1",
           "exerciseId": "custom-adhoc-ex-wow-38a84584-3436-4189-96f4-e3b64162b0fc",
@@ -18627,7 +18627,7 @@
       "isActive": false
     }
   ],
-  "exercises": [
+  "workoutExercises": [
     {
       "description": "Piega e salta",
       "muscleGroups": [],
@@ -18790,7 +18790,7 @@
       "routineName": "Nuova sessione",
       "startTime": 1763843614388,
       "date": "2025-11-22",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "custom-exercise-c4984975-7da4-4570-a3c6-24d25a7aa549",
           "exerciseId": "resistance-band-pull-apart",
@@ -19538,7 +19538,7 @@
       "routineName": "Nuova sessione",
       "startTime": 1763679304719,
       "date": "2025-11-20",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "custom-exercise-dc2fe251-20bc-472c-8d73-bb5621f4be6c",
           "exerciseId": "push-up",
@@ -20043,7 +20043,7 @@
       "routineId": "8e95a1bf-c47a-4310-a40b-5b3c10261e57",
       "routineName": "Nuova sessione - As Routine",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "326e7545-8595-4054-be41-0864bea5db9c",
           "exerciseId": "single-kettlebell-clean-and-press",
@@ -21032,7 +21032,7 @@
       "routineId": "-1",
       "routineName": "Nuova sessione",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "custom-exercise-afe33b17-b9a7-4c2c-a9de-12f7a0e9fff5",
           "exerciseId": "jumping-jacks",
@@ -21458,7 +21458,7 @@
       "routineId": "-1",
       "routineName": "Nuova sessione",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "custom-exercise-1d849130-5f7e-4416-b6ed-88eed6f62d4d",
           "exerciseId": "single-kettlebell-clean-and-press",
@@ -22386,7 +22386,7 @@
       "routineName": "Nuova sessione - As Routine",
       "startTime": 1762287728969,
       "date": "2025-11-04",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "0f2e9183-800b-4939-bb46-3903d5086bba",
           "exerciseId": "cycling",
@@ -23377,7 +23377,7 @@
       "durationMinutes": 20,
       "routineName": "Allenamento non programmato",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "2064d9ad-cc5b-4602-a64a-a886dea823a6",
           "exerciseId": "double-kettlebell-front-squat",
@@ -23878,7 +23878,7 @@
       "routineId": "8cd48e42-d69d-4c1b-a696-88c3fb9c1e87",
       "routineName": "Nuova sessione - As Routine",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "0f2e9183-800b-4939-bb46-3903d5086bba",
           "exerciseId": "cycling",
@@ -24624,7 +24624,7 @@
       "durationMinutes": 0,
       "routineName": "Sessione personalizzata",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "700eab97-ca7d-4550-8f61-e51c75b7d66b",
           "exerciseId": "kettlebell-curtsy-lunge",
@@ -25010,7 +25010,7 @@
       "routineId": "e941dc4d-a0f1-4886-9e73-b306be0e1af5",
       "routineName": "Generated full body Workout",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "2f75e8d5-7138-4b5d-9b34-6050120b00e8",
           "exerciseId": "kettlebell-jefferson-curl",
@@ -25552,7 +25552,7 @@
       "routineName": "Toning 3 - Day 2",
       "programId": "7fefb7b9-040f-4043-a1ad-9e9540cb744a",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "routine-2-ex-1",
           "exerciseId": "cycling",
@@ -26588,7 +26588,7 @@
       "routineName": "Toning 3 - Day 1",
       "programId": "7fefb7b9-040f-4043-a1ad-9e9540cb744a",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "c4f8eaa7-5537-412f-8a45-5c862fc6eb32",
           "exerciseId": "running-jogging",
@@ -27539,7 +27539,7 @@
       "id": "8ee8294f-8d04-4186-b412-8d9204564596"
     },
     {
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "routine-2-ex-1",
           "exerciseId": "running-jogging",
@@ -28682,7 +28682,7 @@
       "routineId": "45aadfde-810d-4335-9b6f-d51abe3529ad",
       "routineName": "Kettlebell custom 06-08-3025",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "3dddcc57-0941-406a-adaf-ad0ab0fada20",
           "exerciseId": "single-kettlebell-clean-and-press",
@@ -29119,7 +29119,7 @@
       "routineName": "Toning 3 - Day 1",
       "startTime": 1759260226521,
       "date": "2025-09-30",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "c4f8eaa7-5537-412f-8a45-5c862fc6eb32",
           "exerciseId": "cycling",
@@ -30061,7 +30061,7 @@
       "routineName": "Toning 3 - Day 2",
       "programId": "7fefb7b9-040f-4043-a1ad-9e9540cb744a",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "routine-2-ex-1",
           "exerciseId": "cycling",
@@ -30963,7 +30963,7 @@
       "routineId": "d922d552-7b73-4c8a-a4d0-a2addc87fc91",
       "routineName": "ABC - Complex",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "7060e964-503b-47e6-a77f-db9a3e8e739b",
           "exerciseId": "double-kettlebell-clean",
@@ -32546,7 +32546,7 @@
       "routineName": "Toning 3 - Day 1",
       "programId": "7fefb7b9-040f-4043-a1ad-9e9540cb744a",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "c4f8eaa7-5537-412f-8a45-5c862fc6eb32",
           "exerciseId": "running-jogging",
@@ -33095,7 +33095,7 @@
       "routineName": "Toning 3 - Day 2",
       "programId": "7fefb7b9-040f-4043-a1ad-9e9540cb744a",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "routine-2-ex-1",
           "exerciseId": "running-jogging",
@@ -33880,7 +33880,7 @@
       "routineName": "Toning 3 - Day 2",
       "programId": "7fefb7b9-040f-4043-a1ad-9e9540cb744a",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "routine-2-ex-1",
           "exerciseId": "running-jogging",
@@ -34577,7 +34577,7 @@
       "routineName": "Toning 3 - Day 2",
       "startTime": 1756409087589,
       "date": "2025-08-28",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "routine-2-ex-2",
           "exerciseId": "incline-chest-press-machine",
@@ -35218,7 +35218,7 @@
       "routineName": "Toning 3 - Day 1",
       "programId": "7fefb7b9-040f-4043-a1ad-9e9540cb744a",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "c4f8eaa7-5537-412f-8a45-5c862fc6eb32",
           "exerciseId": "running-jogging",
@@ -36079,7 +36079,7 @@
       "routineName": "Toning 3 - Day 1",
       "programId": "7fefb7b9-040f-4043-a1ad-9e9540cb744a",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "c4f8eaa7-5537-412f-8a45-5c862fc6eb32",
           "exerciseId": "running-jogging",
@@ -36704,7 +36704,7 @@
       "routineId": "b9f5c523-118e-439a-931d-bd52e852ea8a",
       "routineName": "10x20 Snatches",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "a290f3d0-b81e-427f-9d8d-1d0a9bdee672",
           "exerciseId": "running-jogging",
@@ -37260,7 +37260,7 @@
       "routineId": "-1",
       "routineName": "Kettlebell custom 14-08-2025",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "custom-exercise-6f53807e-1cba-42e3-8593-df9e913cde7a",
           "exerciseId": "running-jogging",
@@ -38105,7 +38105,7 @@
       "endTime": 1754488907506,
       "durationMinutes": 26,
       "durationSeconds": 1576,
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "3dddcc57-0941-406a-adaf-ad0ab0fada20",
           "exerciseId": "single-kettlebell-clean-and-press",
@@ -38939,7 +38939,7 @@
       "routineId": "50-rep-kettlebell-death-set-total-body-strength-cardio",
       "routineName": "50 Rep Kettlebell \"DEATH SET\" [Total Body Strength Cardio]",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "263fda61-7943-49dc-885d-a026b0972754",
           "exerciseId": "kettlebell-snatch-to-overhead-reverse-lunge",
@@ -39584,7 +39584,7 @@
       "routineName": "Toning 3 - Day 1",
       "programId": "7fefb7b9-040f-4043-a1ad-9e9540cb744a",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "c4f8eaa7-5537-412f-8a45-5c862fc6eb32",
           "exerciseId": "running-jogging",
@@ -40379,7 +40379,7 @@
       "routineId": "-1",
       "routineName": "Custom KB session 2",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "custom-exercise-40ac34a1-6cd2-492a-b772-def138093aaa",
           "exerciseId": "jumping-jacks",
@@ -40988,7 +40988,7 @@
       "routineName": "Toning 3 - Day 1",
       "programId": "7fefb7b9-040f-4043-a1ad-9e9540cb744a",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "c4f8eaa7-5537-412f-8a45-5c862fc6eb32",
           "exerciseId": "running-jogging",
@@ -41479,7 +41479,7 @@
       "routineId": "-1",
       "routineName": "Custom KB session",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "custom-exercise-834ad102-f2f5-4f33-bbc5-f2146f4d0e69",
           "exerciseId": "jumping-jacks",
@@ -42111,7 +42111,7 @@
       "routineName": "Toning 3 - Day 2",
       "programId": "7fefb7b9-040f-4043-a1ad-9e9540cb744a",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "routine-2-ex-1",
           "exerciseId": "running-jogging",
@@ -43165,7 +43165,7 @@
       "routineName": "Toning 3 - Day 1",
       "programId": "7fefb7b9-040f-4043-a1ad-9e9540cb744a",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "routine-1-ex-1",
           "exerciseId": "running-jogging",
@@ -43904,7 +43904,7 @@
       "routineName": "Toning 3 - Day 2",
       "programId": "7fefb7b9-040f-4043-a1ad-9e9540cb744a",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "routine-2-ex-1",
           "exerciseId": "running-jogging",
@@ -45030,7 +45030,7 @@
       "routineName": "Toning 3 - Day 1",
       "programId": "7fefb7b9-040f-4043-a1ad-9e9540cb744a",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "id": "routine-1-ex-1",
           "exerciseId": "running-jogging",
@@ -45715,7 +45715,7 @@
       "startTime": 1749835783233,
       "endTime": 1749839089715,
       "durationMinutes": 55,
-      "exercises": [
+      "workoutExercises": [
         {
           "exerciseId": "cycling",
           "exerciseName": "Cycling",
@@ -46458,7 +46458,7 @@
       "routineId": "2db1c840-321a-48d6-b523-202a8f0ed01f",
       "routineName": "Routine tonificazione - Jun 11",
       "notes": "",
-      "exercises": [
+      "workoutExercises": [
         {
           "exerciseId": "cycling",
           "exerciseName": "Cycling",

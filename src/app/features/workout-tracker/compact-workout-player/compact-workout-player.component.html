@@ -120,9 +120,9 @@
 
   <!-- Main Content: Exercises List -->
   <main class="mt-4 px-1 pb-36 bg-gray-200 dark:bg-gray-900">
-    <div *ngIf="routine() as currentRoutine; else loading" cdkDropList [cdkDropListData]="currentRoutine.exercises"
+    <div *ngIf="routine() as currentRoutine; else loading" cdkDropList [cdkDropListData]="currentRoutine.workoutExercises"
       (cdkDropListDropped)="onExerciseDrop($event)" class="">
-      <ng-container *ngFor="let exercise of currentRoutine.exercises; let exIndex = index;">
+      <ng-container *ngFor="let exercise of currentRoutine.workoutExercises; let exIndex = index;">
         <!-- Exercise Card -->
         <div #exerciseCard cdkDrag *ngIf="!exercise.supersetId || isSupersetStart(exIndex)" appShatterable
           [id]="'appShatterable-' + exercise.id" class="transition-all duration-300 relative"
@@ -1053,16 +1053,16 @@
     </ng-template>
   </main>
   <div class="flex flex-col items-center"
-    *ngIf="!routine() || (routine() !== null && routine() !== undefined && (!routine()?.exercises || routine()?.exercises?.length === 0))">
+    *ngIf="!routine() || (routine() !== null && routine() !== undefined && (!routine()?.workoutExercises || routine()?.workoutExercises?.length === 0))">
     <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-200">
       {{ sessionState() === sessionStateEnum.Error ? ('compactPlayer.errorLoading' | translate) :
-      (currentWorkoutLog().exercises?.length
+      (currentWorkoutLog().workoutExercises?.length
       === 0 ?
       (routineId === '-1' ? ('compactPlayer.workoutStarted' | translate) : ('compactPlayer.workoutEnded' | translate)) :
       ('compactPlayer.workoutComplete' | translate)) }}
     </h2>
     <p class="text-gray-600 dark:text-gray-400 mt-2" *ngIf="sessionState() !== sessionStateEnum.Error">
-      {{ currentWorkoutLog().exercises?.length === 0 ? ('compactPlayer.noSetsLogged' | translate) :
+      {{ currentWorkoutLog().workoutExercises?.length === 0 ? ('compactPlayer.noSetsLogged' | translate) :
       ('compactPlayer.allSetsDone' | translate) }}
     </p>
   </div>
@@ -1078,7 +1078,7 @@
       </button>
 
       <button appBumpClick (click)="finishWorkout()"
-        [disabled]="!this.currentWorkoutLog() || !this.currentWorkoutLog().exercises || this.currentWorkoutLog().exercises?.length === 0 || sessionState() === sessionStateEnum.Paused"
+        [disabled]="!this.currentWorkoutLog() || !this.currentWorkoutLog().workoutExercises || this.currentWorkoutLog().workoutExercises?.length === 0 || sessionState() === sessionStateEnum.Paused"
         class="flex items-center justify-center space-x-2 bg-green-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
         <app-icon name="done" class="h-6 w-6"></app-icon>
         <span>{{ 'compactPlayer.finish' | translate }}</span>
@@ -1283,7 +1283,7 @@
 
 <app-session-overview-modal [isOpen]="isSessionOverviewVisible()" [routineSignal]="routine"
   [loggedExercisesSignal]="currentWorkoutLogExercises"
-  [activeExerciseId]="routine()?.exercises?.[expandedExerciseIndex() ?? -1]?.id"
+  [activeExerciseId]="routine()?.workoutExercises?.[expandedExerciseIndex() ?? -1]?.id"
   [activeSetIndex]="findFirstIncompleteSetIndex(expandedExerciseIndex() ?? -1)"
   [activeBlockRound]="isSupersetStart(expandedExerciseIndex() ?? -1) ? findFirstIncompleteRoundIndex(expandedExerciseIndex() ?? -1) : -1"
   (close)="closeSessionOverviewModal()">

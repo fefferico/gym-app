@@ -117,7 +117,7 @@ export enum SET_TYPE {
         style({ opacity: 1, transform: 'translateX(0) scale(1)' }),
         animate('350ms cubic-bezier(.36,1.01,.32,1)', style({ opacity: 0, transform: 'translateX(80px) scale(0.8)' }))
       ])
-    ]),
+    ])
   ],
 })
 export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit {
@@ -171,7 +171,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   lastRoutineDuration: number = 0;
 
   liveFormAsRoutine: Signal<Routine | undefined>;
-  private loadedRoutine = signal<Routine | undefined>(undefined);
 
   lastLoggedRoutineInfo = signal<{ [id: string]: { duration: number, name: string, startTime: number | null } }>({});
   builderForm!: FormGroup;
@@ -223,18 +222,18 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     { value: 'hypertrophy', label: 'workoutBuilder.goals.hypertrophy' },
     { value: 'strength', label: 'workoutBuilder.goals.strength' },
     { value: 'tabata', label: 'workoutBuilder.goals.tabata' },
-    { value: 'muscular endurance', label: 'workoutBuilder.goals.muscularEndurance' },
-    { value: 'cardiovascular endurance', label: 'workoutBuilder.goals.cardiovascularEndurance' },
-    { value: 'fat loss / body composition', label: 'workoutBuilder.goals.fatLoss' },
-    { value: 'mobility & flexibility', label: 'workoutBuilder.goals.mobility' },
-    { value: 'power / explosiveness', label: 'workoutBuilder.goals.power' },
-    { value: 'speed & agility', label: 'workoutBuilder.goals.speed' },
-    { value: 'balance & coordination', label: 'workoutBuilder.goals.balance' },
-    { value: 'skill acquisition', label: 'workoutBuilder.goals.skill' },
-    { value: 'rehabilitation / injury prevention', label: 'workoutBuilder.goals.rehabilitation' },
-    { value: 'mental health / stress relief', label: 'workoutBuilder.goals.mentalHealth' },
-    { value: 'general health & longevity', label: 'workoutBuilder.goals.generalHealth' },
-    { value: 'sport-specific performance', label: 'workoutBuilder.goals.sportSpecific' },
+    { value: 'muscularEndurance', label: 'workoutBuilder.goals.muscularEndurance' },
+    { value: 'cardiovascular Endurance', label: 'workoutBuilder.goals.cardiovascularEndurance' },
+    { value: 'fatLossBodyComposition', label: 'workoutBuilder.goals.fatLoss' },
+    { value: 'mobilityFlexibility', label: 'workoutBuilder.goals.mobility' },
+    { value: 'powerExplosiveness', label: 'workoutBuilder.goals.power' },
+    { value: 'speedAgility', label: 'workoutBuilder.goals.speed' },
+    { value: 'balanceCoordination', label: 'workoutBuilder.goals.balance' },
+    { value: 'skillAcquisition', label: 'workoutBuilder.goals.skill' },
+    { value: 'rehabilitationInjuryPrevention', label: 'workoutBuilder.goals.rehabilitation' },
+    { value: 'mentalHealthStressRelief', label: 'workoutBuilder.goals.mentalHealth' },
+    { value: 'generalHealthLongevity', label: 'workoutBuilder.goals.generalHealth' },
+    { value: 'sportSpecificPerformance', label: 'workoutBuilder.goals.sportSpecific' },
     { value: 'maintenance', label: 'workoutBuilder.goals.maintenance' },
     { value: 'rest', label: 'workoutBuilder.goals.rest' }, // Assuming METRIC.rest is 'rest'
     { value: 'custom', label: 'workoutBuilder.goals.custom' }
@@ -288,30 +287,35 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   constructor() {
     this.spinnerService.show();
     this.builderForm = this.fb.group({
-      name: [''], // Validated based on mode
-      description: [''], // Only for routineBuilder
-      goal: [''], // Only for routineBuilder
+      id: [''],
+      name: [''],
+      description: [''],
+      goal: [''],
       primaryCategory: [''],
       secondaryCategory: [''],
       tags: [''],
-      workoutDate: [''], // Only for manualLogEntry
-      startTime: [''],   // Only for manualLogEntry
-      endTime: [''],   // Only for manualLogEntry
-      // durationMinutes: [60, [Validators.min(1)]], // Only for manualLogEntry
-      overallNotesLog: [''], // Only for manualLogEntry
-      routineIdForLog: [''], // For selecting base routine in manualLogEntry
-      programIdForLog: [''], // For selecting base program in manualLogEntry
-      iterationIdForLog: [''], // For selecting base program iteration in manualLogEntry
-      scheduledDayIdForLog: [''], // For selecting base program iteration in manualLogEntry
+      notes: [''], // NEW: Routine-level notes (separate from description)
+      targetMuscleGroups: [[]],  // NEW: Array of muscle groups
+      estimatedDuration: [0],    // NEW: Calculated/stored duration in minutes
+      workoutDate: [''],
+      startTime: [''],
+      endTime: [''],
+      overallNotesLog: [''],
+      routineIdForLog: [''],
+      programIdForLog: [''],
+      iterationIdForLog: [''],
+      scheduledDayIdForLog: [''],
       locationId: [''],
       locationName: [''],
-      exercises: this.fb.array([]), // Validated based on mode/goal
+      workoutExercises: this.fb.array([]),
+      createdAt: [''],
+      updatedAt: ['']
     });
 
     const formValue$ = this.builderForm.valueChanges.pipe(
       startWith(this.builderForm.getRawValue()),
       map(formValue => {
-        const baseRoutine = this.mapFormToRoutine(formValue);
+        const baseRoutine = formValue as Routine;
         if (this.mode === BuilderMode.manualLogEntry && this.currentLogId) {
           return { ...baseRoutine, workoutLogId: this.currentLogId } as LoggedRoutine;
         }
@@ -464,12 +468,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
         this.configureFormValidatorsAndFieldsForMode();
         this.expandedSetPath.set(null);
-        this.exercisesFormArray.clear({ emitEvent: false }); // Clear before reset
+        this.workoutExercisesFormArray.clear({ emitEvent: false }); // Clear before reset
         this.builderForm.reset(this.getDefaultFormValuesForMode(), { emitEvent: false });
 
         if (this.isRoutineMode) {
           if (this.mode === BuilderMode.customProgramEntryBuilder && this.initialRoutine) {
-            this.loadedRoutine.set(this.initialRoutine);
             this.patchFormWithRoutineData(this.initialRoutine as Routine);
             return of(null); // No need to load from service
           }
@@ -477,6 +480,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             return this.trackingService.getWorkoutLogById(this.currentLogId);
           }
           if (this.currentRoutineId && (this.isEditMode || this.isViewMode)) { // Editing or Viewing a Routine
+            this.isNewMode = false;
             return this.workoutService.getRoutineById(this.currentRoutineId);
           }
         } else if (this.mode === BuilderMode.manualLogEntry) {
@@ -499,16 +503,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             this.prefillRoutineFormFromLog(loadedData as WorkoutLog);
           } else if (this.mode === BuilderMode.routineBuilder) {
             // Set our new signal with the initial data
-            this.loadedRoutine.set(loadedData as Routine);
             this.patchFormWithRoutineData(loadedData as Routine);
-
-            if (this.loadedRoutine()?.goal) {
-              this.previousGoalValue = this.loadedRoutine()?.goal;
-            }
           } else if (this.mode === BuilderMode.manualLogEntry && this.isEditMode && this.currentLogId) {
             this.patchFormWithLogData(loadedData as WorkoutLog);
-            // For a log, we can derive the initial routine state from the form immediately
-            this.loadedRoutine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
           } else if (this.mode === BuilderMode.manualLogEntry && this.isNewMode && this.currentRoutineId) {
             this.prefillLogFormFromRoutine(loadedData as Routine);
           }
@@ -541,146 +538,18 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         if (selectedRoutine) {
           this.prefillLogFormFromRoutine(selectedRoutine, false); // Don't reset date/time if user already set them
         } else {
-          this.exercisesFormArray.clear();
+          this.workoutExercisesFormArray.clear();
           // If user deselects routine, workout name might become editable or clear
           if (!this.isEditMode) this.builderForm.get('name')?.setValue('Ad-hoc Workout');
         }
+
+        this.subscriptions.add(this.addProgramIdSubscription());
+        this.subscriptions.add(this.addScheduledDayIdSubscription());
       });
-
-      // START: Added subscription for program selection
-      this.builderForm.get('programIdForLog')?.valueChanges.subscribe(programId => {
-        if (programId) {
-          this.builderForm.get('routineIdForLog')?.disable();
-          this.initialProgramIdForLogEdit = programId;
-          this.retrieveProgramInfo(programId);
-          // Reset the dependent fields if the program changes
-          this.builderForm.get('iterationIdForLog')?.setValue('', { emitEvent: false });
-          this.builderForm.get('scheduledDayIdForLog')?.setValue('', { emitEvent: false });
-          this.builderForm.get('routineIdForLog')?.setValue('', { emitEvent: false });
-          this.exercisesFormArray.clear();
-        } else {
-          this.builderForm.get('routineIdForLog')?.enable();
-          this.initialProgramIdForLogEdit = undefined;
-          // Clear the options and values if no program is selected
-          // this.availableRoutineForProgram = [];
-          this.availableIterationIds = [];
-          this.availableScheduledDayIds = [];
-          this.availableScheduledDayInfos = [];
-          this.builderForm.get('iterationIdForLog')?.setValue('', { emitEvent: false });
-          this.builderForm.get('scheduledDayIdForLog')?.setValue('', { emitEvent: false });
-        }
-      });
-
-      // =================== START: FIXED SNIPPET ===================
-      this.builderForm.get('scheduledDayIdForLog')?.valueChanges.subscribe(scheduledDayId => {
-        const scheduledDayInfo = this.availableScheduledDayInfos.find(
-          (info) => info.id === scheduledDayId
-        );
-
-        if (!scheduledDayInfo) {
-          this.exercisesFormArray.clear();
-          this.builderForm.get('routineIdForLog')?.setValue('', { emitEvent: false });
-          this.builderForm.get('name')?.setValue('Ad-hoc Workout', { emitEvent: false });
-          return;
-        }
-
-        firstValueFrom(this.workoutService.getRoutineById(scheduledDayInfo.routineId))
-          .then(routineToLog => {
-            if (routineToLog) {
-              // Surgically update only the necessary parts of the form
-              this.builderForm.get('name')?.setValue(`Log: ${routineToLog.name}`, { emitEvent: false });
-              this.builderForm.get('routineIdForLog')?.setValue(routineToLog.id, { emitEvent: false });
-
-              // Prefill only the exercises without touching other form controls
-              this.exercisesFormArray.clear({ emitEvent: false });
-              routineToLog.exercises.forEach(routineEx => {
-                this.exercisesFormArray.push(this.workoutFormService.createExerciseFormGroup(routineEx, false, true), { emitEvent: false });
-              });
-
-              // If the scheduled day has an iterationId, set it in the form
-              if (scheduledDayInfo.iterationId) {
-                this.builderForm.get('iterationIdForLog')?.setValue(scheduledDayInfo.iterationId, { emitEvent: false });
-              }
-            } else {
-              this.toastService.error(`Routine with ID ${scheduledDayInfo.routineId} not found.`, 0, this.translate.instant('common.error'));
-              this.exercisesFormArray.clear();
-            }
-          })
-          .catch(error => {
-            console.error("Failed to fetch routine for scheduled day:", error);
-            this.toastService.error("Could not load routine details.", 0, this.translate.instant('common.error'));
-            this.exercisesFormArray.clear();
-          });
-      });
-      // =================== END: FIXED SNIPPET ===================
-
-      // END: Added subscription
     }
 
-    const goalSub = this.builderForm.get('goal')?.valueChanges
-      .subscribe(async (goalValue: any) => {
-        if (this.isRevertingGoal) {
-          this.isRevertingGoal = false;
-          return;
-        }
 
-        if (this.previousGoalValue !== goalValue && goalValue !== 'tabata') {
-          this.previousGoalValue = goalValue;
-        }
-        if (this.isRoutineMode && goalValue === METRIC.rest) {
-          while (this.exercisesFormArray.length) this.exercisesFormArray.removeAt(0);
-          this.exercisesFormArray.clearValidators();
-        }
-        const exercises = this.exercisesFormArray.controls as FormGroup[];
-
-        // TABATA LOGIC
-        if (this.isRoutineMode && this.previousGoalValue !== goalValue && goalValue === 'tabata') {
-          if (exercises.length < 2) {
-            this.toastService.warning(this.translate.instant('workoutBuilder.toasts.tabataSizeError'), 5000);
-            this.isRevertingGoal = true;
-            this.builderForm.get('goal')?.setValue(this.previousGoalValue, { emitEvent: true });
-            return;
-          }
-
-          const confirm = await this.alertService.showConfirm(
-            this.translate.instant('workoutBuilder.alerts.tabataConvertTitle'),
-            this.translate.instant('workoutBuilder.alerts.tabataConvertMessage'),
-            this.translate.instant('workoutBuilder.alerts.convert'),
-            this.translate.instant('common.cancel')
-          );
-
-          if (!confirm || !confirm.data) {
-            // User cancelled, so revert the change and stop processing
-            this.isRevertingGoal = true;
-            this.builderForm.get('goal')?.setValue(this.previousGoalValue, { emitEvent: true });
-            return;
-          }
-
-          if (!this.enforceTabataSuperset()) {
-            this.isRevertingGoal = true;
-            this.builderForm.get('goal')?.setValue(this.previousGoalValue, { emitEvent: true });
-            return;
-          }
-          this.toastService.info(this.translate.instant('workoutBuilder.toasts.tabataConverted'));
-        }
-        else if (this.isRoutineMode && this.builderForm.get('goal')?.value !== 'tabata') {
-          const firstExercise = this.exercisesFormArray.at(0) as FormGroup;
-          if (firstExercise && firstExercise.get('supersetId')?.value && firstExercise.get('sets')?.value?.length === this.exercisesFormArray.length) {
-            this.exercisesFormArray.controls.forEach(exerciseControl => {
-              (exerciseControl as FormGroup).patchValue({
-                supersetId: null,
-                supersetOrder: null,
-                type: 'standard'
-              }, { emitEvent: false });
-            });
-            this.toastService.info(this.translate.instant('workoutBuilder.toasts.tabataRemoved'), 3000);
-          }
-        }
-        this.exercisesFormArray.updateValueAndValidity();
-        this.previousGoalValue = goalValue;
-      });
-
-    this.subscriptions.add(goalSub);
+    this.subscriptions.add(this.addGoalSubscription());
 
     const descSub = this.builderForm.get('description')?.valueChanges.subscribe(value => {
       this.updateSanitizedDescription(value || '');
@@ -789,12 +658,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private getDefaultFormValuesForMode(): any {
     // Common fields for all modes
     const base = {
+      createdAt: '',
+      updatedAt: '',
       name: '',
       description: '',
       goal: '',
       primaryCategory: '',
       secondaryCategory: '',
-      tags: '',
+      tags: [],
       workoutDate: '',
       startTime: '',
       endTime: '',
@@ -803,7 +674,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       programIdForLog: '',
       iterationIdForLog: '',
       scheduledDayIdForLog: '',
-      exercises: []
+      workoutExercises: [],
+      notes: '',
+      targetMuscleGroups: [],
+      estimatedDuration: 0
     };
 
     if (this.mode === BuilderMode.manualLogEntry) {
@@ -823,7 +697,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   private configureFormValidatorsAndFieldsForMode(): void {
     const nameCtrl = this.builderForm.get('name');
-    const goalCtrl = this.builderForm.get('goal');
+    const goalCtrl = this.routineGoal;
     const dateCtrl = this.builderForm.get('workoutDate');
     const startTimeCtrl = this.builderForm.get('startTime');
     const endTimeCtrl = this.builderForm.get('endTime');
@@ -839,12 +713,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (this.isRoutineMode) {
       nameCtrl?.setValidators(Validators.required);
       goalCtrl?.setValidators(Validators.required);
-      this.builderForm.get('exercises')?.setValidators(Validators.nullValidator); // Exercises not strictly required if goal is 'rest'
+      this.workoutExercisesFormArray?.setValidators(Validators.nullValidator); // Exercises not strictly required if goal is 'rest'
     } else { // manualLogEntry
       dateCtrl?.setValidators(Validators.required);
       startTimeCtrl?.setValidators(Validators.required);
       endTimeCtrl?.setValidators(Validators.required);
-      this.builderForm.get('exercises')?.setValidators(Validators.required); // Exercises always required for a log
+      this.workoutExercisesFormArray?.setValidators(Validators.required); // Exercises always required for a log
     }
     this.builderForm.updateValueAndValidity({ emitEvent: false });
   }
@@ -867,7 +741,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       } else { // manualLogEntry
         // Name field is used for WorkoutLog's title, so it should be enabled or prefilled
         this.builderForm.get('description')?.disable({ emitEvent: false });
-        this.builderForm.get('goal')?.disable({ emitEvent: false });
+        this.routineGoal?.disable({ emitEvent: false });
 
         if (this.checkIfLogForProgram()) {
           this.builderForm.get('programIdForLog')?.disable();
@@ -901,8 +775,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return this.translate.instant('workoutBuilder.logEntry.adHocTitle')
   }
 
-  get exercisesFormArray(): FormArray {
-    return this.builderForm.get('exercises') as FormArray;
+  get workoutExercisesFormArray(): FormArray {
+    return this.builderForm.get('workoutExercises') as FormArray;
+  }
+
+  get routineGoal(): FormControl {
+    return this.builderForm.get('goal') as FormControl;
   }
 
   private addRepsListener(exerciseControl: FormGroup): void {
@@ -1068,7 +946,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private updateExerciseNamesInForm(): void {
     const exercisesMap = new Map(this.availableExercises.map(ex => [ex.id, ex.name]));
 
-    this.exercisesFormArray.controls.forEach(control => {
+    this.workoutExercisesFormArray.controls.forEach(control => {
       const exerciseGroup = control as FormGroup;
       const exerciseId = exerciseGroup.get('exerciseId')?.value;
       const currentName = exerciseGroup.get('exerciseName')?.value;
@@ -1085,31 +963,49 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   patchFormWithRoutineData(routine: Routine): void {
     this.builderForm.patchValue({
+      ...routine,
       name: routine.name,
       description: routine.description,
       goal: routine.goal ?? '',
       primaryCategory: routine.primaryCategory ?? '',
       secondaryCategory: routine.secondaryCategory ?? '',
-      tags: routine.tags?.join(', ') || '', // Convert array to comma-separated string
-    });
+      tags: this.tagsAsString(routine.tags),
+    }, { emitEvent: false });
+
     this.updateSanitizedDescription(routine.description || '');
-    this.exercisesFormArray.clear();
+    this.workoutExercisesFormArray.clear({ emitEvent: false });
 
-
-    // Only add each exercise once, using its section property if present
-    if (routine.exercises) {
-      routine.exercises.forEach(exerciseData => {
+    // Load all exercises WITHOUT triggering valueChanges
+    if (routine.workoutExercises) {
+      routine.workoutExercises.forEach(exerciseData => {
         const newExerciseFormGroup = this.workoutFormService.createExerciseFormGroup(exerciseData, true, false);
-        // Add section control with the section type or null
         newExerciseFormGroup.addControl('section', this.fb.control(exerciseData.section ?? null));
+        newExerciseFormGroup.addControl('restBetweenRounds', this.fb.control(0, { nonNullable: true }));
 
-        this.exercisesFormArray.push(newExerciseFormGroup);
+        // Push WITHOUT emitting events
+        this.workoutExercisesFormArray.push(newExerciseFormGroup, { emitEvent: false });
         this.addRepsListener(newExerciseFormGroup);
         this.addDurationListener(newExerciseFormGroup);
       });
     }
 
+    // Populate restBetweenRounds for superset first exercises
+    this.workoutExercisesFormArray.controls.forEach((exControl) => {
+      const isSupersetStart = exControl.get('supersetId')?.value && exControl.get('supersetOrder')?.value === 0;
+      if (isSupersetStart) {
+        const setsArray = exControl.get('sets') as FormArray;
+        const firstSet = setsArray?.at(0);
+        if (firstSet) {
+          // set restBetweenRounds value
+        }
+      }
+    });
+
     this.updateExerciseNamesInForm();
+
+    // NOW trigger validation and valueChanges ONCE at the end
+    this.builderForm.updateValueAndValidity({ emitEvent: true });
+
     this.builderForm.markAsPristine();
   }
 
@@ -1146,11 +1042,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
     // END: Manual trigger
 
-    this.exercisesFormArray.clear();
-    log.exercises.forEach(loggedEx => {
+    this.workoutExercisesFormArray.clear();
+    log.workoutExercises.forEach(loggedEx => {
       // Use this helper to create exercise groups with superset info
       const exerciseFormGroup = this.workoutFormService.createExerciseFormGroupFromLoggedExercise(loggedEx);
-      this.exercisesFormArray.push(exerciseFormGroup);
+      this.workoutExercisesFormArray.push(exerciseFormGroup);
     });
 
     this.toggleFormState(false);
@@ -1177,12 +1073,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // patchData.durationMinutes = 60;
     }
     this.builderForm.patchValue(patchData, { emitEvent: false });
-    this.exercisesFormArray.clear({ emitEvent: false });
-    routine.exercises.forEach(routineEx => {
+    this.workoutExercisesFormArray.clear({ emitEvent: false });
+    routine.workoutExercises.forEach(routineEx => {
       //IMPORTANT: isFromRoutineTemplate MUST be true, so the exercise can hold supersetId if there is one
       const newExercise = this.workoutFormService.createExerciseFormGroup(routineEx, true, true);
 
-      this.exercisesFormArray.push(newExercise, { emitEvent: false });
+      this.workoutExercisesFormArray.push(newExercise, { emitEvent: false });
     });
     this.builderForm.markAsDirty();
   }
@@ -1199,11 +1095,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     this.updateSanitizedDescription(log.notes || '');
 
-    this.exercisesFormArray.clear({ emitEvent: false });
+    this.workoutExercisesFormArray.clear({ emitEvent: false });
 
-    log.exercises.forEach(loggedEx => {
+    log.workoutExercises.forEach(loggedEx => {
       const newRoutineExercise = this.createRoutineExerciseFromLoggedExercise(loggedEx);
-      this.exercisesFormArray.push(newRoutineExercise, { emitEvent: false });
+      this.workoutExercisesFormArray.push(newRoutineExercise, { emitEvent: false });
     });
 
     this.toggleFormState(false); // Enable the form for editing
@@ -1211,9 +1107,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     // +++ FIX: Force the form to update before mapping +++
     this.builderForm.updateValueAndValidity();
-
-    // Now map the form to routine - the exercises array should be populated
-    this.loadedRoutine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
   }
 
   private createRoutineExerciseFromLoggedExercise(loggedEx: LoggedWorkoutExercise): FormGroup {
@@ -1355,11 +1248,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         this.addDurationListener(newExerciseFormGroup);
         this.addDistanceListener(newExerciseFormGroup);
 
-        this.exercisesFormArray.push(newExerciseFormGroup);
-        // this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
+        this.workoutExercisesFormArray.push(newExerciseFormGroup);
+        // this.toggleSetExpansion(this.workoutExercisesFormArray.length - 1, 0);
       } else {
         newExerciseFormGroup = this.workoutFormService.createExerciseFormGroup(workoutExercise, false, true);
-        this.exercisesFormArray.push(newExerciseFormGroup);
+        this.workoutExercisesFormArray.push(newExerciseFormGroup);
       }
 
       // Optionally, only expand the last one added
@@ -1367,7 +1260,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         this.ngZone.runOutsideAngular(() => {
           setTimeout(() => {
             this.ngZone.run(() => {
-              this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
+              this.toggleSetExpansion(this.workoutExercisesFormArray.length - 1, 0);
             });
           }, 0);
         });
@@ -1397,7 +1290,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         }
       }
     });
-    this.previousGoalValue = this.builderForm.get('goal')?.value;
+    this.previousGoalValue = this.routineGoal?.value;
   }
 
   addSet(exerciseControl: AbstractControl, exerciseIndex: number): void {
@@ -1407,7 +1300,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     // If it's part of a superset, we need to add a set to ALL exercises in that group.
     if (supersetId) {
-      this.exercisesFormArray.controls.forEach((ctrl, idx) => {
+      this.workoutExercisesFormArray.controls.forEach((ctrl, idx) => {
         const fg = ctrl as FormGroup;
         if (fg.get('supersetId')?.value === supersetId) {
           const setsArray = this.workoutFormService.getSetsFormArray(fg);
@@ -1442,7 +1335,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (exIndex < 0) {
       return;
     }
-    const exerciseControl = this.exercisesFormArray.controls.at(exIndex);
+    const exerciseControl = this.workoutExercisesFormArray.controls.at(exIndex);
     if (!exerciseControl) {
       return;
     }
@@ -1500,11 +1393,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
         if (confirm && confirm.data) {
           // User confirmed: remove the entire exercise
-          this.exercisesFormArray.removeAt(exerciseIndex);
+          this.workoutExercisesFormArray.removeAt(exerciseIndex);
           actionTaken = true;
 
           // Now, check if the remaining superset is still valid
-          const remainingGroup = this.exercisesFormArray.controls
+          const remainingGroup = this.workoutExercisesFormArray.controls
             .filter(c => (c as FormGroup).get('supersetId')?.value === supersetId);
 
           const isEmom = remainingGroup[0]?.get('supersetType')?.value === 'emom';
@@ -1527,7 +1420,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         }
       } else {
         // It's a superset, but not the last round. Remove this round from all sibling exercises.
-        this.exercisesFormArray.controls.forEach((ctrl) => {
+        this.workoutExercisesFormArray.controls.forEach((ctrl) => {
           if ((ctrl as FormGroup).get('supersetId')?.value === supersetId) {
             const currentSets = this.workoutFormService.getSetsFormArray(ctrl);
             if (setIndex < currentSets.length) {
@@ -1550,7 +1443,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           this.translate.instant('common.cancel')
         );
         if (confirm && confirm.data) {
-          this.exercisesFormArray.removeAt(exerciseIndex);
+          this.workoutExercisesFormArray.removeAt(exerciseIndex);
           actionTaken = true;
           this.showUndoWithToast(this.translate.instant("workoutBuilder.toasts.exerciseRemoved"));
           this.audioService.playSound(AUDIO_TYPES.whoosh);
@@ -1704,7 +1597,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const selectedIndices = this.selectedExerciseIndicesForMultipleRemoval().sort((a, b) => b - a);
 
     selectedIndices.forEach(index => {
-      this.exercisesFormArray.removeAt(index);
+      this.workoutExercisesFormArray.removeAt(index);
     });
 
     this.selectedExerciseIndicesForMultipleRemoval.set([]);
@@ -1739,7 +1632,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // All selected exercises must be part of the same superset
     const supersetIds = Array.from(new Set(
       selectedIndices
-        .map(i => (this.exercisesFormArray.at(i) as FormGroup).get('supersetId')?.value)
+        .map(i => (this.workoutExercisesFormArray.at(i) as FormGroup).get('supersetId')?.value)
         .filter(id => !!id)
     ));
     const uniqueSupersetIds = Array.from(new Set(supersetIds));
@@ -1748,7 +1641,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   private recalculateSupersetOrders(): void {
     const supersetGroups = new Map<string, FormGroup[]>();
-    this.exercisesFormArray.controls.forEach(control => {
+    this.workoutExercisesFormArray.controls.forEach(control => {
       const exerciseForm = control as FormGroup;
       const supersetId = exerciseForm.get('supersetId')?.value;
       if (supersetId) {
@@ -1768,7 +1661,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         });
       } else {
         groupExercises.sort((a, b) => {
-          return this.exercisesFormArray.controls.indexOf(a) - this.exercisesFormArray.controls.indexOf(b);
+          return this.workoutExercisesFormArray.controls.indexOf(a) - this.workoutExercisesFormArray.controls.indexOf(b);
         });
         groupExercises.forEach((exerciseForm, index) => {
           exerciseForm.patchValue({
@@ -1777,17 +1670,17 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         });
       }
     });
-    this.exercisesFormArray.updateValueAndValidity({ emitEvent: false });
+    this.workoutExercisesFormArray.updateValueAndValidity({ emitEvent: false });
   }
 
 
   ungroupSuperset(exerciseIndex: number): void {
     if (this.isViewMode) return;
-    const exerciseControl = this.exercisesFormArray.at(exerciseIndex) as FormGroup;
+    const exerciseControl = this.workoutExercisesFormArray.at(exerciseIndex) as FormGroup;
     const supersetIdToClear = exerciseControl.get('supersetId')?.value;
     if (!supersetIdToClear) return;
 
-    this.exercisesFormArray.controls.forEach(ctrl => {
+    this.workoutExercisesFormArray.controls.forEach(ctrl => {
       const fg = ctrl as FormGroup;
       if (fg.get('supersetId')?.value === supersetIdToClear) {
         // +++ RESET NEW PROPERTIES ON UNGROUP +++
@@ -1807,26 +1700,61 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (this.isViewMode) return;
     event?.stopPropagation();
 
-    const exerciseControl = this.exercisesFormArray.at(exerciseIndex) as FormGroup;
+    const exerciseControl = this.workoutExercisesFormArray.at(exerciseIndex) as FormGroup;
     const removedSupersetId = exerciseControl.get('supersetId')?.value;
-    this.exercisesFormArray.removeAt(exerciseIndex);
+    const removedSupersetOrder = exerciseControl.get('supersetOrder')?.value;
+
+    // If this exercise is part of a superset
+    if (removedSupersetId) {
+      // Find all exercises in this superset
+      const supersetExercises = this.workoutExercisesFormArray.controls
+        .map((ctrl, idx) => ({ ctrl: ctrl as FormGroup, idx }))
+        .filter(({ ctrl }) => ctrl.get('supersetId')?.value === removedSupersetId);
+
+      // If there are only 2 exercises in the superset (removing one will leave just 1)
+      // We need to remove the entire group since a superset must have at least 2 exercises
+      if (supersetExercises.length === 2) {
+        // Remove all exercises in this superset (in reverse order to maintain indices)
+        supersetExercises
+          .sort((a, b) => b.idx - a.idx) // Sort descending to remove from end first
+          .forEach(({ idx }) => {
+            this.workoutExercisesFormArray.removeAt(idx);
+          });
+
+        this.selectedExerciseIndicesForSuperset.set([]);
+        this.expandedSetPath.set(null);
+        this.showUndoWithToast("Superset removed (need at least 2 exercises)");
+        this.audioService.playSound(AUDIO_TYPES.whoosh);
+        return;
+      }
+    }
+
+    // Standard removal: just remove the single exercise
+    this.workoutExercisesFormArray.removeAt(exerciseIndex);
     this.selectedExerciseIndicesForSuperset.set([]);
+
+    // Recalculate superset orders if needed
     if (removedSupersetId) {
       this.recalculateSupersetOrders();
     }
-    this.expandedSetPath.set(null); // Collapse if an exercise is removed
+
+    this.expandedSetPath.set(null);
     this.showUndoWithToast("Exercise removed");
     this.audioService.playSound(AUDIO_TYPES.whoosh);
   }
-  errorMessage = signal<string | null>(null);
 
+  errorMessage = signal<string | null>(null);
   isSaving = signal(false);
   async onSubmit(): Promise<void> {
     if (this.isViewMode) { this.toastService.info(this.translate.instant('workoutBuilder.toasts.viewMode'), 3000, this.translate.instant('workoutBuilder.toasts.viewMode')); return; }
     this.isSaving.set(true);
+    this.cdr.detectChanges();
     this.recalculateSupersetOrders();
 
-    const formValueForValidation = this.builderForm.getRawValue();
+    const formValueForValidation = this.mapFormToRoutine();
+    if (!formValueForValidation) {
+      return
+    }
     if (
       this.isRoutineMode &&
       formValueForValidation.goal === 'tabata' &&
@@ -1837,9 +1765,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         return;
       }
     }
-    const isRestGoalRoutine = this.isRoutineMode && this.builderForm.get('goal')?.value === METRIC.rest;
+    const isRestGoalRoutine = this.isRoutineMode && this.routineGoal?.value === METRIC.rest;
 
-    if ((this.isRoutineMode && (this.builderForm.get('name')?.invalid || this.builderForm.get('goal')?.invalid)) ||
+    if ((this.isRoutineMode && (this.builderForm.get('name')?.invalid || this.routineGoal?.invalid)) ||
       (this.mode === BuilderMode.manualLogEntry && (this.builderForm.get('workoutDate')?.invalid || this.builderForm.get('startTime')?.invalid || this.builderForm.get('endTime')?.invalid
         //  || this.builderForm.get('durationMinutes')?.invalid
       )
@@ -1850,7 +1778,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       if (this.builderForm.get('name')?.invalid) {
         errors.push(this.translate.instant('workoutBuilder.routineBuilder.nameLabel'));
       }
-      if (this.builderForm.get('goal')?.invalid) {
+      if (this.routineGoal?.invalid) {
         errors.push(this.translate.instant('workoutBuilder.routineBuilder.goalLabel'));
       }
       if (this.builderForm.get('workoutDate')?.invalid) {
@@ -1866,7 +1794,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.toastService.error(`${this.translate.instant('workoutBuilder.toasts.validationError', { errors: errors.join(', ') })}`, 0, this.translate.instant('workoutBuilder.toasts.validationErrorTitle'));
       return;
     }
-    if (!isRestGoalRoutine && this.exercisesFormArray.length === 0) {
+    if (!isRestGoalRoutine && this.workoutExercisesFormArray.length === 0) {
       this.toastService.error(this.mode === BuilderMode.manualLogEntry ? this.translate.instant('workoutBuilder.toasts.noExercisesLogError') : this.translate.instant('workoutBuilder.toasts.noExercisesRoutineError'), 0, this.translate.instant('workoutBuilder.toasts.validationErrorTitle'));
       return;
     }
@@ -1885,7 +1813,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     try {
       if (this.isRoutineMode) {
         // First, map the form value to a valid Routine object
-        const routinePayload = this.mapFormToRoutine(formValue);
+        const routinePayload = formValue as Routine;
+        if (!routinePayload) {
+          this.spinnerService.hide();
+          this.isSaving.set(false);
+          return;
+        }
         let savedRoutine: Routine; // Variable to hold the result from the service
 
         // --- NEW: Handle modal context ---
@@ -1906,6 +1839,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           // color handling
           const currentRoutineColor: string | undefined = this.liveFormAsRoutine() ? this.liveFormAsRoutine()?.cardColor : '';
           routinePayload.cardColor = currentRoutineColor;
+
+          if (this.currentRoutineId){
+            routinePayload.id = this.currentRoutineId;
+          }
 
           const tmpResult = await this.workoutService.updateRoutine(routinePayload);
           if (tmpResult) {
@@ -1995,7 +1932,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             (formValue.name || this.translate.instant('workoutBuilder.logEntry.adHocTitle')), // Use form 'name' as log title if no routine
           programId: formValue.programIdForLog || undefined,
           notes: formValue.overallNotesLog, // Overall log notes
-          exercises: logExercises,
+          workoutExercises: logExercises,
           iterationId: formValue.iterationIdForLog || undefined,
           scheduledDayId: formValue.scheduledDayIdForLog || undefined,
           dayName: 'AAAA',
@@ -2038,7 +1975,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   private validateSupersetIntegrity(): boolean {
-    const exercises = this.exercisesFormArray.value as WorkoutExercise[];
+    const exercises = this.workoutExercisesFormArray.value as WorkoutExercise[];
     const supersetGroups = new Map<string, WorkoutExercise[]>();
     for (const exercise of exercises) {
       if (exercise.supersetId) {
@@ -2065,8 +2002,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           if (sortedGroup[i].supersetOrder !== i) return false; // Orders must be sequential 0, 1, 2...
         }
 
-        // Check if all exercises in the group are contiguous in the main exercisesFormArray
-        const formIndices = sortedGroup.map(ex => this.exercisesFormArray.controls.findIndex(ctrl => (ctrl as FormGroup).get('id')?.value === ex.id));
+        // Check if all exercises in the group are contiguous in the main workoutExercisesFormArray
+        const formIndices = sortedGroup.map(ex => this.workoutExercisesFormArray.controls.findIndex(ctrl => (ctrl as FormGroup).get('id')?.value === ex.id));
         for (let i = 1; i < formIndices.length; i++) {
           if (formIndices[i] !== formIndices[i - 1] + 1) return false; // Not contiguous
         }
@@ -2205,7 +2142,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    * Returns true if the previous or next exercise shares the same supersetId.
    */
   hasAdjacentSupersets(exerciseIndex: number): boolean {
-    const exercises = this.exercisesFormArray;
+    const exercises = this.workoutExercisesFormArray;
     if (exerciseIndex < 0 || exerciseIndex >= exercises.length) return false;
     const currentSupersetId = (exercises.at(exerciseIndex) as FormGroup).get('supersetId')?.value;
     if (!currentSupersetId) return false;
@@ -2225,8 +2162,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   isSupersetSpacing(exIndex: number): boolean {
     if (exIndex <= 0) return false;
-    const currentSupersetId = this.exercisesFormArray.at(exIndex).get('id')?.value;
-    const prevSupersetId = this.exercisesFormArray.at(exIndex - 1).get('id')?.value;
+    const currentSupersetId = this.workoutExercisesFormArray.at(exIndex).get('id')?.value;
+    const prevSupersetId = this.workoutExercisesFormArray.at(exIndex - 1).get('id')?.value;
     return exIndex > 0 && currentSupersetId && currentSupersetId !== prevSupersetId;
   }
 
@@ -2284,8 +2221,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         supersetOrder: null,
       };
       const newExerciseFormGroup = this.workoutFormService.createExerciseFormGroup(workoutExercise, true, false);
-      this.exercisesFormArray.push(newExerciseFormGroup);
-      this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
+      this.workoutExercisesFormArray.push(newExerciseFormGroup);
+      this.toggleSetExpansion(this.workoutExercisesFormArray.length - 1, 0);
       this.addRepsListener(newExerciseFormGroup);
       this.addDurationListener(newExerciseFormGroup);
     } else {
@@ -2299,81 +2236,39 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   getRoutineDuration(): number {
     if (this.liveFormAsRoutine()) {
-      return this.workoutService.getEstimatedRoutineDuration(this.mapFormToRoutine(this.builderForm.getRawValue()));
+      return this.workoutService.getEstimatedRoutineDuration(this.liveFormAsRoutine()!);
     } else {
       return 0;
     }
   }
 
   getTotalExerciseCount(): number {
-    return this.exercisesFormArray.length;
+    return this.workoutExercisesFormArray.length;
   }
 
-  private mapFormToRoutineOLD(formValue: any): Routine {
-    const initialRoutine = this.loadedRoutine();
-
-    // 1. Handle Tags (Convert comma-separated string to array)
-    const tagsValue = formValue.tags;
-    let tagsArray: string[] = [];
-    if (typeof tagsValue === 'string') {
-      tagsArray = tagsValue.split(',')
-        .map((tag: string) => tag.trim())
-        .filter((tag: string) => tag.length > 0);
+  tagsAsString(tagsValue: any): string {
+    if (!tagsValue) {
+      return '';
     } else if (Array.isArray(tagsValue)) {
-      tagsArray = tagsValue;
+      return tagsValue.join(', ');
+    } else if (typeof tagsValue === 'string') {
+      return tagsValue;
+    } else {
+      return '';
+    }
+  }
+
+  private mapFormToRoutine(formValue?: any): Routine | undefined {
+    let initialRoutine = formValue ? formValue : undefined;
+    if (this.liveFormAsRoutine && typeof this.liveFormAsRoutine === 'function') {
+      initialRoutine = this.liveFormAsRoutine(); // Preserve existing data
+    }
+    if (!initialRoutine) {
+      return undefined;
     }
 
-    const valueObj: Routine = {
-      id: this.currentRoutineId || uuidv4(),
-      name: formValue.name,
-      description: formValue.description,
-      goal: formValue.goal,
-
-      // --- START: ADD NEW MAPPED PROPERTIES ---
-      primaryCategory: formValue.primaryCategory || undefined,
-      secondaryCategory: formValue.secondaryCategory || undefined,
-      tags: tagsArray,
-      // --- END: ADD NEW MAPPED PROPERTIES ---
-
-      exercises: (formValue.goal === METRIC.rest) ? [] : formValue.exercises.map((exInput: any) => {
-        const isSuperset = !!exInput.supersetId;
-        return {
-          id: exInput.id || uuidv4(),
-          exerciseId: exInput.exerciseId,
-          exerciseName: exInput.exerciseName,
-          notes: exInput.notes,
-          sets: exInput.sets.map((setInput: any) => ({
-            ...setInput, // Spread to include all set properties like reps, repsMin, repsMax, etc.
-            targetWeight: this.unitService.convertWeight(setInput.targetWeight, 'kg', this.unitService.currentWeightUnit()) ?? null,
-            targetDuration: setInput.targetDuration ?? null,
-            targetDistance: setInput.targetDistance ?? null,
-            targetTempo: setInput.targetTempo ?? null,
-          } as ExerciseTargetSetParams)),
-          supersetId: exInput.supersetId || null,
-          supersetOrder: isSuperset ? exInput.supersetOrder : null,
-          // +++ MAP NEW PROPERTIES +++
-          supersetType: isSuperset ? (exInput.supersetType || 'standard') : null,
-          emomTimeSeconds: isSuperset && exInput.supersetType === 'emom' ? exInput.emomTimeSeconds : null,
-          type: exInput.type,
-        };
-      }),
-      isFavourite: initialRoutine?.isFavourite,
-      isHidden: initialRoutine?.isHidden,
-      lastPerformed: initialRoutine?.lastPerformed,
-      isDisabled: false,
-      cardColor: initialRoutine?.cardColor || undefined,
-      createdAt: initialRoutine?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    return valueObj;
-  }
-
-  private mapFormToRoutine(formValue: any): Routine {
-    const initialRoutine = this.loadedRoutine();
-
     // 1. Handle Tags (Convert comma-separated string to array)
-    const tagsValue = formValue.tags;
+    const tagsValue: any = initialRoutine.tags;
     let tagsArray: string[] = [];
     if (typeof tagsValue === 'string') {
       tagsArray = tagsValue.split(',')
@@ -2385,14 +2280,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     // 2. Process Exercises
     // We first map ALL form exercises to clean WorkoutExercise objects
-    const rawExercises = formValue.exercises || [];
+    const rawExercises = initialRoutine.workoutExercises || [];
 
     const topLevelExercises: WorkoutExercise[] = [];
     const sectionMap = new Map<WorkoutSectionType, WorkoutExercise[]>();
 
     // If goal is 'rest', we ignore exercises
-    const exercises: WorkoutExercise[] = [];
-    if (formValue.goal !== METRIC.rest) {
+    const workoutExercises: WorkoutExercise[] = [];
+    if (initialRoutine.goal !== METRIC.rest) {
       rawExercises.forEach((exInput: any) => {
         const isSuperset = !!exInput.supersetId;
         const sectionType = exInput.section as WorkoutSectionType | undefined;
@@ -2416,7 +2311,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           section: sectionType ?? undefined, // <-- add this property if not present
         };
 
-        exercises.push(cleanExercise);
+        workoutExercises.push(cleanExercise);
       });
     }
 
@@ -2431,7 +2326,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     ];
 
     orderedTypes.forEach(type => {
-      const exercisesInSection = exercises.filter(ex => ex.section === type);
+      const exercisesInSection = workoutExercises.filter(ex => ex.section === type);
       if (exercisesInSection.length > 0) {
         sections.push({
           id: uuidv4(),
@@ -2445,13 +2340,15 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // 3. Construct the Routine
     const valueObj: Routine = {
       id: this.currentRoutineId || uuidv4(),
-      name: formValue.name,
-      description: formValue.description,
-      goal: formValue.goal,
-      primaryCategory: formValue.primaryCategory || undefined,
-      secondaryCategory: formValue.secondaryCategory || undefined,
-      tags: tagsArray,
-      exercises, // <-- all exercises, with section property
+      name: initialRoutine.name,
+      description: initialRoutine.description,
+      goal: initialRoutine.goal,
+      primaryCategory: initialRoutine.primaryCategory || undefined,
+      secondaryCategory: initialRoutine.secondaryCategory || undefined,
+      tags: tagsValue
+        ? tagsValue.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag.length > 0)
+        : [],
+      workoutExercises: workoutExercises, // <-- all exercises, with section property
       sections: sections.length > 0 ? sections : undefined,
 
       // Preserve existing metadata
@@ -2460,8 +2357,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       lastPerformed: initialRoutine?.lastPerformed,
       isDisabled: false,
       cardColor: initialRoutine?.cardColor || undefined,
-      createdAt: initialRoutine?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: initialRoutine?.createdAt || undefined,
+      updatedAt: initialRoutine?.updatedAt || undefined,
     };
 
     return valueObj;
@@ -2469,7 +2366,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
 
   isSuperSet(index: number): boolean {
-    const exercises = this.liveFormAsRoutine()?.exercises;
+    const exercises = this.liveFormAsRoutine()?.workoutExercises;
     if (!exercises) return false;
     const ex = exercises[index];
     if (!ex?.supersetId) return false;
@@ -2556,7 +2453,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     if (this.isViewMode) {
       actionsArray.push(editButton);
-      if (this.exercisesFormArray?.length > 0) {
+      if (this.workoutExercisesFormArray?.length > 0) {
         actionsArray.push(expandAllBtn);
         actionsArray.push(collapseAllBtn);
       }
@@ -2941,7 +2838,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
 
     // Find the exercise in the local routine data.
-    const exerciseInRoutine = this.liveFormAsRoutine()?.exercises.find((ex: any) => ex.exerciseId === exerciseId);
+    const exerciseInRoutine = this.liveFormAsRoutine()?.workoutExercises.find((ex: any) => ex.exerciseId === exerciseId);
 
     if (exerciseInRoutine) {
       // If found, get the full exercise details from the service.
@@ -3033,13 +2930,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // If the guards above did not return, proceed with the original expansion logic.
     event?.stopPropagation();
 
-    if (exIndex < 0 || exIndex >= this.exercisesFormArray.length) {
+    if (exIndex < 0 || exIndex >= this.workoutExercisesFormArray.length) {
       this.expandedExercisePath.set(null);
       this.expandedSetPath.set(null);
       return; // Invalid index
     }
 
-    const clickedExercise = this.exercisesFormArray.at(exIndex) as FormGroup;
+    const clickedExercise = this.workoutExercisesFormArray.at(exIndex) as FormGroup;
     const supersetId = clickedExercise.get('supersetId')?.value;
 
     let masterIndexToExpand = exIndex;
@@ -3142,7 +3039,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   isFormInvalid(): boolean {
-    return this.builderForm.invalid || (this.exercisesFormArray.length === 0 && !(this.isRoutineMode && this.builderForm.get('goal')?.value === METRIC.rest))
+    return this.builderForm.invalid || (this.workoutExercisesFormArray.length === 0 && !(this.isRoutineMode && this.routineGoal?.value === METRIC.rest))
   }
 
   /**
@@ -3204,7 +3101,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   private getExerciseIndexByControl(exerciseControl: AbstractControl): number {
-    return this.exercisesFormArray.controls.findIndex(ctrl => ctrl === exerciseControl);
+    return this.workoutExercisesFormArray.controls.findIndex(ctrl => ctrl === exerciseControl);
   }
 
   /**
@@ -3263,7 +3160,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    */
   private syncSupersetProperties(supersetId: string, type: 'standard' | 'emom', emomTime: number | null): void {
     // Find all exercises belonging to this superset group
-    const exercisesInGroup = this.exercisesFormArray.controls
+    const exercisesInGroup = this.workoutExercisesFormArray.controls
       .filter(ctrl => (ctrl as FormGroup).get('supersetId')?.value === supersetId);
 
     exercisesInGroup.forEach(control => {
@@ -3297,11 +3194,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   /**
  * Checks if the exercise at a given index is the first in its superset group.
- * @param index The index of the exercise in the exercisesFormArray.
+ * @param index The index of the exercise in the workoutExercisesFormArray.
  * @returns True if the exercise is the first in a superset.
  */
   public isFirstInSuperset(index: number): boolean {
-    const currentEx = this.exercisesFormArray.at(index) as FormGroup;
+    const currentEx = this.workoutExercisesFormArray.at(index) as FormGroup;
     // Not a superset if there's no ID
     if (!currentEx?.get('supersetId')?.value) {
       return false;
@@ -3315,20 +3212,20 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    * @param index The index of an exercise within the superset.
    */
   getNumberOfRoundsAsArray(index: number): number[] {
-    const exerciseControl = this.exercisesFormArray.at(index) as FormGroup;
+    const exerciseControl = this.workoutExercisesFormArray.at(index) as FormGroup;
     const numRounds = (exerciseControl.get('sets') as FormArray)?.length || 0;
     return Array.from({ length: numRounds }, (_, i) => i);
   }
 
   /**
    * Checks if the exercise at a given index is the last in its superset group.
-   * @param index The index of the exercise in the exercisesFormArray.
+   * @param index The index of the exercise in the workoutExercisesFormArray.
    * @returns True if the exercise is the last in a superset.
    */
   public isLastInSuperset(index: number): boolean {
-    const currentEx = this.exercisesFormArray.at(index) as FormGroup;
+    const currentEx = this.workoutExercisesFormArray.at(index) as FormGroup;
     const supersetId = currentEx?.get('supersetId')?.value;
-    const supersetSize = this.exercisesFormArray.controls.filter(c =>
+    const supersetSize = this.workoutExercisesFormArray.controls.filter(c =>
       (c as FormGroup).get('supersetId')?.value === supersetId
     ).length;
     const supersetOrder = currentEx?.get('supersetOrder')?.value;
@@ -3342,11 +3239,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   /**
    * Checks if an exercise is neither the first nor the last in its superset group.
-   * @param index The index of the exercise in the exercisesFormArray.
+   * @param index The index of the exercise in the workoutExercisesFormArray.
    * @returns True if the exercise is in the middle of a superset.
    */
   public isMiddleInSuperset(index: number): boolean {
-    const currentEx = this.exercisesFormArray.at(index) as FormGroup;
+    const currentEx = this.workoutExercisesFormArray.at(index) as FormGroup;
     if (!currentEx?.get('supersetId')?.value) {
       return false;
     }
@@ -3355,11 +3252,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   /**
-   * Finds the original index of an exercise control within the main exercisesFormArray.
+   * Finds the original index of an exercise control within the main workoutExercisesFormArray.
    * @param control The exercise FormGroup to find.
    */
   getIndexOfExercise(control: AbstractControl): number {
-    return this.exercisesFormArray.controls.indexOf(control);
+    return this.workoutExercisesFormArray.controls.indexOf(control);
   }
 
   /**
@@ -3368,20 +3265,20 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    * @returns An array of AbstractControls for the exercises in the group, sorted by their order.
    */
   public getSupersetGroupExercises(index: number): AbstractControl[] {
-    const currentEx = this.exercisesFormArray.at(index) as FormGroup;
+    const currentEx = this.workoutExercisesFormArray.at(index) as FormGroup;
     const supersetId = currentEx?.get('supersetId')?.value;
     if (!supersetId) {
       return []; // Return empty if it's not in a superset
     }
 
     // Filter all exercises to find those with the same superset ID
-    return this.exercisesFormArray.controls
+    return this.workoutExercisesFormArray.controls
       .filter(ex => (ex as FormGroup).get('supersetId')?.value === supersetId)
       .sort((a, b) => ((a as FormGroup).get('supersetOrder')?.value ?? 0) - ((b as FormGroup).get('supersetOrder')?.value ?? 0));
   }
 
   protected standarSuperSetOrEmomClass(exerciseControl: AbstractControl, isExpanded: boolean = false): string {
-    const standardCardClass = ' absolute -left-2 top-2 text-white text-xs font-bold rounded-xl shadow-lg z-10 transform translate-x-3 -translate-y-6 p-1';
+    const standardCardClass = ' absolute -left-2 top-2 text-white text-xs font-bold rounded-xl shadow-md z-10 transform translate-x-3 -translate-y-6 p-1';
     if (exerciseControl.get('supersetType')?.value == 'emom') {
       return !isExpanded ? standardCardClass + ' bg-teal-400 text-white' : 'font-bold text-teal-600 dark:text-teal-400';
     } else if (exerciseControl.get('supersetType')?.value !== 'emom') {
@@ -3467,13 +3364,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   protected isEmomExerciseByIndex(exIndex: number): boolean {
-    const exercise = this.exercisesFormArray.at(exIndex) as FormGroup;
+    const exercise = this.workoutExercisesFormArray.at(exIndex) as FormGroup;
     return this.isEmom(exercise);
   }
 
   protected isEmomExercise(exerciseControl: AbstractControl): boolean {
     const exIndex = this.getExerciseIndexByControl(exerciseControl);
-    const exercise = this.exercisesFormArray.at(exIndex) as FormGroup;
+    const exercise = this.workoutExercisesFormArray.at(exIndex) as FormGroup;
     const isEmom = this.isEmom(exercise);
 
     return exerciseControl.get('supersetType')?.value === 'emom' || isEmom;
@@ -3494,7 +3391,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   protected isLastExercise(exIndex: number): boolean {
-    return exIndex === this.exercisesFormArray.length - 1;
+    return exIndex === this.workoutExercisesFormArray.length - 1;
   }
 
   /**
@@ -3511,7 +3408,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (!supersetId) return;
 
     // Find all exercises in the same superset group
-    this.exercisesFormArray.controls.forEach(ctrl => {
+    this.workoutExercisesFormArray.controls.forEach(ctrl => {
       const fg = ctrl as FormGroup;
       if (fg.get('supersetId')?.value === supersetId) {
         const setsArray = this.workoutFormService.getSetsFormArray(fg);
@@ -3544,7 +3441,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (!supersetId) return;
 
     // Find all exercises in the same superset group
-    this.exercisesFormArray.controls.forEach(ctrl => {
+    this.workoutExercisesFormArray.controls.forEach(ctrl => {
       const fg = ctrl as FormGroup;
       if (fg.get('supersetId')?.value === supersetId) {
         const setsArray = this.workoutFormService.getSetsFormArray(fg);
@@ -3953,12 +3850,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       }
     } else {
       items.push({
-        label: this.translate.instant('workoutBuilder.exercise.remove'),
-        buttonClass: 'bg-red-500 text-white hover:bg-red-700',
-        actionKey: 'remove',
-        iconName: 'trash',
-      });
-      items.push({
         label: this.translate.instant('workoutBuilder.exercise.fillWithLast'),
         buttonClass: 'bg-green-500 text-white hover:bg-green-700 text-left',
         actionKey: 'fill_latest',
@@ -3984,6 +3875,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         iconName: 'change', // Assuming you have a 'change' icon
       });
     }
+    items.push({
+      label: this.translate.instant('workoutBuilder.exercise.remove'),
+      buttonClass: 'bg-red-500 text-white hover:bg-red-700',
+      actionKey: 'remove',
+      iconName: 'trash',
+    });
 
     return items;
   }
@@ -4023,7 +3920,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const index = this.exerciseToSwitchIndex();
     if (index === null) return;
 
-    const exerciseControl = this.exercisesFormArray.at(index);
+    const exerciseControl = this.workoutExercisesFormArray.at(index);
     const exerciseId = exerciseControl.get('exerciseId')?.value;
     const baseExercise = this.availableExercises.find(ex => ex.id === exerciseId);
 
@@ -4062,7 +3959,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const index = this.exerciseToSwitchIndex();
     if (index === null) return;
 
-    const exerciseControl = this.exercisesFormArray.at(index) as FormGroup;
+    const exerciseControl = this.workoutExercisesFormArray.at(index) as FormGroup;
     const oldExerciseName = exerciseControl.get('exerciseName')?.value;
 
     // Patch the form group with the new exercise's ID and name
@@ -4121,7 +4018,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   /**
   * Retrieves the last logged performance for an exercise and fills the
   * current sets in the form with that data.
-  * @param exIndex The index of the exercise in the exercisesFormArray.
+  * @param exIndex The index of the exercise in the workoutExercisesFormArray.
   */
   async fillWithLatestPerformanceData(exIndex: number, event?: Event): Promise<void> {
     if (this.isViewMode) {
@@ -4132,7 +4029,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     this.expandExerciseCardIfNeeded(exIndex);
 
-    const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
+    const exerciseControl = this.workoutExercisesFormArray.at(exIndex) as FormGroup;
     if (!exerciseControl) {
       console.error(`Exercise control at index ${exIndex} not found.`);
       return;
@@ -4414,7 +4311,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       metrics.forEach(metric => {
         const value = setControl.get(metric.key)?.value;
         if (value !== null && value !== undefined && value !== '') {
-          parts.push(`${metric.label}: ${value}${metric.unit ? ' ' + metric.unit : ''}`);
+          const targetValue = this.workoutUtilsService.formatMetricTarget(value, metric.key as METRIC);
+          parts.push(`${metric.label}: ${targetValue}${metric.unit ? ' ' + metric.unit : ''}`);
         }
       });
       return `#${idx + 1} ${parts.join(' | ')}`;
@@ -4435,8 +4333,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const updatedRoutine = await this.workoutUtilsService.promptRemoveField(currentRoutine, exIndex, setIndex, isLogMode);
 
     if (updatedRoutine) {
-      const updatedSetData = updatedRoutine.exercises[exIndex].sets[setIndex];
-      const setsFormArray = this.workoutFormService.getSetsFormArray(this.exercisesFormArray.at(exIndex));
+      const updatedSetData = updatedRoutine.workoutExercises[exIndex].sets[setIndex];
+      const setsFormArray = this.workoutFormService.getSetsFormArray(this.workoutExercisesFormArray.at(exIndex));
       const newSetFormGroup = this.workoutFormService.createSetFormGroup(updatedSetData, this.mode === BuilderMode.manualLogEntry);
       setsFormArray.setControl(setIndex, newSetFormGroup);
     }
@@ -4450,8 +4348,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const updatedRoutine = await this.workoutUtilsService.promptAddField(currentRoutine, exIndex, setIndex, isLogMode);
 
     if (updatedRoutine) {
-      const updatedSetData = updatedRoutine.exercises[exIndex].sets[setIndex];
-      const setsFormArray = this.workoutFormService.getSetsFormArray(this.exercisesFormArray.at(exIndex));
+      const updatedSetData = updatedRoutine.workoutExercises[exIndex].sets[setIndex];
+      const setsFormArray = this.workoutFormService.getSetsFormArray(this.workoutExercisesFormArray.at(exIndex));
       const newSetFormGroup = this.workoutFormService.createSetFormGroup(updatedSetData, this.mode === BuilderMode.manualLogEntry);
       setsFormArray.setControl(setIndex, newSetFormGroup);
     }
@@ -4544,7 +4442,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const gridClass = `grid-cols-${Math.max(2, columnCount)}`;
 
     // --- 2. Determine Background Color Class ---
-    const exerciseControl = this.exercisesFormArray.at(exIndex);
+    const exerciseControl = this.workoutExercisesFormArray.at(exIndex);
     const setsFormArray = this.workoutFormService.getSetsFormArray(exerciseControl);
     const setControl = setsFormArray.at(setIndex);
     if (!(setControl instanceof FormGroup)) {
@@ -4626,11 +4524,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (!state) return;
 
     // Rebuild the FormArrays correctly
-    this.exercisesFormArray.clear({ emitEvent: false });
+    this.workoutExercisesFormArray.clear({ emitEvent: false });
     const exercises = state.exercises || [];
     exercises.forEach((exerciseData: any) => {
       const exerciseGroup = this.workoutFormService.createExerciseFormGroup(exerciseData, true, this.mode === BuilderMode.manualLogEntry);
-      this.exercisesFormArray.push(exerciseGroup, { emitEvent: false });
+      this.workoutExercisesFormArray.push(exerciseGroup, { emitEvent: false });
     });
 
     // Patch the rest of the form. This will trigger valueChanges, but our flag will catch it.
@@ -4723,7 +4621,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    * @param exIndex The index of the exercise to check.
    */
   public isPartOfExpandedSuperset(exIndex: number): boolean {
-    const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
+    const exerciseControl = this.workoutExercisesFormArray.at(exIndex) as FormGroup;
     const supersetId = exerciseControl?.get('supersetId')?.value;
 
     // If it's not in a superset, this check is not applicable.
@@ -4732,7 +4630,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
 
     // Find the index of the first exercise (the "master" card) in this superset group.
-    const firstInGroupIndex = this.exercisesFormArray.controls.findIndex(ctrl =>
+    const firstInGroupIndex = this.workoutExercisesFormArray.controls.findIndex(ctrl =>
       (ctrl as FormGroup).get('supersetId')?.value === supersetId &&
       (ctrl as FormGroup).get('supersetOrder')?.value === 0
     );
@@ -4748,8 +4646,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private baseExercise(): Exercise | undefined {
     // Assuming you have a way to get the currently selected exerciseId, e.g. this.selectedExerciseId
     // Replace 'this.selectedExerciseId' with the actual property or logic you use to track the selected exercise
-    const selectedExerciseId = this.exercisesFormArray.length > 0
-      ? (this.exercisesFormArray.at(0) as FormGroup).get('exerciseId')?.value
+    const selectedExerciseId = this.workoutExercisesFormArray.length > 0
+      ? (this.workoutExercisesFormArray.at(0) as FormGroup).get('exerciseId')?.value
       : undefined;
     return this.availableExercises.find(e => e.id === selectedExerciseId);
   }
@@ -4791,7 +4689,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
  * Now prevents negative numbers and non-numeric input.
  */
   applyToAllSets(exIndex: number): void {
-    const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
+    const exerciseControl = this.workoutExercisesFormArray.at(exIndex) as FormGroup;
     const setsArray = this.workoutFormService.getSetsFormArray(exerciseControl);
     const patchData: { [key: string]: any } = {};
     const metricsToApply: METRIC[] = [];
@@ -5121,7 +5019,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   protected getExerciseSetsLength(exIndex: number): number {
-    const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
+    const exerciseControl = this.workoutExercisesFormArray.at(exIndex) as FormGroup;
     if (!exerciseControl) return 0;
     const setsArray = this.workoutFormService.getSetsFormArray(exerciseControl);
     if (!setsArray) return 0;
@@ -5278,7 +5176,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    * Checks if a metric is active (present in fieldOrder) for all sets of the exercise.
    */
   isMetricActiveForAllSets(exIndex: number, metric: METRIC): boolean {
-    const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
+    const exerciseControl = this.workoutExercisesFormArray.at(exIndex) as FormGroup;
     const setsArray = this.workoutFormService.getSetsFormArray(exerciseControl);
     return setsArray.controls.every(setControl =>
       (setControl.get('fieldOrder')?.value || []).includes(metric)
@@ -5291,7 +5189,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    * When adding, sets a default value for the metric.
    */
   toggleMetricForAllSets(exIndex: number, metric: METRIC): void {
-    const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
+    const exerciseControl = this.workoutExercisesFormArray.at(exIndex) as FormGroup;
     const setsArray = this.workoutFormService.getSetsFormArray(exerciseControl);
 
     const shouldAdd = !this.isMetricActiveForAllSets(exIndex, metric);
@@ -5386,7 +5284,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    * Add or remove a custom array of metrics for all sets of an exercise.
    */
   setMetricsForAllSets(exIndex: number, metrics: METRIC[]): void {
-    const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
+    const exerciseControl = this.workoutExercisesFormArray.at(exIndex) as FormGroup;
     const setsArray = this.workoutFormService.getSetsFormArray(exerciseControl);
 
     setsArray.controls.forEach(setControl => {
@@ -5536,7 +5434,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
 
     // rest arrays only if an option has been selected
-    this.exercisesFormArray.clear();
+    this.workoutExercisesFormArray.clear();
 
     // Step 1: Routine Name
     const nameResult = await this.alertService.showPromptDialog(
@@ -5610,6 +5508,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       routine = routines.find(r => r.id === pickResult['routinePick']) || routines[0];
     }
 
+    // add current date to routine name
+    const currentDateStr = new Date().toLocaleDateString();
+    routine.name = `${routine.name} - ${currentDateStr}`;
+
     // Patch the form with the routine data
     this.patchFormWithRoutineData(routine);
     this.toastService.success(this.translate.instant('workoutBuilder.wizard.templateCreated'), 3000);
@@ -5617,11 +5519,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   private getActionDescription(prev: Routine, curr: Routine): string {
     // Example logic, expand as needed
-    if (curr.exercises.length > prev.exercises.length) return 'Added Exercise';
-    if (curr.exercises.length < prev.exercises.length) return 'Removed Exercise';
+    if (curr.workoutExercises.length > prev.workoutExercises.length) return 'Added Exercise';
+    if (curr.workoutExercises.length < prev.workoutExercises.length) return 'Removed Exercise';
     // superset created, add case (it's under exercises)
-    const prevHasSupersets = prev.exercises.some(ex => ex.supersetId);
-    const currHasSupersets = curr.exercises.some(ex => ex.supersetId);
+    const prevHasSupersets = prev.workoutExercises.some(ex => ex.supersetId);
+    const currHasSupersets = curr.workoutExercises.some(ex => ex.supersetId);
     if (currHasSupersets && !prevHasSupersets) return 'Created Superset';
 
     // ...add more checks for sets, fields, etc.
@@ -5701,7 +5603,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
       // Update the form controls
       selectedIndices.forEach(index => {
-        const control = this.exercisesFormArray.at(index) as FormGroup;
+        const control = this.workoutExercisesFormArray.at(index) as FormGroup;
         // Ensure the control exists
         if (!control.contains('section')) {
           control.addControl('section', this.fb.control(selectedType));
@@ -5732,7 +5634,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   private enforceTabataSuperset(): boolean {
-    const exercises = this.exercisesFormArray.controls as FormGroup[];
+    const exercises = this.workoutExercisesFormArray.controls as FormGroup[];
 
     if (exercises.length < 2) {
       this.toastService.warning(this.translate.instant('workoutBuilder.toasts.tabataSizeError'), 5000);
@@ -5817,7 +5719,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    * Moves all exercises in the group atomically to the new position.
    */
   private handleSupersetGroupDrag(supersetId: string, draggedStartIndex: number, targetIndex: number): void {
-    const exercises = this.exercisesFormArray.controls as FormGroup[];
+    const exercises = this.workoutExercisesFormArray.controls as FormGroup[];
 
     // Find all exercises in this superset
     const supersetGroup = exercises
@@ -5834,7 +5736,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     // Remove all group members from their current positions
     for (let i = draggedEndIndex; i >= draggedStartIndex; i--) {
-      this.exercisesFormArray.removeAt(i);
+      this.workoutExercisesFormArray.removeAt(i);
     }
 
     // Calculate correct insertion point
@@ -5845,10 +5747,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     // Insert the entire group at the new position
     groupControls.forEach((ctrl, offset) => {
-      this.exercisesFormArray.insert(insertionIndex + offset, ctrl);
+      this.workoutExercisesFormArray.insert(insertionIndex + offset, ctrl);
     });
 
-    this.exercisesFormArray.updateValueAndValidity();
+    this.workoutExercisesFormArray.updateValueAndValidity();
     this.recalculateSupersetOrders();
     this.selectedExerciseIndicesForSuperset.set([]);
     this.expandedSetPath.set(null);
@@ -5896,18 +5798,18 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
       // Reorder: extract selected exercises and move them to be consecutive
       const selectedControls = selectedIndices.map(idx =>
-        this.exercisesFormArray.at(idx) as FormGroup
+        this.workoutExercisesFormArray.at(idx) as FormGroup
       );
 
       // Remove all selected in reverse order
       for (let i = selectedIndices.length - 1; i >= 0; i--) {
-        this.exercisesFormArray.removeAt(selectedIndices[i]);
+        this.workoutExercisesFormArray.removeAt(selectedIndices[i]);
       }
 
       // Insert consecutively starting at the position of the first selected
       const insertPosition = selectedIndices[0];
       selectedControls.forEach((ctrl, offset) => {
-        this.exercisesFormArray.insert(insertPosition + offset, ctrl);
+        this.workoutExercisesFormArray.insert(insertPosition + offset, ctrl);
       });
 
       this.toastService.info(
@@ -5971,7 +5873,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const sortedIndices = this.selectedExerciseIndicesForSuperset().sort((a, b) => a - b);
 
     for (const [i, index] of sortedIndices.entries()) {
-      const exerciseControl = this.exercisesFormArray.at(index) as FormGroup;
+      const exerciseControl = this.workoutExercisesFormArray.at(index) as FormGroup;
       const exerciseName = exerciseControl.get('exerciseName')?.value;
       const exerciseId = exerciseControl.get('exerciseId')?.value;
       const baseExercise = this.availableExercises.find(ex => ex.id === exerciseId);
@@ -6018,7 +5920,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const firstIndex = sortedIndices[0];
 
     sortedIndices.forEach((exerciseIndexInFormArray, orderInSuperset) => {
-      const exerciseControl = this.exercisesFormArray.at(exerciseIndexInFormArray) as FormGroup;
+      const exerciseControl = this.workoutExercisesFormArray.at(exerciseIndexInFormArray) as FormGroup;
       const { reps, weight } = exerciseTargets[orderInSuperset];
 
       exerciseControl.patchValue({
@@ -6088,7 +5990,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
  * Handles all edge cases: superset-to-superset, superset-before/after another superset.
  */
   private moveSupersetGroup(supersetId: string, draggedStartIndex: number, targetIndex: number): void {
-    const exercises = this.exercisesFormArray.controls as FormGroup[];
+    const exercises = this.workoutExercisesFormArray.controls as FormGroup[];
 
     // Find ALL exercises in this superset (they should be consecutive but verify)
     const supersetIndices: number[] = [];
@@ -6115,7 +6017,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     // Remove all group members in reverse order
     for (let i = groupEnd; i >= groupStart; i--) {
-      this.exercisesFormArray.removeAt(i);
+      this.workoutExercisesFormArray.removeAt(i);
     }
 
     // CRITICAL: Adjust targetIndex for removed items
@@ -6132,14 +6034,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
 
     // Clamp to valid range
-    insertionIndex = Math.max(0, Math.min(insertionIndex, this.exercisesFormArray.length));
+    insertionIndex = Math.max(0, Math.min(insertionIndex, this.workoutExercisesFormArray.length));
 
     // Re-insert the entire group at new position
     groupControls.forEach((ctrl, offset) => {
-      this.exercisesFormArray.insert(insertionIndex + offset, ctrl);
+      this.workoutExercisesFormArray.insert(insertionIndex + offset, ctrl);
     });
 
-    this.exercisesFormArray.updateValueAndValidity();
+    this.workoutExercisesFormArray.updateValueAndValidity();
     this.recalculateSupersetOrders();
     this.selectedExerciseIndicesForSuperset.set([]);
     this.expandedSetPath.set(null);
@@ -6154,15 +6056,15 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    * FIXED: Check what's at a given index in the exercises array
    */
   private getExerciseAtIndex(index: number): FormGroup | null {
-    if (index < 0 || index >= this.exercisesFormArray.length) return null;
-    return this.exercisesFormArray.at(index) as FormGroup;
+    if (index < 0 || index >= this.workoutExercisesFormArray.length) return null;
+    return this.workoutExercisesFormArray.at(index) as FormGroup;
   }
 
   /**
    * FIXED: Get all exercises in a superset group
    */
   private getSupersetGroup(supersetId: string): { control: FormGroup, index: number }[] {
-    const exercises = this.exercisesFormArray.controls as FormGroup[];
+    const exercises = this.workoutExercisesFormArray.controls as FormGroup[];
     const result: { control: FormGroup, index: number }[] = [];
     exercises.forEach((ctrl, idx) => {
       if (ctrl.get('supersetId')?.value === supersetId) {
@@ -6188,7 +6090,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       el.classList.remove('superset-member-of-dragged');
     });
 
-    const exercisesArray = this.exercisesFormArray;
+    const exercisesArray = this.workoutExercisesFormArray;
     const draggedControl = exercisesArray.at(event.previousIndex) as FormGroup;
     const draggedSupersetId = draggedControl.get('supersetId')?.value;
     const draggedSupersetOrder = draggedControl.get('supersetOrder')?.value;
@@ -6252,7 +6154,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    * IMPROVED: Allow drag on superset starts AND standalone exercises
    */
   protected isDraggingEnabled(exIndex: number): boolean {
-    const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
+    const exerciseControl = this.workoutExercisesFormArray.at(exIndex) as FormGroup;
     const supersetId = exerciseControl?.get('supersetId')?.value;
     const supersetOrder = exerciseControl?.get('supersetOrder')?.value;
 
@@ -6271,7 +6173,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     targetSupersetId: string,
     targetControlAtDropPoint: FormGroup
   ): Promise<void> {
-    const draggedControl = this.exercisesFormArray.at(draggedIndex) as FormGroup;
+    const draggedControl = this.workoutExercisesFormArray.at(draggedIndex) as FormGroup;
     const draggedName = draggedControl.get('exerciseName')?.value;
 
     // Get all exercises in the target superset
@@ -6313,8 +6215,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     if (result?.data === 'add') {
       // Remove dragged exercise from its current location
-      const draggedCtrl = this.exercisesFormArray.at(draggedIndex);
-      this.exercisesFormArray.removeAt(draggedIndex);
+      const draggedCtrl = this.workoutExercisesFormArray.at(draggedIndex);
+      this.workoutExercisesFormArray.removeAt(draggedIndex);
 
       // Adjust targetGroupStartIndex if we removed from before it
       let adjustedStartIndex = targetGroupStartIndex;
@@ -6324,7 +6226,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
       // Insert at the position user dropped it (within the group)
       const insertIndex = adjustedStartIndex + positionInGroup;
-      this.exercisesFormArray.insert(insertIndex, draggedCtrl);
+      this.workoutExercisesFormArray.insert(insertIndex, draggedCtrl);
 
       // Update the superset properties
       draggedControl.patchValue({
@@ -6333,7 +6235,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         emomTimeSeconds: targetControlAtDropPoint.get('emomTimeSeconds')?.value
       });
 
-      this.exercisesFormArray.updateValueAndValidity();
+      this.workoutExercisesFormArray.updateValueAndValidity();
 
       // Recalculate all orders in the superset
       this.recalculateSupersetOrders();
@@ -6346,8 +6248,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       );
     } else {
       // Keep separate - do a normal move of the dragged exercise
-      moveItemInArray(this.exercisesFormArray.controls, draggedIndex, targetIndex);
-      this.exercisesFormArray.updateValueAndValidity();
+      moveItemInArray(this.workoutExercisesFormArray.controls, draggedIndex, targetIndex);
+      this.workoutExercisesFormArray.updateValueAndValidity();
 
       this.toastService.info(
         this.translate.instant('workoutBuilder.drag.exerciseMovedSeparate'),
@@ -6379,7 +6281,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // If starting drag with a superset, mark all its members
     if (!supersetId) return;
 
-    const exercises = this.exercisesFormArray.controls as FormGroup[];
+    const exercises = this.workoutExercisesFormArray.controls as FormGroup[];
     let foundAny = false;
 
     exercises.forEach((ctrl, index) => {
@@ -6407,7 +6309,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
  * Called when a drag starts - highlight superset members if dragging a superset start
  */
   onDragStarted(exIndex: number): void {
-    const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
+    const exerciseControl = this.workoutExercisesFormArray.at(exIndex) as FormGroup;
     const supersetId = exerciseControl?.get('supersetId')?.value;
     const supersetOrder = exerciseControl?.get('supersetOrder')?.value;
 
@@ -6425,4 +6327,206 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.markSupersetMembersForDrag('', false);
   }
 
+  /**
+* Sets the rest value for a superset/circuit group
+* LOGIC: Only the FIRST exercise in a superset has rest tracking
+* - Updates targetRest for all sets of the FIRST exercise
+* - Removes targetRest and rest metric from ALL other exercises in the superset
+* 
+* When user changes the rest input, update the first exercise's sets with that value
+*/
+  setSupersetGroupRestValue(exerciseControl: AbstractControl, event: Event): void {
+    const restValue = +(event.target as HTMLInputElement).value;
+
+    // Find the current exercise's index in the form array
+    const currentExIndex = this.getExerciseIndexByControl(exerciseControl);
+    if (currentExIndex === -1) return;
+
+    // Check if this exercise is in a superset
+    if (!this.isSuperSet(currentExIndex)) return;
+
+    // Get the superset ID
+    const supersetId = exerciseControl.get('supersetId')?.value;
+    if (!supersetId) return;
+
+    // Find all exercises in this superset
+    const supersetExercises = this.workoutExercisesFormArray.controls
+      .map((ctrl, idx) => ({ ctrl: ctrl as FormGroup, idx }))
+      .filter(({ ctrl }) => ctrl.get('supersetId')?.value === supersetId);
+
+    if (supersetExercises.length === 0) return;
+
+    const restTarget = restToExact(restValue);
+
+    // Process each exercise in the superset
+    supersetExercises.forEach(({ ctrl, idx }) => {
+      const isFirstExercise = ctrl.get('supersetOrder')?.value === 0;
+      const setsArray = ctrl.get('sets') as FormArray;
+
+      if (isFirstExercise) {
+        // FIRST EXERCISE: Update targetRest for all sets, ensure rest is in fieldOrder
+        setsArray.controls.forEach((setControl) => {
+          setControl.get('targetRest')?.setValue(restTarget, { emitEvent: false });
+        });
+
+        // Ensure rest is in fieldOrder for the first exercise
+        const fieldOrder = ctrl.get('fieldOrder')?.value || [];
+        if (!fieldOrder.includes(METRIC.rest)) {
+          fieldOrder.push(METRIC.rest);
+          ctrl.get('fieldOrder')?.setValue(fieldOrder, { emitEvent: false });
+        }
+
+        // Update the form control's restBetweenRounds value for the UI
+        ctrl.get('restBetweenRounds')?.setValue(restValue, { emitEvent: false });
+      } else {
+        // OTHER EXERCISES: Remove targetRest from all sets, remove rest from fieldOrder
+        setsArray.controls.forEach((setControl) => {
+          setControl.get('targetRest')?.setValue(null, { emitEvent: false });
+        });
+
+        // Remove rest from fieldOrder
+        let fieldOrder = ctrl.get('fieldOrder')?.value || [];
+        fieldOrder = fieldOrder.filter((metric: METRIC) => metric !== METRIC.rest);
+        ctrl.get('fieldOrder')?.setValue(fieldOrder, { emitEvent: false });
+
+        // Set restBetweenRounds to 0 for UI (hidden anyway since not first exercise)
+        ctrl.get('restBetweenRounds')?.setValue(0, { emitEvent: false });
+      }
+    });
+
+    this.toastService.info(`Rest between rounds updated to ${restValue}s`, 2000);
+  }
+
+  addProgramIdSubscription(): Subscription | undefined {
+    return this.builderForm.get('programIdForLog')?.valueChanges.subscribe(programId => {
+      if (programId) {
+        this.builderForm.get('routineIdForLog')?.disable();
+        this.initialProgramIdForLogEdit = programId;
+        this.retrieveProgramInfo(programId);
+        // Reset the dependent fields if the program changes
+        this.builderForm.get('iterationIdForLog')?.setValue('', { emitEvent: false });
+        this.builderForm.get('scheduledDayIdForLog')?.setValue('', { emitEvent: false });
+        this.builderForm.get('routineIdForLog')?.setValue('', { emitEvent: false });
+        this.workoutExercisesFormArray.clear();
+      } else {
+        this.builderForm.get('routineIdForLog')?.enable();
+        this.initialProgramIdForLogEdit = undefined;
+        // Clear the options and values if no program is selected
+        // this.availableRoutineForProgram = [];
+        this.availableIterationIds = [];
+        this.availableScheduledDayIds = [];
+        this.availableScheduledDayInfos = [];
+        this.builderForm.get('iterationIdForLog')?.setValue('', { emitEvent: false });
+        this.builderForm.get('scheduledDayIdForLog')?.setValue('', { emitEvent: false });
+      }
+    });
+  }
+
+  addScheduledDayIdSubscription(): Subscription | undefined {
+    return this.builderForm.get('scheduledDayIdForLog')?.valueChanges.subscribe(scheduledDayId => {
+      const scheduledDayInfo = this.availableScheduledDayInfos.find(
+        (info) => info.id === scheduledDayId
+      );
+
+      if (!scheduledDayInfo) {
+        this.workoutExercisesFormArray.clear();
+        this.builderForm.get('routineIdForLog')?.setValue('', { emitEvent: false });
+        this.builderForm.get('name')?.setValue('Ad-hoc Workout', { emitEvent: false });
+        return;
+      }
+
+      firstValueFrom(this.workoutService.getRoutineById(scheduledDayInfo.routineId))
+        .then(routineToLog => {
+          if (routineToLog) {
+            // Surgically update only the necessary parts of the form
+            this.builderForm.get('name')?.setValue(`Log: ${routineToLog.name}`, { emitEvent: false });
+            this.builderForm.get('routineIdForLog')?.setValue(routineToLog.id, { emitEvent: false });
+
+            // Prefill only the exercises without touching other form controls
+            this.workoutExercisesFormArray.clear({ emitEvent: false });
+            routineToLog.workoutExercises.forEach(routineEx => {
+              this.workoutExercisesFormArray.push(this.workoutFormService.createExerciseFormGroup(routineEx, false, true), { emitEvent: false });
+            });
+
+            // If the scheduled day has an iterationId, set it in the form
+            if (scheduledDayInfo.iterationId) {
+              this.builderForm.get('iterationIdForLog')?.setValue(scheduledDayInfo.iterationId, { emitEvent: false });
+            }
+          } else {
+            this.toastService.error(`Routine with ID ${scheduledDayInfo.routineId} not found.`, 0, this.translate.instant('common.error'));
+            this.workoutExercisesFormArray.clear();
+          }
+        })
+        .catch(error => {
+          console.error("Failed to fetch routine for scheduled day:", error);
+          this.toastService.error("Could not load routine details.", 0, this.translate.instant('common.error'));
+          this.workoutExercisesFormArray.clear();
+        });
+    });
+  }
+
+  addGoalSubscription(): Subscription {
+    return this.routineGoal.valueChanges
+      .subscribe(async (goalValue: any) => {
+        if (this.isRevertingGoal) {
+          this.isRevertingGoal = false;
+          return;
+        }
+
+        if (this.previousGoalValue !== goalValue && goalValue !== 'tabata') {
+          this.previousGoalValue = goalValue;
+        }
+        if (this.isRoutineMode && goalValue === METRIC.rest) {
+          while (this.workoutExercisesFormArray.length) this.workoutExercisesFormArray.removeAt(0);
+          this.workoutExercisesFormArray.clearValidators();
+        }
+        const exercises = this.workoutExercisesFormArray.controls as FormGroup[];
+
+        // TABATA LOGIC
+        if (this.isRoutineMode && this.previousGoalValue !== goalValue && goalValue === 'tabata') {
+          if (exercises.length < 2) {
+            this.toastService.warning(this.translate.instant('workoutBuilder.toasts.tabataSizeError'), 5000);
+            this.isRevertingGoal = true;
+            this.routineGoal.setValue(this.previousGoalValue, { emitEvent: true });
+            return;
+          }
+
+          const confirm = await this.alertService.showConfirm(
+            this.translate.instant('workoutBuilder.alerts.tabataConvertTitle'),
+            this.translate.instant('workoutBuilder.alerts.tabataConvertMessage'),
+            this.translate.instant('workoutBuilder.alerts.convert'),
+            this.translate.instant('common.cancel')
+          );
+
+          if (!confirm || !confirm.data) {
+            // User cancelled, so revert the change and stop processing
+            this.isRevertingGoal = true;
+            this.routineGoal.setValue(this.previousGoalValue, { emitEvent: true });
+            return;
+          }
+
+          if (!this.enforceTabataSuperset()) {
+            this.isRevertingGoal = true;
+            this.routineGoal.setValue(this.previousGoalValue, { emitEvent: true });
+            return;
+          }
+          this.toastService.info(this.translate.instant('workoutBuilder.toasts.tabataConverted'));
+        }
+        else if (this.isRoutineMode && this.routineGoal.value !== 'tabata') {
+          const firstExercise = this.workoutExercisesFormArray.at(0) as FormGroup;
+          if (firstExercise && firstExercise.get('supersetId')?.value && firstExercise.get('sets')?.value?.length === this.workoutExercisesFormArray.length) {
+            this.workoutExercisesFormArray.controls.forEach(exerciseControl => {
+              (exerciseControl as FormGroup).patchValue({
+                supersetId: null,
+                supersetOrder: null,
+                type: 'standard'
+              }, { emitEvent: false });
+            });
+            this.toastService.info(this.translate.instant('workoutBuilder.toasts.tabataRemoved'), 3000);
+          }
+        }
+        this.workoutExercisesFormArray.updateValueAndValidity();
+        this.previousGoalValue = goalValue;
+      });
+  }
 }

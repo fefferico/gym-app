@@ -55,7 +55,7 @@ export class StatsService {
 
   calculateWorkoutVolume(log: WorkoutLog): number {
     let workoutVolume = 0;
-    log.exercises.forEach(ex => {
+    log.workoutExercises.forEach(ex => {
       ex.sets.forEach(set => {
         workoutVolume += this.calculateSetVolume(set);
       });
@@ -103,7 +103,7 @@ export class StatsService {
   }
 
   calculateTotalVolume(log: WorkoutLog): number {
-    return log.exercises.reduce((total, exercise) => {
+    return log.workoutExercises.reduce((total, exercise) => {
       const exerciseVolume = exercise.sets.reduce((setTotal, set) => {
         return setTotal + ((getWeightValue(set.weightLogged) ?? 0) * (repsTypeToReps(set.repsLogged) ?? 0));
       }, 0);
@@ -162,7 +162,7 @@ export class StatsService {
 
     logs.forEach(log => {
       const distinctMuscleGroupsInWorkout = new Set<string>();
-      log.exercises.forEach(loggedEx => {
+      log.workoutExercises.forEach(loggedEx => {
         const baseExercise = exerciseMap.get(loggedEx.exerciseId);
         if (baseExercise && baseExercise.muscleGroups) {
           const exerciseVolume = loggedEx.sets.reduce((sum, set) => sum + this.calculateSetVolume(set), 0);

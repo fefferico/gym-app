@@ -40,13 +40,13 @@ export class WorkoutCategoryService {
           if (!categories.length) {
             return of([]);
           }
-          // Use translation keys like 'workout-categories.{id}'
-          const translationKeys = categories.map(cat => `workout-categories.${cat.id}`);
+          // Use translation keys like 'workoutCategories.{id}'
+          const translationKeys = categories.map(cat => `workoutCategories.${cat.id}`);
           return this.translate.get(translationKeys).pipe(
             map(translations =>
               categories.map(cat => ({
                 ...cat,
-                name: translations[`workout-categories.${cat.id}`] || cat.name // fallback to original name
+                name: translations[`workoutCategories.${cat.id}`] || cat.name // fallback to original name
               }))
             )
           );

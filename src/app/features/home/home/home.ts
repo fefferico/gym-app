@@ -1,5 +1,5 @@
 // src/app/features/home/home.component.ts
-import { Component, OnInit, PLATFORM_ID, inject, signal, effect, computed, OnDestroy, ViewChildren, QueryList, ElementRef, ViewChild } from '@angular/core'; // Added effect
+import { Component, OnInit, PLATFORM_ID, inject, signal, effect, computed, OnDestroy, ViewChildren, QueryList, ElementRef, ViewChild, AfterViewInit } from '@angular/core'; // Added effect
 import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common'; // Added DatePipe
 import { Router } from '@angular/router';
 import { TodaysWorkoutComponent } from '../../dashboard/todays-workout/todays-workout';
@@ -21,6 +21,7 @@ import { animate, style, transition, trigger } from '@angular/animations';
 import { AUDIO_TYPES, AudioService } from '../../../core/services/audio.service';
 import { TimerService } from '../../../core/services/timer.service';
 import { TimerCenterComponent } from '../../../shared/components/timer-center/timer-center.component';
+import { After } from 'node:v8';
 
 
 @Component({
@@ -38,7 +39,7 @@ import { TimerCenterComponent } from '../../../shared/components/timer-center/ti
     ])
   ]
 })
-export class HomeComponent implements OnInit, OnDestroy {
+export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   private platformId = inject(PLATFORM_ID);
   private storageService = inject(StorageService);
   private router = inject(Router);
@@ -63,30 +64,18 @@ export class HomeComponent implements OnInit, OnDestroy {
   bumpTimeOut: number = 150;
 
   constructor() {
-    // Effect to update pausedRoutineName when pausedWorkoutInfo changes
+    this.userProfileService.showWipDisclaimer();
+    
+    // Set up the effect in the constructor (injection context)
     effect(() => {
       const pausedInfo = this.pausedWorkoutInfo();
-
-      if (this.pausedProgramName() && !pausedInfo) {
-        const shatterable = this.shatterables && this.shatterables.find(dir =>
-          dir.el.nativeElement.id === 'pausedWorkout'
-        );
-        if (shatterable) {
-          shatterable.shatter();
-          setTimeout(() => {
-            this.pausedWorkoutInfo.set(pausedInfo);
-          }, 150); // match the shatter animation duration
-        } else {
-          this.pausedWorkoutInfo.set(pausedInfo);
-        }
-      }
-
-
+      const previousPausedInfo = pausedInfo; // Track current state
+  
+      // Update displayed values
       this.pausedProgramName.set(pausedInfo?.programName || '');
       if (pausedInfo && pausedInfo.sessionRoutine && pausedInfo.sessionRoutine.name) {
         this.pausedRoutineName.set(pausedInfo.sessionRoutine.name);
       } else if (pausedInfo && pausedInfo.routineId) {
-        // Fallback if sessionRoutine.name is not directly available in PausedWorkoutState
         this.workoutService.getRoutineById(pausedInfo.routineId).subscribe(routine => {
           if (routine) this.pausedRoutineName.set(routine.name);
           else this.pausedRoutineName.set(this.translate.instant('pausedWorkout.fallbackRoutineName'));
@@ -95,9 +84,12 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.pausedRoutineName.set(this.translate.instant('pausedWorkout.fallbackRoutineName'));
       }
     });
-    this.userProfileService.showWipDisclaimer();
   }
-
+  
+  ngAfterViewInit(): void {
+    // ViewChildren initialization happens here, but effect is already set up
+  }
+  
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo(0, 0);
@@ -161,12 +153,18 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (confirm && confirm.data) {
       if (isPlatformBrowser(this.platformId)) {
         const shatterableHome = this.shatterables.find(dir => dir.el.nativeElement.id === 'pausedWorkout');
-        if (shatterableHome) shatterableHome.shatter();
-
-        setTimeout(() => {
+        if (shatterableHome) {
+          shatterableHome.shatter();
+          // Wait for animation to complete, THEN remove the data
+          setTimeout(() => {
+            this.pausedWorkoutInfo.set(null);
+            this.workoutService.removePausedWorkout();
+          }, 300); // Duration of shatter animation
+        } else {
+          // If no shatterable found, just remove immediately
           this.pausedWorkoutInfo.set(null);
           this.workoutService.removePausedWorkout();
-        }, 150); // After shatter animation
+        }
       }
     }
   }
@@ -205,10 +203,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (pausedInfo) {
       this.workoutService.vibrate();
       const routineName = pausedInfo.sessionRoutine?.name || this.translate.instant('pausedWorkout.adHocWorkout');
-      const exercisesAvailable = pausedInfo.sessionRoutine && pausedInfo.sessionRoutine.exercises ? pausedInfo.sessionRoutine.exercises.length : 0;
+      const exercisesAvailable = pausedInfo.sessionRoutine && pausedInfo.sessionRoutine.workoutExercises ? pausedInfo.sessionRoutine.workoutExercises.length : 0;
       const exercisesDone = pausedInfo.currentWorkoutLogExercises?.length || 0;
       const setsDone = pausedInfo.currentWorkoutLogExercises?.reduce((acc, ex) => acc + ex.sets.length, 0);
-      const targetSets = pausedInfo.originalWorkoutExercises && pausedInfo.originalWorkoutExercises['exercises'] ? pausedInfo.originalWorkoutExercises['exercises'].reduce((acc: number, ex: WorkoutExercise) => acc + ex.sets.length, 0) : null;
+      const targetSets = pausedInfo.originalWorkoutExercises && pausedInfo.originalWorkoutExercises['workoutExercises'] ? pausedInfo.originalWorkoutExercises['workoutExercises'].reduce((acc: number, ex: WorkoutExercise) => acc + ex.sets.length, 0) : null;
       const timeElapsed = new Date(pausedInfo.sessionTimerElapsedSecondsBeforePause * 1000).toISOString().slice(11, 19);
       const targetSetsInfo = targetSets ? ` out of ${targetSets}` : '';
 

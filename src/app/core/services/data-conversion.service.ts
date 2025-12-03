@@ -40,7 +40,7 @@ export class DataConversionService {
     // 1. Workout Logs & PBs (Unchanged)
     const logs = this.trackingService.getDataForBackup();
     logs.forEach(log => {
-      log.exercises.forEach(ex => {
+      log.workoutExercises.forEach(ex => {
         ex.sets.forEach(set => {
           if (set.weightLogged != null) {
             set.weightLogged = weightToExact(this.unitsService.convertWeight(getWeightValue(set.weightLogged), fromUnit, toUnit));
@@ -56,7 +56,7 @@ export class DataConversionService {
     // 2. Routines (Unchanged)
     const routines = this.workoutService.getDataForBackup();
     routines.forEach(routine => {
-      routine.exercises.forEach(ex => {
+      routine.workoutExercises.forEach(ex => {
         ex.sets.forEach(set => {
           if (set.targetWeight != null) {
             set.targetWeight = weightToExact(this.unitsService.convertWeight(getWeightValue(set.targetWeight), fromUnit, toUnit));
@@ -223,7 +223,7 @@ export class DataConversionService {
     // 1. Convert Workout Logs
     const logs = this.trackingService.getDataForBackup();
     logs.forEach(log => {
-      log.exercises.forEach(ex => {
+      log.workoutExercises.forEach(ex => {
         ex.sets.forEach(set => {
           // Convert the actual distance performed
           if (set.distanceLogged != null) {
@@ -242,7 +242,7 @@ export class DataConversionService {
     // 2. Convert Routines
     const routines = this.workoutService.getDataForBackup();
     routines.forEach(routine => {
-      routine.exercises.forEach(ex => {
+      routine.workoutExercises.forEach(ex => {
         ex.sets.forEach(set => {
           // In routines, we only care about the target distance
           if (set.targetDistance != null) {

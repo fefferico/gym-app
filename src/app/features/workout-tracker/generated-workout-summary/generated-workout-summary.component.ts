@@ -44,10 +44,10 @@ export class GeneratedWorkoutSummaryComponent {
         const displayGroups: DisplayGroup[] = [];
         const processedSupersetIds = new Set<string>();
 
-        routine.exercises.forEach(exercise => {
+        routine.workoutExercises.forEach(exercise => {
             if (exercise.supersetId) {
                 if (!processedSupersetIds.has(exercise.supersetId)) {
-                    const groupExercises = routine.exercises
+                    const groupExercises = routine.workoutExercises
                         .filter(ex => ex.supersetId === exercise.supersetId)
                         .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0));
                     displayGroups.push({ type: 'superset', exercises: groupExercises, supersetId: exercise.supersetId });
@@ -82,7 +82,7 @@ export class GeneratedWorkoutSummaryComponent {
         if (!routine) return;
         const newRoutineState: Routine = {
             ...routine,
-            exercises: routine.exercises.map(ex =>
+            workoutExercises: routine.workoutExercises.map(ex =>
                 ex.id === updatedExercise.id ? updatedExercise : ex
             )
         };
@@ -94,7 +94,7 @@ export class GeneratedWorkoutSummaryComponent {
         if (!routine) return;
         const newRoutineState: Routine = {
             ...routine,
-            exercises: routine.exercises.filter(ex => ex.id !== exerciseIdToRemove)
+            workoutExercises: routine.workoutExercises.filter(ex => ex.id !== exerciseIdToRemove)
         };
         this.routineUpdated.emit(newRoutineState); // Emit the change
     }
@@ -109,7 +109,7 @@ export class GeneratedWorkoutSummaryComponent {
         if (confirm && confirm.data) {
             const newRoutineState: Routine = {
                 ...routine,
-                exercises: routine.exercises.filter(ex => ex.supersetId !== supersetIdToRemove)
+                workoutExercises: routine.workoutExercises.filter(ex => ex.supersetId !== supersetIdToRemove)
             };
             this.routineUpdated.emit(newRoutineState); // Emit the change
         }
@@ -125,7 +125,7 @@ export class GeneratedWorkoutSummaryComponent {
     getExerciseSignal(exerciseId: string): Signal<WorkoutExercise> {
         return computed(() => {
             const routine = this.generatedRoutineSignal();
-            const exercise = routine?.exercises.find(ex => ex.id === exerciseId);
+            const exercise = routine?.workoutExercises.find(ex => ex.id === exerciseId);
             // This assertion is safe because we know the exercise exists when this is called.
             return exercise!;
         });

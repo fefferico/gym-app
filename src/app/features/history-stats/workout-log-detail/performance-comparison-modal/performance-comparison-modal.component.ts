@@ -215,7 +215,7 @@ export class PerformanceComparisonModalComponent {
         const currentExercise = this.exerciseSignal();
         if (!currentLog || !currentExercise) return;
 
-        const previousExercise = previousLog?.exercises.find(ex => ex.exerciseId === currentExercise.exerciseId);
+        const previousExercise = previousLog?.workoutExercises.find(ex => ex.exerciseId === currentExercise.exerciseId);
         const currentSets = currentExercise.sets || [];
         const previousSets = previousExercise?.sets || [];
 
@@ -242,8 +242,8 @@ export class PerformanceComparisonModalComponent {
         const currentLog = this.currentLogSignal();
         if (!currentLog) return;
 
-        const currentSummary = this.calculateSummaryForRoutine(currentLog.exercises);
-        const previousSummary = this.calculateSummaryForRoutine(previousLog?.exercises || []);
+        const currentSummary = this.calculateSummaryForRoutine(currentLog.workoutExercises);
+        const previousSummary = this.calculateSummaryForRoutine(previousLog?.workoutExercises || []);
         const comparison = this.calculateComparison(currentSummary, previousSummary);
 
         this.showWeightMetrics.set(currentSummary.maxWeight > 0 || previousSummary.maxWeight > 0);
@@ -253,11 +253,11 @@ export class PerformanceComparisonModalComponent {
 
         // Generate per-exercise breakdown
         const exerciseRows: ExerciseComparisonSummary[] = [];
-        const allExerciseIds = new Set([...currentLog.exercises.map(e => e.exerciseId), ...previousLog?.exercises.map(e => e.exerciseId) ?? []]);
+        const allExerciseIds = new Set([...currentLog.workoutExercises.map(e => e.exerciseId), ...previousLog?.workoutExercises.map(e => e.exerciseId) ?? []]);
 
         allExerciseIds.forEach(exerciseId => {
-            const currentEx = currentLog.exercises.find(e => e.exerciseId === exerciseId);
-            const prevEx = previousLog?.exercises.find(e => e.exerciseId === exerciseId);
+            const currentEx = currentLog.workoutExercises.find(e => e.exerciseId === exerciseId);
+            const prevEx = previousLog?.workoutExercises.find(e => e.exerciseId === exerciseId);
 
             const currentExSummary = this.calculateSummaryForSets(currentEx?.sets || []);
             const prevExSummary = this.calculateSummaryForSets(prevEx?.sets || []);

@@ -2689,7 +2689,7 @@
                 
 //             }
 //         ],
-//         goal: 'fat loss / body composition',
+//         goal: 'fatLossBodyComposition',
 //         targetMuscleGroups: ['Full Body', "core", "glutes", "hamstrings", 'Back', 'Shoulders'],
 //         notes: 'Workout by Chandler Marchman. **Weight Used= 71 lb. Kettlebell Kings powder coated kettlebell**. Rest 2-3 Minutes Between Each Round. Video: https://www.youtube.com/watch?v=Oo5mfamYm58'
 //     },
@@ -2750,8 +2750,8 @@
 //                 type: 'superset'
 //             }
 //         ],
-//         goal: 'sport-specific performance',
-//         targetMuscleGroups: ['Full Body', "core", 'Power / explosiveness'],
+//         goal: 'sportSpecificPerformance',
+//         targetMuscleGroups: ['Full Body', "core", 'powerExplosiveness'],
 //         notes: 'Workout by Chandler Marchman. **Weights used in workout: 71 lb. Powder Coated KB from "Kettlebell Kings"**. Perform as fast as possible - Rest 2-3 Minutes Between Each Round. Video: https://www.youtube.com/watch?v=y7Safm7wLqk'
 //     },
 
@@ -2831,7 +2831,7 @@
 //                 type: 'superset'
 //             }
 //         ],
-//         goal: 'general health & longevity',
+//         goal: 'generalHealthLongevity',
 //         targetMuscleGroups: ['Full Body', "core"],
 //         notes: 'Workout by Chandler Marchman. **Weight Used During Workout: 53 lb. Kettlebells**. {Rest no more than 3 minutes between rounds}. Video: https://www.youtube.com/watch?v=IwqIawUrma4'
 //     },

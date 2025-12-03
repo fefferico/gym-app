@@ -224,7 +224,7 @@
                         <p class="flex gap-1 items-center">
                           <app-icon name="muscle" class="w-6 h-6"></app-icon>
                           <span class="font-medium">{{ 'historyList.card.exercises' | translate }}</span> {{
-                          item.exercises.length }}
+                          item.workoutExercises.length }}
                         </p>
                         <!-- LOCATION DATA -->
                         <div class="flex items-center text-md text-gray-600 dark:text-gray-400 mt-1 gap-x-2"
@@ -462,7 +462,7 @@
               </p>
               <p class="flex gap-1 items-center text-sm text-gray-600 dark:text-gray-300 mb-2">
                 <app-icon name="muscle" class="w-6 h-6"></app-icon>
-                <span class="font-medium">{{ 'historyList.card.exercises' | translate }}</span> {{ item.exercises.length
+                <span class="font-medium">{{ 'historyList.card.exercises' | translate }}</span> {{ item.workoutExercises.length
                 }}
               </p>
               <p *ngIf="item.totalVolume" class="flex gap-1 items-center text-sm text-gray-600 dark:text-gray-300 mb-2">

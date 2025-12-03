@@ -488,7 +488,7 @@ export class WorkoutUtilsService {
 
 
     public getVisibleExerciseColumns(routine: Routine, exIndex: number, isLogged: boolean = false): { [key: string]: boolean } {
-        const exercise = routine.exercises[exIndex];
+        const exercise = routine.workoutExercises[exIndex];
 
         if (!exercise || exercise.sets?.length === 0) {
             // Fallback for safety, though it should always find a set.
@@ -525,7 +525,7 @@ export class WorkoutUtilsService {
     }
 
     public getVisibleSetColumns(routine: Routine, exIndex: number, setIndex: number): { [key: string]: boolean } {
-        const exercise = routine.exercises[exIndex];
+        const exercise = routine.workoutExercises[exIndex];
         const set = exercise?.sets[setIndex];
 
         if (!set) {
@@ -579,7 +579,7 @@ export class WorkoutUtilsService {
             return null;
         }
 
-        const isSuperSet = !!routine.exercises[exIndex].supersetId;
+        const isSuperSet = !!routine.workoutExercises[exIndex].supersetId;
         let filteredHidden;
         if (isSuperSet) {
             // check that superset exercise must have only "reps" and "weight" as metrics, let the user add/remove them but nothing else
@@ -737,7 +737,7 @@ export class WorkoutUtilsService {
         targetValue: AnyTarget | string | number | boolean
     ): Routine {
         const updatedRoutine = JSON.parse(JSON.stringify(routine)) as Routine;
-        const setToUpdate: ExerciseTargetSetParams | LoggedSet = updatedRoutine.exercises[exIndex].sets[setIndex];
+        const setToUpdate: ExerciseTargetSetParams | LoggedSet = updatedRoutine.workoutExercises[exIndex].sets[setIndex];
 
         // Ensure fieldOrder exists and includes the new field
         if (!setToUpdate.fieldOrder) {
@@ -958,7 +958,7 @@ export class WorkoutUtilsService {
         // Create a deep copy to avoid mutating the original object
         const newRoutine = JSON.parse(JSON.stringify(routine)) as Routine;
 
-        const setToUpdate: any = newRoutine.exercises[exIndex].sets[setIndex];
+        const setToUpdate: any = newRoutine.workoutExercises[exIndex].sets[setIndex];
 
         if (!this.isLoggedRoutine(newRoutine)) {
             // 1. Remove the field's value
@@ -1020,7 +1020,7 @@ export class WorkoutUtilsService {
        */
     public getSetFieldOrder(routine: Routine, exIndex: number, setIndex: number): string[] | null {
         // Safely access the nested properties
-        const exercise = routine?.exercises?.[exIndex];
+        const exercise = routine?.workoutExercises?.[exIndex];
         const set = exercise?.sets?.[setIndex];
 
         // If fieldOrder exists and is an array, sort it according to the default metrics order
@@ -1529,7 +1529,7 @@ export class WorkoutUtilsService {
 
 
      public getVisibleSetColumnsByStrings(routine: Routine, exerciseId: string, setId: string): { [key: string]: boolean } {
-        const exercise = routine.exercises.find(ex => ex.id === exerciseId);
+        const exercise = routine.workoutExercises.find(ex => ex.id === exerciseId);
         const set = exercise?.sets.find(set => set.id === setId);
 
         if (!set) {
@@ -1572,8 +1572,8 @@ export class WorkoutUtilsService {
 
         public isExerciseInSuperset(routine: Routine, exerciseId: string): boolean {
         // If routine has blocks structure
-        if (routine.exercises && Array.isArray(routine.exercises)) {
-            for (const exercise of routine.exercises) {
+        if (routine.workoutExercises && Array.isArray(routine.workoutExercises)) {
+            for (const exercise of routine.workoutExercises) {
                 if (exercise.supersetId && exercise.id === exerciseId) {
                     return true;
                 }
@@ -1593,7 +1593,7 @@ export class WorkoutUtilsService {
         }
 
         // Check if exercise is in a group block by looking at routine structure
-        const exercise = routine.exercises.find(ex => ex.id === exerciseId);
+        const exercise = routine.workoutExercises.find(ex => ex.id === exerciseId);
         const isInGroupBlock = exercise ? this.isExerciseInSuperset(routine, exerciseId) : false;
 
         let filteredHidden;
@@ -1622,7 +1622,7 @@ export class WorkoutUtilsService {
         }));
         buttons.push({ text: this.translate.instant('common.cancel'), role: 'cancel', data: null, icon: 'cancel' });
 
-        const setIndex = routine.exercises.find(ex => ex.id === exerciseId)?.sets.findIndex(set => set.id === setId) ?? 0;
+        const setIndex = routine.workoutExercises.find(ex => ex.id === exerciseId)?.sets.findIndex(set => set.id === setId) ?? 0;
         const choice = await this.alertService.showConfirmationDialog(
             this.translate.instant('workoutBuilder.prompts.addField.title'),
             this.translate.instant('workoutBuilder.prompts.addField.message', { setNumber: setIndex + 1 }),
@@ -1795,7 +1795,7 @@ public async promptRemoveFieldByStrings(routine: Routine, exerciseId: string, se
         // Create a deep copy to avoid mutating the original object
         const newRoutine = JSON.parse(JSON.stringify(routine)) as Routine;
 
-        const setToUpdate: any = newRoutine.exercises.find(ex => ex.id === exerciseId)?.sets.find(set => set.id === setId);
+        const setToUpdate: any = newRoutine.workoutExercises.find(ex => ex.id === exerciseId)?.sets.find(set => set.id === setId);
         if (!this.isLoggedRoutine(newRoutine)) {
             // 1. Remove the field's value
             setToUpdate[`target${fieldToRemove.charAt(0).toUpperCase() + fieldToRemove.slice(1)}`] = undefined;
@@ -1818,7 +1818,7 @@ public async promptRemoveFieldByStrings(routine: Routine, exerciseId: string, se
             setToUpdate.fieldOrder = setToUpdate.fieldOrder.filter((field: string) => field !== fieldToRemove);
         }
 
-        const setIndex = newRoutine.exercises.find(ex => ex.id === exerciseId)?.sets.findIndex(set => set.id === setId) ?? 0;
+        const setIndex = newRoutine.workoutExercises.find(ex => ex.id === exerciseId)?.sets.findIndex(set => set.id === setId) ?? 0;
         this.toastService.info(this.translate.instant("toasts.fieldRemovedFromSet", { fieldToRemove: this.translate.instant(`metrics.${fieldToRemove}`).toUpperCase(), setIndex: setIndex + 1 }));
 
         // 3. Return the fully modified new routine object
@@ -1833,7 +1833,7 @@ public async promptRemoveFieldByStrings(routine: Routine, exerciseId: string, se
         targetValue: AnyTarget | string | number | boolean
     ): Routine | null {
         const updatedRoutine = JSON.parse(JSON.stringify(routine)) as Routine;
-        const setData: any = updatedRoutine.exercises.find(ex => ex.id === exerciseId)?.sets.find(s => s.id === setId);
+        const setData: any = updatedRoutine.workoutExercises.find(ex => ex.id === exerciseId)?.sets.find(s => s.id === setId);
         if (!setData) return null;
         const setToUpdate: ExerciseTargetSetParams | LoggedSet = setData;
 
@@ -1964,7 +1964,7 @@ public async promptRemoveFieldByStrings(routine: Routine, exerciseId: string, se
 
 
     public getVisibleExerciseColumnsByStrings(routine: Routine, exerciseId: string, isLogged: boolean = false): { [key: string]: boolean } {
-        const exercise = routine.exercises.find(ex => ex.id === exerciseId);
+        const exercise = routine.workoutExercises.find(ex => ex.id === exerciseId);
 
         if (!exercise || exercise.sets?.length === 0) {
             // Fallback for safety, though it should always find a set.
@@ -2008,8 +2008,8 @@ public async promptRemoveFieldByStrings(routine: Routine, exerciseId: string, se
      * @returns The matching exercise or undefined if not found.
      */
     private getExerciseById(routine: Routine | null | undefined, exerciseId: string): WorkoutExercise | undefined {
-        if (!routine || !routine.exercises) return undefined;
-        return routine.exercises.find(ex => ex.id === exerciseId);
+        if (!routine || !routine.workoutExercises) return undefined;
+        return routine.workoutExercises.find(ex => ex.id === exerciseId);
     }
 
     

@@ -329,7 +329,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
           match &&= (item.routineName || '').toLowerCase().includes(routineNameFilter);
         }
         if (filters.exerciseId) {
-          match &&= item.exercises.some(ex => ex.exerciseId === filters.exerciseId);
+          match &&= item.workoutExercises.some(ex => ex.exerciseId === filters.exerciseId);
         }
         if (filters.programId && filters.programId !== '') {
           match &&= String(item.programId || '') === String(filters.programId);
@@ -368,8 +368,8 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
         break;
       case 'mostExercises':
         filtered = [...filtered].sort((a, b) => {
-          const aCount = a.itemType === 'workout' ? (a.exercises?.length ?? 0) : 0;
-          const bCount = b.itemType === 'workout' ? (b.exercises?.length ?? 0) : 0;
+          const aCount = a.itemType === 'workout' ? (a.workoutExercises?.length ?? 0) : 0;
+          const bCount = b.itemType === 'workout' ? (b.workoutExercises?.length ?? 0) : 0;
           return bCount - aCount;
         });
         break;
@@ -418,11 +418,11 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   * @returns The total volume as a number, or null if it cannot be calculated.
   */
   getTotalVolume(log: WorkoutLog): number | null {
-    if (!log.exercises) {
+    if (!log.workoutExercises) {
       return 0; // Return 0 if there are no exercises
     }
 
-    return log.exercises.reduce((totalVolume, exercise) => {
+    return log.workoutExercises.reduce((totalVolume, exercise) => {
       const exerciseVolume = exercise.sets.reduce((volume, set) => {
         // Ensure both reps and weight are valid numbers for calculation
         if (this.workoutUtilsService.getRepsValue(set.repsLogged) !== undefined && this.workoutUtilsService.getWeightValue(set.weightLogged) !== undefined) {
@@ -452,11 +452,11 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     const newlyAchievedPBs: AchievedPB[] = [];
 
     // Early exit if no exercises or log has no ID
-    if (!log.exercises || log.exercises.length === 0 || !log.id) {
+    if (!log.workoutExercises || log.workoutExercises.length === 0 || !log.id) {
       return [];
     }
 
-    log.exercises.forEach(loggedEx => {
+    log.workoutExercises.forEach(loggedEx => {
       // Get current PBs for this specific exercise
       const currentExercisePBs = allCurrentPBs[loggedEx.exerciseId] || [];
 

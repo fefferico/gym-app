@@ -66,7 +66,7 @@ export class WorkoutSummaryComponent implements OnInit {
         if (log) {
           this.workoutLog.set(log);
           this.sessionTotalVolume.set(this.statsService.calculateWorkoutVolume(log));
-          this.prepareDisplayExercisesSummary(log.exercises);
+          this.prepareDisplayExercisesSummary(log.workoutExercises);
           this.identifySessionPBs(log);
           // --- NEW LOGIC TO TRIGGER MODAL ---
           this.checkForNewlyCompletedWorkout(log);
@@ -148,7 +148,7 @@ export class WorkoutSummaryComponent implements OnInit {
     // We need to get the PBs *as they were just updated by this log*
     // So we fetch all current PBs from TrackingService.
     this.trackingService.personalBests$.pipe(take(1)).subscribe(allPBs => {
-      currentLog.exercises.forEach(loggedEx => {
+      currentLog.workoutExercises.forEach(loggedEx => {
         const exercisePBsList = allPBs[loggedEx.exerciseId];
         if (exercisePBsList) {
           loggedEx.sets.forEach(performedSet => {

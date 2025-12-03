@@ -1,5 +1,5 @@
 // src/app/features/workout-routines/routine-list/routine-list.component.ts
-import { Component, inject, OnInit, PLATFORM_ID, signal, computed, OnDestroy, HostListener, ViewChildren, ViewChild, ElementRef } from '@angular/core'; // Added computed, OnDestroy
+import { Component, inject, OnInit, PLATFORM_ID, signal, computed, OnDestroy, HostListener, ViewChildren, ViewChild, ElementRef, QueryList } from '@angular/core'; // Added computed, OnDestroy
 import { CommonModule, DatePipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { combineLatest, firstValueFrom, map, Observable, Subscription, take } from 'rxjs'; // Added Subscription
@@ -36,6 +36,7 @@ import { BumpClickDirective } from '../../shared/directives/bump-click.directive
 import { toSignal } from '@angular/core/rxjs-interop';
 import { WorkoutCategoryService } from '../../core/services/workout-category.service';
 import { EQUIPMENT_NORMALIZATION_MAP, EquipmentService } from '../../core/services/equipment.service';
+import { ShatterableDirective } from '../../animations/shatterable.directive';
 
 @Component({
   selector: 'app-routine-list',
@@ -43,7 +44,8 @@ import { EQUIPMENT_NORMALIZATION_MAP, EquipmentService } from '../../core/servic
   imports: [CommonModule, DatePipe, TitleCasePipe, ActionMenuComponent, PressDirective, IconComponent,
     FabMenuComponent,
     TranslateModule,
-    BumpClickDirective
+    BumpClickDirective,
+    ShatterableDirective
   ],
   templateUrl: './routine-list.html',
   styleUrl: './routine-list.scss',
@@ -140,7 +142,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   uniqueRoutineMuscleGroups = computed<string[]>(() => {
     const routines = this.allRoutinesForList();
     const muscles = new Set<string>();
-    routines.forEach(r => r.exercises.forEach(ex => {
+    routines.forEach(r => r.workoutExercises.forEach(ex => {
       const fullEx = this.allExercisesMap.get(ex.exerciseId);
       if (fullEx?.primaryMuscleGroup) muscles.add(fullEx.primaryMuscleGroup);
     }));
@@ -155,7 +157,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   uniqueRoutineEquipments = computed<{ key: string, label: string }[]>(() => {
     const routines = this.allRoutinesForList();
     const equipments = new Set<string>();
-    routines.forEach(r => r.exercises.forEach((ex: WorkoutExercise) => {
+    routines.forEach(r => r.workoutExercises.forEach((ex: WorkoutExercise) => {
       const fullEx = this.allExercisesMap.get(ex.exerciseId);
       fullEx?.equipmentNeeded?.forEach(eqRaw => {
         if (!eqRaw) return;
@@ -303,7 +305,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     }
     if (muscleFilter) {
       routines = routines.filter(r =>
-        r.exercises.some(exDetail => {
+        r.workoutExercises.some(exDetail => {
           const fullExercise = this.allExercisesMap.get(exDetail.exerciseId);
           return fullExercise?.primaryMuscleGroup?.toLowerCase() === muscleFilter.toLowerCase();
         })
@@ -314,7 +316,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       routines = routines.filter(r => {
         // Get all unique equipment for this routine
         const routineEquipment = new Set<string>();
-        r.exercises.forEach(exDetail => {
+        r.workoutExercises.forEach(exDetail => {
           const fullExercise = this.allExercisesMap.get(exDetail.exerciseId);
           if (fullExercise?.equipment) {
             routineEquipment.add(fullExercise.equipment);
@@ -534,6 +536,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     this.visibleActionsRutineId.set(null);
   }
 
+  @ViewChildren(ShatterableDirective) shatterables!: QueryList<ShatterableDirective>;
   async deleteRoutine(routineId: string, event?: Event): Promise<void> {
     this.visibleActionsRutineId.set(null);
 
@@ -571,12 +574,22 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         if (associatedLogs.length > 0) {
           await this.trackingService.clearWorkoutLogsByRoutineId(routineId);
         }
+
+        const shatterable = this.shatterables.find(dir => dir.el.nativeElement.id === `routineItem-${routineId}`);
+        if (shatterable) shatterable.shatter();
+        const ANIMATION_DURATION = 400; // ms, match your animation
+
+        // Wait for the animation, then remove the item
+        setTimeout(async () => {
         const deletionSuccess = await this.workoutService.deleteRoutine(routineId);
         if (deletionSuccess) {
           this.toastService.success(this.translate.instant('routineList.toasts.routineDeleted', { name: routineToDelete.name }), 4000, this.translate.instant('routineList.alerts.deleteTitle'));
         } else {
           this.toastService.error(this.translate.instant('routineList.toasts.routineNotFound'), 0, "Deletion Failed");
         }
+        }, ANIMATION_DURATION + 100); // +100ms for a relaxed shift
+
+        
       } catch (error) {
         console.error("Error during deletion:", error);
         this.toastService.error(this.translate.instant('routineList.toasts.routineNotFound'), 0, "Deletion Failed");
@@ -706,9 +719,9 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
   // Helper to get muscle groups for display on the card
   getRoutineMainMuscleGroups(routine: Routine): string[] {
-    if (!this.allExercisesMap.size || !routine.exercises.length) return [];
+    if (!this.allExercisesMap.size || !routine.workoutExercises.length) return [];
     const muscles = new Set<string>();
-    routine.exercises.forEach(exDetail => {
+    routine.workoutExercises.forEach(exDetail => {
       const fullExercise = this.allExercisesMap.get(exDetail.exerciseId);
       if (fullExercise?.primaryMuscleGroup) {
         muscles.add(fullExercise.primaryMuscleGroup.toLowerCase());
@@ -1144,7 +1157,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       newRoutine = await this.workoutGeneratorService.generateQuickWorkout();
     }
 
-    if (newRoutine && newRoutine.exercises.length > 0) {
+    if (newRoutine && newRoutine.workoutExercises.length > 0) {
       this.generatedRoutine.set(newRoutine);
     } else {
       // This should rarely happen with the fallback logic, but it's a good safeguard

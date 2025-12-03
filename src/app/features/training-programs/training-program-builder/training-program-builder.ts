@@ -240,12 +240,12 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     programGoals: ProgramGoal[] = [
         { value: 'hypertrophy', label: this.translate.instant('workoutBuilder.goals.hypertrophy') }, { value: 'strength', label: this.translate.instant('workoutBuilder.goals.strength') },
         { value: 'tabata', label: this.translate.instant('workoutBuilder.goals.tabata') },
-        { value: 'muscular endurance', label: this.translate.instant('workoutBuilder.goals.muscularEndurance') }, { value: 'cardiovascular endurance', label: this.translate.instant('workoutBuilder.goals.cardiovascularEndurance') },
-        { value: 'fat loss / body composition', label: this.translate.instant('workoutBuilder.goals.fatLoss') }, { value: 'mobility & flexibility', label: this.translate.instant('workoutBuilder.goals.mobility') },
-        { value: 'power / explosiveness', label: this.translate.instant('workoutBuilder.goals.power') }, { value: 'speed & agility', label: this.translate.instant('workoutBuilder.goals.speed') },
-        { value: 'balance & coordination', label: this.translate.instant('workoutBuilder.goals.balance') }, { value: 'skill acquisition', label: this.translate.instant('workoutBuilder.goals.skill') },
-        { value: 'rehabilitation / injury prevention', label: this.translate.instant('workoutBuilder.goals.rehabilitation') }, { value: 'mental health / stress relief', label: this.translate.instant('workoutBuilder.goals.mentalHealth') },
-        { value: 'general health & longevity', label: this.translate.instant('workoutBuilder.goals.generalHealth') }, { value: 'sport-specific performance', label: this.translate.instant('workoutBuilder.goals.sportSpecific') },
+        { value: 'muscularEndurance', label: this.translate.instant('workoutBuilder.goals.muscularEndurance') }, { value: 'cardiovascular Endurance', label: this.translate.instant('workoutBuilder.goals.cardiovascularEndurance') },
+        { value: 'fatLossBodyComposition', label: this.translate.instant('workoutBuilder.goals.fatLoss') }, { value: 'mobilityFlexibility', label: this.translate.instant('workoutBuilder.goals.mobility') },
+        { value: 'powerExplosiveness', label: this.translate.instant('workoutBuilder.goals.power') }, { value: 'speedAgility', label: this.translate.instant('workoutBuilder.goals.speed') },
+        { value: 'balanceCoordination', label: this.translate.instant('workoutBuilder.goals.balance') }, { value: 'skillAcquisition', label: this.translate.instant('workoutBuilder.goals.skill') },
+        { value: 'rehabilitationInjuryPrevention', label: this.translate.instant('workoutBuilder.goals.rehabilitation') }, { value: 'mentalHealthStressRelief', label: this.translate.instant('workoutBuilder.goals.mentalHealth') },
+        { value: 'generalHealthLongevity', label: this.translate.instant('workoutBuilder.goals.generalHealth') }, { value: 'sportSpecificPerformance', label: this.translate.instant('workoutBuilder.goals.sportSpecific') },
         { value: 'maintenance', label: this.translate.instant('workoutBuilder.goals.maintenance') }, { value: 'rest', label: this.translate.instant('workoutBuilder.goals.rest') }, { value: 'custom', label: this.translate.instant('workoutBuilder.goals.custom') }
     ];
 
@@ -1650,13 +1650,13 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
         if (routine) {
             // 3a. Append to existing custom routine
-            routine.exercises.push(...workoutExercises);
+            routine.workoutExercises.push(...workoutExercises);
         } else {
             // 3b. Create a new fake routine
             const fakeRoutine: Routine = {
                 id: 'custom-' + uuidv4(),
                 name: 'Custom Day',
-                exercises: workoutExercises,
+                workoutExercises: workoutExercises,
                 isHidden: true
             };
             this.customRoutines.push(fakeRoutine);
@@ -1686,7 +1686,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     getExercisesForDay(routineId: string): WorkoutExercise[] {
         let routine = this.availableRoutines.find(r => r.id === routineId)
             || Array.from(this.temporaryCustomRoutines.values()).find(r => r.id === routineId);
-        return routine?.exercises || [];
+        return routine?.workoutExercises || [];
     }
 
 
@@ -1734,7 +1734,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         return {
             id: 'custom-' + uuidv4(),
             name: 'Fake Routine',
-            exercises: workoutExercises
+            workoutExercises: workoutExercises
         };
     }
 
@@ -1879,7 +1879,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     private updateRoutineExerciseNames(): void {
         // Update availableRoutines
         this.availableRoutines.forEach(routine => {
-            routine.exercises.forEach(ex => {
+            routine.workoutExercises.forEach(ex => {
                 const translated = this.availableExercises.find(e => e.id === ex.exerciseId);
                 if (translated) {
                     ex.exerciseName = translated.name;
@@ -1889,7 +1889,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
         // Update temporaryCustomRoutines
         Array.from(this.temporaryCustomRoutines.values()).forEach(routine => {
-            routine.exercises.forEach(ex => {
+            routine.workoutExercises.forEach(ex => {
                 const translated = this.availableExercises.find(e => e.id === ex.exerciseId);
                 if (translated) {
                     ex.exerciseName = translated.name;

@@ -804,7 +804,7 @@
                                                     chosenRoutine.name }}</span>
                                                 <span class="block text-xs text-gray-500 dark:text-gray-400">
                                                     {{ ('workoutBuilder.goals.' + chosenRoutine.goal) | translate |
-                                                    titlecase }} - {{ chosenRoutine.exercises.length }} exercises
+                                                    titlecase }} - {{ chosenRoutine.workoutExercises.length }} exercises
                                                 </span>
                                             </div>
                                             <app-icon name="check"
@@ -824,7 +824,7 @@
                                                 }}</span>
                                             <span class="block text-xs text-gray-500 dark:text-gray-400">
                                                 {{ ('workoutBuilder.goals.' + r.goal) | translate | titlecase }} - {{
-                                                r.exercises.length }} exercises
+                                                r.workoutExercises.length }} exercises
                                             </span>
                                         </div>
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"

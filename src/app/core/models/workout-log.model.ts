@@ -72,7 +72,7 @@ export interface WorkoutLog {
   endTime?: number;       // Timestamp (milliseconds since epoch) of when the workout ended
   durationMinutes?: number; // Total duration of the workout in minutes
   durationSeconds?: number; // Total duration of the workout in seconds
-  exercises: LoggedWorkoutExercise[]; // Array of all exercises performed in this session
+  workoutExercises: LoggedWorkoutExercise[]; // Array of all exercises performed in this session
   notes?: string;         // Overall user notes for the entire workout session
   goal?: string;         // Optional: Goal of the workout (e.g., "Strength", "Hypertrophy", "Endurance")
   // Optional: User-perceived effort, mood, location, etc.

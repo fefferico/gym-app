@@ -70,7 +70,7 @@ interface EMOMDisplayBlock {
   blockName: string;
   totalRounds: number;
   emomTimeSeconds: number;
-  exercises: DisplayLoggedExercise[];
+  workoutExercises: DisplayLoggedExercise[];
   rounds: { roundNumber: number, sets: (LoggedSet | undefined)[] }[];
   isExpanded: boolean;
 }
@@ -153,13 +153,13 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
         switchMap(id => id ? this.trackingService.getWorkoutLogById(id) : of(null)),
         // Use switchMap to handle the async translation process cleanly
         switchMap(log => {
-          if (!log || !log.exercises?.length) {
+          if (!log || !log.workoutExercises?.length) {
             // If no log or no exercises, just pass the log through
             return of({ log, translatedExercises: new Map<string, Exercise>() });
           }
 
           // Create a list of base exercises from the log to be translated
-          const exercisesToTranslate = log.exercises
+          const exercisesToTranslate = log.workoutExercises
             .map(loggedEx => this.allExercisesMap.get(loggedEx.exerciseId))
             .filter((ex): ex is Exercise => !!ex);
 
@@ -176,9 +176,9 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
           //   log.startTime = log.startTime.toLocaleString();
           // }
           this.workoutLog.set(log);
-          if (log?.exercises?.length) {
+          if (log?.workoutExercises?.length) {
             // Pass the translated map to the display preparation method
-            this.prepareDisplayExercises(log.exercises, translatedExercises);
+            this.prepareDisplayExercises(log.workoutExercises, translatedExercises);
             await this.enrichLoggedExercisesWithTargets();
             this.trainingService.getWeekNameForLog(log).pipe(take(1)).subscribe(name => this.weekName.set(name));
             this.trainingService.getDayOfWeekForLog(log).pipe(take(1)).subscribe(info => this.dayInfo.set(info));
@@ -201,11 +201,11 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     if (!log?.routineId) return;
 
     const routine = await firstValueFrom(this.workoutService.getRoutineById(log.routineId));
-    if (!routine?.exercises) return;
+    if (!routine?.workoutExercises) return;
 
-    const routineExerciseMap = new Map(routine.exercises.map(ex => [ex.id, ex]));
+    const routineExerciseMap = new Map(routine.workoutExercises.map(ex => [ex.id, ex]));
 
-    log.exercises.forEach(loggedEx => {
+    log.workoutExercises.forEach(loggedEx => {
       const routineEx = routineExerciseMap.get(loggedEx.id);
       loggedEx.sets.forEach((set, i) => {
         const routineExerciseSet = routineEx?.sets?.find(s => s.id === set.plannedSetId) ?? routineEx?.sets?.[i];
@@ -291,7 +291,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
             blockName,
             totalRounds,
             emomTimeSeconds: firstInBlock.emomTimeSeconds || 60,
-            exercises: blockExercises,
+            workoutExercises: blockExercises,
             rounds,
             isExpanded: true,
           });

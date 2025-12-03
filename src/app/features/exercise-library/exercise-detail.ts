@@ -501,7 +501,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     const bestsByRep: { [reps: number]: { weight: number; reps: number; date: number; } } = {};
 
     for (const log of history) {
-      const exerciseLog = log.exercises.find(ex => ex.exerciseId === exerciseId);
+      const exerciseLog = log.workoutExercises.find(ex => ex.exerciseId === exerciseId);
       if (exerciseLog) {
         for (const set of exerciseLog.sets) {
           const reps = set.repsLogged;
@@ -554,7 +554,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     const maxDistanceSeries: ChartDataPoint[] = [];
 
     history.forEach(log => {
-      const exerciseLog = log.exercises.find(ex => ex.exerciseId === exerciseId);
+      const exerciseLog = log.workoutExercises.find(ex => ex.exerciseId === exerciseId);
       if (exerciseLog) {
         if (isCardio) {
           let maxDuration = 0;
@@ -649,7 +649,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     const exerciseId = this.exercise()?.id;
     if (!exerciseId) return [];
 
-    const exerciseInLog = log.exercises.find(e => e.exerciseId === exerciseId);
+    const exerciseInLog = log.workoutExercises.find(e => e.exerciseId === exerciseId);
     return exerciseInLog?.sets || [];
   }
 

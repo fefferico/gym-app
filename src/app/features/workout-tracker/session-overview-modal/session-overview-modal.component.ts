@@ -43,10 +43,10 @@ export class SessionOverviewModalComponent {
     const displayGroups: DisplayGroup[] = [];
     const processedSupersetIds = new Set<string>();
 
-    routine.exercises.forEach(exercise => {
+    routine.workoutExercises.forEach(exercise => {
       if (exercise.supersetId) {
         if (!processedSupersetIds.has(exercise.supersetId)) {
-          const groupExercises = routine.exercises
+          const groupExercises = routine.workoutExercises
             .filter(ex => ex.supersetId === exercise.supersetId)
             .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0));
 

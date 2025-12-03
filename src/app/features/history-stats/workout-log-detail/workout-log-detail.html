@@ -64,7 +64,7 @@
 
         <div class="flex items-center text-md text-gray-600 dark:text-gray-400 mt-1 gap-x-2">
           <app-icon name="muscle" class="h-7 w-7"></app-icon>
-          <span class="ml-1"> {{ 'logDetail.exercises' | translate }}: {{ log.exercises.length }}</span>
+          <span class="ml-1"> {{ 'logDetail.exercises' | translate }}: {{ log.workoutExercises.length }}</span>
         </div>
         <div class="flex items-center text-md text-gray-600 dark:text-gray-400 mt-1 gap-x-2">
           <app-icon name="clock" class="h-7 w-7 mr-1"></app-icon>
@@ -129,10 +129,10 @@
                 </button>
                 <div *ngIf="item.isExpanded" class="bg-white dark:bg-gray-800 p-2 sm:p-3">
                   <div class="grid gap-x-2 sm:gap-x-4"
-                    [style.grid-template-columns]="'auto repeat(' + item.exercises.length + ', 1fr)'">
+                    [style.grid-template-columns]="'auto repeat(' + item.workoutExercises.length + ', 1fr)'">
                     <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 py-2">{{
                       'logDetail.roundHeader' | translate }}</div>
-                    <div *ngFor="let ex of item.exercises"
+                    <div *ngFor="let ex of item.workoutExercises"
                       class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 py-2 text-center"
                       [title]="ex.exerciseName">
                       {{ exerciseNameDisplay(ex) }}

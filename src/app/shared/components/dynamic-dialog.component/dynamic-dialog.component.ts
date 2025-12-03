@@ -1,8 +1,9 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, inject, Inject, OnInit } from '@angular/core';
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DialogConfig, DialogOutput } from '../../../core/models/dialog.types';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-dynamic-dialog',
@@ -24,7 +25,7 @@ import { DialogConfig, DialogOutput } from '../../../core/models/dialog.types';
       <!-- Message - with optional HTML support -->
       @if (config.message) { 
         @if (config.renderAsHtml) {
-          <div class="mb-6 text-sm text-gray-500 dark:text-gray-400" [innerHTML]="config.message"></div>
+          <div class="mb-6 text-sm text-gray-500 dark:text-gray-400" [innerHTML]="getSafeHtml(config.message)"></div>
         } @else {
           <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">
             {{ config.message }}
@@ -32,7 +33,7 @@ import { DialogConfig, DialogOutput } from '../../../core/models/dialog.types';
         }
       }
 
-            @if (config.listItems && config.listItems.length > 0) {
+      @if (config.listItems && config.listItems.length > 0) {
         <ul [ngClass]="config.listClass || 'list-disc pl-6 space-y-1'" class="mb-6 text-sm text-gray-700 dark:text-gray-300">
           @for (item of config.listItems; track item) {
             <li>{{ item }}</li>
@@ -102,7 +103,7 @@ import { DialogConfig, DialogOutput } from '../../../core/models/dialog.types';
 
         <!-- Actions -->
         <div class="flex justify-end gap-3">
-          <button type="button" (click)="onCancel()" 
+          <button *ngIf="!!config.cancelText" type="button" (click)="onCancel()" 
             class="px-4 py-2 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 dark:hover:text-white">
             {{ config.cancelText || 'Cancel' }}
           </button>
@@ -183,5 +184,11 @@ export class DynamicDialogComponent implements OnInit {
 
   onCancel() {
     this.dialogRef.close({ action: 'CANCEL' });
+  }
+
+  private sanitizer = inject(DomSanitizer);
+
+  getSafeHtml(html: string | undefined): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(html || '');
   }
 }

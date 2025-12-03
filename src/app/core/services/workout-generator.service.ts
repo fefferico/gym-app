@@ -16,7 +16,7 @@ import { TranslateService } from '@ngx-translate/core';
 // Interface for the detailed generation options
 export interface WorkoutGenerationOptions {
     duration: number; // in minutes
-    goal: 'hypertrophy' | 'strength' | 'muscular endurance';
+    goal: 'hypertrophy' | 'strength' | 'muscularEndurance';
     split: "fullBody" | 'upper-lower' | 'push-pull-legs';
     targetMuscles: string[];
     avoidMuscles: string[];
@@ -126,7 +126,7 @@ export class WorkoutGeneratorService {
             id: `generated-${uuidv4()}`,
             name: 'Quick Surprise Workout',
             description: `A randomly generated full-body session created on ${new Date().toLocaleDateString()}.`,
-            exercises: this.shuffleArray(workoutExercises), // Shuffle the final order
+            workoutExercises: this.shuffleArray(workoutExercises), // Shuffle the final order
             goal: 'hypertrophy',
             isFavourite: false,
             isHidden: true,
@@ -318,7 +318,7 @@ export class WorkoutGeneratorService {
 
             // Constraint: Duration. Check if adding it would exceed the target time.
             const tempWorkoutExercise = this.createWorkoutExercise(exerciseToAdd, options.goal);
-            const exerciseDuration = this.workoutService.getEstimatedRoutineDuration({ exercises: [tempWorkoutExercise] } as Routine) * 60;
+            const exerciseDuration = this.workoutService.getEstimatedRoutineDuration({ workoutExercises: [tempWorkoutExercise] } as Routine) * 60;
 
             if (totalEstimatedSeconds + exerciseDuration > targetSeconds + 120) { // Allow a 2-minute buffer
                 continue; // Skip, adding this exercise would make the workout too long.
@@ -367,7 +367,7 @@ export class WorkoutGeneratorService {
                 repRange = { min: 4, max: 6 };
                 rest = 90;
                 break;
-            case 'muscular endurance':
+            case 'muscularEndurance':
                 numSets = 3;
                 repRange = { min: 15, max: 20 };
                 rest = 45;
@@ -524,7 +524,7 @@ export class WorkoutGeneratorService {
             id: `generated-${uuidv4()}`,
             name: routineName,
             description: this.translate.instant('workoutGenerator.routineDescription', { date: new Date().toLocaleDateString(), duration: options.duration, goal: this.translate.instant(`workoutBuilder.goals.${options.goal}`) }),
-            exercises: generatedExercises,
+            workoutExercises: generatedExercises,
             goal: options.goal,
             isFavourite: false,
             isHidden: true,

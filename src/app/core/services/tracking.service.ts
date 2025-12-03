@@ -74,7 +74,7 @@ export class TrackingService {
     const currentLogs = this.workoutLogsSubject.getValue();
     const logStartTimeISO = new Date(newLogData.startTime).toISOString();
 
-    const updatedExercises = newLogData.exercises.map(ex => ({
+    const updatedExercises = newLogData.workoutExercises.map(ex => ({
       ...ex,
       workoutLogId: newWorkoutLogId,
       sets: ex.sets.map(set => ({
@@ -88,7 +88,7 @@ export class TrackingService {
 
     const newLog: WorkoutLog = {
       ...newLogData,
-      exercises: updatedExercises,
+      workoutExercises: updatedExercises,
       id: newWorkoutLogId,
       date: logStartTimeISO.split('T')[0],
       // Ensure scheduledDayId is passed through
@@ -115,8 +115,8 @@ export class TrackingService {
     }
 
     // --- NEW: UPDATE EXERCISE TIMESTAMPS ---
-    if (newLog.exercises && newLog.exercises.length > 0) {
-      const usedExerciseIds = newLog.exercises.map(ex => ex.exerciseId);
+    if (newLog.workoutExercises && newLog.workoutExercises.length > 0) {
+      const usedExerciseIds = newLog.workoutExercises.map(ex => ex.exerciseId);
       this.exerciseService.updateLastUsedTimestamp(usedExerciseIds);
     }
     // After adding the new log and saving, if it was associated with a routine,
@@ -186,7 +186,7 @@ export class TrackingService {
     return this.workoutLogs$.pipe(
       map(logs => {
         for (const log of logs) {
-          const performedExercise = log.exercises.find(ex => ex.exerciseId === exerciseId);
+          const performedExercise = log.workoutExercises.find(ex => ex.exerciseId === exerciseId);
           if (performedExercise && performedExercise.sets.length > 0) {
             const summary: LastPerformanceSummary = {
               lastPerformedDate: log.date,
@@ -209,7 +209,7 @@ export class TrackingService {
         return {
           lastPerformedDate: routineLog.date,
           workoutLogId: routineLog.id,
-          sets: routineLog.exercises.flatMap(ex => ex.sets),
+          sets: routineLog.workoutExercises.flatMap(ex => ex.sets),
           startTime: routineLog.startTime,
           endTime: routineLog.endTime,
           durationMinutes: routineLog.durationMinutes,
@@ -245,7 +245,7 @@ export class TrackingService {
   private updateAllPersonalBestsFromLog(log: WorkoutLog): void {
     const currentPBs = { ...this.personalBestsSubject.getValue() }; // Get a mutable copy
 
-    log.exercises.forEach(loggedEx => {
+    log.workoutExercises.forEach(loggedEx => {
       if (!currentPBs[loggedEx.exerciseId]) {
         currentPBs[loggedEx.exerciseId] = [];
       }
@@ -387,7 +387,7 @@ export class TrackingService {
       // The timestamp for a set should ideally be from the log's start time, or if sets have individual timestamps, use those.
       const logTimestamp = new Date(log.startTime).toISOString(); // Consistent timestamp for all sets in this log iteration
 
-      log.exercises.forEach(loggedEx => {
+      log.workoutExercises.forEach(loggedEx => {
         if (!newPBsMaster[loggedEx.exerciseId]) {
           newPBsMaster[loggedEx.exerciseId] = [];
         }
@@ -473,13 +473,13 @@ export class TrackingService {
       map(logs => {
         const performanceHistory: ExercisePerformanceDataPoint[] = [];
         const relevantLogs = logs
-          .filter(log => log.exercises.some(ex => ex.exerciseId === exerciseId))
+          .filter(log => log.workoutExercises.some(ex => ex.exerciseId === exerciseId))
           .sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime());
 
         relevantLogs.forEach(log => {
           let maxWeightThisSession: number | undefined = undefined;
           let repsAtMaxWeight: number | undefined = undefined;
-          log.exercises.forEach(loggedEx => {
+          log.workoutExercises.forEach(loggedEx => {
             if (loggedEx.exerciseId === exerciseId) {
               loggedEx.sets.forEach(set => {
                 if (set.weightLogged !== undefined && set.weightLogged !== null) {
@@ -579,12 +579,12 @@ export class TrackingService {
       }
 
       // Map legacy log formats and ensure workoutLogId is set ---
-      if (importedLog.exercises && Array.isArray(importedLog.exercises)) {
+      if (importedLog.workoutExercises && Array.isArray(importedLog.workoutExercises)) {
         // 1. Map legacy properties like 'reps' to 'targetReps' on sets
-        importedLog.exercises = mapLegacyLoggedExercisesToCurrent(importedLog.exercises as LoggedWorkoutExercise[]);
+        importedLog.workoutExercises = mapLegacyLoggedExercisesToCurrent(importedLog.workoutExercises as LoggedWorkoutExercise[]);
 
         // 2. Ensure each set has the workoutLogId from its parent log
-        importedLog.exercises.forEach(ex => {
+        importedLog.workoutExercises.forEach(ex => {
           if (ex.sets && Array.isArray(ex.sets)) {
             ex.sets.forEach(set => {
               if (!set.workoutLogId) {
@@ -696,7 +696,7 @@ export class TrackingService {
     const newPBsMaster: Record<string, PersonalBestSet[]> = {};
     sortedLogsForRecalc.forEach(log => {
       const logTimestamp = new Date(log.startTime).toISOString();
-      log.exercises.forEach(loggedEx => {
+      log.workoutExercises.forEach(loggedEx => {
         if (!newPBsMaster[loggedEx.exerciseId]) {
           newPBsMaster[loggedEx.exerciseId] = [];
         }
@@ -827,7 +827,7 @@ export class TrackingService {
 
     if (logIndex > -1) {
       const logStartTimeISO = new Date(updatedLog.startTime).toISOString();
-      const newExercises = updatedLog.exercises.map(ex => ({
+      const newExercises = updatedLog.workoutExercises.map(ex => ({
         ...ex,
         sets: ex.sets.map(s => ({
           ...s,
@@ -868,15 +868,15 @@ export class TrackingService {
     let logsModified = false;
 
     const updatedLogs = allLogs.map(log => {
-      const originalExerciseCount = log.exercises.length;
-      const exercisesToKeep = log.exercises.filter(loggedEx => loggedEx.exerciseId !== deletedExerciseId);
+      const originalExerciseCount = log.workoutExercises.length;
+      const exercisesToKeep = log.workoutExercises.filter(loggedEx => loggedEx.exerciseId !== deletedExerciseId);
       if (exercisesToKeep.length < originalExerciseCount) {
         logsModified = true;
         if (exercisesToKeep.length === 0) {
           console.log(`Workout log ${log.id} will be deleted as it becomes empty`);
           return null;
         }
-        return { ...log, exercises: exercisesToKeep };
+        return { ...log, workoutExercises: exercisesToKeep };
       }
       return log;
     }).filter(log => log !== null) as WorkoutLog[];
@@ -1022,7 +1022,7 @@ export class TrackingService {
     const lastUsedMap = new Map<string, { lastUsedTimestamp: string, lastUsedLogId: string }>(); // Map<exerciseId, lastUsedTimestamp>
 
     for (const log of allLogs) {
-      for (const loggedEx of log.exercises) {
+      for (const loggedEx of log.workoutExercises) {
         // If we haven't already found a newer log for this exercise, record this one.
         if (!lastUsedMap.has(loggedEx.exerciseId)) {
           lastUsedMap.set(loggedEx.exerciseId, { lastUsedTimestamp: log.date, lastUsedLogId: log.id });
@@ -1234,7 +1234,7 @@ export class TrackingService {
     // --- Part 1: Backfill Exercise Timestamps ---
     const lastUsedMap = new Map<string, { lastUsedTimestamp: string, lastUsedLogId: string }>();
     for (const log of allLogs) {
-      for (const loggedEx of log.exercises) {
+      for (const loggedEx of log.workoutExercises) {
         if (!lastUsedMap.has(loggedEx.exerciseId)) {
           lastUsedMap.set(loggedEx.exerciseId, { lastUsedTimestamp: log.date, lastUsedLogId: log.id });
         }
@@ -1278,7 +1278,7 @@ export class TrackingService {
           // Use a Set to count each exercise only once per workout log,
           // preventing multiple sets of the same exercise from inflating the count.
           const exercisesInThisLog = new Set<string>();
-          for (const loggedEx of log.exercises) {
+          for (const loggedEx of log.workoutExercises) {
             exercisesInThisLog.add(loggedEx.exerciseId);
           }
 
@@ -1304,7 +1304,7 @@ export class TrackingService {
       map(logs => {
         // Filter logs to find any that include the specified exerciseId
         const exerciseLogs = logs.filter(log =>
-          log.exercises.some(ex => ex.exerciseId === exerciseId)
+          log.workoutExercises.some(ex => ex.exerciseId === exerciseId)
         );
 
         // The main workoutLogs$ is already sorted, but we can ensure it here just in case.
@@ -1401,7 +1401,7 @@ export class TrackingService {
           endTime,
           durationMinutes: Math.round((endTime - startTime) / (1000 * 60)),
           durationSeconds: Math.round((endTime - startTime) / 1000),
-          exercises,
+          workoutExercises: exercises,
           locationName: ['Home', 'Gym', 'Park'][randomInt(0, 2)],
         } as WorkoutLog);
       }

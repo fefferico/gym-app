@@ -10,7 +10,8 @@ export const ROUTINES_DATA: Routine[] = [
         "name": "Beginner Weight Training - Workout A (V1)",
         "description": "A foundational full-body workout focusing on major compound lifts. Perform this workout on your first training day of the week.",
         "goal": "strength",
-        "exercises": [
+        "createdAt": "2024-06-10T12:00:00Z",
+        "workoutExercises": [
             {
                 "id": "bwa-ex1",
                 "exerciseId": "barbell-back-squat",
@@ -162,7 +163,8 @@ export const ROUTINES_DATA: Routine[] = [
         "name": "Beginner Weight Training - Workout B (V1)",
         "description": "A complementary full-body workout to be alternated with Workout A. Focuses on pulling strength and overhead pressing.",
         "goal": "strength",
-        "exercises": [
+        "createdAt": "2024-06-10T12:00:00Z",
+        "workoutExercises": [
             {
                 "id": "bwb-ex1",
                 "exerciseId": "barbell-deadlift",

@@ -24,7 +24,6 @@ import { durationToExact, genRepsTypeFromRepsNumber, getDurationValue, getRestVa
 import { WorkoutUtilsService } from '../../../core/services/workout-utils.service';
 import { EXERCISE_CATEGORY_TYPES } from '../../../core/models/exercise-category.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { WORKOUT_CATEGORY_DATA } from '../../../core/services/workout-category-data';
 import { UnitsService } from '../../../core/services/units.service';
 
 
@@ -274,7 +273,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
 */
     private isEntireWorkoutFullyLogged(routine: Routine, loggedExercises: LoggedWorkoutExercise[]): boolean {
         // This method can now be simplified to just use our more reliable `isExerciseFullyLogged` helper.
-        return routine.exercises.every(plannedExercise => {
+        return routine.workoutExercises.every(plannedExercise => {
             // We need to temporarily set the routine() signal for the helper to work correctly during this check.
             const originalRoutine = this.routine();
             this.routine.set(routine);
@@ -462,9 +461,9 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         const exIndex = this.currentExerciseIndex();
         const sIndex = this.currentSetIndex();
 
-        if (r && r.exercises[exIndex] && r.exercises[exIndex].sets[sIndex]) {
-            const exerciseData = r.exercises[exIndex];
-            const setData = r.exercises[exIndex].sets[sIndex];
+        if (r && r.workoutExercises[exIndex] && r.workoutExercises[exIndex].sets[sIndex]) {
+            const exerciseData = r.workoutExercises[exIndex];
+            const setData = r.workoutExercises[exIndex].sets[sIndex];
             const completedExerciseLog = this.currentWorkoutLogExercises().find(logEx => logEx.exerciseId === exerciseData.exerciseId);
             const completedSetLog = completedExerciseLog?.sets.find(logSet => logSet.plannedSetId === setData.id);
 
@@ -498,7 +497,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         const logs = this.currentWorkoutLogExercises();
         // Find the log entry for this specific exercise instance (by id, not just exerciseId)
         // This ensures that if the same exercise appears multiple times (different id/order), they are not merged
-        const exerciseIndex = this.routine()?.exercises.findIndex(ex => ex.id === exerciseData.id);
+        const exerciseIndex = this.routine()?.workoutExercises.findIndex(ex => ex.id === exerciseData.id);
 
         // Find log by both exerciseId and exerciseData.id (unique instance in routine)
         let exerciseLog: LoggedWorkoutExercise | undefined;
@@ -506,7 +505,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         for (let i = 0; i < logs.length; i++) {
             const exLog = logs[i];
             // Find the corresponding exercise in the routine for this log
-            const routineEx = this.routine()?.exercises.find(ex => ex.id === exerciseData.id);
+            const routineEx = this.routine()?.workoutExercises.find(ex => ex.id === exerciseData.id);
 
             if (
                 exLog.exerciseId === exerciseData.exerciseId &&
@@ -713,7 +712,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
                 name: newRoutineName,
                 description: sessionRoutineValue?.description || 'Workout performed on ' + format(new Date(), 'MMM d, yyyy'),
                 goal: sessionRoutineValue?.goal || 'custom',
-                exercises: this.convertLoggedToWorkoutExercises(loggedExercisesForReport), // Use filtered logs
+                workoutExercises: this.convertLoggedToWorkoutExercises(loggedExercisesForReport), // Use filtered logs
             };
             const createdRoutine = this.workoutService.addRoutine(newRoutineDef);
             finalRoutineIdToLog = createdRoutine.id;
@@ -735,7 +734,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             endTime: endTime,
             durationMinutes: durationMinutes,
             durationSeconds: durationSeconds,
-            exercises: loggedExercisesForReport, // Use filtered logs
+            workoutExercises: loggedExercisesForReport, // Use filtered logs
             notes: sessionRoutineValue?.notes,
             programId: sessionProgramValue,
             scheduledDayId: sessionScheduledDayProgramValue,
@@ -778,7 +777,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             if (routineToUpdate) {
                 let updatedRoutineData: Routine = { ...routineToUpdate, lastPerformed: new Date(sessionStartTime).toISOString() };
                 if (updateOriginalRoutineStructure && !logAsNewRoutine && this.routineId === finalRoutineIdToLog) {
-                    updatedRoutineData.exercises = this.convertLoggedToWorkoutExercises(loggedExercisesForReport); // Use filtered logs
+                    updatedRoutineData.workoutExercises = this.convertLoggedToWorkoutExercises(loggedExercisesForReport); // Use filtered logs
                     // ... (persist name/desc/goal changes) ...
                 }
                 this.workoutService.updateRoutine(updatedRoutineData, true);
@@ -867,7 +866,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
                         if (originalRoutine) {
                             console.log('loadNewWorkoutFromRoute: Fetched original routine -', originalRoutine.name);
                             const sessionCopy = JSON.parse(JSON.stringify(originalRoutine)) as Routine;
-                            sessionCopy.exercises.forEach(ex => {
+                            sessionCopy.workoutExercises.forEach(ex => {
                                 ex.sessionStatus = 'pending';
                                 if (!ex.id) ex.id = uuidv4();
                                 ex.sets.forEach(s => {
@@ -897,7 +896,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
                             name: "New session",
                             createdAt: new Date().toISOString(),
                             goal: 'custom',
-                            exercises: [] as WorkoutExercise[],
+                            workoutExercises: [] as WorkoutExercise[],
                         } as Routine;
                         this.routine.set(emptyNewRoutine);
                         // this.openExerciseSelectionModal();
@@ -951,11 +950,11 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
                     this.currentSetIndex.set(firstPending.setIndex);
                     console.log(`loadNewWorkoutFromRoute - Initial pending set to Ex: ${firstPending.exerciseIndex}, Set: ${firstPending.setIndex}`);
 
-                    const firstEx = sessionRoutineCopy.exercises[firstPending.exerciseIndex];
+                    const firstEx = sessionRoutineCopy.workoutExercises[firstPending.exerciseIndex];
                     if (!firstEx.supersetId || firstEx.supersetOrder === 0) {
                         this.totalBlockRounds.set(firstEx.sets.length ?? 1);
                     } else {
-                        const actualStart = sessionRoutineCopy.exercises.find(ex => ex.supersetId === firstEx.supersetId && ex.supersetOrder === 0);
+                        const actualStart = sessionRoutineCopy.workoutExercises.find(ex => ex.supersetId === firstEx.supersetId && ex.supersetOrder === 0);
                         this.totalBlockRounds.set(actualStart?.sets.length ?? 1);
                     }
                 } else {
@@ -1045,18 +1044,18 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             }
 
             if (proceedWithSelectedExercise && selectedExerciseOriginalIndex !== undefined) {
-                const exerciseToStart = sessionRoutine.exercises[selectedExerciseOriginalIndex];
+                const exerciseToStart = sessionRoutine.workoutExercises[selectedExerciseOriginalIndex];
                 this.isPerformingDeferredExercise = true;
                 this.lastActivatedDeferredExerciseId = exerciseToStart.id;
 
                 const updatedRoutine = JSON.parse(JSON.stringify(sessionRoutine)) as Routine;
-                updatedRoutine.exercises[selectedExerciseOriginalIndex].sessionStatus = 'pending';
+                updatedRoutine.workoutExercises[selectedExerciseOriginalIndex].sessionStatus = 'pending';
                 this.routine.set(updatedRoutine);
 
                 this.currentExerciseIndex.set(selectedExerciseOriginalIndex);
                 this.currentSetIndex.set(this.findFirstUnloggedSetIndex(exerciseToStart.id, exerciseToStart.sets.map(s => s.id)) || 0);
                 this.currentBlockRound.set(1); // Reset round for this specific exercise block
-                const newBlockStarter = updatedRoutine.exercises[selectedExerciseOriginalIndex];
+                const newBlockStarter = updatedRoutine.workoutExercises[selectedExerciseOriginalIndex];
 
                 this.totalBlockRounds.set(this.getRoundsForExerciseBlock(selectedExerciseOriginalIndex, updatedRoutine));
 
@@ -1097,7 +1096,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         }
 
         const sessionRoutine = this.routine();
-        if (!sessionRoutine || sessionRoutine.exercises.length === 0) {
+        if (!sessionRoutine || sessionRoutine.workoutExercises.length === 0) {
             console.warn('prepareCurrentSet: No sessionRoutine or no exercises in routine. Current routine:', sessionRoutine);
             this.sessionState.set(SessionState.Error);
             this.toastService.error("Cannot prepare set: Routine data is missing or empty", 0, "Error");
@@ -1107,10 +1106,10 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         let exIndex = this.currentExerciseIndex();
         let sIndex = this.currentSetIndex();
 
-        console.log(`prepareCurrentSet: Initial target - exIndex: ${exIndex}, sIndex: ${sIndex}, sessionStatus: ${sessionRoutine.exercises[exIndex]?.sessionStatus}`);
+        console.log(`prepareCurrentSet: Initial target - exIndex: ${exIndex}, sIndex: ${sIndex}, sessionStatus: ${sessionRoutine.workoutExercises[exIndex]?.sessionStatus}`);
 
-        if (sessionRoutine.exercises[exIndex]?.sessionStatus !== 'pending') {
-            console.log(`prepareCurrentSet: Initial target Ex ${exIndex} (name: ${sessionRoutine.exercises[exIndex]?.exerciseName}) is ${sessionRoutine.exercises[exIndex]?.sessionStatus}. Finding first 'pending'`);
+        if (sessionRoutine.workoutExercises[exIndex]?.sessionStatus !== 'pending') {
+            console.log(`prepareCurrentSet: Initial target Ex ${exIndex} (name: ${sessionRoutine.workoutExercises[exIndex]?.exerciseName}) is ${sessionRoutine.workoutExercises[exIndex]?.sessionStatus}. Finding first 'pending'`);
             const firstPendingInfo = this.findFirstPendingExerciseAndSet(sessionRoutine);
 
             if (firstPendingInfo) {
@@ -1119,7 +1118,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
                 this.currentExerciseIndex.set(exIndex);
                 this.currentSetIndex.set(sIndex);
                 this.isPerformingDeferredExercise = false; // Reset if we had to find a new starting point
-                console.log(`prepareCurrentSet: Found first pending - exIndex: ${exIndex} (name: ${sessionRoutine.exercises[exIndex]?.exerciseName}), sIndex: ${sIndex}`);
+                console.log(`prepareCurrentSet: Found first pending - exIndex: ${exIndex} (name: ${sessionRoutine.workoutExercises[exIndex]?.exerciseName}), sIndex: ${sIndex}`);
             } else {
                 console.log("prepareCurrentSet: No 'pending' exercises found in the entire routine. Proceeding to deferred/finish evaluation");
                 this.exercisesProposedThisCycle = { doLater: false, skipped: false };
@@ -1128,7 +1127,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             }
         }
 
-        if (exIndex >= sessionRoutine.exercises.length || !sessionRoutine.exercises[exIndex] || sIndex >= sessionRoutine.exercises[exIndex].sets.length || !sessionRoutine.exercises[exIndex].sets[sIndex]) {
+        if (exIndex >= sessionRoutine.workoutExercises.length || !sessionRoutine.workoutExercises[exIndex] || sIndex >= sessionRoutine.workoutExercises[exIndex].sets.length || !sessionRoutine.workoutExercises[exIndex].sets[sIndex]) {
             // This condition is often met when a workout is completed and then resumed.
             // Instead of throwing a critical error, we treat it as the end of the planned workout
             // and transition to the finish/deferred exercises flow.
@@ -1151,10 +1150,10 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         }
 
         let exercisesComplete = false;
-        if (sessionRoutine.exercises.length === this.currentWorkoutLogExercises().length) {
+        if (sessionRoutine.workoutExercises.length === this.currentWorkoutLogExercises().length) {
             exercisesComplete = true;
         }
-        sessionRoutine.exercises.forEach(exercise => {
+        sessionRoutine.workoutExercises.forEach(exercise => {
             const loggedExercise = this.currentWorkoutLogExercises().find(ex => ex.id === exercise.id);
             if (!exercisesComplete && loggedExercise && exercise.sets.length === loggedExercise.sets.length) {
                 exercisesComplete = true;
@@ -1162,7 +1161,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         })
 
 
-        const currentExerciseData = sessionRoutine.exercises[exIndex];
+        const currentExerciseData = sessionRoutine.workoutExercises[exIndex];
         const currentPlannedSetData = currentExerciseData.sets[sIndex]; // Use direct sIndex after validation
 
         console.log(`prepareCurrentSet: Preparing for Ex: "${currentExerciseData.exerciseName}", Set: ${sIndex + 1}, Type: ${currentPlannedSetData.type}`);
@@ -1218,8 +1217,8 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         const updatedRoutineForSession = JSON.parse(JSON.stringify(sessionRoutine)) as Routine;
 
         // suggest updated values only if it's not a timed exercise
-        if (!updatedRoutineForSession.exercises[exIndex].sets?.some(set => set.targetDuration)) {
-            updatedRoutineForSession.exercises[exIndex].sets[sIndex] = finalSetParamsForSession;
+        if (!updatedRoutineForSession.workoutExercises[exIndex].sets?.some(set => set.targetDuration)) {
+            updatedRoutineForSession.workoutExercises[exIndex].sets[sIndex] = finalSetParamsForSession;
         }
         this.routine.set(updatedRoutineForSession); // Update the routine signal
 
@@ -1239,9 +1238,9 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             let prevPlayedExIndex = exIndex - 1;
             let foundPrevPlayed = false;
             while (prevPlayedExIndex >= 0) {
-                if (this.isExerciseFullyLogged(sessionRoutine.exercises[prevPlayedExIndex]) ||
-                    (sessionRoutine.exercises[prevPlayedExIndex].sessionStatus === 'pending' && this.currentWorkoutLogExercises().some(le => le.exerciseId === sessionRoutine.exercises[prevPlayedExIndex].exerciseId))) {
-                    const prevExercise = sessionRoutine.exercises[prevPlayedExIndex];
+                if (this.isExerciseFullyLogged(sessionRoutine.workoutExercises[prevPlayedExIndex]) ||
+                    (sessionRoutine.workoutExercises[prevPlayedExIndex].sessionStatus === 'pending' && this.currentWorkoutLogExercises().some(le => le.exerciseId === sessionRoutine.workoutExercises[prevPlayedExIndex].exerciseId))) {
+                    const prevExercise = sessionRoutine.workoutExercises[prevPlayedExIndex];
                     if (prevExercise.sets.length > 0) {
                         previousSetRestDuration = getRestValue(prevExercise.sets[prevExercise.sets.length - 1].targetRest) ?? 0;
                         foundPrevPlayed = true;
@@ -1263,9 +1262,9 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
     }
 
     private findFirstPendingExerciseAndSet(routine: Routine): { exerciseIndex: number; setIndex: number } | null {
-        if (!routine || !routine.exercises) return null;
-        for (let i = 0; i < routine.exercises.length; i++) {
-            const exercise = routine.exercises[i];
+        if (!routine || !routine.workoutExercises) return null;
+        for (let i = 0; i < routine.workoutExercises.length; i++) {
+            const exercise = routine.workoutExercises[i];
             if (exercise.sessionStatus === 'pending' && exercise.sets && exercise.sets.length > 0) {
                 const firstUnloggedSetIdx = this.findFirstUnloggedSetIndex(exercise.id, exercise.sets.map(s => s.id)) ?? 0;
                 // Ensure firstUnloggedSetIdx is valid
@@ -1308,7 +1307,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         if (!loggedEx) return false;
 
         // Use our updated helper to get the correct number of total rounds/sets for the block.
-        const exerciseIndexInRoutine = routine.exercises.findIndex(ex => ex.id === currentExercise.id);
+        const exerciseIndexInRoutine = routine.workoutExercises.findIndex(ex => ex.id === currentExercise.id);
         const totalPlannedCompletions = this.getRoundsForExerciseBlock(exerciseIndexInRoutine, routine);
 
         // The logic remains the same: check if logged sets match the total planned sets.
@@ -1347,7 +1346,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         this.tabataIntervalMap.push([0, 0, 1]);
 
         // 2. Main loop: iterate by round, then by exercise in the superset
-        const exercises = routine.exercises;
+        const exercises = routine.workoutExercises;
         const numRounds = exercises[0]?.sets.length ?? 1; // Assumes all exercises have the same number of sets
 
         for (let round = 0; round < numRounds; round++) {
@@ -1449,13 +1448,13 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
     }
 
     private getRoundsForExerciseBlock(exerciseIndex: number, routine: Routine): number {
-        const exercise = routine.exercises[exerciseIndex];
+        const exercise = routine.workoutExercises[exerciseIndex];
         if (!exercise) return 1;
 
         // If it's a superset, the number of rounds is determined by the number of sets
         // in the FIRST exercise of that superset group.
         if (exercise.supersetId) {
-            const firstInSuperset = routine.exercises.find(ex => ex.supersetId === exercise.supersetId && ex.supersetOrder === 0);
+            const firstInSuperset = routine.workoutExercises.find(ex => ex.supersetId === exercise.supersetId && ex.supersetOrder === 0);
             // The number of "rounds" is now simply the number of sets.
             return firstInSuperset?.sets.length ?? 1;
         }
@@ -1695,7 +1694,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
     private convertLoggedToWorkoutExercises(loggedExercises: LoggedWorkoutExercise[]): WorkoutExercise[] {
         const currentSessionRoutine = this.routine();
         return loggedExercises.map(loggedEx => {
-            const sessionExercise = currentSessionRoutine?.exercises.find(re => re.exerciseId === loggedEx.exerciseId);
+            const sessionExercise = currentSessionRoutine?.workoutExercises.find(re => re.exerciseId === loggedEx.exerciseId);
             const newWorkoutEx: WorkoutExercise = {
                 id: uuidv4(),
                 exerciseId: loggedEx.exerciseId, // Keep original if it's a known one, or the custom one
@@ -1801,17 +1800,17 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
     getUnfinishedExercises(): WorkoutExercise[] {
         const routine = this.routine();
         if (!routine) return [];
-        return routine.exercises.filter((ex, idx) => !this.isExerciseFullyLogged(ex));
+        return routine.workoutExercises.filter((ex, idx) => !this.isExerciseFullyLogged(ex));
     }
 
     private getUnfinishedOrDeferredExercises(sessionRoutine: Routine): any[] {
-        const currentExercise = sessionRoutine.exercises[this.currentExerciseIndex()];
+        const currentExercise = sessionRoutine.workoutExercises[this.currentExerciseIndex()];
         const unfinishedOtherExercises = this.getUnfinishedExercises().filter(
             ex => ex.id !== currentExercise.id
         );
         // console.log("Unfinished exercises (excluding current):", unfinishedOtherExercises.map(e => e.exerciseName));
 
-        const unfinishedDeferredOrSkippedExercises = sessionRoutine.exercises
+        const unfinishedDeferredOrSkippedExercises = sessionRoutine.workoutExercises
             .map((ex, idx) => ({ ...ex, originalIndex: idx }))
             .filter((ex, innerIdx) =>
                 (ex.sessionStatus === 'do_later' || ex.sessionStatus === 'skipped') &&
@@ -1825,7 +1824,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
 
         const unfinishedOtherExercisesWithIndex = unfinishedOtherExercises.map((ex, idx) => ({
             ...ex,
-            originalIndex: sessionRoutine.exercises.findIndex(e => e.id === ex.id)
+            originalIndex: sessionRoutine.workoutExercises.findIndex(e => e.id === ex.id)
         }));
         // Merge and deduplicate unfinished exercises by their unique id
         const mergedUnfinishedExercises = [
@@ -1836,8 +1835,8 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         );
 
         mergedUnfinishedExercises.sort((a, b) => {
-            const idxA = sessionRoutine.exercises.findIndex(ex => ex.id === a.id);
-            const idxB = sessionRoutine.exercises.findIndex(ex => ex.id === b.id);
+            const idxA = sessionRoutine.workoutExercises.findIndex(ex => ex.id === a.id);
+            const idxB = sessionRoutine.workoutExercises.findIndex(ex => ex.id === b.id);
             return idxA - idxB;
         });
 
@@ -1945,8 +1944,8 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             default: {
                 // Optimization: Use the already loaded availableExercises array to avoid async calls
                 const routine = this.routine();
-                if (!exerciseId || !routine || !routine.exercises || !routine.exercises.length || !routine.exercises.find(e => e.exerciseId === exerciseId)) return this.exerciseService.getIconPath('');
-                const exercise = routine.exercises.find(e => e.exerciseId === exerciseId);
+                if (!exerciseId || !routine || !routine.workoutExercises || !routine.workoutExercises.length || !routine.workoutExercises.find(e => e.exerciseId === exerciseId)) return this.exerciseService.getIconPath('');
+                const exercise = routine.workoutExercises.find(e => e.exerciseId === exerciseId);
                 if (!exercise) return this.exerciseService.getIconPath('');
                 const baseExercise = this.availableExercises.find(ex => ex.id === exercise?.exerciseId);
                 if (!baseExercise) return this.exerciseService.getIconPath('');

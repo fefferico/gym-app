@@ -308,7 +308,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
         return allDays.some(day => {
           const routine = this.allRoutinesMap.get(day.routineId);
           if (!routine) return false;
-          return routine.exercises.some(exDetail => {
+          return routine.workoutExercises.some(exDetail => {
             const fullExercise = this.allExercisesMap.get(exDetail.exerciseId);
             return fullExercise?.primaryMuscleGroup?.toLowerCase() === muscleFilter.toLowerCase();
           });
@@ -730,7 +730,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     const muscles = new Set<string>();
     program.schedule.forEach(day => {
       const routine = this.allRoutinesMap.get(day.routineId);
-      routine?.exercises.forEach(exDetail => { const fullExercise = this.allExercisesMap.get(exDetail.exerciseId); if (fullExercise?.primaryMuscleGroup) muscles.add(fullExercise.primaryMuscleGroup); });
+      routine?.workoutExercises.forEach(exDetail => { const fullExercise = this.allExercisesMap.get(exDetail.exerciseId); if (fullExercise?.primaryMuscleGroup) muscles.add(fullExercise.primaryMuscleGroup); });
     });
     return Array.from(muscles);
   }

@@ -22,6 +22,8 @@ import { mapLoggedSetToExerciseTargetSetParams, mapLoggedWorkoutExerciseToWorkou
 import { ExerciseService } from './exercise.service';
 import { compareRepsTargets, migrateSetRepsToRepsTarget, repsTypeToReps, repsTargetToExactRepsTarget, genRepsTypeFromRepsNumber, repsToExact, compareDurationTargets, compareDistanceTargets, compareWeightTargets, getDurationValue, genDurationTypeFromDurationNumber, getRestValue, weightToExact, restToExact, distanceToExact, durationToExact, getWeightValue, getDistanceValue, migrateSetWeightToWeightTarget, migrateSetDurationToDurationTarget, migrateSetDistanceToDistanceTarget, migrateSetRestToRestTarget, getRepsValue } from './workout-helper.service';
 import { TrainingProgramService } from './training-program.service';
+import { WORKOUT_CATEGORY_DATA } from './workout-category-data';
+import { RoutineGoal, RoutineGoalValue } from '../models/routine-goal.model';
 
 @Injectable({
   providedIn: 'root',
@@ -207,6 +209,8 @@ export class WorkoutService {
     const newRoutine: Routine = {
       ...newRoutineData,
       id: newRoutineData.id || uuidv4(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     const updatedRoutines = [...currentRoutines, newRoutine];
     this.saveRoutinesToStorage(updatedRoutines);
@@ -239,6 +243,7 @@ export class WorkoutService {
     }
 
     if (index > -1) {
+      updatedRoutine.updatedAt = new Date().toISOString();
       const updatedRoutinesArray = [...currentRoutines];
       // Ensure the updated routine also goes through migration, in case it's from an old format somewhere
       updatedRoutinesArray[index] = this._migrateRoutines([updatedRoutine])[0]; // Wrap in array for migration helper
@@ -576,12 +581,12 @@ export class WorkoutService {
  * @returns The total estimated duration in minutes.
  */
   public getEstimatedRoutineDuration(routine: Routine): number {
-    if (!routine || !routine.exercises || routine.exercises.length === 0) {
+    if (!routine || !routine.workoutExercises || routine.workoutExercises.length === 0) {
       return 0;
     }
 
     let totalSeconds = 0;
-    const exercises = routine.exercises;
+    const exercises = routine.workoutExercises;
     const processedSupersetIds = new Set<string>();
 
     for (let i = 0; i < exercises.length; i++) {
@@ -937,7 +942,7 @@ export class WorkoutService {
     exIndex: number,
     loggedExercisesToExclude: LoggedWorkoutExercise[]
   ): Promise<{ updatedRoutine: Routine; updatedLoggedExercises: LoggedWorkoutExercise[], newSupersetId: string } | null> {
-    const availableExercises = routine.exercises
+    const availableExercises = routine.workoutExercises
       .map((ex, index) => ({ ...ex, originalIndex: index }))
       .filter(ex => !ex.supersetId);
 
@@ -987,7 +992,7 @@ export class WorkoutService {
     let currentOrder = 0;
 
     for (const originalIndex of selectedOriginalIndices) {
-      const targetExercise = updatedRoutine.exercises[originalIndex];
+      const targetExercise = updatedRoutine.workoutExercises[originalIndex];
       if (targetExercise) {
         // Remove any existing logs for this exercise as its structure is changing
         updatedLogs = updatedLogs.filter(log => log.id !== targetExercise.id);
@@ -1023,7 +1028,7 @@ export class WorkoutService {
       }
     }
 
-    updatedRoutine.exercises = this.reorderExercisesForSupersets(updatedRoutine.exercises);
+    updatedRoutine.workoutExercises = this.reorderExercisesForSupersets(updatedRoutine.workoutExercises);
     this.alertService.showAlert("INFO", `Superset created with ${selectedOriginalIndices.length} exercises and ${rounds} rounds: existing logs were cleared and sets standardized.`);
 
     return { updatedRoutine, updatedLoggedExercises: updatedLogs, newSupersetId };
@@ -1058,14 +1063,14 @@ export class WorkoutService {
     alertService: AlertService,
     toastService: ToastService
   ): Promise<Routine | null> {
-    const exerciseToAdd = routine.exercises[exIndex];
+    const exerciseToAdd = routine.workoutExercises[exIndex];
     if (exerciseToAdd.supersetId) {
       toastService.info("This exercise is already in a superset.");
       return null;
     }
 
     const supersetMap = new Map<string, WorkoutExercise[]>();
-    routine.exercises.forEach(ex => {
+    routine.workoutExercises.forEach(ex => {
       if (ex.supersetId) {
         if (!supersetMap.has(ex.supersetId)) supersetMap.set(ex.supersetId, []);
         supersetMap.get(ex.supersetId)!.push(ex);
@@ -1120,8 +1125,8 @@ export class WorkoutService {
 
     const chosenSupersetId = result['supersetChoice'];
     const updatedRoutine = JSON.parse(JSON.stringify(routine)) as Routine;
-    const targetExercise = updatedRoutine.exercises.find(ex => ex.id === exerciseToAdd.id);
-    const existingInSuperset = updatedRoutine.exercises.filter(ex => ex.supersetId === chosenSupersetId);
+    const targetExercise = updatedRoutine.workoutExercises.find(ex => ex.id === exerciseToAdd.id);
+    const existingInSuperset = updatedRoutine.workoutExercises.filter(ex => ex.supersetId === chosenSupersetId);
 
     if (!targetExercise || existingInSuperset.length === 0) {
       toastService.error("Could not find the target exercise or superset.");
@@ -1133,7 +1138,7 @@ export class WorkoutService {
     // 1. Forcefully remove METRIC.rest from ALL exercises CURRENTLY in the superset.
     // This ensures a clean state before adding the new exercise.
     existingInSuperset.forEach(groupEx => {
-      const exerciseToUpdate = updatedRoutine.exercises.find(ex => ex.id === groupEx.id);
+      const exerciseToUpdate = updatedRoutine.workoutExercises.find(ex => ex.id === groupEx.id);
       if (exerciseToUpdate) {
         exerciseToUpdate.sets.forEach(set => {
           if (set.fieldOrder) {
@@ -1162,7 +1167,7 @@ export class WorkoutService {
 
     // =================== END OF FIX ===================
 
-    updatedRoutine.exercises = this.reorderExercisesForSupersets(updatedRoutine.exercises);
+    updatedRoutine.workoutExercises = this.reorderExercisesForSupersets(updatedRoutine.workoutExercises);
     toastService.success(`${targetExercise.exerciseName} added to the superset.`);
 
     return updatedRoutine;
@@ -1179,7 +1184,7 @@ export class WorkoutService {
     alertService: AlertService,
     toastService: ToastService
   ): Promise<{ updatedRoutine: Routine; updatedLoggedExercises: LoggedWorkoutExercise[] } | null> {
-    const exercise = routine.exercises[exIndex];
+    const exercise = routine.workoutExercises[exIndex];
     if (!exercise.supersetId) return null;
 
     const confirm = await alertService.showConfirm("Remove from Superset", `Remove ${exercise.exerciseName} from this superset? Its logged sets for this session will be cleared.`);
@@ -1187,7 +1192,7 @@ export class WorkoutService {
 
     const updatedRoutine = JSON.parse(JSON.stringify(routine)) as Routine;
     let updatedLogs = [...loggedExercises];
-    const exerciseToRemove = updatedRoutine.exercises[exIndex];
+    const exerciseToRemove = updatedRoutine.workoutExercises[exIndex];
     const supersetId = exerciseToRemove.supersetId!;
 
     // Clear existing logs for this exercise
@@ -1201,7 +1206,7 @@ export class WorkoutService {
     exerciseToRemove.supersetId = null;
     exerciseToRemove.supersetOrder = null;
 
-    const remainingInSuperset = updatedRoutine.exercises.filter(ex => ex.supersetId === supersetId);
+    const remainingInSuperset = updatedRoutine.workoutExercises.filter(ex => ex.supersetId === supersetId);
 
     if (remainingInSuperset.length <= 1) {
       remainingInSuperset.forEach(ex => {
@@ -1218,7 +1223,7 @@ export class WorkoutService {
       toastService.info(`${exerciseToRemove.exerciseName} removed from superset.`);
     }
 
-    updatedRoutine.exercises = this.reorderExercisesForSupersets(updatedRoutine.exercises);
+    updatedRoutine.workoutExercises = this.reorderExercisesForSupersets(updatedRoutine.workoutExercises);
     return { updatedRoutine, updatedLoggedExercises: updatedLogs };
   }
 
@@ -1265,12 +1270,12 @@ export class WorkoutService {
       return [];
     }
     return routines.map(routine => {
-      const updatedExercises = routine.exercises.map(exercise => {
+      const updatedExercises = routine.workoutExercises.map(exercise => {
         // By calling _migrateSetParams here, the logic is applied to every set.
         const updatedSets = exercise.sets.map(set => this._migrateSetParams(set));
         return { ...exercise, sets: updatedSets };
       });
-      return { ...routine, exercises: updatedExercises };
+      return { ...routine, workoutExercises: updatedExercises } as Routine;
     });
   }
 
@@ -1281,9 +1286,9 @@ export class WorkoutService {
   }
 
   getSupersetSize(routine: Routine | null | undefined, index: number): number {
-    const ex = routine?.exercises[index];
+    const ex = routine?.workoutExercises[index];
     if (!ex?.supersetId) return 0;
-    return routine?.exercises.filter(e => e.supersetId === ex.supersetId).length || 0;
+    return routine?.workoutExercises.filter(e => e.supersetId === ex.supersetId).length || 0;
   }
 
   public exerciseNameDisplay(exercise: WorkoutExercise): string {
@@ -1386,8 +1391,11 @@ export class WorkoutService {
     };
 
     // Helper to create a routine
-    const createRoutine = (routineName: string, exerciseDefs: { idOrName: string, sets: ExerciseTargetSetParams[] }[]): Routine => {
-      const exercises: WorkoutExercise[] = exerciseDefs.map(def => {
+    const createRoutine = (routineName: string, exerciseDefs: { idOrName: string, sets: ExerciseTargetSetParams[] }[], 
+      primaryGoal?: string,
+      primaryCategory?: string,
+      ): Routine => {
+      const workoutExercises: WorkoutExercise[] = exerciseDefs.map(def => {
         const ex = findExercise(def.idOrName);
         return {
           id: uuidv4(),
@@ -1402,8 +1410,10 @@ export class WorkoutService {
       return {
         id: 'custom-' + uuidv4(),
         name: routineName,
-        exercises,
-        isHidden: false
+        workoutExercises: workoutExercises,
+        isHidden: false,
+        goal: primaryGoal ? primaryGoal as RoutineGoalValue : 'generalHealthLongevity',
+        primaryCategory: primaryCategory ? primaryCategory : undefined,
       };
     };
 
@@ -1415,7 +1425,7 @@ export class WorkoutService {
             { idOrName: 'barbell-squat', sets: [createSet(3, 40), createSet(3, 40), createSet(3, 40)] },
             { idOrName: 'barbell-bench-press', sets: [createSet(3, 20), createSet(3, 20), createSet(3, 20)] },
             { idOrName: 'bent-over-row-barbell', sets: [createSet(3, 30), createSet(3, 30), createSet(3, 30)] }
-          ])
+        ], 'strength','strengthTraining')
         ];
       case '5x5':
         return [
@@ -1423,7 +1433,7 @@ export class WorkoutService {
             { idOrName: 'barbell-squat', sets: Array(5).fill(null).map(() => createSet(5, 40)) },
             { idOrName: 'barbell-bench-press', sets: Array(5).fill(null).map(() => createSet(5, 20)) },
             { idOrName: 'bent-over-row-barbell', sets: Array(5).fill(null).map(() => createSet(5, 30)) }
-          ])
+          ], 'strength','strengthTraining')
         ];
       case 'ppl':
         return [
@@ -1431,17 +1441,17 @@ export class WorkoutService {
             { idOrName: 'barbell-bench-press', sets: [createSet(8, 20), createSet(8, 20), createSet(8, 20)] },
             { idOrName: 'barbell-military-press', sets: [createSet(10, 40), createSet(10, 40)] },
             { idOrName: 'bench-dips', sets: [createSet(12, 'bodyweight'), createSet(12, 'bodyweight')] }
-          ]),
+          ],'hypertrophy','strengthTraining'),
           createRoutine(customRoutineName ? customRoutineName : 'Pull', [
             { idOrName: 'bent-over-row-barbell', sets: [createSet(8, 30), createSet(8, 30), createSet(8, 30)] },
             { idOrName: 'pull-up', sets: [createSet(8, 'bodyweight'), createSet(8, 'bodyweight')] },
             { idOrName: 'barbell-bicep-curl', sets: [createSet(12, 20), createSet(12, 20)] }
-          ]),
+          ],'hypertrophy','strengthTraining'),
           createRoutine(customRoutineName ? customRoutineName : 'Legs', [
             { idOrName: 'barbell-squat', sets: [createSet(10, 40), createSet(10, 40), createSet(10, 40)] },
             { idOrName: 'barbell-deadlift', sets: [createSet(6, 40), createSet(6, 40)] },
             { idOrName: 'leg-curl-machine', sets: [createSet(12, 30), createSet(12, 30)] }
-          ])
+          ],'hypertrophy','strengthTraining')
         ];
       case '531':
         return [
@@ -1449,22 +1459,22 @@ export class WorkoutService {
             { idOrName: 'barbell-military-press', sets: [createSet(5, { percent1rm: 75 }), createSet([3, 3], { percent1rm: 85 }), createSet('amrap', { percent1rm: 95 })] },
             { idOrName: 'pull-up', sets: [createSet(10, 'bodyweight'), createSet(10, 'bodyweight')] },
             { idOrName: 'bench-dips', sets: [createSet(12, 'bodyweight'), createSet(12, 'bodyweight')] }
-          ]),
+          ],'hypertrophy','strengthTraining'),
           createRoutine(customRoutineName ? customRoutineName : '5/3/1 Deadlift', [
             { idOrName: 'barbell-deadlift', sets: [createSet(5, { percent1rm: 75 }), createSet([3, 3], { percent1rm: 85 }), createSet('amrap', { percent1rm: 95 })] },
             { idOrName: 'leg-curl-machine', sets: [createSet(12, 30), createSet(12, 30)] },
             { idOrName: 'Plank', sets: [createSet('amrap', 'bodyweight')] }
-          ]),
+          ],'hypertrophy','strengthTraining'),
           createRoutine(customRoutineName ? customRoutineName : '5/3/1 Bench Press', [
             { idOrName: 'barbell-bench-press', sets: [createSet(5, { percent1rm: 75 }), createSet([3, 3], { percent1rm: 85 }), createSet('amrap', { percent1rm: 95 })] },
             { idOrName: 'bent-over-row-barbell', sets: [createSet(10, 50), createSet(10, 50)] },
             { idOrName: 'barbell-bicep-curl', sets: [createSet(12, 20), createSet(12, 20)] }
-          ]),
+          ],'hypertrophy','strengthTraining'),
           createRoutine(customRoutineName ? customRoutineName : '5/3/1 Squat', [
             { idOrName: 'barbell-squat', sets: [createSet(5, { percent1rm: 75 }), createSet([3, 3], { percent1rm: 85 }), createSet('amrap', { percent1rm: 95 })] },
             { idOrName: 'Leg Extension', sets: [createSet(12, 30), createSet(12, 30)] },
             { idOrName: 'Calf Raise', sets: [createSet(15, 40), createSet(15, 40)] }
-          ])
+          ],'hypertrophy','strengthTraining')
         ];
       default:
         return [];

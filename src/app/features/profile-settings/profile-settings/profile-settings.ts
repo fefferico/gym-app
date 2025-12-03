@@ -543,7 +543,8 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
             }
             if (version >= 4) this.progressiveOverloadService.replaceData(importedData.progressiveOverload);
             if (version >= 3) {
-              this.exerciseService.mergeData(importedData.exercises.filter((ex: Exercise)=>ex.isCustom));
+              const workoutExercises = importedData.exercises || importedData.workoutExercises;
+              this.exerciseService.mergeData(workoutExercises.filter((ex: Exercise)=>ex.isCustom));
               this.trainingProgramService.mergeData(importedData.programs);
             }
             if (version >= 2) this.appSettingsService.replaceData(importedData.appSettings);
