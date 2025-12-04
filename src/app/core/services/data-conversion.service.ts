@@ -112,6 +112,23 @@ export class DataConversionService {
       this.progressiveOverloadService.replaceData(poSettings);
     }
 
+
+    // 5. Convert Paused Workout (if one exists)
+    if (this.workoutService.isPausedSession()) {
+      const pausedState = this.workoutService.getPausedSession();
+      if (pausedState && pausedState.currentWorkoutLogExercises) {
+        pausedState.currentWorkoutLogExercises.forEach(logEx => {
+          logEx.sets.forEach(set => {
+            if (set.weightLogged != null) {
+              set.weightLogged = weightToExact(this.unitsService.convertWeight(getWeightValue(set.weightLogged), fromUnit, toUnit));
+            }
+          });
+        });
+        // Save the updated paused state back
+        this.workoutService.savePausedWorkout(pausedState);
+      }
+    }
+
     this.spinnerService.hide();
     const title = this.translate.instant('dataConversionService.toast.conversionCompleteTitle');
     const message = this.translate.instant('dataConversionService.toast.weightSuccess');
@@ -259,6 +276,21 @@ export class DataConversionService {
     if (poSettings.distanceIncrement != null) {
       poSettings.distanceIncrement = this.unitsService.convertDistance(poSettings.distanceIncrement, fromUnit, toUnit);
       this.progressiveOverloadService.replaceData(poSettings);
+    }
+
+    // 4. Convert Paused Workout (if one exists)
+    if (this.workoutService.isPausedSession()) {
+      const pausedState = this.workoutService.getPausedSession();
+      if (pausedState && pausedState.currentWorkoutLogExercises) {
+        pausedState.currentWorkoutLogExercises.forEach(logEx => {
+          logEx.sets.forEach(set => {
+            if (set.distanceLogged != null) {
+              set.distanceLogged = distanceToExact(this.unitsService.convertDistance(getDistanceValue(set.distanceLogged), fromUnit, toUnit));
+            }
+          });
+        });
+        this.workoutService.savePausedWorkout(pausedState);
+      }
     }
 
     this.spinnerService.hide();

@@ -40,7 +40,7 @@
             | date:'HH:mm:ss':'UTC' }} </p>
         </div>
       </div>
-      <div class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 items-center pt-4 text-center">
         <button appBumpClick (click)="resumePausedWorkout()"
           class="flex justify-center items-center w-full sm:w-auto px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
           <app-icon name="play" class="w-6 h-6">

@@ -60,6 +60,7 @@ import { EXERCISE_CATEGORY_TYPES } from '../../core/models/exercise-category.mod
 import { NumbersOnlyDirective } from '../../shared/directives/onlyNumbers.directive';
 import { ModalService } from '../../core/services/modal.service';
 import { DialogField } from '../../core/models/dialog.types';
+import { MaskedIconComponent } from '../../shared/components/masked-icon/masked-icon.component';
 
 export enum BuilderMode {
   routineBuilder = 'routineBuilder',
@@ -97,7 +98,7 @@ export enum SET_TYPE {
     ModalComponent, ClickOutsideDirective,
     ExerciseDetailComponent, IconComponent, ExerciseSelectionModalComponent, MillisecondsDatePipe, FabMenuComponent, TranslateModule, NgLetDirective,
     PressDirective,
-    GenerateWorkoutModalComponent, BumpClickDirective, NumbersOnlyDirective],
+    GenerateWorkoutModalComponent, BumpClickDirective, NumbersOnlyDirective, MaskedIconComponent],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
   providers: [DecimalPipe],

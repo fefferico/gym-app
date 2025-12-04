@@ -608,10 +608,11 @@
                                             <!-- <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
                                                 alt="Exercise Icon" class="w-6 h-6 sm:w-8 sm:h-8 object-contain"> -->
                                             <div class="min-w-0">
-                                                <div class="flex">
-                                                    <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
-                                                        alt="Exercise Icon"
-                                                        class="object-contain mr-1 flex-shrink-0 filter dark:invert w-8 h-8">
+                                                <div class="flex text-gray-800 dark:text-gray-300">
+                                                    <app-masked-icon
+                                                        [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
+                                                        class="w-8 h-8 mr-1 flex-shrink-0">
+                                                    </app-masked-icon>
                                                     <h3 class="font-semibold text-gray-800 dark:text-gray-100 text-wrap text-lg max-exercise-length"
                                                         [title]="exerciseControl.get('exerciseName')?.value">
                                                         {{ exerciseControl.get('exerciseName')?.value }}
@@ -738,15 +739,20 @@
                                                 getSupersetSize(exIndex)} }}
                                             </span>
 
-                                            <div class="flex items-center">
+                                            <div class="flex items-center text-gray-800 dark:text-gray-300">
                                                 <!-- The Image: Added margin-right for spacing and flex-shrink-0 -->
-                                                <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
+                                                <!-- <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
                                                     alt="Exercise Icon"
                                                     class="object-contain mr-3 flex-shrink-0 filter dark:invert"
                                                     [ngClass]="{
                                                         'w-8 h-8 ': !isSetExpanded(exIndex, 0),
                                                         'w-10 h-10 py-1': isSetExpanded(exIndex, 0),
-                                                        }">
+                                                        }"> -->
+
+                                                <app-masked-icon
+                                                        [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
+                                                        class="w-8 h-8 mr-3 flex-shrink-0">
+                                                    </app-masked-icon>
 
                                                 <!-- The Title Text: Now wrapped in its own h3 tag -->
                                                 <h3
