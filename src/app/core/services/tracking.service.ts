@@ -69,7 +69,7 @@ export class TrackingService {
     this.workoutLogsSubject.next([...logs].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
   }
 
-  addWorkoutLog(newLogData: Omit<WorkoutLog, 'id' | 'date'> & { startTime: number }): WorkoutLog {
+  addWorkoutLog(newLogData: Omit<WorkoutLog, 'id'> & { startTime: number }): WorkoutLog {
     const newWorkoutLogId: string = uuidv4();
     const currentLogs = this.workoutLogsSubject.getValue();
     const logStartTimeISO = new Date(newLogData.startTime).toISOString();
@@ -90,7 +90,7 @@ export class TrackingService {
       ...newLogData,
       workoutExercises: updatedExercises,
       id: newWorkoutLogId,
-      date: logStartTimeISO.split('T')[0],
+      date: newLogData.date || logStartTimeISO.split('T')[0],
       // Ensure scheduledDayId is passed through
       scheduledDayId: newLogData.scheduledDayId
     };

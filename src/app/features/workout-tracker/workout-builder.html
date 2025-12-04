@@ -34,7 +34,8 @@
 
     </header>
 
-    <form [formGroup]="builderForm" class="space-y-6 mb-6 p-1 rounded-xl shadow-xl overflow-hidden min-h-screen">
+    <!-- <form [formGroup]="builderForm" class="space-y-6 mb-6 p-1 rounded-xl shadow-xl overflow-hidden min-h-screen"> -->
+    <form [formGroup]="builderForm" class="space-y-6 mb-6 p-1 rounded-xl shadow-xl overflow-hidden">
         <section class="space-y-2 p-2 rounded-xl shadow-sm dark:shadow-none text-gray-700 dark:text-gray-200">
             <!-- ROUTINE BUILDER FIELDS -->
             <ng-container *ngIf="isRoutineMode">
@@ -52,7 +53,7 @@
                         'workoutBuilder.routineBuilder.nameLabel' | translate }}</label>
                     <input type="text" id="routineName" formControlName="name"
                         [placeholder]="'workoutBuilder.routineBuilder.namePlaceholder' | translate"
-                        class="mt-1 block w-full p-2 border rounded-xl shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:border-gray-500"
+                        class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:border-gray-500"
                         [ngClass]="{'border-red-500 dark:border-red-400': builderForm.get('name')?.invalid && builderForm.get('name')?.touched, 'border-gray-300 dark:border-gray-500': !(builderForm.get('name')?.invalid && builderForm.get('name')?.touched) }">
                     <div *ngIf="builderForm.get('name')?.invalid && (builderForm.get('name')?.dirty || builderForm.get('name')?.touched)"
                         class="text-red-500 dark:text-red-400 text-xs mt-1">
@@ -65,13 +66,6 @@
                     <p class="mt-1 block w-full shadow-sm dark:shadow-none text-gray-700 dark:text-gray-200"
                         [innerHTML]="sanitizedDescription">
                     </p>
-                </div>
-                <div *ngIf="isEditableMode()">
-                    <label for="description" class="block text-m font-medium text-gray-700 dark:text-gray-300">{{
-                        'workoutBuilder.routineBuilder.descriptionLabel' | translate }}</label>
-                    <textarea id="description" formControlName="description" rows="3"
-                        [placeholder]="'workoutBuilder.routineBuilder.descriptionPlaceholder' | translate"
-                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 dark:text-gray-200"></textarea>
                 </div>
                 <!-- GOAL -->
                 <div *ngIf="isViewMode">
@@ -88,7 +82,7 @@
                             'workoutBuilder.routineBuilder.goalLabel' | translate }}</label>
                     </div>
                     <select id="goal" formControlName="goal"
-                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 dark:text-gray-200">
+                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
                         <option value="" disabled selected>{{ 'workoutBuilder.routineBuilder.goalPlaceholder' |
                             translate }}</option>
                         <option *ngFor="let goalOpt of routineGoals" [value]="goalOpt.value">
@@ -97,75 +91,26 @@
                     </select>
                 </div>
 
-                <!-- CATEGORY -->
-                <!-- PRIMARY CATEGORY -->
-                <div *ngIf="isViewMode && builderForm.get('primaryCategory')?.value">
-                    <label class="block text-m text-gray-700 dark:text-gray-300 flex items-center justify-start gap-2">
-                        <app-icon name="category" class="h-6 w-6 text-primary"></app-icon>
-                        <span class="font-medium">{{ 'workoutBuilder.routineBuilder.primaryCategoryLabel' | translate
-                            }}: </span>
-                        {{ 'workoutCategories.' + builderForm.get('primaryCategory')?.value | translate}}
-                    </label>
-                </div>
-                <div *ngIf="isEditableMode()">
-                    <div class="flex items-center justify-start gap-2">
-                        <app-icon name="category" class="w-6 h-6 text-primary"></app-icon>
-                        <label for="primaryCategory" class="block text-m font-medium text-gray-700 dark:text-gray-200">
-                            {{ 'workoutBuilder.routineBuilder.primaryCategoryLabel' | translate }}
-                        </label>
-                    </div>
-                    <select id="primaryCategory" formControlName="primaryCategory"
-                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 text-gray-700 dark:text-gray-200">
-                        <option value="" disabled selected>{{ 'workoutBuilder.routineBuilder.primaryCategoryPlaceholder'
-                            | translate }}
-                        </option>
-                        <option *ngFor="let category of categories()" [value]="category.id">
-                            {{ category.name }}
-                        </option>
-                    </select>
-                </div>
-
-                <!-- SECONDARY CATEGORY -->
-                <div *ngIf="isViewMode && builderForm.get('secondaryCategory')?.value">
-                    <label class="block text-m text-gray-700 dark:text-gray-300">
-                        <span class="font-medium">{{ 'workoutBuilder.routineBuilder.secondaryCategoryLabel' | translate
-                            }}: </span>
-                        {{ builderForm.get('secondaryCategory')?.value }}
-                    </label>
-                </div>
-                <div *ngIf="isEditableMode()">
-                    <label for="secondaryCategory" class="block text-m font-medium text-gray-700 dark:text-gray-200">
-                        {{ 'workoutBuilder.routineBuilder.secondaryCategoryLabel' | translate }}
-                    </label>
-                    <input type="text" id="secondaryCategory" formControlName="secondaryCategory"
-                        [placeholder]="'workoutBuilder.routineBuilder.secondaryCategoryPlaceholder' | translate"
-                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm text-gray-700 dark:bg-gray-600 dark:text-gray-200">
-                </div>
-                <div *ngIf="isEditableMode()">
-                    <div class="flex items-center justify-start gap-2">
-                        <app-icon name="tags" class="w-6 h-6 text-primary"></app-icon>
-                        <label for="tags" class="block text-m font-medium text-gray-700 dark:text-gray-200">
-                            {{ 'workoutBuilder.routineBuilder.tagsLabel' | translate }}
-                        </label>
-                    </div>
-                    <input type="text" id="tags" formControlName="tags"
-                        [placeholder]="'workoutBuilder.routineBuilder.tagsPlaceholder' | translate"
-                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 text-gray-700 dark:text-gray-200">
-                </div>
 
                 <ng-container *ngIf="lastLogForCurrentRoutine() as lastLog; else notPerformedYet">
 
                     <!-- Display "Last Performed" Date -->
                     <div class="text-m text-gray-500 dark:text-gray-300">
-                        <span class="font-medium">{{ 'workoutBuilder.routineBuilder.lastPerformed' | translate }}</span>
-                        <!-- Use the millisecondsDate pipe we created -->
-                        {{ lastLog.startTime | millisecondsDate }}
+                        <span class="font-medium flex items-center justify-start gap-2">
+                            <app-icon name="calendar" class="w-6 h-6 text-primary"></app-icon>
+                            {{ 'workoutBuilder.routineBuilder.lastPerformed' | translate }}:
+                            {{ lastLog.startTime | millisecondsDate }}
+                        </span>
                     </div>
 
                     <!-- Display "Last Duration" -->
                     <div *ngIf="lastLog.duration" class="text-sm text-gray-500 dark:text-gray-300 flex gap-1">
-                        <span class="font-medium">{{ 'workoutBuilder.routineBuilder.lastDuration' | translate }}</span>
-                        {{ lastLog.duration }} min
+                        <div class="flex items-center justify-start gap-2">
+                            <app-icon name="duration" class="w-6 h-6 text-primary"></app-icon>
+                            <span class="font-medium">{{ 'workoutBuilder.routineBuilder.lastDuration' | translate
+                                }}:</span>
+                            {{ lastLog.duration }} min
+                        </div>
                     </div>
                 </ng-container>
 
@@ -185,35 +130,135 @@
                         class="text-m text-gray-500 dark:text-gray-300 flex items-center justify-start gap-2">
                         <app-icon name="duration" class="h-6 w-6 text-primary"></app-icon>
                         <span class="font-medium">{{ 'workoutBuilder.routineBuilder.estimatedDuration' | translate
-                            }}</span>
+                            }}:</span>
                         ~{{ getRoutineDuration() }} min
                     </div>
                 </div>
                 <!-- Tot exercise -->
                 <div>
-                    <div *ngIf="(liveFormAsRoutine() && liveFormAsRoutine()?.workoutExercises && liveFormAsRoutine()?.workoutExercises?.length) ?? 0"
+                    <div *ngIf="(workoutExercisesFormArray && workoutExercisesFormArray.length > 5) ?? 0"
                         class="text-m text-gray-500 dark:text-gray-300 flex items-center justify-start gap-2">
                         <app-icon name="muscle" class="h-6 w-6 text-primary"></app-icon>
-                        <span class="font-medium">{{ 'workoutBuilder.routineBuilder.totExercises' | translate }}</span>
+                        <span class="font-medium">{{ 'workoutBuilder.routineBuilder.totExercises' | translate }}:</span>
                         {{ getTotalExerciseCount() }}
                     </div>
                 </div>
 
-                <!-- TAGS -->
-                <div *ngIf="isViewMode && builderForm.get('tags')?.value" class="mt-2">
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <div class="flex items-center justify-start gap-2">
-                            <app-icon name="tags" class="w-6 h-6 text-primary"></app-icon>
-                            <label class="block text-m font-medium text-gray-700 dark:text-gray-200">
-                                {{ 'workoutBuilder.routineBuilder.tagsLabelView' | translate }}:
+                <!-- COLLAPSIBLE ADVANCED OPTIONS PANEL -->
+                <div class="border-t border-gray-300 dark:border-gray-600 pt-2 mt-2">
+                    <button type="button" appBumpClick (click)="showAdvancedOptions.set(!showAdvancedOptions())"
+                        class="flex items-center justify-between w-full px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <div class="flex items-center gap-2">
+                            <app-icon [name]="showAdvancedOptions() ? 'chevron-down' : 'chevron-right'"
+                                class="h-5 w-5 text-gray-500"></app-icon>
+                            <span class="font-medium text-gray-700 dark:text-gray-300">{{
+                                'workoutBuilder.routineBuilder.advancedOptions' | translate }}</span>
+                        </div>
+                        <span *ngIf="!showAdvancedOptions()" class="text-xs text-gray-500 dark:text-gray-400">
+                            {{ getAdvancedOptionsCount() > 0 ? '(' + getAdvancedOptionsCount() + ')' : '' }}
+                        </span>
+                    </button>
+
+                    <!-- COLLAPSIBLE CONTENT -->
+                    <div *ngIf="showAdvancedOptions()"
+                        class="mt-3 px-2 p-2 space-y-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+
+                        <!-- DESCRIPTION -->
+                        <div *ngIf="isViewMode">
+                            <p class="mt-1 block w-full shadow-sm dark:shadow-none text-gray-700 dark:text-gray-200"
+                                [innerHTML]="sanitizedDescription">
+                            </p>
+                        </div>
+                        <div *ngIf="isEditableMode()">
+                            <label for="description"
+                                class="block text-m font-medium text-gray-700 dark:text-gray-300">{{
+                                'workoutBuilder.routineBuilder.descriptionLabel' | translate }}</label>
+                            <textarea id="description" formControlName="description" rows="3"
+                                [placeholder]="'workoutBuilder.routineBuilder.descriptionPlaceholder' | translate"
+                                class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 dark:text-gray-200"></textarea>
+                        </div>
+
+                        <!-- PRIMARY CATEGORY -->
+                        <div *ngIf="isViewMode && builderForm.get('primaryCategory')?.value">
+                            <label
+                                class="block text-m text-gray-700 dark:text-gray-300 flex items-center justify-start gap-2">
+                                <app-icon name="category" class="h-6 w-6 text-primary"></app-icon>
+                                <span class="font-medium">{{ 'workoutBuilder.routineBuilder.primaryCategoryLabel' |
+                                    translate
+                                    }}: </span>
+                                {{ 'workoutCategories.' + builderForm.get('primaryCategory')?.value | translate}}
                             </label>
                         </div>
-                        <span *ngFor="let tag of builderForm.get('tags')?.value.split(',')"
-                            class="bg-gray-200 text-gray-700 dark:bg-gray-600 text-gray-700 dark:text-gray-200 text-xs font-semibold px-2 py-1 rounded-full">
-                            {{ tag.trim() }}
-                        </span>
+                        <div *ngIf="isEditableMode()">
+                            <div class="flex items-center justify-start gap-2">
+                                <app-icon name="category" class="w-6 h-6 text-primary"></app-icon>
+                                <label for="primaryCategory"
+                                    class="block text-m font-medium text-gray-700 dark:text-gray-200">
+                                    {{ 'workoutBuilder.routineBuilder.primaryCategoryLabel' | translate }}
+                                </label>
+                            </div>
+                            <select id="primaryCategory" formControlName="primaryCategory"
+                                class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 text-gray-700 dark:text-gray-200">
+                                <option value="" disabled selected>{{
+                                    'workoutBuilder.routineBuilder.primaryCategoryPlaceholder'
+                                    | translate }}
+                                </option>
+                                <option *ngFor="let category of categories()" [value]="category.id">
+                                    {{ category.name }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- SECONDARY CATEGORY -->
+                        <div *ngIf="isViewMode && builderForm.get('secondaryCategory')?.value">
+                            <label class="block text-m text-gray-700 dark:text-gray-300">
+                                <span class="font-medium">{{ 'workoutBuilder.routineBuilder.secondaryCategoryLabel' |
+                                    translate
+                                    }}: </span>
+                                {{ builderForm.get('secondaryCategory')?.value }}
+                            </label>
+                        </div>
+                        <div *ngIf="isEditableMode()">
+                            <label for="secondaryCategory"
+                                class="block text-m font-medium text-gray-700 dark:text-gray-200">
+                                {{ 'workoutBuilder.routineBuilder.secondaryCategoryLabel' | translate }}
+                            </label>
+                            <input type="text" id="secondaryCategory" formControlName="secondaryCategory"
+                                [placeholder]="'workoutBuilder.routineBuilder.secondaryCategoryPlaceholder' | translate"
+                                class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm text-gray-700 dark:bg-gray-600 dark:text-gray-200">
+                        </div>
+
+                        <!-- TAGS -->
+                        <div *ngIf="isViewMode && builderForm.get('tags')?.value" class="mt-2">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <div class="flex items-center justify-start gap-2">
+                                    <app-icon name="tags" class="w-6 h-6 text-primary"></app-icon>
+                                    <label class="block text-m font-medium text-gray-700 dark:text-gray-200">
+                                        {{ 'workoutBuilder.routineBuilder.tagsLabelView' | translate }}:
+                                    </label>
+                                </div>
+                                <span *ngFor="let tag of builderForm.get('tags')?.value.split(',')"
+                                    class="bg-gray-200 text-gray-700 dark:bg-gray-600 text-gray-700 dark:text-gray-200 text-xs font-semibold px-2 py-1 rounded-full">
+                                    {{ tag.trim() }}
+                                </span>
+                            </div>
+                        </div>
+                        <div *ngIf="isEditableMode()">
+                            <div class="flex items-center justify-start gap-2">
+                                <app-icon name="tags" class="w-6 h-6 text-primary"></app-icon>
+                                <label for="tags" class="block text-m font-medium text-gray-700 dark:text-gray-200">
+                                    {{ 'workoutBuilder.routineBuilder.tagsLabel' | translate }}
+                                </label>
+                            </div>
+                            <input type="text" id="tags" formControlName="tags"
+                                [placeholder]="'workoutBuilder.routineBuilder.tagsPlaceholder' | translate"
+                                class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 text-gray-700 dark:text-gray-200">
+                        </div>
                     </div>
                 </div>
+
+
+
             </ng-container>
 
             <!-- MANUAL LOG ENTRY FIELDS -->
@@ -234,7 +279,7 @@
                             </label>
                         </div>
                         <input type="date" id="workoutDate" formControlName="workoutDate"
-                            class="mt-1 block w-full p-2 border rounded-xl shadow-sm dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
+                            class="mt-1 block w-full p-2 border rounded-md shadow-sm dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
                             [ngClass]="{'border-red-500 dark:border-red-400': builderForm.get('workoutDate')?.invalid && builderForm.get('workoutDate')?.touched, 'border-gray-300 dark:border-gray-500': !(builderForm.get('workoutDate')?.invalid && builderForm.get('workoutDate')?.touched) }">
                         <div *ngIf="builderForm.get('workoutDate')?.invalid && (builderForm.get('workoutDate')?.dirty || builderForm.get('workoutDate')?.touched)"
                             class="text-red-500 dark:text-red-400 text-xs mt-1">
@@ -247,7 +292,7 @@
                             <label for="startTime" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
                                 'workoutBuilder.logEntry.startTimeLabel' | translate }}</label>
                             <input type="time" id="startTime" formControlName="startTime"
-                                class="mt-1 block w-full p-2 border rounded-xl shadow-sm dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
+                                class="mt-1 block w-full p-2 border rounded-md shadow-sm dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
                                 [ngClass]="{'border-red-500 dark:border-red-400': builderForm.get('startTime')?.invalid && builderForm.get('startTime')?.touched, 'border-gray-300 dark:border-gray-500': !(builderForm.get('startTime')?.invalid && builderForm.get('startTime')?.touched) }">
                             <div *ngIf="builderForm.get('startTime')?.invalid && (builderForm.get('startTime')?.dirty || builderForm.get('startTime')?.touched)"
                                 class="text-red-500 dark:text-red-400 text-xs mt-1">
@@ -259,7 +304,7 @@
                             <label for="endTime" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
                                 'workoutBuilder.logEntry.endTimeLabel' | translate }}</label>
                             <input type="time" id="endTime" formControlName="endTime"
-                                class="mt-1 block w-full p-2 border rounded-xl shadow-sm dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
+                                class="mt-1 block w-full p-2 border rounded-md shadow-sm dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
                                 [ngClass]="{'border-red-500 dark:border-red-400': builderForm.get('endTime')?.invalid && builderForm.get('endTime')?.touched, 'border-gray-300 dark:border-gray-500': !(builderForm.get('endTime')?.invalid && builderForm.get('endTime')?.touched) }"
                                 (change)="handleEndTimeChange()">
                             <div *ngIf="builderForm.get('endTime')?.invalid && (builderForm.get('endTime')?.dirty || builderForm.get('endTime')?.touched)"
@@ -275,14 +320,15 @@
                         'workoutBuilder.logEntry.titleLabel' | translate }}</label>
                     <input type="text" id="logWorkoutName" formControlName="name"
                         [placeholder]="'workoutBuilder.logEntry.titlePlaceholder' | translate"
-                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 dark:text-gray-200">
+                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
                 </div>
+                <!-- ROUTINE FOR LOG DISABLED IF PROGRAM IS SELECTED -->
                 <div>
                     <label for="routineIdForLog" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
                         'workoutBuilder.logEntry.basedOnRoutineLabel' | translate }}</label>
                     <select id="routineIdForLog" formControlName="routineIdForLog"
                         [disabled]="builderForm.get('programIdForLog')?.value"
-                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
                         <option value="" disabled selected>{{ 'workoutBuilder.logEntry.adHocOption' | translate }}
                         </option>
                         <option *ngFor="let r of availableRoutines" [value]="r.id">{{ r.name }}</option>
@@ -292,7 +338,7 @@
                     <label for="programIdForLog" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
                         'workoutBuilder.logEntry.basedOnProgramLabel' | translate }}</label>
                     <select id="programIdForLog" formControlName="programIdForLog"
-                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 dark:text-gray-200">
+                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
                         <option value="" disabled selected>{{ 'workoutBuilder.logEntry.adHocProgramOption' | translate
                             }}</option>
                         <option *ngFor="let program of availablePrograms" [value]="program.id">{{ program.name }}
@@ -307,7 +353,7 @@
                         'workoutBuilder.logEntry.iterationWarning' | translate }}</span>
                     <select id="iterationIdForLog" formControlName="iterationIdForLog"
                         [disabled]="!builderForm.get('programIdForLog')?.value || availableIterationIds.length === 0"
-                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
                         <option value="" disabled selected>{{ 'workoutBuilder.logEntry.iterationPlaceholder' | translate
                             }}</option>
                         <option *ngFor="let iterationId of availableIterationIds" [value]="iterationId">{{ iterationId
@@ -322,7 +368,7 @@
                         'workoutBuilder.logEntry.scheduledDayWarning' | translate }}</span>
                     <select id="scheduledDayIdForLog" formControlName="scheduledDayIdForLog"
                         [disabled]="!builderForm.get('programIdForLog')?.value || availableScheduledDayIds.length === 0"
-                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
                         <option value="" disabled selected>{{ 'workoutBuilder.logEntry.scheduledDayPlaceholder' |
                             translate }}</option>
                         <option *ngFor="let scheduledId of availableScheduledDayInfos" [value]="scheduledId.id">{{
@@ -339,7 +385,7 @@
                         {{ 'workoutBuilder.logEntry.locationTypeLabel' | translate }}
                     </label>
                     <select id="locationId" formControlName="locationId"
-                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-xl shadow-sm dark:bg-gray-600 text-gray-700 dark:text-gray-200">
+                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 text-gray-700 dark:text-gray-200">
                         <option value="" disabled selected>{{ 'workoutBuilder.logEntry.locationTypePlaceholder' |
                             translate }}</option>
                         <option *ngFor="let loc of locationService.allLocationTypes()" [value]="loc.id">
@@ -570,12 +616,12 @@
                                                         [title]="exerciseControl.get('exerciseName')?.value">
                                                         {{ exerciseControl.get('exerciseName')?.value }}
                                                     </h3>
-                                                    <app-icon name="info"
+                                                    <!-- <app-icon name="info"
                                                         class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help"
                                                         *ngIf="exerciseControl.get('exerciseId')?.value" width="20"
                                                         height="20" viewBox="0 0 20 20"
                                                         xmlns="http://www.w3.org/2000/svg"
-                                                        (click)="openModal(exerciseControl.value, $event)"></app-icon>
+                                                        (click)="openModal(exerciseControl.value, $event)"></app-icon> -->
                                                 </div>
                                                 <div class="text-xl text-gray-500 dark:text-gray-400 truncate">
                                                     <ng-container #uniformValues
@@ -709,11 +755,11 @@
                                                     ('workoutBuilder.exercise.selectPlaceholder' | translate)
                                                     }}
                                                 </h3>
-                                                <app-icon name="info"
+                                                <!-- <app-icon name="info"
                                                     class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help"
                                                     *ngIf="exerciseControl.get('exerciseId')?.value" width="20"
                                                     height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"
-                                                    (click)="openModal(exerciseControl.value, $event)"></app-icon>
+                                                    (click)="openModal(exerciseControl.value, $event)"></app-icon> -->
                                             </div>
                                         </div>
                                     </div>
@@ -1291,7 +1337,7 @@
 
             <div *ngIf="mode === BuilderMode.manualLogEntry && workoutExercisesFormArray.length === 0 && !builderForm.get('routineIdForLog')?.value"
                 class="text-center text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-xl mt-4 py-1">
-                <p class="mb-2">{{ 'workoutBuilder.logEntry.noExercisesForLog' | translate }}</p>
+                <p class="my-2">{{ 'workoutBuilder.logEntry.noExercisesForLog' | translate }}</p>
                 <button appBumpClick type="button" (click)="openExerciseSelectionModal()"
                     class="bg-green-500 hover:bg-green-600 text-white text-m font-medium py-2 px-3 rounded-xl">
                     + {{ 'workoutBuilder.logEntry.addFirstExercise' | translate }}
@@ -1308,14 +1354,14 @@
             <p class="text-m text-blue-700 dark:text-blue-300">{{ 'workoutBuilder.restDayMessage' | translate }}</p>
         </section>
 
-        <div *ngIf="!isViewMode" class="py-2 px-1 flex-col gap-2 flex items-center sticky bottom-0">
+        <!-- <div *ngIf="!isViewMode" class="py-2 px-1 flex-col gap-2 flex items-center sticky bottom-0"> -->
+        <div *ngIf="false" class="py-2 px-1 flex-col gap-2 flex items-center sticky bottom-0">
 
             <div *ngIf="mode !== BuilderMode.manualLogEntry && (builderForm.get('goal')?.value !== metricEnum.rest)"
                 class="text-center text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-xl mt-4">
                 <button appBumpClick type="button" (click)="openExerciseSelectionModal()"
                     class="flex items-center justify-center px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800 disabled:opacity-50 min-w-[220px] ">
                     <app-icon name="plus-circle" class="h-6 w-6 mr-1"></app-icon>
-                    <!-- Button Text -->
                     {{ 'workoutBuilder.addExerciseButton' | translate }}
                 </button>
             </div>
@@ -1395,8 +1441,9 @@
                     {{ getSetMetricDisplayValue(setControl,field) || 0 }}
                 </span>
                 <!-- Input is always visible and interactive -->
-                <input type="number" #inputElem [attr.data-set-id]="setControl.get('id')?.value"
-                    [attr.data-field]="field" [value]="getExactInputValue(setControl, field)"
+                <input type="text" inputmode="decimal" pattern="[0-9]*" numbersOnly #inputElem
+                    [attr.data-set-id]="setControl.get('id')?.value" [attr.data-field]="field"
+                    [value]="getExactInputValue(setControl, field)"
                     (input)="onExactInputChange(setControl, field, $event)" [readonly]="isViewMode"
                     (focus)="onInputFocus(setControl.get('id')?.value, field); selectInputText(inputElem)"
                     (blur)="onInputBlur(setControl.get('id')?.value, field)"
@@ -1438,12 +1485,14 @@
             <!-- Range type: min/max inputs -->
             <ng-container *ngSwitchCase="'range'">
                 <div class="flex items-center w-full justify-center bg-gray-200 dark:bg-gray-700 p-0.5 rounded-xl">
-                    <input type="number" placeholder="Min" min="0" [readonly]="isViewMode"
+                    <input type="text" inputmode="decimal" pattern="[0-9]*" numbersOnly placeholder="Min" min="0"
+                        [readonly]="isViewMode"
                         class="w-full px-2 py-4 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl no-arrows h-16"
                         [value]="setControl.get(getFormControlName(field))?.value?.min ?? setControl.get(getFormControlName(field))?.value?.minSeconds"
                         (input)="updateTargetField(setControl, getFormControlName(field), 'min', $event)">
                     <span class="input_number_class_separator">-</span>
-                    <input type="number" placeholder="Max" min="0" [readonly]="isViewMode"
+                    <input type="text" inputmode="decimal" pattern="[0-9]*" numbersOnly placeholder="Max" min="0"
+                        [readonly]="isViewMode"
                         class="w-full px-2 py-4 text-center text-lg font-bold bg-gray-50 dark:bg-gray-800 border-y border-gray-200 dark:border-gray-700 text-black dark:text-gray-200 focus:ring-2 focus:ring-primary dark:focus:ring-primary-light focus:outline-none z-10 relative rounded-xl no-arrows h-16"
                         [value]="setControl.get(getFormControlName(field))?.value?.max ?? setControl.get(getFormControlName(field))?.value?.maxSeconds"
                         (input)="updateTargetField(setControl, getFormControlName(field), 'max', $event)">

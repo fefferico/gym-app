@@ -174,7 +174,7 @@ export class TrainingProgramService {
     return undefined;
   }
 
-  async deleteProgram(programId: string): Promise<void> {
+  async deleteProgram(programId: string): Promise<boolean> {
     const programToDelete = await firstValueFrom(this.getProgramById(programId).pipe(take(1)));
     if (!programToDelete) {
       this.toastService.error(
@@ -182,7 +182,7 @@ export class TrainingProgramService {
         0,
         this.translate.instant('trainingProgramService.deleteError.title')
       );
-      return;
+      return false;
     }
 
     const confirm = await this.alertService.showConfirmationDialog(
@@ -203,7 +203,10 @@ export class TrainingProgramService {
         3000,
         this.translate.instant('trainingProgramService.deleteSuccess.title')
       );
+      return true;
     }
+
+    return false;
   }
 
   dateToMidnight(currentDate?: Date): string {
@@ -841,28 +844,47 @@ export class TrainingProgramService {
         this.toastService.info(this.translate.instant('trainingProgramService.toggle.alreadyActive', { name: targetProgram.name }));
         return;
       }
-      // Deactivate all other programs first
-      // currentPrograms.forEach(p => {
-      //   if (p.isActive && p.id !== programId) {
-      //     this.deactivateProgram(p.id, 'cancelled');
-      //   }
-      // });
 
       const newHistoryEntryId = await firstValueFrom(this.trackingService.generateIterationId(programId));
 
-      targetProgram.iterationId = newHistoryEntryId;
-      const newHistoryEntry: TrainingProgramHistoryEntry = {
-        id: newHistoryEntryId,
-        programId: programId,
-        startDate: this.generateNewDate(),
-        endDate: '-',
-        status: 'active',
-        date: new Date().toISOString()
-      };
-      targetProgram.history.push(newHistoryEntry);
-      targetProgram.isActive = true;
-      targetProgram.startDate = newHistoryEntry.startDate; // Update root start date
-      this.resetScheduleStatusCompletion(targetProgram, status, newHistoryEntryId);
+      // --- NEW CHECK: If the new ID matches the latest history entry, it means no workouts were logged ---
+      // In this case, overwrite the latest iteration instead of creating a new one
+      const latestHistoryEntry = targetProgram.history.length > 0
+        ? targetProgram.history[targetProgram.history.length - 1]
+        : null;
+
+      if (latestHistoryEntry && newHistoryEntryId === latestHistoryEntry.id && latestHistoryEntry.status !== 'active') {
+        // Overwrite the latest entry (it's empty/unused)
+        latestHistoryEntry.status = 'active';
+        latestHistoryEntry.startDate = this.generateNewDate();
+        latestHistoryEntry.endDate = '-';
+        latestHistoryEntry.date = new Date().toISOString();
+
+        targetProgram.iterationId = newHistoryEntryId;
+        targetProgram.isActive = true;
+        targetProgram.startDate = latestHistoryEntry.startDate;
+
+        this.toastService.info(
+          this.translate.instant('trainingProgramService.toggle.reusingIteration', { name: targetProgram.name }),
+          3000
+        );
+      } else {
+        // Create a new history entry as normal
+        const newHistoryEntry: TrainingProgramHistoryEntry = {
+          id: newHistoryEntryId,
+          programId: programId,
+          startDate: this.generateNewDate(),
+          endDate: '-',
+          status: 'active',
+          date: new Date().toISOString()
+        };
+        targetProgram.history.push(newHistoryEntry);
+        targetProgram.iterationId = newHistoryEntryId;
+        targetProgram.isActive = true;
+        targetProgram.startDate = newHistoryEntry.startDate;
+      }
+
+      this.resetScheduleStatusCompletion(targetProgram, status, targetProgram.iterationId);
     } else { // 'completed' or 'cancelled'
       if (activeEntryIndex === -1) {
         activeEntryIndex = targetProgram.history && targetProgram.history.length > 0 ? targetProgram.history.length - 1 : 0;
@@ -877,13 +899,10 @@ export class TrainingProgramService {
           date: new Date().toISOString()
         };
         targetProgram.history.push(newHistoryEntry);
-        // this.toastService.error(`Program "${targetProgram.name}" is not active and cannot be completed.`);
-        // return;
       }
       targetProgram.history[activeEntryIndex].status = status;
       targetProgram.history[activeEntryIndex].endDate = this.generateNewDate();
       targetProgram.isActive = false;
-      // this.toastService.success(`Program "${targetProgram.name}" marked as ${status}.`);
 
       this.resetScheduleStatusCompletion(targetProgram, status);
     }
@@ -924,14 +943,14 @@ export class TrainingProgramService {
    * @param programId The parent program ID.
    * @param updatedEntry The history entry with updated values.
    */
-  async updateProgramHistory(programId: string, updatedEntry: TrainingProgramHistoryEntry): Promise<void> {
+    async updateProgramHistory(programId: string, updatedEntry: TrainingProgramHistoryEntry): Promise<void> {
     const currentPrograms = this.programsSubject.getValue();
     const programIndex = currentPrograms.findIndex(p => p.id === programId);
     if (programIndex === -1) {
       this.toastService.error(this.translate.instant('trainingProgramService.history.programNotFound'));
       return;
     }
-
+  
     const targetProgram = { ...currentPrograms[programIndex] };
     const history = Array.isArray(targetProgram.history) ? [...targetProgram.history] : [];
     const entryIndex = history.findIndex(h => h.id === updatedEntry.id);
@@ -939,12 +958,20 @@ export class TrainingProgramService {
       this.toastService.error(this.translate.instant('trainingProgramService.history.entryNotFound'));
       return;
     }
-
+  
     history[entryIndex] = updatedEntry;
+    
     // After any history edit, re-evaluate the program's overall active status
     targetProgram.isActive = history.some(h => h.status === 'active');
     targetProgram.history = history;
-
+  
+    // *** If editing the CURRENT entry, reflect changes to the program itself ***
+    if (updatedEntry.id === targetProgram.iterationId) {
+      targetProgram.startDate = updatedEntry.startDate;
+      // targetProgram.endDate = updatedEntry.endDate;
+      targetProgram.iterationId = updatedEntry.id;
+    }
+  
     currentPrograms[programIndex] = targetProgram;
     this._saveProgramsToStorage(currentPrograms);
     this.toastService.success(this.translate.instant('trainingProgramService.updateHistory.success'));

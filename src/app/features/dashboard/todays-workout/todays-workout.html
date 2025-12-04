@@ -9,7 +9,8 @@
   <div class="flex-shrink-0">
     <!-- Date Navigation -->
     <!-- [START] NEW AND IMPROVED BANNER -->
-    <div class="flex items-center justify-between p-2 bg-gray-200 dark:bg-gray-800 rounded-lg shadow-inner">
+    <div class="flex items-center justify-between p-2 bg-gray-200/70 dark:bg-gray-800 rounded-lg shadow-inner"
+      [ngClass]="{'rounded-b-none': todaysScheduledWorkouts() && todaysScheduledWorkouts().length > 0 && isToday(currentDate())}">
 
       <!-- Previous Day Button -->
       <button appBumpClick (click)="previousDay()" [title]="'todaysWorkout.previousDay' | translate"
@@ -46,8 +47,8 @@
         </h2>
 
         <button *ngIf="!isToday(currentDate())" (click)="goToToday()"
-      class="text-m text-primary dark:text-primary-light hover:underline disabled:opacity-50 pt-2"
-      [disabled]="isAnimating()">{{ 'todaysWorkout.jumpToToday' | translate }}</button>
+          class="text-m text-primary dark:text-primary-light hover:underline disabled:opacity-50 pt-2"
+          [disabled]="isAnimating()">{{ 'todaysWorkout.jumpToToday' | translate }}</button>
 
       </div>
 
@@ -59,342 +60,360 @@
       </button>
 
     </div>
-  </div>
 
-  <!-- This content area will still grow to fill space and will be the part that animates. -->
-  <div class="relative overflow-hidden flex-grow">
-    <!-- MODIFIED: The animation trigger remains on this inner div. -->
-    <div [@slideAnimation]="animationState()" class="h-full">
+    <!-- dividir -->
+    <div *ngIf="todaysScheduledWorkouts() && todaysScheduledWorkouts().length > 0 && isToday(currentDate())"
+      class="flex items-center bg-gray-200/70 dark:bg-gray-800 p-2">
+      <hr class="w-full h-0.5 border-0 rounded-sm md:my-10 bg-gray-400 dark:bg-gray-200">
+    </div>
 
-      <!-- The content inside remains exactly the same -->
-      <div *ngIf="isLoading()" class="text-center py-8 min-h-[100px] flex flex-col justify-center items-center h-full">
-        <p class="text-gray-500 dark:text-gray-400">{{ 'todaysWorkout.checkingSchedule' | translate }}</p>
-        <svg class="animate-spin h-8 w-8 text-primary dark:text-primary-light mx-auto mt-2"
-          xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-          </path>
-        </svg>
-      </div>
+    <!-- This content area will still grow to fill space and will be the part that animates. -->
+    <div class="relative overflow-hidden flex-grow">
+      <!-- MODIFIED: The animation trigger remains on this inner div. -->
+      <div [@slideAnimation]="animationState()" class="h-full">
 
-      <div *ngIf="!isLoading()">
-        <ng-container *ngIf="allActivePrograms().length > 0; else noProgramBlock" class="min-h-[100px]">
-          <div *ngIf="todaysScheduledWorkouts().length > 0; else noScheduledWorkoutInProgramBlock" class="space-y-4">
-            <div *ngFor="let workoutInfo of todaysScheduledWorkouts()" class="p-4 rounded-md flex flex-col items-center"
-              [ngClass]="{'border-b border-gray-200 dark:border-gray-700 dark:bg-primary-dark/30': allActivePrograms().length > 1,
-                          'bg-primary-50 dark:bg-gray-800': allActivePrograms().length === 1
-              }">
+        <!-- The content inside remains exactly the same -->
+        <div *ngIf="isLoading()"
+          class="text-center py-8 min-h-[100px] flex flex-col justify-center items-center h-full">
+          <p class="text-gray-500 dark:text-gray-400">{{ 'todaysWorkout.checkingSchedule' | translate }}</p>
+          <svg class="animate-spin h-8 w-8 text-primary dark:text-primary-light mx-auto mt-2"
+            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+            </path>
+          </svg>
+        </div>
 
-              <!-- Header text now changes based on whether the workout was scheduled -->
-              <h3
-                class="flex flex-col items-center text-lg font-semibold text-gray-700 dark:text-gray-100 mb-1 ng-tns-c3269474976-1">
-                <ng-container *ngIf="!workoutInfo.scheduledDayInfo.isUnscheduled; else unscheduledHeader">
-                  <div>{{ 'todaysWorkout.scheduled' | translate }}<span
-                      class="text-primary dark:text-primary-light ml-1">{{ workoutInfo.routine.name
-                      }}</span></div>
-                </ng-container>
-                <ng-template #unscheduledHeader>
-                  <span class="text-blue-500 dark:text-blue-400">{{ 'todaysWorkout.loggedUnscheduled' | translate
-                    }}</span><span class="text-primary dark:text-primary-light ml-1">{{ workoutInfo.routine.name
-                    }}</span>
-                </ng-template>
+        <div *ngIf="!isLoading()">
+          <ng-container *ngIf="allActivePrograms().length > 0; else noProgramBlock" class="min-h-[100px]">
+            <div *ngIf="todaysScheduledWorkouts().length > 0; else noScheduledWorkoutInProgramBlock" class="space-y-4">
+              <div *ngFor="let workoutInfo of todaysScheduledWorkouts()"
+                class="p-4 rounded-md flex flex-col items-center rounded-t-none bg-gray-200/70 dark:bg-gray-800">
 
-                <div class="my-2 text-xs font-semibold text-white bg-primary rounded-md p-1 flex-shrink w-fit flex items-center gap-x-1 cursor-pointer" 
-                  (click)="viewRoutineDetails(workoutInfo.routine.id, workoutInfo.scheduledDayInfo?.programId)"> 
-                  <app-icon name="calendar"></app-icon>
-                  {{
-                  'todaysWorkout.program' | translate }}: 
-                  <strong class="font-medium"> {{ workoutInfo.scheduledDayInfo.programName }} {{
-                    workoutInfo.scheduledDayInfo.iterationId }}</strong>
-                  <div *ngIf="getCurrentWeekInfo(workoutInfo.scheduledDayInfo.programId) as weekInfo"
-                    class="flex items-center gap-1 text-green-700 dark:text-green-300 font-semibold animate-pulse">
-                    <app-icon name="calendar" class="w-5 h-5" [strokeWidth]="2"></app-icon>
-                    <span class="font-medium">{{ 'todaysWorkout.currentWeek' | translate }}</span> {{ weekInfo.name }}
-                  </div>
-                  <span>{{workoutInfo.scheduledDayInfo.dayName ? ( ' - ' + workoutInfo.scheduledDayInfo.dayName) :
-                    ''}}</span>
-                </div>
-              </h3>
-
-              <p *ngIf="workoutInfo.routine.description"
-                class="text-md text-gray-600 dark:text-gray-400 mb-2 line-clamp-2"
-                [innerHTML]="updateSanitizedDescription(workoutInfo.routine.description)"
-                [title]="workoutInfo.routine.description"></p>
-
-              <div class="mt-4">
-                <ng-container
-                  *ngIf="isProgramWorkoutLogged(workoutInfo.scheduledDayInfo) && isWorkoutLogged(workoutInfo.scheduledDayInfo)">
-                  <div
-                    class="p-3 bg-green-100 dark:bg-green-900/50 rounded-md text-green-700 dark:text-green-300 flex items-center justify-center gap-x-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                      stroke="currentColor" class="w-6 h-6">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                    </svg>
-                    <span class="font-semibold text-m">{{ 'todaysWorkout.workoutCompleted' | translate }}</span>
-                    <button appBumpClick (click)="viewLogDetails(getLogForRoutine(workoutInfo.routine.id).id)"
-                      class="ml-auto flex items-center text-md font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-2 py-1 rounded hover:bg-sky-300">
-                      <app-icon name="eye" class="w-6 h-6 mr-1">
-                      </app-icon>
-                      {{ 'todaysWorkout.details' | translate }}
-                    </button>
-                  </div>
-                </ng-container>
-
-                <ng-container
-                  *ngIf="!isProgramWorkoutLogged(workoutInfo.scheduledDayInfo) || !isWorkoutLogged(workoutInfo.scheduledDayInfo)">
-                  <!-- FUTURE DATE -->
-                  <ng-container *ngIf="isFutureDate(currentDate())">
-                    <div
-                      class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-4">
-                      <button appBumpClick (click)="viewRoutineDetails(workoutInfo.routine.id, workoutInfo.scheduledDayInfo?.programId)"
-                        class="flex-1 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m w-full sm:min-w-[200px]">
-                        <app-icon name="eye" class="w-6 h-6">
-                        </app-icon>
-                        <span class="ml-1">
-                          {{ 'todaysWorkout.details' | translate }}
-                        </span>
-                      </button>
-                    </div>
+                <!-- Header text now changes based on whether the workout was scheduled -->
+                <h3
+                  class="flex flex-col items-center text-lg font-semibold text-gray-700 dark:text-gray-100 mb-1 ng-tns-c3269474976-1">
+                  <ng-container *ngIf="!workoutInfo.scheduledDayInfo.isUnscheduled; else unscheduledHeader">
+                    <div>{{ 'todaysWorkout.scheduled' | translate }}<span
+                        class="text-primary dark:text-primary-light ml-1">{{ workoutInfo.routine.name
+                        }}</span></div>
                   </ng-container>
+                  <ng-template #unscheduledHeader>
+                    <span class="text-blue-500 dark:text-blue-400">{{ 'todaysWorkout.loggedUnscheduled' | translate
+                      }}</span><span class="text-primary dark:text-primary-light ml-1">{{ workoutInfo.routine.name
+                      }}</span>
+                  </ng-template>
 
-                  <!-- PAST DATE -->
+                  <div
+                    class="my-2 text-xs font-semibold text-white bg-primary rounded-md p-1 flex-shrink w-fit flex items-center gap-x-1 cursor-pointer"
+                    (click)="viewRoutineDetails(workoutInfo.routine.id, workoutInfo.scheduledDayInfo?.programId)">
+                    <app-icon name="calendar"></app-icon>
+                    {{
+                    'todaysWorkout.program' | translate }}:
+                    <strong class="font-medium"> {{ workoutInfo.scheduledDayInfo.programName }} {{
+                      workoutInfo.scheduledDayInfo.iterationId }}</strong>
+                    <div *ngIf="getCurrentWeekInfo(workoutInfo.scheduledDayInfo.programId) as weekInfo"
+                      class="flex items-center gap-1 text-green-700 dark:text-green-300 font-semibold animate-pulse">
+                      <app-icon name="calendar" class="w-5 h-5" [strokeWidth]="2"></app-icon>
+                      <span class="font-medium">{{ 'todaysWorkout.currentWeek' | translate }}</span> {{ weekInfo.name }}
+                    </div>
+                    <span>{{workoutInfo.scheduledDayInfo.dayName ? ( ' - ' + workoutInfo.scheduledDayInfo.dayName) :
+                      ''}}</span>
+                  </div>
+                </h3>
+
+                <p *ngIf="workoutInfo.routine.description"
+                  class="text-md text-gray-600 dark:text-gray-400 mb-2 line-clamp-2"
+                  [innerHTML]="updateSanitizedDescription(workoutInfo.routine.description)"
+                  [title]="workoutInfo.routine.description"></p>
+
+                <div class="mt-4">
                   <ng-container
-                    *ngIf="!isToday(currentDate()) && !isFutureDate(currentDate()) && !workoutInfo.scheduledDayInfo.isUnscheduled">
+                    *ngIf="isProgramWorkoutLogged(workoutInfo.scheduledDayInfo) && isWorkoutLogged(workoutInfo.scheduledDayInfo)">
                     <div
-                      class="p-3 bg-yellow-100 dark:bg-yellow-900/50 rounded-md text-yellow-700 dark:text-yellow-300 flex items-center justify-center gap-x-3">
+                      class="p-3 bg-green-100 dark:bg-green-900/50 rounded-md text-green-700 dark:text-green-300 flex items-center justify-center gap-x-3">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-6 h-6">
                         <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                          d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                       </svg>
-                      <span class="font-semibold text-m">{{ 'todaysWorkout.sessionSkipped' | translate }}</span>
+                      <span class="font-semibold text-m">{{ 'todaysWorkout.workoutCompleted' | translate }}</span>
+                      <button appBumpClick (click)="viewLogDetails(getLogForRoutine(workoutInfo.routine.id).id)"
+                        class="ml-auto flex items-center text-md font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-2 py-1 rounded hover:bg-sky-300">
+                        <app-icon name="eye" class="w-6 h-6 mr-1">
+                        </app-icon>
+                        {{ 'todaysWorkout.details' | translate }}
+                      </button>
                     </div>
-                    <span class="text-m text-gray-500 dark:text-gray-400">
-                      <!-- UPDATED: Pass the scheduledDayInfo.id to the log function -->
-                      <button appPressScroll
-                        (shortPress)="logPastProgramWorkout(workoutInfo?.scheduledDayInfo?.routineId, workoutInfo?.scheduledDayInfo?.programId, workoutInfo?.scheduledDayInfo?.id)"
-                        class="text-primary dark:text-primary-light hover:underline mt-2">{{ 'todaysWorkout.logIt' |
-                        translate }}</button>{{ 'todaysWorkout.ifYouHavent' | translate }}
-                    </span>
                   </ng-container>
 
-                  <!-- TODAY'S DATE -->
-                  <ng-container *ngIf="isToday(currentDate())">
-                    <div
-                      class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-4">
-                      <button
-                        appBumpClick
-                        (click)="startProgramWorkout(workoutInfo.routine.id, workoutInfo.scheduledDayInfo.programId, workoutInfo.scheduledDayInfo.id, $event)"
-                        class="flex justify-center items-center w-full sm:min-w-[200px] px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                        <app-icon name="play" class="w-6 h-6" [strokeWidth]="2.5"></app-icon>
-                        {{ 'todaysWorkout.start' | translate }}</button>
-                      <button appBumpClick (click)="viewRoutineDetails(workoutInfo.routine.id)"
-                        class="flex justify-center items-center w-full sm:min-w-[200px] px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                        <app-icon name="eye" class="w-6 h-6">
-                        </app-icon>
-                        <span class="ml-1">
+                  <ng-container
+                    *ngIf="!isProgramWorkoutLogged(workoutInfo.scheduledDayInfo) || !isWorkoutLogged(workoutInfo.scheduledDayInfo)">
+                    <!-- FUTURE DATE -->
+                    <ng-container *ngIf="isFutureDate(currentDate())">
+                      <div
+                        class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-4">
+                        <button appBumpClick
+                          (click)="viewRoutineDetails(workoutInfo.routine.id, workoutInfo.scheduledDayInfo?.programId)"
+                          class="flex-1 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m w-full sm:min-w-[200px]">
+                          <app-icon name="eye" class="w-6 h-6">
+                          </app-icon>
+                          <span class="ml-1">
+                            {{ 'todaysWorkout.details' | translate }}
+                          </span>
+                        </button>
+                      </div>
+                    </ng-container>
+
+                    <!-- PAST DATE -->
+                    <ng-container
+                      *ngIf="!isToday(currentDate()) && !isFutureDate(currentDate()) && !workoutInfo.scheduledDayInfo.isUnscheduled">
+                      <div
+                        class="p-3 bg-yellow-100 dark:bg-yellow-900/50 rounded-md text-yellow-700 dark:text-yellow-300 flex items-center justify-center gap-x-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                          stroke="currentColor" class="w-6 h-6">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                        </svg>
+                        <span class="font-semibold text-m">{{ 'todaysWorkout.sessionSkipped' | translate }}</span>
+                      </div>
+                      <span class="text-m text-gray-500 dark:text-gray-400">
+                        <!-- UPDATED: Pass the scheduledDayInfo.id to the log function -->
+                        <button appPressScroll
+                          (shortPress)="logPastProgramWorkout(workoutInfo?.scheduledDayInfo?.routineId, workoutInfo?.scheduledDayInfo?.programId, workoutInfo?.scheduledDayInfo?.id)"
+                          class="text-primary dark:text-primary-light hover:underline mt-2">{{ 'todaysWorkout.logIt' |
+                          translate }}</button>{{ 'todaysWorkout.ifYouHavent' | translate }}
+                      </span>
+                    </ng-container>
+
+                    <!-- TODAY'S DATE -->
+                    <ng-container *ngIf="isToday(currentDate())">
+                      <div
+                        class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-4">
+                        <button appBumpClick
+                          (click)="startProgramWorkout(workoutInfo.routine.id, workoutInfo.scheduledDayInfo.programId, workoutInfo.scheduledDayInfo.id, $event)"
+                          class="flex justify-center items-center w-full sm:min-w-[200px] px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                          <app-icon name="play" class="w-6 h-6" [strokeWidth]="2.5"></app-icon>
+                          {{ 'todaysWorkout.start' | translate }}</button>
+                        <button appBumpClick (click)="viewRoutineDetails(workoutInfo.routine.id)"
+                          class="flex justify-center items-center w-full sm:min-w-[200px] px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                          <app-icon name="eye" class="w-6 h-6">
+                          </app-icon>
+                          <span class="ml-1">
+                            {{ 'todaysWorkout.details' | translate }}
+                          </span>
+                        </button>
+                      </div>
+                    </ng-container>
+                  </ng-container>
+                </div>
+              </div>
+            </div>
+
+            <ng-template #noScheduledWorkoutInProgramBlock>
+              <!-- Content for Rest Day -->
+              <div class="text-center py-2">
+                <app-icon name="rest" class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-3"></app-icon>
+                <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300">{{ 'todaysWorkout.restDay' | translate
+                  }}
+                </h3>
+                <p class="text-m text-gray-500 dark:text-gray-400">{{ 'todaysWorkout.noWorkoutPlanned' | translate }}
+                </p>
+              </div>
+              <div *ngIf="isToday(currentDate())">
+                <div *ngIf="logsForDay().length > 0" class="mb-6 text-left">
+                  <h4 *ngIf="isToday(currentDate())"
+                    class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">
+                    {{ 'todaysWorkout.loggedToday' | translate }}</h4>
+                  <h4 *ngIf="!isToday(currentDate())"
+                    class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">
+                    {{ 'todaysWorkout.loggedOnThisDay' | translate }}</h4>
+                  <div class="space-y-2">
+                    <div *ngFor="let log of logsForDay()"
+                      class="p-3 bg-gray-200/50 dark:bg-gray-800 rounded-md flex justify-between items-center">
+                      <p class="flex flex-col font-medium text-gray-800 dark:text-gray-100 text-wrap pr-2 space-y-1">{{
+                        log.routineName
+                        }}
+                        <span *ngIf="log.startTime" class="flex items-center text-sm">
+                          <app-icon name="calendar-page" class=" mr-1"></app-icon>
+                          {{
+                          log.startTime | millisecondsDate}}</span>
+                        <span *ngIf="log.durationMinutes" class="flex items-center text-sm">
+                          <app-icon name="clock" class=" mr-1"></app-icon>
+                          {{
+                          log.durationMinutes || 0}} min</span>
+                      </p>
+                      <button appBumpClick (click)="viewLogDetails(log.id)"
+                        class="flex items-center justify-center h-10 text-md font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-3 py-1 rounded hover:bg-sky-300">
+                        <app-icon name="eye" class="w-6 h-6 mr-2 align-middle"></app-icon>
+                        <span class="align-middle font-semibold">
                           {{ 'todaysWorkout.details' | translate }}
                         </span>
                       </button>
                     </div>
-                  </ng-container>
-                </ng-container>
-              </div>
-            </div>
-          </div>
-
-          <ng-template #noScheduledWorkoutInProgramBlock>
-            <!-- Content for Rest Day -->
-            <div class="text-center py-2">
-              <app-icon name="rest" class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-3"></app-icon>
-              <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300">{{ 'todaysWorkout.restDay' | translate }}
-              </h3>
-              <p class="text-m text-gray-500 dark:text-gray-400">{{ 'todaysWorkout.noWorkoutPlanned' | translate }}</p>
-            </div>
-            <div *ngIf="isToday(currentDate())">
-              <div *ngIf="logsForDay().length > 0" class="mb-6 text-left">
-                <h4 *ngIf="isToday(currentDate())" class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">
-                  {{ 'todaysWorkout.loggedToday' | translate }}</h4>
-                <h4 *ngIf="!isToday(currentDate())" class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">
-                  {{ 'todaysWorkout.loggedOnThisDay' | translate }}</h4>
-                <div class="space-y-2">
-                  <div *ngFor="let log of logsForDay()"
-                    class="p-3 bg-gray-200/50 dark:bg-gray-800 rounded-md flex justify-between items-center">
-                    <p class="flex flex-col font-medium text-gray-800 dark:text-gray-100 text-wrap pr-2 space-y-1">{{
-                      log.routineName
-                      }}
-                      <span *ngIf="log.startTime" class="flex items-center text-sm">
-                        <app-icon name="calendar-page" class=" mr-1"></app-icon>
-                        {{
-                        log.startTime | millisecondsDate}}</span>
-                      <span *ngIf="log.durationMinutes" class="flex items-center text-sm">
-                        <app-icon name="clock" class=" mr-1"></app-icon>
-                        {{
-                        log.durationMinutes || 0}} min</span>
-                    </p>
-                    <button appBumpClick (click)="viewLogDetails(log.id)"
-                      class="flex items-center justify-center h-10 text-md font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-3 py-1 rounded hover:bg-sky-300">
-                      <app-icon name="eye" class="w-6 h-6 mr-2 align-middle"></app-icon>
-                      <span class="align-middle font-semibold">
-                        {{ 'todaysWorkout.details' | translate }}
-                      </span>
-                    </button>
+                  </div>
+                </div>
+                <div *ngIf="logsForDay().length === 0">
+                  <p class="text-m text-gray-500 dark:text-gray-400">
+                    {{ 'todaysWorkout.feelFreeTo' | translate }}
+                    <button appBumpClick (click)="browseRoutines()"
+                      class="text-primary dark:text-primary-light hover:underline">{{
+                      'todaysWorkout.pickAnotherRoutine' | translate }}</button>{{ 'todaysWorkout.ifYouPrefer' |
+                    translate
+                    }}
+                  </p>
+                  <div class="mt-2 pt-2 border-t dark:border-gray-700 text-left"
+                    *ngIf="availableRoutines$ | async as routines">
+                    <h4 class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">{{ 'todaysWorkout.orPickOne'
+                      |
+                      translate }}</h4>
+                    <div
+                      class="max-h-40 overflow-y-auto space-y-2 p-2 custom-scrollbar rounded bg-gray-200/50 dark:bg-gray-800">
+                      <div (click)="viewRoutineDetails(routine.id)" *ngFor="let routine of routines"
+                        class="p-3 bg-white hover:bg-gray-300 dark:bg-gray-500 hover:dark:bg-gray-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex justify-between items-center transform hover:-translate-y-1">
+                        <div class="truncate">
+                          <span class="font-medium text-gray-800 dark:text-gray-100">{{ routine.name }}</span>
+                          <span class="block text-left text-xs text-gray-500 dark:text-gray-300 font-medium">{{
+                            'todaysWorkout.estimatedTime' | translate:{duration: getRoutineDuration(routine)} }}</span>
+                          <span *ngIf="findRoutineLog(routine.id) | async as routineLog"
+                            class="block text-left text-xs text-gray-500 dark:text-gray-400">
+                            <span *ngIf="routineLog.durationSeconds">{{ 'todaysWorkout.latest' | translate }}{{
+                              secondsToDateTime(routineLog.durationSeconds) |
+                              date:'HH:mm:ss' }}
+                            </span>
+                          </span>
+                        </div>
+                        <button appBumpClick [disabled]="isAnimating()" (click)="startWorkout(routine.id, $event)"
+                          class="flex items-center ml-2 text-m bg-primary text-white hover:bg-green-600 font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">
+                          <app-icon name="play"></app-icon>
+                          {{ 'todaysWorkout.start' | translate }}
+                        </button>
+                      </div>
+                      <p *ngIf="!routines || routines.length === 0" class="text-m text-gray-400 dark:text-gray-500">{{
+                        'todaysWorkout.noRoutinesAvailable' | translate }}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div *ngIf="logsForDay().length === 0">
-                <p class="text-m text-gray-500 dark:text-gray-400">
-                  {{ 'todaysWorkout.feelFreeTo' | translate }}
-                  <button appBumpClick (click)="browseRoutines()"
-                    class="text-primary dark:text-primary-light hover:underline">{{
-                    'todaysWorkout.pickAnotherRoutine' | translate }}</button>{{ 'todaysWorkout.ifYouPrefer' | translate
+            </ng-template>
+          </ng-container>
+
+          <ng-template #noProgramBlock>
+            <!-- Content for No Program Active -->
+            <div class="text-center py-2">
+              <div *ngIf="isFutureDate(currentDate()) && isPremiumInfoAvailable()">
+                <app-icon name="program" class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-3"></app-icon>
+                <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300">{{ 'todaysWorkout.noProgramActive' |
+                  translate }}</h3>
+                <p class="text-m text-gray-500 dark:text-gray-400">{{ 'todaysWorkout.activateProgramPrompt' | translate
                   }}
                 </p>
-                <div class="mt-2 pt-2 border-t dark:border-gray-700 text-left"
-                  *ngIf="availableRoutines$ | async as routines">
-                  <h4 class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">{{ 'todaysWorkout.orPickOne' |
-                    translate }}</h4>
-                  <div class="max-h-40 overflow-y-auto space-y-2 p-2 custom-scrollbar rounded bg-gray-200/50 dark:bg-gray-800">
-                    <div (click)="viewRoutineDetails(routine.id)" *ngFor="let routine of routines"
-                      class="p-3 bg-white hover:bg-gray-300 dark:bg-gray-500 hover:dark:bg-gray-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex justify-between items-center transform hover:-translate-y-1">
-                      <div class="truncate">
-                        <span class="font-medium text-gray-800 dark:text-gray-100">{{ routine.name }}</span>
-                        <span class="block text-left text-xs text-gray-500 dark:text-gray-300 font-medium">{{
-                          'todaysWorkout.estimatedTime' | translate:{duration: getRoutineDuration(routine)} }}</span>
-                        <span *ngIf="findRoutineLog(routine.id) | async as routineLog"
-                          class="block text-left text-xs text-gray-500 dark:text-gray-400">
-                          <span *ngIf="routineLog.durationSeconds">{{ 'todaysWorkout.latest' | translate }}{{
-                            secondsToDateTime(routineLog.durationSeconds) |
-                            date:'HH:mm:ss' }}
-                          </span>
+                <button appBumpClick (click)="managePrograms()"
+                  class="mt-4 text-white bg-primary hover:bg-primary-dark font-medium rounded-lg text-sm px-5 py-2.5">{{
+                  'todaysWorkout.managePrograms' | translate }}</button>
+              </div>
+
+              <div *ngIf="!isFutureDate(currentDate())">
+                <div *ngIf="logsForDay().length > 0" class="mb-6 text-left">
+                  <h4 *ngIf="isToday(currentDate())"
+                    class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">
+                    {{ 'todaysWorkout.loggedToday' | translate }}</h4>
+                  <h4 *ngIf="!isToday(currentDate())"
+                    class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">
+                    {{ 'todaysWorkout.loggedOnThisDay' | translate }}</h4>
+                  <div class="space-y-2">
+                    <div *ngFor="let log of logsForDay()"
+                      class="p-3 bg-gray-200/50 dark:bg-gray-800 rounded-md flex justify-between items-center">
+                      <p class="flex flex-col font-medium text-gray-800 dark:text-gray-100 text-wrap pr-2 space-y-1">{{
+                        log.routineName
+                        }}
+                        <span *ngIf="log.programId"
+                          class="my-2 text-xs font-semibold text-white bg-primary rounded-md p-1 flex-shrink w-fit"
+                          (click)="viewProgramDetails(log.programId)" style="cursor: pointer;">
+                          {{ 'todaysWorkout.program' | translate }} {{ getProgramNameById(log.programId) }}
+                          <ng-container *ngIf="log.weekName"> - {{ log.weekName }}</ng-container>
+                          <ng-container *ngIf="log.dayName"> - {{ log.dayName }}</ng-container>
                         </span>
-                      </div>
-                      <button appBumpClick [disabled]="isAnimating()" (click)="startWorkout(routine.id, $event)"
-                        class="flex items-center ml-2 text-m bg-primary text-white hover:bg-green-600 font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">
-                        <app-icon name="play"></app-icon>
-                        {{ 'todaysWorkout.start' | translate }}
+                        <span *ngIf="log.startTime" class="flex items-center text-sm">
+                          <app-icon name="calendar-page" class=" mr-1"></app-icon>
+                          {{
+                          log.startTime | millisecondsDate}}</span>
+                        <span *ngIf="log.durationMinutes" class="flex items-center text-sm">
+                          <app-icon name="clock" class=" mr-1"></app-icon>
+                          {{
+                          log.durationMinutes || 0}} min</span>
+                      </p>
+                      <button appBumpClick (click)="viewLogDetails(log.id)"
+                        class="flex items-center text-md font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-2 py-1 rounded hover:bg-sky-300">
+                        <app-icon name="eye" class="w-6 h-6 mr-1">
+                        </app-icon>
+                        {{ 'todaysWorkout.details' | translate }}
                       </button>
                     </div>
-                    <p *ngIf="!routines || routines.length === 0" class="text-m text-gray-400 dark:text-gray-500">{{
-                      'todaysWorkout.noRoutinesAvailable' | translate }}</p>
+                  </div>
+                </div>
+                <div *ngIf="logsForDay().length === 0" class="pt-2">
+                  <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ 'todaysWorkout.noWorkoutsLogged' | translate }}</h3>
+                </div>
+                <div *ngIf="isToday(currentDate())">
+                  <p *ngIf="allActivePrograms().length === 0 && subscriptionsService.canAccess(PremiumFeature.TRAINING_PROGRAMS)"
+                    class="text-m text-gray-500 dark:text-gray-400">
+                    {{ 'todaysWorkout.youCan' | translate }}
+                    <button appBumpClick (click)="managePrograms()"
+                      class="text-primary dark:text-primary-light hover:underline">{{ 'todaysWorkout.setActiveProgram' |
+                      translate }}</button>{{ 'todaysWorkout.or' | translate }}
+                    <button appBumpClick (click)="browseRoutines()"
+                      class="text-primary dark:text-primary-light hover:underline">{{
+                      'todaysWorkout.browseRoutines' |
+                      translate }}</button>
+                  </p>
+                  <div class="mt-2 pt-2 border-t dark:border-gray-700 text-left"
+                    *ngIf="availableRoutines$ | async as routines">
+                    <h4 *ngIf="!isTrainingProgramsAvailable()"
+                      class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">{{ 'todaysWorkout.pickOne' |
+                      translate }}</h4>
+                    <h4 *ngIf="isTrainingProgramsAvailable()"
+                      class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">{{ 'todaysWorkout.orPickOne' |
+                      translate }}</h4>
+                    <div class="max-h-40 overflow-y-auto space-y-2 py-2 custom-scrollbar rounded">
+                      <div (click)="viewRoutineDetails(routine.id)" *ngFor="let routine of routines"
+                        class="p-3 bg-gray-200/50 hover:bg-gray-300 dark:bg-gray-500 hover:dark:bg-gray-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex justify-between items-center transform hover:-translate-y-1">
+                        <div class="truncate">
+                          <span class="font-medium text-gray-800 dark:text-gray-100">{{ routine.name }}</span>
+                          <span class="block text-left text-xs text-gray-500 dark:text-gray-300 font-medium">{{
+                            'todaysWorkout.estimatedTime' | translate:{duration: getRoutineDuration(routine)} }}</span>
+                          <span *ngIf="findRoutineLog(routine.id) | async as routineLog"
+                            class="block text-left text-xs text-gray-500 dark:text-gray-400">
+                            <span *ngIf="routineLog.durationSeconds">{{ 'todaysWorkout.latest' | translate }}{{
+                              secondsToDateTime(routineLog.durationSeconds) |
+                              date:'HH:mm:ss' }}
+                            </span>
+                          </span>
+                        </div>
+                        <button appBumpClick (click)="startWorkout(routine.id, $event)" [disabled]="isAnimating()"
+                          class="flex items-center ml-2 text-m bg-primary text-white hover:bg-green-600 font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">
+                          <app-icon name="play"></app-icon>
+                          {{ 'todaysWorkout.start' | translate }}
+                        </button>
+                      </div>
+                      <p *ngIf="!routines || routines.length === 0" class="text-m text-gray-400 dark:text-gray-500">{{
+                        'todaysWorkout.noRoutinesAvailable' | translate }}</p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </ng-template>
-        </ng-container>
-
-        <ng-template #noProgramBlock>
-          <!-- Content for No Program Active -->
-          <div class="text-center py-2">
-            <div *ngIf="isFutureDate(currentDate()) && isPremiumInfoAvailable()">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                stroke="currentColor" class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-3">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-3.75h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z" />
-              </svg>
-              <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300">{{ 'todaysWorkout.noProgramActive' |
-                translate }}</h3>
-              <p class="text-m text-gray-500 dark:text-gray-400">{{ 'todaysWorkout.activateProgramPrompt' | translate }}
-              </p>
-              <button appBumpClick (click)="managePrograms()"
-                class="mt-4 text-white bg-primary hover:bg-primary-dark font-medium rounded-lg text-sm px-5 py-2.5">{{
-                'todaysWorkout.managePrograms' | translate }}</button>
-            </div>
-
-            <div *ngIf="!isFutureDate(currentDate())">
-              <div *ngIf="logsForDay().length > 0" class="mb-6 text-left">
-                <h4 *ngIf="isToday(currentDate())" class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">
-                  {{ 'todaysWorkout.loggedToday' | translate }}</h4>
-                <h4 *ngIf="!isToday(currentDate())" class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">
-                  {{ 'todaysWorkout.loggedOnThisDay' | translate }}</h4>
-                <div class="space-y-2">
-                  <div *ngFor="let log of logsForDay()"
-                    class="p-3 bg-gray-200/50 dark:bg-gray-800 rounded-md flex justify-between items-center">
-                    <p class="flex flex-col font-medium text-gray-800 dark:text-gray-100 text-wrap pr-2 space-y-1">{{
-                      log.routineName
-                      }}
-                      <span *ngIf="log.programId"
-                        class="my-2 text-xs font-semibold text-white bg-primary rounded-md p-1 flex-shrink w-fit"
-                        (click)="viewProgramDetails(log.programId)" style="cursor: pointer;">
-                        {{ 'todaysWorkout.program' | translate }} {{ getProgramNameById(log.programId) }}
-                        <ng-container *ngIf="log.weekName"> - {{ log.weekName }}</ng-container>
-                        <ng-container *ngIf="log.dayName"> - {{ log.dayName }}</ng-container>
-                      </span>
-                      <span *ngIf="log.startTime" class="flex items-center text-sm">
-                        <app-icon name="calendar-page" class=" mr-1"></app-icon>
-                        {{
-                        log.startTime | millisecondsDate}}</span>
-                      <span *ngIf="log.durationMinutes" class="flex items-center text-sm">
-                        <app-icon name="clock" class=" mr-1"></app-icon>
-                        {{
-                        log.durationMinutes || 0}} min</span>
-                    </p>
-                    <button appBumpClick (click)="viewLogDetails(log.id)"
-                      class="flex items-center text-md font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-2 py-1 rounded hover:bg-sky-300">
-                      <app-icon name="eye" class="w-6 h-6 mr-1">
-                      </app-icon>
-                      {{ 'todaysWorkout.details' | translate }}
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div *ngIf="logsForDay().length === 0" class="pt-2">
-                <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {{ 'todaysWorkout.noWorkoutsLogged' | translate }}</h3>
-              </div>
-              <div *ngIf="isToday(currentDate())">
-                <p *ngIf="allActivePrograms().length === 0 && subscriptionsService.canAccess(PremiumFeature.TRAINING_PROGRAMS)"
-                  class="text-m text-gray-500 dark:text-gray-400">
-                  {{ 'todaysWorkout.youCan' | translate }}
-                  <button appBumpClick (click)="managePrograms()"
-                    class="text-primary dark:text-primary-light hover:underline">{{ 'todaysWorkout.setActiveProgram' |
-                    translate }}</button>{{ 'todaysWorkout.or' | translate }}
-                    <button appBumpClick
-                    (click)="browseRoutines()" class="text-primary dark:text-primary-light hover:underline">{{
-                    'todaysWorkout.browseRoutines' |
-                    translate }}</button>
-                </p>
-                <div class="mt-2 pt-2 border-t dark:border-gray-700 text-left"
-                  *ngIf="availableRoutines$ | async as routines">
-                  <h4 *ngIf="!isTrainingProgramsAvailable()"
-                    class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">{{ 'todaysWorkout.pickOne' |
-                    translate }}</h4>
-                  <h4 *ngIf="isTrainingProgramsAvailable()"
-                    class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">{{ 'todaysWorkout.orPickOne' |
-                    translate }}</h4>
-                  <div class="max-h-40 overflow-y-auto space-y-2 py-2 custom-scrollbar rounded">
-                    <div (click)="viewRoutineDetails(routine.id)" *ngFor="let routine of routines"
-                      class="p-3 bg-gray-200/50 hover:bg-gray-300 dark:bg-gray-500 hover:dark:bg-gray-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex justify-between items-center transform hover:-translate-y-1">
-                      <div class="truncate">
-                        <span class="font-medium text-gray-800 dark:text-gray-100">{{ routine.name }}</span>
-                        <span class="block text-left text-xs text-gray-500 dark:text-gray-300 font-medium">{{
-                          'todaysWorkout.estimatedTime' | translate:{duration: getRoutineDuration(routine)} }}</span>
-                        <span *ngIf="findRoutineLog(routine.id) | async as routineLog"
-                          class="block text-left text-xs text-gray-500 dark:text-gray-400">
-                          <span *ngIf="routineLog.durationSeconds">{{ 'todaysWorkout.latest' | translate }}{{
-                            secondsToDateTime(routineLog.durationSeconds) |
-                            date:'HH:mm:ss' }}
-                          </span>
-                        </span>
-                      </div>
-                      <button appBumpClick (click)="startWorkout(routine.id, $event)" [disabled]="isAnimating()"
-                        class="flex items-center ml-2 text-m bg-primary text-white hover:bg-green-600 font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">
-                        <app-icon name="play"></app-icon>
-                        {{ 'todaysWorkout.start' | translate }}
-                      </button>
-                    </div>
-                    <p *ngIf="!routines || routines.length === 0" class="text-m text-gray-400 dark:text-gray-500">{{
-                      'todaysWorkout.noRoutinesAvailable' | translate }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </ng-template>
+        </div>
       </div>
     </div>
   </div>
-</div>
+
+  <!-- Tailwind h-0.5 utility: height of 2px -->
+  <style>
+    .h-0\.5 {
+      height: 2px;
+    }
+  </style>

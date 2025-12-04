@@ -13,7 +13,10 @@ export interface DialogField {
   placeholder?: string;
   options?: DialogOption[]; // Only for select/radio
   required?: boolean;
-  cssClass?: string; 
+  cssClass?: string;
+  attributes?: {
+    [key: string]: string | number | boolean;
+  };
 }
 
 export interface DialogConfig {

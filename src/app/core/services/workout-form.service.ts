@@ -48,13 +48,13 @@ export class WorkoutFormService {
             const isExerciseTargetSetParams = (obj: any): obj is ExerciseTargetSetParams => 'targetReps' in obj;
 
             if (forLogging) {
-                // Log mode: Use logged values from setData, falling back to target values if logged is null/undefined
+                // Log mode: Use logged values from setData, falling back to target values if logged is null/undefined (case of log created from routine template)
                 const loggedData = setData as LoggedSet;
-                repsValue = loggedData.repsLogged ?? null;
-                weightValue = loggedData.weightLogged ?? null;
-                durationValue = loggedData.durationLogged ?? null;
-                distanceValue = loggedData.distanceLogged ?? null;
-                restValue = loggedData.restLogged ?? null;
+                repsValue = loggedData.repsLogged ?? loggedData.targetReps ??null;
+                weightValue = loggedData.weightLogged ?? loggedData.targetWeight ?? null;
+                durationValue = loggedData.durationLogged ?? loggedData.targetDuration ?? null;
+                distanceValue = loggedData.distanceLogged ?? loggedData.targetDistance ?? null;
+                restValue = loggedData.restLogged ?? loggedData.targetRest ?? null;
                 plannedSetIdValue = loggedData.plannedSetId;
                 timestampValue = loggedData.timestamp;
             } else {

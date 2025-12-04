@@ -104,12 +104,32 @@
                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {{ input.label }}
                 </label>
-                <input #alertInput [type]="input.type || 'text'" [id]="input.id || ('alert-input-' + i)"
-                  [disabled]="input.attributes && input.attributes.disabled" [name]="input.name"
-                  [placeholder]="input.placeholder || ''" [(ngModel)]="inputValues[input.name]"
-                  [required]="input.required ? true : false" [min]="input.min" [max]="input.max"
-                  class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-m dark:bg-gray-800 dark:text-gray-200"
-                  (input)="input.type === 'number' && onNumberInput($event, input.name)">
+
+                <!-- Handle textNumber type specially -->
+                <ng-container *ngIf="input.type === 'textNumber'; else regularInput">
+                  <input type="text" [id]="input.id || ('alert-input-' + i)" [disabled]="input.attributes?.['disabled'] ?? false"
+                    [name]="input.name" [placeholder]="input.placeholder || ''" [(ngModel)]="inputValues[input.name]"
+                    [required]="input.required ? true : false" [attr.min]="input.min" [attr.max]="input.max"
+                    [attr.inputmode]="input.attributes?.['inputmode'] || 'decimal'"
+                    [attr.pattern]="input.attributes?.['pattern'] || '[0-9]*'"
+                    [attr.minlength]="input.attributes?.['minlength']"
+                    [attr.maxlength]="input.attributes?.['maxlength']" appNumbersOnly
+                    class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-m dark:bg-gray-800 dark:text-gray-200"
+                    (input)="onNumberInput($event, input.name)">
+                </ng-container>
+
+                <!-- Regular input for other types -->
+                <ng-template #regularInput>
+                  <input [type]="input.type || 'text'" [id]="input.id || ('alert-input-' + i)"
+                    [disabled]="input.attributes?.['disabled'] ?? false" [name]="input.name"
+                    [placeholder]="input.placeholder || ''" [(ngModel)]="inputValues[input.name]"
+                    [required]="input.required ? true : false" [attr.min]="input.min" [attr.max]="input.max"
+                    [attr.minlength]="input.attributes?.['minlength']"
+                    [attr.maxlength]="input.attributes?.['maxlength']" [attr.pattern]="input.attributes?.['pattern']"
+                    [attr.inputmode]="input.attributes?.['inputmode']"
+                    class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-m dark:bg-gray-800 dark:text-gray-200"
+                    (input)="input.type === 'number' && onNumberInput($event, input.name)">
+                </ng-template>
               </div>
 
             </ng-container>

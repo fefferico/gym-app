@@ -293,7 +293,9 @@
     }
   },
   "common": {
+    "blank": "Blank (Custom)",
     "loading": "Loading...",
+    "success": "Success",
     "save": "Save",
     "on": "On",
     "off": "Off",
@@ -303,6 +305,7 @@
     "info": "Info",
     "cancel": "Cancel",
     "cancelled": "Cancelled",
+    "delete": "Delete",
     "discard": "Discard",
     "undo": "UNDO",
     "edit": "Edit",
@@ -468,12 +471,12 @@
       "showingAllRoutines": "Showing all routines",
       "filterUpdate": "Filter Update",
       "routineNotFound": "Routine not found",
-      "routineDeleted": "Routine \"{{name}}\" deleted successfully.",
-      "routineCloned": "Routine \"{{name}}\" cloned successfully.",
-      "colorUpdated": "Color updated for \"{{name}}\"",
+      "routineDeleted": "Routine {{name}} deleted successfully.",
+      "routineCloned": "Routine {{name}} cloned successfully.",
+      "colorUpdated": "Color updated for {{name}}",
       "unhidden": "Removed {{name}} from hidden ones",
-      "addedToFavourites": "Routine \"{{name}}\" added to favourites",
-      "removedFromFavourites": "Routine \"{{name}}\" removed from favourites",
+      "addedToFavourites": "Routine {{name}} added to favourites",
+      "removedFromFavourites": "Routine {{name}} removed from favourites",
       "generationFailed": "Could not generate a workout with the selected criteria. Please try again.",
       "generationFailedTitle": "Generation Failed",
       "retryFailed": "Failed to generate a new workout. Please try adjusting your options.",
@@ -484,14 +487,14 @@
       "editRunningTitle": "Info",
       "editRunningMessage": "It's not possible to edit a running routine. Complete it or discard it before doing it.",
       "deleteTitle": "Delete Routine",
-      "deleteMessage": "Are you sure you want to delete the routine \"{{name}}\"?",
+      "deleteMessage": "Are you sure you want to delete the routine {{name}}?",
       "deleteWithLogs": "This will also delete {{count}} associated workout log(s).",
       "deleteWithPrograms": "This will also delete the entries in {{count}} associated program(s).",
       "deleteWithOneProgram": "This will also delete the entries in '{{name}}' associated program(s).",
       "cannotBeUndone": "This action cannot be undone.",
       "deleteButton": "Delete",
       "pausedWorkoutTitle": "Workout in Progress",
-      "pausedWorkoutMessage": "You have a paused workout (\"{{name}}\" from {{date}}). What would you like to do?",
+      "pausedWorkoutMessage": "You have a paused workout ({{name}} from {{date}}). What would you like to do?",
       "resumeButton": "Resume: {{name}}",
       "discardAndStart": "Discard Paused & Start New",
       "unhideTitle": "Unhide routine",
@@ -499,7 +502,7 @@
       "unmarkButton": "Unmark",
       "unmarkFavouriteTitle": "Unmark favourite routine",
       "unmarkFavouriteMessage": "Would you like to unmark {{name}} from favourites?",
-      "selectColorTitle": "Select a Color for \"{{name}}\"",
+      "selectColorTitle": "Select a Color for {{name}}",
       "clearColorButton": "Clear Color"
     },
     "wip": {
@@ -584,7 +587,7 @@
       "deleteLogTitle": "Delete Workout Log",
       "deleteLogMessage": "Are you sure you want to delete this workout log? This action cannot be undone",
       "deleteActivityTitle": "Delete Activity Log?",
-      "deleteActivityMessage": "Are you sure you want to delete the log for \"{{name}}\"? This action cannot be undone.",
+      "deleteActivityMessage": "Are you sure you want to delete the log for {{name}}? This action cannot be undone.",
       "deleteButton": "Delete",
       "pausedWorkoutTitle": "Pending Workout found",
       "pausedWorkoutMessage": "There's a pending workout: do you want to discard this paused workout session and log a new one? This action cannot be undone.",
@@ -675,9 +678,10 @@
       "statusUpdateFailed": "Failed to update program status",
       "finishFailed": "Failed to finish program",
       "deactivateFailed": "Failed to deactivate",
+      "activateFailed": "Failed to activate",
       "setActiveFailed": "Failed to set active program",
       "logFailed": "Cannot log session: No active program is being viewed.",
-      "cloneSuccess": "Program \"{{name}}\" cloned successfully.",
+      "cloneSuccess": "Program {{name}} cloned successfully.",
       "cloneFailed": "Failed to clone program"
     },
     "alerts": {
@@ -687,6 +691,8 @@
       "deactivating": "Deactivating program...",
       "settingActive": "Setting active program...",
       "programActiveTitle": "Program is currently active.",
+      "activateSuccess": "Program is now active.",
+      "deactivateSuccess": "Program is now inactive .",
       "programActiveMessage": "What would you like to do?",
       "deactivate": "Deactivate",
       "complete": "Complete",
@@ -921,8 +927,8 @@
       "emomRoundComplete": "EMOM Round {{number}} Complete!",
       "noSetsLoggedError": "No sets logged. Workout not saved.",
       "finishCancelled": "Finish workout cancelled.",
-      "newRoutineCreated": "New routine \"{{name}}\" created.",
-      "routineUpdated": "Routine \"{{name}}\" has been updated.",
+      "newRoutineCreated": "New routine {{name}} created.",
+      "routineUpdated": "Routine {{name}} has been updated.",
       "saveError": "Could not save: missing start time.",
       "noFieldsToRemove": "No fields can be removed from this set.",
       "fieldAdded": "{{field}} field added to the set.",
@@ -967,7 +973,7 @@
       "removeSetMessage": "Are you sure you want to remove the set from {{name}}?",
       "removeLastSetMessage": "This will also remove the exercise from the workout. Continue?",
       "removeSupersetTitle": "Remove Superset",
-      "removeSupersetMessage": "This will remove the entire \"{{name}}\" superset and all its logged data for this session. Are you sure?",
+      "removeSupersetMessage": "This will remove the entire {{name}} superset and all its logged data for this session. Are you sure?",
       "removeExerciseTitle": "Remove Exercise",
       "removeExerciseMessage": "Are you sure you want to remove {{name}}?",
       "removeExerciseLoggedMessage": "Are you sure you want to remove {{name}}? All logged data for this exercise in this session will be lost.",
@@ -1118,6 +1124,12 @@
     "addSelected": "Add selected"
   },
   "workoutBuilder": {
+    "history": {
+      "addedExercise": "Added exercise",
+      "removedExercise": "Removed exercise",
+      "createdSuperset": "Created Superset",
+      "editedRoutine": "Edited Routine"
+    },
     "drag": {
       "cannotDragSupersetMember": "Cannot drag individual exercises in a superset. Drag the first exercise to move the entire group.",
       "supersetMoved": "Superset group moved successfully",
@@ -1175,6 +1187,7 @@
       "custom": "Custom"
     },
     "routineBuilder": {
+      "advancedOptions": "Additional Details",
       "nameWizardMsg": "Enter a name for your new routine.",
       "goalWizardMsg": "Select the main goal for this routine",
       "nameLabel": "Routine Name",
@@ -1264,6 +1277,7 @@
       "supersetCreationCancelled": "Superset creation cancelled.",
       "setExerciseTargets": "Set Exercise Targets",
       "enterTargets": "Enter the target reps{{weight}} for \"{{exerciseName}}\".",
+      "enterTargetsAndWeight": " and weight",
       "emomCreated": "EMOM created for {{rounds}} rounds!",
       "supersetCreated": "Superset created with {{rounds}} rounds!"
     },
@@ -1276,6 +1290,7 @@
       "loggedNotesLabel": "Notes for this Logged Exercise",
       "remove": "Remove Exercise",
       "fillWithLast": "Fill with latest performance data",
+      "exerciseInfo": "Exercise Info",
       "makeEmom": "Make EMOM",
       "switch": "Switch exercise",
       "toggleNotes": "Toggle exercise notes",
@@ -1295,7 +1310,7 @@
       "metricRemoved": "{{metric}} removed from all sets.",
       "negativeNotAllowed": "Negative values are not allowed. Values have been set to zero.",
       "set": "Set",
-      "totalSets": "Total sets",
+      "totalSets": "Sets",
       "round": "Round",
       "header": "#",
       "type": "Type",
@@ -1386,7 +1401,7 @@
       "noPerformanceData": "No recent performance data found for this exercise.",
       "prefilledSuccess": "Sets pre-filled with your last performance data.",
       "prefilledError": "Could not load performance data.",
-      "colorUpdated": "Color updated for \"{{name}}\"",
+      "colorUpdated": "Color updated for {{name}}",
       "undoSuccessful": "Undo successful.",
       "redoSuccessful": "Redo successful."
     },
@@ -1403,7 +1418,7 @@
       "removeSetMessage": "Are you sure you want to remove the set from {{name}}?",
       "removeLastSetMessage": "This will also remove the exercise from the workout. Continue?",
       "removeSupersetTitle": "Remove Superset",
-      "removeSupersetMessage": "This will remove the entire \"{{name}}\" superset and all its logged data for this session. Are you sure?",
+      "removeSupersetMessage": "This will remove the entire {{name}} superset and all its logged data for this session. Are you sure?",
       "removeExerciseTitle": "Remove Exercise",
       "removeExerciseLoggedMessage": "Are you sure you want to remove {{name}}? All logged data for this exercise in this session will be lost.",
       "removeExerciseMessage": "Are you sure you want to remove {{name}}?",
@@ -1423,9 +1438,9 @@
       "deleteRoutineTitle": "Delete Routine",
       "deleteRoutineMessage": "Are you sure you want to delete this workout? This action cannot be undone",
       "delete": "Delete",
-      "cloneSuccess": "Routine \"{{name}}\" cloned successfully.",
+      "cloneSuccess": "Routine {{name}} cloned successfully.",
       "cloneFailed": "Failed to clone routine",
-      "selectColorTitle": "Select a Color for \"{{name}}\"",
+      "selectColorTitle": "Select a Color for {{name}}",
       "clearColor": "Clear Color",
       "selectGroupTypeTitle": "Select Group Type",
       "selectGroupTypeMessage": "How would you like to group these exercises?",
@@ -1482,9 +1497,13 @@
     "scrollBottom": "SCROLL TO BOTTOM",
     "add": "ADD",
     "add_exercise": "ADD EXERCISE",
+    "add_day": "ADD DAY",
+    "add_week": "ADD WEEK",
     "create": "CREATE",
     "save": "SAVE",
     "save_routine": "SAVE ROUTINE",
+    "save_program": "SAVE PROGRAM",
+    "save_changes": "SAVE CHANGES",
     "save_log": "SAVE LOG",
     "save_log_changes": "SAVE LOG CHANGES",
     "start": "START",
@@ -1646,11 +1665,17 @@
     }
   },
   "programBuilder": {
+    "program": "Program",
     "wizard": {
       "templateOrBlankTitle": "Choose a Template",
       "templateOrBlankMsg": "Would you like to start from a template or create a custom program?",
       "templateOrBlankLabel": "Routine Type",
       "templateCreated": "Template loaded! You can now customize your program."
+    },
+    "history": {
+      "active": "Active",
+      "completed": "Completed",
+      "cancelled": "Canceled"
     },
     "title": "Programs",
     "toggleFilters": "Toggle Filters",
@@ -1692,7 +1717,7 @@
       "addDay": "ADD DAY",
       "dayNamePlaceholder": "e.g., Push Day",
       "dayOfWeekLabel": "Day of Week",
-      "dayNameLabel": "Day",
+      "dayNameLabel": "Day name",
       "cycleDayLabel": "Cycle Day Number",
       "dayRequired": "Day is required.",
       "routineLabel": "Routine",
@@ -1720,7 +1745,9 @@
       "numWeeksLabel": "Number of Weeks",
       "numWeeksWizardMsg": "How many weeks should your program have?",
       "daysInWeekLabel": "Days in Week {{week}}",
-      "daysInWeekWizardMsg": "How many days should week {{week}} have?"
+      "daysInWeekWizardMsg": "How many days should week {{week}} have?",
+      "confirmRemoveTitle": "Remove Week",
+      "confirmRemoveMsg": "Are you sure you want to remove Week {{week}} and all its scheduled days?"
     },
     "actions": {
       "cancel": "CANCEL",
@@ -1729,7 +1756,7 @@
     },
     "modal": {
       "currentSelectedRoutine": "Current selected routine",
-      "selectingFor": "Selecting routine for",
+      "selectingFor": "You are selecting a routine for",
       "week": "Week",
       "day": "Day",
       "selectRoutineTitle": "Select a Routine",
@@ -1753,14 +1780,21 @@
       "close": "CLOSE"
     },
     "toasts": {
+      "creatingDuplicate": "Creating duplicate program...",
+      "duplicateCreated": "Program '{{name}}' created successfully",
+      "duplicateFailed": "Failed to create duplicate program",
+      "allDaysScheduled": "All days in the cycle have been scheduled.",
+      "customRoutinesSave": "{{count}} custom routine(s) saved.",
+      "customRoutineCreated": "Custom routine {{name}} created.",
       "validationError": "Validation Error",
       "linearNoWeeks": "Linear programs must have at least one week.",
       "linearEmptyWeeks": "Please add routines to every week or remove any empty weeks.",
       "cycledNoDays": "Please add at least one scheduled day to the program.",
       "formInvalid": "Please fill all required fields, including selecting a routine for each scheduled day.",
       "saveError": "Failed to save: {{error}}",
+      "savingProgram": "Saving program...",
       "saveErrorTitle": "Save Error",
-      "created": "Program \"{{name}}\" created.",
+      "created": "Program {{name}} created.",
       "createdTitle": "Program Created",
       "saved": "Program saved successfully",
       "saveSuccess": "Success",
@@ -1768,12 +1802,19 @@
       "deleteErrorTitle": "Deletion Error",
       "deleteUnexpectedError": "An unexpected error occurred while deleting the program",
       "completeFailed": "Failed to complete program",
+      "completeSuccess": "Program completed successfully",
       "deactivateFailed": "Failed to deactivate",
       "setActiveFailed": "Failed to set active program",
       "statusUpdateFailed": "Failed to update program status",
       "noHistory": "No history available for this program.",
+      "missingIds": "Missing program or history entry ID.",
+      "confirmHistoryRemoveTitle": "History Entry Removal",
+      "confirmHistoryRemoveMsg": "Are you sure you want to remove this history entry? This action cannot be undone.",
       "historyRemoved": "History entry removed.",
+      "historyRemoving": "Removing history entry...",
       "historyRemoveFailed": "Failed to remove history entry.",
+      "invalidFields": "Please ensure all fields are valid",
+      "updatuingHistory": "Updating history entry...",
       "historySaveFailed": "Failed to save history entry.",
       "weekAddAllDays": "All 7 days of this week have been scheduled.",
       "cycleAddAllDays": "All {{count}} days of the cycle have been scheduled.",
@@ -1784,6 +1825,13 @@
       "groupingCancelled": "Grouping cancelled."
     },
     "alerts": {
+      "criticalChangeTitle": "Critical Program Changes Detected",
+      "criticalChangeMessage": "You're about to modify critical program settings (type, schedule, weeks/days structure) while this program has logged workouts. This could cause data inconsistencies.\n\nWould you like to:\n• Create a new program with your changes (recommended)\n• Continue editing this program (proceed with caution)",
+      "criticalChangeCancel": "Cancel",
+      "criticalChangeCreate": "Create New Program",
+      "criticalChangeConfirm": "Continue Anyway",
+      "duplicateNameTitle": "Name Your New Program",
+      "duplicateNameMessage": "Enter a name for the duplicate of '{{name}}':",
       "finishTitle": "Finish Program",
       "finishMessage": "Are you sure you want to mark this program as completed?",
       "finishButton": "Finish Program",
@@ -1794,7 +1842,7 @@
       "deleteTitle": "Delete Program",
       "deleteMessage": "Are you sure you want to delete this workout? This action cannot be undone",
       "delete": "Delete",
-      "cloneSuccess": "Program \"{{name}}\" cloned successfully.",
+      "cloneSuccess": "Program {{name}} cloned successfully.",
       "cloneFailed": "Failed to clone program",
       "selectGroupTypeTitle": "Select Group Type",
       "selectGroupTypeMessage": "How would you like to group these exercises?",
@@ -1806,6 +1854,11 @@
       "setSupersetRoundsMessage": "How many rounds (sets) should this superset have?",
       "setExerciseTargetsTitle": "Set Exercise Targets",
       "setExerciseTargetsMessage": "Enter the target reps and weight for each set in the group."
+    },
+    "exercise": {
+      "set": "1 set",
+      "sets": "sets",
+      "of": "of"
     }
   },
   "measurementHistory": {
@@ -2053,7 +2106,7 @@
     },
     "alerts": {
       "deleteTitle": "Delete Activity Log?",
-      "deleteMessage": "Are you sure you want to delete this log for \"{{name}}\"? This cannot be undone.",
+      "deleteMessage": "Are you sure you want to delete this log for {{name}}? This cannot be undone.",
       "cancel": "Cancel",
       "deleteButton": "Delete"
     }
@@ -2216,17 +2269,17 @@
   },
   "personalGymService": {
     "addSuccessTitle": "Equipment Added",
-    "addSuccessMessage": "Added \"{{name}}\" to your gym!",
+    "addSuccessMessage": "Added {{name}} to your gym!",
     "updateSuccessTitle": "Equipment Updated",
-    "updateSuccessMessage": "Updated \"{{name}}\" successfully!",
+    "updateSuccessMessage": "Updated {{name}} successfully!",
     "updateFailedTitle": "Update Failed",
-    "updateFailedMessage": "Could not find \"{{name}}\" to update.",
+    "updateFailedMessage": "Could not find {{name}} to update.",
     "deleteFailedTitle": "Deletion Failed",
     "deleteFailedMessage": "Equipment not found.",
     "deleteConfirmTitle": "Delete Equipment",
-    "deleteConfirmMessage": "Are you sure you want to delete \"{{name}}\" from your gym? This cannot be undone.",
+    "deleteConfirmMessage": "Are you sure you want to delete {{name}} from your gym? This cannot be undone.",
     "deletedTitle": "Deleted",
-    "deletedMessage": "\"{{name}}\" was deleted.",
+    "deletedMessage": "{{name}} was deleted.",
     "importErrorTitle": "Import Error",
     "importFailed": "Import failed: Invalid personal gym data file.",
     "mergeSuccessTitle": "Personal Gym Merged",
@@ -2405,13 +2458,13 @@
     },
     "deleteConfirm": {
       "title": "Delete Program",
-      "message": "Are you sure you want to delete the program \"{{name}}\"? This action cannot be undone.",
+      "message": "Are you sure you want to delete the program {{name}}? This action cannot be undone.",
       "cancelButton": "Cancel",
       "deleteButton": "Delete Program"
     },
     "deleteSuccess": {
       "title": "Program Deleted",
-      "message": "Program \"{{name}}\" deleted."
+      "message": "Program {{name}} deleted."
     },
     "importError": {
       "title": "Import Error",
@@ -2428,10 +2481,10 @@
     },
     "toggle": {
       "notFound": "Program not found.",
-      "alreadyActive": "\"{{name}}\" is already active."
+      "alreadyActive": "{{name}} is already active."
     },
     "deactivate": {
-      "info": "Program \"{{name}}\" has been deactivated."
+      "info": "Program {{name}} has been deactivated."
     },
     "updateHistory": {
       "programNotFound": "Program not found.",
@@ -2576,9 +2629,9 @@
     },
     "delete": {
       "confirmTitle": "Delete Exercise",
-      "confirmMessage": "Are you sure you want to delete \"{{name}}\"? This will remove it from all routines and historical logs. This action cannot be undone.",
+      "confirmMessage": "Are you sure you want to delete {{name}}? This will remove it from all routines and historical logs. This action cannot be undone.",
       "successTitle": "Exercise Deleted",
-      "successMessage": "\"{{name}}\" was successfully deleted.",
+      "successMessage": "{{name}} was successfully deleted.",
       "errorTitle": "Deletion Failed",
       "errorMessage": "Could not delete the exercise: {{error}}"
     },
@@ -2795,9 +2848,9 @@
     "delete": {
       "notFound": "Exercise not found",
       "confirmTitle": "Delete Exercise",
-      "confirmMessage": "Are you sure you want to delete \"{{name}}\"? This will remove it from all routines and historical logs. This action cannot be undone.",
+      "confirmMessage": "Are you sure you want to delete {{name}}? This will remove it from all routines and historical logs. This action cannot be undone.",
       "deleting": "Deleting exercise...",
-      "success": "\"{{name}}\" was successfully deleted.",
+      "success": "{{name}} was successfully deleted.",
       "successTitle": "Deleted",
       "error": "Failed to delete exercise. It might be in use."
     }

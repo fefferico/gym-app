@@ -78,3 +78,7 @@
 .bounce {
   animation: bounce 0.6s;
 }
+
+body.modal-open {
+  overflow: hidden;
+}

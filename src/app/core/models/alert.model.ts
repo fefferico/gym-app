@@ -16,7 +16,7 @@ export interface AlertButton {
 }
 
 export interface AlertInput {
-  type?: 'text' | 'number' | 'email' | 'password' | 'search' | 'tel' | 'url' | 'date' | 'textarea' | 'checkbox' | 'radio' | 'select'; // Add more as needed
+  type?: 'textNumber' | 'text' | 'number' | 'email' | 'password' | 'search' | 'tel' | 'url' | 'date' | 'textarea' | 'checkbox' | 'radio' | 'select'; // Add more as needed
   name: string; // Will be the key in the returned data object
   placeholder?: string;
   value?: string | number | boolean | number[];
@@ -26,7 +26,17 @@ export interface AlertInput {
   max?: number | string; // For number/date types
   required?: boolean; // Basic required validation indicator
   // Add more attributes as needed: pattern, step, rows (for textarea), etc.
-  attributes?: any;
+attributes?: {
+    [key: string]: string | number | boolean | undefined;  // ADD undefined HERE
+    inputmode?: 'decimal' | 'numeric' | 'text' | 'tel' | 'search' | 'email' | 'url' | 'none';
+    pattern?: string;
+    minlength?: number;
+    maxlength?: number;
+    min?: number | string;
+    max?: number | string;
+    step?: number | string;
+    disabled?: boolean;
+  };
   autofocus?: boolean;
   options?: { label: string; value: string | number | boolean }[]; // For radio (and potentially select) types
   checked?: boolean;

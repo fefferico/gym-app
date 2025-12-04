@@ -4,11 +4,12 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DialogConfig, DialogOutput } from '../../../core/models/dialog.types';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { NumbersOnlyDirective } from '../../directives/onlyNumbers.directive';
 
 @Component({
   selector: 'app-dynamic-dialog',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, NumbersOnlyDirective],
   template: `
     <!-- 
       Main Container: 
@@ -62,20 +63,28 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
               }
 
               <!-- SWITCH INPUT TYPES -->
-              @switch (field.type) {
+                            @switch (field.type) {
                 
                 @case ('text') {
                   <input type="text" [id]="field.key" [formControlName]="field.key" 
-                         class="input-base" [placeholder]="field.placeholder || ''">
+                         class="input-base" [placeholder]="field.placeholder || ''"
+                         [attr.minlength]="field.attributes?.['minlength']"
+                         [attr.maxlength]="field.attributes?.['maxlength']"
+                         [attr.pattern]="field.attributes?.['pattern']">
                 }
                 
                 @case ('number') {
-                  <input type="number" [id]="field.key" [formControlName]="field.key" 
-                         class="input-base">
+                  <input type="text" [id]="field.key" [formControlName]="field.key" 
+                          inputmode="decimal" pattern="[0-9]*" numbersOnly 
+                         class="input-base"
+                         [attr.min]="field.attributes?.['min']"
+                         [attr.max]="field.attributes?.['max']"
+                         [attr.step]="field.attributes?.['step']">
                 }
                 
                 @case ('select') {
-                  <select [id]="field.key" [formControlName]="field.key" class="input-base">
+                  <select [id]="field.key" [formControlName]="field.key" class="input-base"
+                          [attr.multiple]="field.attributes?.['multiple']">
                     @for (opt of field.options; track opt.value) {
                       <option [value]="opt.value">{{ opt.label }}</option>
                     }
@@ -84,13 +93,18 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
                 
                 @case ('textarea') {
                   <textarea [id]="field.key" [formControlName]="field.key" rows="3" 
-                            class="input-base resize-y"></textarea>
+                            class="input-base resize-y"
+                            [attr.minlength]="field.attributes?.['minlength']"
+                            [attr.maxlength]="field.attributes?.['maxlength']"
+                            [attr.placeholder]="field.placeholder || ''">
+                  </textarea>
                 }
                 
                 @case ('checkbox') {
                   <div class="flex items-center h-full pt-1 space-x-3">
                     <input type="checkbox" [id]="field.key" [formControlName]="field.key" 
-                           class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600">
+                           class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                           [attr.disabled]="field.attributes?.['disabled']">
                     <label [for]="field.key" class="text-sm font-medium text-gray-700 dark:text-gray-200 cursor-pointer select-none">
                       {{ field.placeholder || field.label }}
                     </label>

@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
 import { TrainingProgram, ScheduledRoutineDay, TrainingProgramHistoryEntry, ProgramWeek } from '../../../core/models/training-program.model';
-import { ExerciseTargetSetParams, METRIC, RepsTarget, RepsTargetType, RestTarget, RestTargetType, Routine, WeightTarget, WeightTargetType, WorkoutExercise } from '../../../core/models/workout.model';
+import { ExerciseTargetSetParams, METRIC, Routine, WorkoutExercise } from '../../../core/models/workout.model';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { WorkoutService } from '../../../core/services/workout.service';
 import { SpinnerService } from '../../../core/services/spinner.service';
@@ -38,6 +38,8 @@ import { UnitsService } from '../../../core/services/units.service';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
 import { ShatterableDirective } from '../../../animations/shatterable.directive';
 import { EXERCISE_CATEGORY_TYPES } from '../../../core/models/exercise-category.model';
+import { NumbersOnlyDirective } from '../../../shared/directives/onlyNumbers.directive';
+import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
 
 interface DayOption {
     value: number;
@@ -55,7 +57,6 @@ interface ProgramGoal { value: Routine['goal'], label: string }
         RouterLink,
         TitleCasePipe,
         DragDropModule,
-        DayOfWeekPipe,
         FormsModule,
         ActionMenuComponent,
         PressDirective,
@@ -64,14 +65,18 @@ interface ProgramGoal { value: Routine['goal'], label: string }
         TranslateModule,
         ExerciseSelectionModalComponent,
         WorkoutBuilderComponent,
-        ShatterableDirective
+        ShatterableDirective,
+        NumbersOnlyDirective,
+        FabMenuComponent
     ],
+    providers: [DayOfWeekPipe],
     templateUrl: './training-program-builder.html',
     styleUrls: ['./training-program-builder.scss']
 })
 export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     @ViewChildren(ShatterableDirective) shatterables!: QueryList<ShatterableDirective>;
 
+    dayOfWeekPipe = inject(DayOfWeekPipe);
     metricEnum = METRIC;
     private fb = inject(FormBuilder);
     private router = inject(Router);
@@ -113,6 +118,10 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     modalSearchTerm = signal('');
     private targetScheduleIndexForRoutine: number | null = null; // To know which schedule day to update
     protected targetIndicesForRoutine: { weekIndex?: number, dayIndex: number } | null = null;
+
+
+    // Add this property to your component
+    routineModalDayContext: { weekIndex?: number, dayIndex: number } | null = null;
 
     // Day options for dropdown
     dayOfWeekOptions: DayOption[] = [
@@ -279,6 +288,8 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             endDate: [''],
             status: ['', Validators.required]
         });
+
+        this.refreshFabMenuItems();
     }
 
     private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
@@ -432,53 +443,60 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     private workoutLogsSubscription: Subscription | undefined;
 
 
-    ngOnInit(): void {
-        if (isPlatformBrowser(this.platformId)) { // Check if running in a browser
+        ngOnInit(): void {
+        if (isPlatformBrowser(this.platformId)) {
             window.scrollTo(0, 0);
         }
         this.loadAvailableRoutines();
         this.loadAvailableExercises();
         this.setupDayOptionsWatcher();
-
+    
         this.workoutLogsSubscription = this.trackingService.workoutLogs$.subscribe(logs => this.allWorkoutLogs.set(logs));
-
-        this.routeSub = this.route.data.pipe(
-            switchMap(data => {
-                const mode = data['mode'];
-                this.currentProgramId = this.route.snapshot.paramMap.get('programId');
-                this.submitted = false; // Reset submitted state when component initializes or route changes
-
-                this.isNewMode = mode === 'new';
-                this.isViewMode = mode === 'view' && !!this.currentProgramId;
-                this.isEditMode = mode === 'edit' && !!this.currentProgramId;
-
+    
+        this.routeSub = this.route.params.pipe(
+            tap(() => {
+                // Set mode from route.data
+                this.route.data.pipe(take(1)).subscribe(data => {
+                    const mode = data['mode'];
+                    this.isNewMode = mode === 'new';
+                    this.isViewMode = mode === 'view';
+                    this.isEditMode = mode === 'edit';
+                });
+            }),
+            switchMap(params => {
+                const modeId = params['programId'];
+                this.submitted = false;
+    
                 if (this.isNewMode) {
                     this.showCreationWizard();
-                } else if (this.currentProgramId) {
-                    return this.trainingProgramService.getProgramById(this.currentProgramId);
+                    return of(null);
+                } else if (modeId) {
+                    return this.trainingProgramService.getProgramById(modeId);
                 }
                 return of(null);
             }),
             tap(program => {
                 if (program) {
                     this.currentProgram.set(program);
+                    this.currentProgramId = program.id;
                     this.patchFormWithProgramData(program);
-                } else if (!this.isNewMode && this.currentProgramId) {
-                    this.toastService.error(`Program with ID ${this.currentProgramId} not found.`, 0, "Error");
-                    this.router.navigate(['/training-programs']);
+                    this.isCurrentProgramActive.set(program.isActive ?? false);
                 }
-                this.currentProgram.set(program);
                 this.updateFormEnabledState();
-                const isActive = program?.isActive ?? false;
-                this.isCurrentProgramActive.set(isActive);
+                this.refreshFabMenuItems();
             })
         ).subscribe();
-
-        // --- FIX 4: Update the signal on every value change ---
+    
+        // --- Reset form based on program type ---
+        this.programForm.get('programType')?.valueChanges.subscribe(type => {
+            this.handleProgramTypeChange(type);
+        });
+    
+        // --- Update cycle length signal ---
         this.programForm.get('cycleLength')?.valueChanges.subscribe(val => {
             const newCycleLength = parseInt(val, 10);
             this.cycleLengthSignal.set(isNaN(newCycleLength) ? null : newCycleLength);
-
+    
             if (!isNaN(newCycleLength) && newCycleLength > 0) {
                 this.scheduleFormArray.controls.forEach(control => {
                     const dayControl = (control as FormGroup).get('dayOfWeek');
@@ -487,11 +505,6 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                     }
                 });
             }
-        });
-
-        // --- NEW: Reset form based on program type ---
-        this.programForm.get('programType')?.valueChanges.subscribe(type => {
-            this.handleProgramTypeChange(type);
         });
     }
 
@@ -512,6 +525,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             isRepeatingControl?.setValue(false);
             isRepeatingControl?.disable();
         }
+        this.refreshFabMenuItems();
     }
 
 
@@ -669,7 +683,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
         let defaultDayName = '';
         if (isCustomCycle) {
-            defaultDayName = `Day ${dayOfWeek}`;
+            defaultDayName = `${this.translate.instant('programBuilder.schedule.dayNameLabel')} ${dayOfWeek + 1}`; // so that it's not "Day 0"
         } else {
             // This handles linear programs and weekly 'cycled' programs
             defaultDayName = this.dayOfWeekOptions.find(opt => opt.value === dayOfWeek)?.label || '';
@@ -705,9 +719,12 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 // If the custom name is different from the new default label, show a hint.
                 if (currentDayName !== expectedDayLabel) {
                     this.toastService.info(
-                        `Reminder: Day name is "${currentDayName}". You might want to update it to match the new selection of "${expectedDayLabel} or to give it a proper name".`,
+                        this.translate.instant('programBuilder.toasts.dayNameHint', {
+                            currentName: currentDayName,
+                            expectedName: expectedDayLabel
+                        }),
                         6000,
-                        'Check Day Name', false
+                        this.translate.instant('programBuilder.toasts.checkDayName'), false
                     );
                 }
             });
@@ -731,7 +748,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         if (programType === 'linear' && weekIndex !== undefined) {
             const weekSchedule = this.weeksFormArray.at(weekIndex).get('schedule') as FormArray;
             if (weekSchedule.length >= 7) {
-                this.toastService.info("All 7 days of this week have been scheduled.", 3000);
+                this.toastService.info(this.translate.instant("programBuilder.toasts.allDaysScheduled"), 3000);
                 return;
             }
             const usedDays = new Set(weekSchedule.controls.map(control => control.get('dayOfWeek')?.value));
@@ -748,7 +765,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         } else { // Cycled program logic
             if (isWeeklySchedule) {
                 if (this.scheduleFormArray.length >= 7) {
-                    this.toastService.info("All 7 days of the week have been scheduled.", 3000);
+                    this.toastService.info(this.translate.instant("programBuilder.toasts.allDaysScheduled"), 3000);
                     return;
                 }
                 const usedDays = new Set(this.scheduleFormArray.controls.map(control => control.get('dayOfWeek')?.value));
@@ -761,7 +778,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 this.scheduleFormArray.push(newDayGroup);
             } else { // N-Day Cycle
                 if (this.scheduleFormArray.length >= cycleLength) {
-                    this.toastService.info(`All ${cycleLength} days of the cycle have been scheduled.`, 3000);
+                    this.toastService.info(this.translate.instant('programBuilder.toasts.cycleAddAllDays', { count: cycleLength }), 3000);
                     return;
                 }
                 const usedDays = new Set(this.scheduleFormArray.controls.map(control => control.get('dayOfWeek')?.value));
@@ -882,11 +899,15 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         }
         this.modalSearchTerm.set('');
         this.isRoutineModalOpen.set(true);
+        // Prevent background scroll
+        document.body.classList.add('modal-open');
     }
 
     closeRoutineSelectionModal(): void {
         this.isRoutineModalOpen.set(false);
         this.targetScheduleIndexForRoutine = null;
+        // Re-enable background scroll
+        document.body.classList.remove('modal-open');
     }
 
     selectRoutineForDay(routine: Routine): void {
@@ -927,14 +948,27 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         this.submitted = true;
         if (this.isViewMode) return;
 
-        const formValue = this.programForm.getRawValue();
-        const programName = formValue.name;
+        const currentFormValue = this.programForm.getRawValue();
+        const programName = currentFormValue.name;
+        const originalProgram = this.currentProgram();
+
+        // --- NEW: Check for critical changes with logged workouts ---
+        if (
+            this.isEditMode &&
+            originalProgram &&
+            this.hasLoggedWorkoutsForCurrentIteration() &&
+            this.hasCriticalChanges(originalProgram)
+        ) {
+            const shouldContinue = await this.warnAboutCriticalChangesWithLogs(originalProgram, currentFormValue); if (!shouldContinue) {
+                return; // User cancelled or chose to create new program
+            }
+        }
 
         // --- NEW: Update custom routine names and references before persisting ---
         for (const [key, routine] of this.temporaryCustomRoutines.entries()) {
             // Only update if not already suffixed
-            if (!routine.name.includes('[Program:')) {
-                routine.name = `${routine.name} [Program: ${programName}]`;
+            if (!routine.name.includes(`[${this.translate.instant("programBuilder.program")}:`)) {
+                routine.name = `${routine.name} [${this.translate.instant("programBuilder.program")}: ${programName}]`;
             }
             // Update all references in schedule and weeks
             // Cycled
@@ -983,51 +1017,63 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         if (persistencePromises.length > 0) {
             try {
                 await Promise.all(persistencePromises);
-                this.toastService.success(`${persistencePromises.length} custom routine(s) saved.`, 2000, 'Success');
+                this.toastService.success(this.translate.instant("programBuilder.toasts.customRoutinesSave", { count: persistencePromises.length }),
+                    2000,
+                    this.translate.instant("programBuilder.toasts.success"));
             } catch (error) {
-                this.toastService.error('Failed to save custom routines.', 0, 'Save Error');
+                this.toastService.error(this.translate.instant("programBuilder.toasts.saveError"),
+                    0,
+                    this.translate.instant("programBuilder.toasts.validationError"));
                 return;
             }
         }
 
         // --- NEW: Custom structural validation ---
-        if (formValue.programType === 'linear') {
-            if (!formValue.weeks || formValue.weeks.length === 0) {
-                this.toastService.error("Linear programs must have at least one week.", 0, "Validation Error");
+        if (currentFormValue.programType === 'linear') {
+            if (!currentFormValue.weeks || currentFormValue.weeks.length === 0) {
+                this.toastService.error(this.translate.instant("programBuilder.toasts.linearNoWeeks"),
+                    0,
+                    this.translate.instant("programBuilder.toasts.validationError"));
                 return;
             }
-            const hasEmptyWeeks = formValue.weeks.some((week: any) => !week.schedule || week.schedule.length === 0);
+            const hasEmptyWeeks = currentFormValue.weeks.some((week: any) => !week.schedule || week.schedule.length === 0);
             if (hasEmptyWeeks) {
-                this.toastService.error("Please add routines to every week or remove any empty weeks.", 0, "Validation Error");
+                this.toastService.error(this.translate.instant("programBuilder.toasts.linearEmptyWeeks"),
+                    0,
+                    this.translate.instant("programBuilder.toasts.validationError"));
                 return; // Stop submission
             }
-        } else if (formValue.programType === 'cycled') {
-            if (!formValue.schedule || formValue.schedule.length === 0) {
-                this.toastService.error("Please add at least one scheduled day to the program.", 0, "Validation Error");
+        } else if (currentFormValue.programType === 'cycled') {
+            if (!currentFormValue.schedule || currentFormValue.schedule.length === 0) {
+                this.toastService.error(this.translate.instant("programBuilder.toasts.cycledNoDays"),
+                    0,
+                    this.translate.instant("programBuilder.toasts.validationError"));
                 return;
             }
         }
 
         if (this.programForm.invalid) {
             this.programForm.markAllAsTouched();
-            this.toastService.error("Please fill all required fields, including selecting a routine for each scheduled day.", 0, "Validation Error");
+            this.toastService.error(this.translate.instant("programBuilder.toasts.formInvalid"),
+                0,
+                this.translate.instant("programBuilder.toasts.validationError"));
             return;
         }
 
         const programId = this.currentProgramId || uuidv4();
         const programPayload: TrainingProgram = {
             id: programId,
-            name: formValue.name,
-            programType: formValue.programType,
+            name: currentFormValue.name,
+            programType: currentFormValue.programType,
             goals: this.selectedGoals(),
-            description: formValue.description,
-            programNotes: formValue.programNotes,
-            startDate: formValue.startDate || null,
-            iterationId: formValue.iterationId || null,
-            cycleLength: formValue.programType === 'cycled' ? (formValue.cycleLength || null) : null,
+            description: currentFormValue.description,
+            programNotes: currentFormValue.programNotes,
+            startDate: currentFormValue.startDate || null,
+            iterationId: currentFormValue.iterationId || null,
+            cycleLength: currentFormValue.programType === 'cycled' ? (currentFormValue.cycleLength || null) : null,
             // Set isRepeating based on program type
-            isRepeating: formValue.programType === 'linear' ? formValue.isRepeating : false,
-            schedule: formValue.schedule.map((s: ScheduledRoutineDay) => ({
+            isRepeating: currentFormValue.programType === 'linear' ? currentFormValue.isRepeating : false,
+            schedule: currentFormValue.schedule.map((s: ScheduledRoutineDay) => ({
                 id: s.id || uuidv4(),
                 dayOfWeek: Number(s.dayOfWeek),
                 dayName: s.dayName || '',
@@ -1037,10 +1083,10 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 notes: s.notes,
                 timeOfDay: s.timeOfDay,
                 isUnscheduled: s.isUnscheduled || false,
-                iterationId: formValue.iterationId || null
+                iterationId: currentFormValue.iterationId || null
             } as ScheduledRoutineDay)),
-            weeks: formValue.programType === 'linear'
-                ? formValue.weeks.map((w: any, index: number) => ({
+            weeks: currentFormValue.programType === 'linear'
+                ? currentFormValue.weeks.map((w: any, index: number) => ({
                     ...w,
                     schedule: w.schedule.map((d: ScheduledRoutineDay) => ({
                         id: d.id || uuidv4(),
@@ -1053,7 +1099,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                         notes: d.notes,
                         timeOfDay: d.timeOfDay,
                         isUnscheduled: d.isUnscheduled || false,
-                        iterationId: formValue.iterationId || null
+                        iterationId: currentFormValue.iterationId || null
                     } as ScheduledRoutineDay))
                 }))
                 : [],
@@ -1061,25 +1107,32 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         };
 
         try {
-            this.spinnerService.show("Saving program...");
+            this.spinnerService.show(this.translate.instant('programBuilder.toasts.savingProgram'));
             if (this.isNewMode) {
                 const newProgram = await this.trainingProgramService.addProgram(programPayload as Omit<TrainingProgram, 'id' | 'isActive' | 'schedule'> & { schedule: Omit<ScheduledRoutineDay, 'id'>[] });
                 this.isNewMode = false;
                 this.isEditMode = true;
                 this.currentProgramId = newProgram.id;
-                this.toastService.success(`Program "${newProgram.name}" created.`, 3000, "Program Created");
+                this.toastService.success(this.translate.instant('programBuilder.toasts.created', { name: newProgram.name }), 3000,
+                    this.translate.instant('programBuilder.toasts.createdTitle'));
                 this.currentProgram.set(newProgram);
                 this.router.navigate([`/training-programs/edit/${this.currentProgram()?.id}`]);
             } else if (this.isEditMode && this.currentProgramId) {
                 const existingProgram = await firstValueFrom(this.trainingProgramService.getProgramById(this.currentProgramId).pipe(take(1)));
                 programPayload.isActive = existingProgram?.isActive ?? false;
                 await this.trainingProgramService.updateProgram(programPayload);
-                this.toastService.success("Program saved successfully", 0, "Success", false);
+                this.toastService.success(
+                    this.translate.instant('programBuilder.toasts.saved'),
+                    0,
+                    this.translate.instant('programBuilder.toasts.saveSuccess'),
+                    false);
                 this.currentProgram.set(existingProgram);
             }
         } catch (error) {
             console.error("Error saving program:", error);
-            this.toastService.error("Failed to save program", 0, "Save Error");
+            this.toastService.error(this.translate.instant('programBuilder.toasts.saveError', { error: error }),
+                0,
+                this.translate.instant('programBuilder.toasts.saveErrorTitle'));
         } finally {
             this.spinnerService.hide();
         }
@@ -1092,12 +1145,12 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         }
         try {
             this.spinnerService.show(this.translate.instant('programBuilder.alerts.deleting'));
-            await this.trainingProgramService.deleteProgram(this.currentProgramId);
+            const result = await this.trainingProgramService.deleteProgram(this.currentProgramId);
 
-            if (
-                this.router.url.includes(`/training-programs/new`) ||
-                this.router.url.includes(`/training-programs/edit/${this.currentProgramId}`) ||
-                this.router.url.includes(`/training-programs/view/${this.currentProgramId}`)) {
+            if (result &&
+                (this.router.url.includes(`/training-programs/new`) ||
+                    this.router.url.includes(`/training-programs/edit/${this.currentProgramId}`) ||
+                    this.router.url.includes(`/training-programs/view/${this.currentProgramId}`))) {
                 this.router.navigate(['/training-programs']);
             }
         } catch (error) {
@@ -1134,37 +1187,37 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         try {
 
             const confirm = await this.alertService.showConfirmationDialog(
-                'Finish Program',
-                'Are you sure you want to mark this program as completed?',
+                this.translate.instant('programBuilder.alerts.finishTitle'),
+                this.translate.instant('programBuilder.alerts.finishMessage'),
                 [
-                    { text: 'Cancel', role: 'cancel', cssClass: 'bg-gray-400 hover:bg-gray-600', icon: 'cancel' },
-                    { text: 'Finish Program', role: 'confirm', cssClass: 'bg-primary hover:bg-primary-dark', icon: 'done' }
+                    { text: this.translate.instant('cancel'), role: 'cancel', cssClass: 'bg-gray-400 hover:bg-gray-600', icon: 'cancel' },
+                    { text: this.translate.instant('programBuilder.alerts.finishButton'), role: 'confirm', cssClass: 'bg-primary hover:bg-primary-dark', icon: 'done' }
                 ]
             );
             if (!confirm || confirm.role !== 'confirm') return;
 
-            this.spinnerService.show("Completing program...");
+            this.spinnerService.show(this.translate.instant('programBuilder.alerts.completing'));
             await this.trainingProgramService.toggleProgramActivation(this.currentProgramId, 'completed');
         } catch (error) {
-            this.toastService.error("Failed to complete program", 0, "Error");
+            this.toastService.error(this.translate.instant('programBuilder.toasts.completeFailed'), 0, this.translate.instant('common.error'));
         } finally {
             this.spinnerService.hide();
         }
         return;
     }
 
-    async toggleActiveProgram(): Promise<void> {
+    async toggleProgramStatus(): Promise<void> {
         if (!this.currentProgramId) {
             return;
         }
         if (this.isCurrentProgramActive()) {
             const choice = await this.alertService.showConfirmationDialog(
-                "Program is currently active.",
-                "What would you like to do?",
+                this.translate.instant('programBuilder.alerts.activeTitle'),
+                this.translate.instant('programBuilder.alerts.activeMessage'),
                 [
-                    { text: "Deactivate", role: "deactivate", data: "deactivate", icon: 'deactivate' },
-                    { text: "Complete", role: "complete", data: "complete", icon: 'goal', cssClass: 'bg-green-500 hover:bg-green-600' },
-                    { text: "Cancel", role: "cancel", data: "cancel", icon: 'cancel' },
+                    { text: this.translate.instant('trainingPrograms.alerts.deactivate'), role: "deactivate", data: "deactivate", icon: 'deactivate' },
+                    { text: this.translate.instant('trainingPrograms.alerts.complete'), role: "complete", data: "complete", icon: 'goal', cssClass: 'bg-green-500 hover:bg-green-600' },
+                    { text: this.translate.instant('common.cancel'), role: "cancel", data: "cancel", icon: 'cancel' },
                 ]
             );
 
@@ -1175,37 +1228,37 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
             if (choice.data === "complete") {
                 try {
-                    this.spinnerService.show("Completing program...");
+                    this.spinnerService.show(this.translate.instant('trainingPrograms.alerts.completing'));
                     await this.trainingProgramService.toggleProgramActivation(this.currentProgramId, 'completed');
-                    this.toastService.success(`Program is now completed`);
+                    this.toastService.success(this.translate.instant('programBuilder.toasts.completeSuccess'));
                 } catch (error) {
-                    this.toastService.error("Failed to complete program", 0, "Error");
+                    this.toastService.error(this.translate.instant('programBuilder.toasts.completeFailed'), 0, this.translate.instant('common.error'));
                 } finally {
                     this.spinnerService.hide();
                 }
                 return;
             } else {
                 try {
-                    this.spinnerService.show("Deactivating program...");
+                    this.spinnerService.show(this.translate.instant('trainingPrograms.alerts.deactivating'));
                     await this.trainingProgramService.deactivateProgram(this.currentProgramId, 'cancelled');
-                    this.toastService.success(`Program is now deactivated`);
-                } catch (error) { this.toastService.error("Failed to deactivate", 0, "Error"); }
+                    this.toastService.success(this.translate.instant('trainingPrograms.alerts.deactivateSuccess'));
+                } catch (error) { this.toastService.error(this.translate.instant('trainingPrograms.toasts.deactivateFailed'), 0, this.translate.instant('common.error')); }
                 finally { this.spinnerService.hide(); }
             }
             return;
         }
         try {
-            this.spinnerService.show("Setting active program...");
+            this.spinnerService.show(this.translate.instant('trainingPrograms.alerts.settingActive'));
             await this.trainingProgramService.toggleProgramActivation(this.currentProgramId, 'active');
-            this.toastService.success(`Program is now active`);
-        } catch (error) { this.toastService.error("Failed to set active program", 0, "Error"); }
+            this.toastService.success(this.translate.instant('trainingPrograms.alerts.activateSuccess'));
+        } catch (error) { this.toastService.error(this.translate.instant('trainingPrograms.toasts.activateFailed'), 0, this.translate.instant('common.error')); }
         finally { this.spinnerService.hide(); }
     }
 
     toggleProgramHistory(): void {
         const program = this.currentProgram() !== null && this.currentProgram() !== undefined ? this.currentProgram() : null;
         if (!program || !program.history || (program && program.history && program.history.length === 0)) {
-            this.toastService.info("No history available for this program.", 3000);
+            this.toastService.info(this.translate.instant('programBuilder.toasts.noHistory'), 3000);
             return;
         }
         this.isProgramHistoryModalOpen.set(true);
@@ -1326,8 +1379,8 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         if (!programId) return;
 
         switch (event.actionKey) {
-            case 'activate': this.toggleActiveProgram(); break;
-            case 'deactivate': this.toggleActiveProgram(); break;
+            case 'activate': this.toggleProgramStatus(); break;
+            case 'deactivate': this.toggleProgramStatus(); break;
             case 'finish': this.completeProgram(); break;
             case 'history': this.toggleProgramHistory(); break;
             case 'edit': this.enableEditModeFromView(); break;
@@ -1356,22 +1409,52 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
     async removeProgramHistoryEntry(historyId: string): Promise<void> {
         if (!this.currentProgramId || !historyId) {
-            this.toastService.error("Missing program or history entry ID.", 0, "Error");
+            this.toastService.error(this.translate.instant('programBuilder.toasts.missingIds'), 0, this.translate.instant('common.error'));
             return;
         }
+
+        const confirm = await this.alertService.showConfirmationDialog(
+            this.translate.instant('programBuilder.toasts.confirmHistoryRemoveTitle'),
+            this.translate.instant('programBuilder.toasts.confirmHistoryRemoveMsg'),
+            [
+                { text: this.translate.instant('common.cancel'), role: 'cancel', cssClass: 'bg-gray-400 hover:bg-gray-600', icon: 'cancel' },
+                { text: this.translate.instant('common.delete'), role: 'confirm', cssClass: 'bg-red-600 hover:bg-red-700', icon: 'trash' }
+            ]
+        );
+        if (!confirm || confirm.role !== 'confirm') return;
+
         try {
-            this.spinnerService.show("Removing history entry...");
+            this.spinnerService.show(this.translate.instant('programBuilder.toasts.historyRemoving'));
             await this.trainingProgramService.removeProgramHistoryEntry(this.currentProgramId, historyId);
-            this.toastService.success("History entry removed.", 0, "Success");
+            this.toastService.success(this.translate.instant('programBuilder.toasts.historyRemoved'), 0, this.translate.instant('common.success'));
             const updatedProgram = await firstValueFrom(this.trainingProgramService.getProgramById(this.currentProgramId).pipe(take(1)));
             this.currentProgram.set(updatedProgram);
             if (updatedProgram) {
                 this.patchFormWithProgramData(updatedProgram);
             }
         } catch (error) {
-            this.toastService.error("Failed to remove history entry.", 0, "Error");
+            this.toastService.error(this.translate.instant('programBuilder.toasts.historyRemoveFailed'), 0, this.translate.instant('common.error'));
         } finally {
             this.spinnerService.hide();
+            this.postHistoryUpdateChecks();
+        }
+    }
+
+    postHistoryUpdateChecks(): void {
+        this.isCurrentProgramActive.set(this.currentProgram()?.isActive ?? false);
+        this.refreshFabMenuItems();
+        if (this.currentProgram()?.isActive) {
+            if (this.currentProgram()?.iterationId) {
+                this.programForm.patchValue({
+                    iterationId: this.currentProgram()?.iterationId ?? null,
+                }, { emitEvent: false });
+            }
+            if (this.currentProgram()?.startDate) {
+                this.programForm.patchValue({
+                    startDate: this.currentProgram()?.startDate ?? null,
+                }, { emitEvent: false });
+            }
+            this.programForm.updateValueAndValidity();
         }
     }
 
@@ -1391,7 +1474,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
     async saveHistoryEntry(): Promise<void> {
         if (this.historyEditForm.invalid) {
-            this.toastService.error("Please ensure all fields are valid.", 0, "Validation Error");
+            this.toastService.error(this.translate.instant('programBuilder.toasts.invalidFields'), 0, this.translate.instant('common.validationError'));
             return;
         }
         if (!this.currentProgramId) return;
@@ -1405,7 +1488,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         };
 
         try {
-            this.spinnerService.show("Updating history...");
+            this.spinnerService.show(this.translate.instant('programBuilder.toasts.updatingHistory'));
             await this.trainingProgramService.updateProgramHistory(this.currentProgramId, updatedEntry);
 
             const updatedProgram = await firstValueFrom(this.trainingProgramService.getProgramById(this.currentProgramId).pipe(take(1)));
@@ -1413,9 +1496,10 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
             this.editingHistoryEntryId.set(null);
         } catch (error) {
-            this.toastService.error("Failed to save history entry.", 0, "Save Error");
+            this.toastService.error(this.translate.instant('programBuilder.toasts.historySaveFailed'), 0, this.translate.instant('common.error'));
         } finally {
             this.spinnerService.hide();
+            this.postHistoryUpdateChecks();
         }
     }
 
@@ -1591,7 +1675,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             this.customRoutines.push(routine);
         }
 
-        this.toastService.success(`Custom routine "${routine.name}" created!`, 3000, 'Success');
+        this.toastService.success(this.translate.instant('programBuilder.toasts.customRoutineCreated', { name: routine.name }), 3000, this.translate.instant('common.success'));
         this.closeCustomWorkoutModal();
     }
 
@@ -1914,7 +1998,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                     label: this.translate.instant('programBuilder.wizard.templateOrBlankLabel'),
                     value: 'blank',
                     options: [
-                        { label: 'Blank (Custom)', value: 'blank' },
+                        { label: this.translate.instant('common.blank'), value: 'blank' },
                         { label: '3x3', value: '3x3' },
                         { label: '5x5', value: '5x5' },
                         { label: 'Push/Pull/Legs', value: 'ppl' },
@@ -2061,9 +2145,6 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
                 if (selectedDays.length === 0) return; // Require at least one day
                 daysPerWeek.push(selectedDays);
-
-
-
             }
         }
 
@@ -2104,7 +2185,6 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         // Use the shared service method
         const routines = this.workoutService.generateRoutineFromTemplate(template, this.availableExercises);
 
-
         // Patch the form
         this.programForm.patchValue({
             name: this.getTemplateProgramName(template),
@@ -2112,31 +2192,49 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             cycleLength: null
         });
 
-        // For a training program, assign routines to days as usual
-        const week = this.createWeekGroup({ weekNumber: 1 });
-        const schedule = week.get('schedule') as FormArray;
+        // For 3x3 and 5x5, create two weeks with alternating patterns
+        if (template === '3x3' || template === '5x5') {
+            const daysPattern = [1, 3, 5]; // Mon, Wed, Fri
 
-        // Example: assign routines to days (adjust as needed for your template logic)
-        if (template === 'ppl') {
-            // Push, Pull, Legs: Mon, Wed, Fri
-            [1, 3, 5].forEach((dayOfWeek, i) => {
-                this.assignRoutineToDay(schedule, routines, dayOfWeek, i, template);
+            // Week 1: A-B-A pattern
+            const week1 = this.createWeekGroup({ weekNumber: 1, name: `${this.getTemplateProgramName(template)} - ${this.translate.instant('programBuilder.weeks.weekLabel')} 1` });
+            const schedule1 = week1.get('schedule') as FormArray;
+            [0, 1, 0].forEach((routineIndex, dayIdx) => {
+                this.assignRoutineToDay(schedule1, routines, daysPattern[dayIdx], routineIndex, template, true, ['A', 'B'][routineIndex]);
             });
-        } else if (template === '531') {
-            // 5/3/1: 4 days/week
-            [1, 3, 5, 0].forEach((dayOfWeek, i) => {
-                this.assignRoutineToDay(schedule, routines, dayOfWeek, i, template);
+            this.weeksFormArray.push(week1);
 
+            // Week 2: B-A-B pattern
+            const week2 = this.createWeekGroup({ weekNumber: 2, name: `${this.getTemplateProgramName(template)} - ${this.translate.instant('programBuilder.weeks.weekLabel')} 2` });
+            const schedule2 = week2.get('schedule') as FormArray;
+            [1, 0, 1].forEach((routineIndex, dayIdx) => {
+                this.assignRoutineToDay(schedule2, routines, daysPattern[dayIdx], routineIndex, template, true, ['A', 'B'][routineIndex]);
             });
+            this.weeksFormArray.push(week2);
         } else {
-            // Default: assign each routine to a day (Mon, Wed, Fri)
-            [1, 3, 5].forEach((dayOfWeek, i) => {
-                this.assignRoutineToDay(schedule, routines, dayOfWeek, i, template);
+            // For other templates (PPL, 5/3/1), use original logic
+            const week = this.createWeekGroup({ weekNumber: 1 });
+            const schedule = week.get('schedule') as FormArray;
 
-            });
+            if (template === 'ppl') {
+                // Push, Pull, Legs: Mon, Wed, Fri
+                [1, 3, 5].forEach((dayOfWeek, i) => {
+                    this.assignRoutineToDay(schedule, routines, dayOfWeek, i, template);
+                });
+            } else if (template === '531') {
+                // 5/3/1: 4 days/week
+                [1, 3, 5, 0].forEach((dayOfWeek, i) => {
+                    this.assignRoutineToDay(schedule, routines, dayOfWeek, i, template);
+                });
+            } else {
+                // Default: assign each routine to a day (Mon, Wed, Fri)
+                [1, 3, 5].forEach((dayOfWeek, i) => {
+                    this.assignRoutineToDay(schedule, routines, dayOfWeek, i, template);
+                });
+            }
+
+            this.weeksFormArray.push(week);
         }
-
-        this.weeksFormArray.push(week);
 
         setTimeout(() => this.scrollToWeek(0), 200);
         this.toastService.success(this.translate.instant('programBuilder.wizard.templateCreated'), 3000);
@@ -2181,33 +2279,47 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
  * Assigns a routine to a day in the schedule FormArray.
  * If the routine is missing, logs a warning and optionally shows a toast.
  */
+    /**
+ * Assigns a routine to a day in the schedule FormArray.
+ * If the routine is missing, logs a warning and optionally shows a toast.
+ */
     private assignRoutineToDay(
         schedule: FormArray,
         routines: Routine[],
         dayOfWeek: number,
         routineIndex: number,
-        template: string
+        template: string,
+        isAlternatingTemplate: boolean = false,
+        dayLabel: string = ''
     ): void {
         const routine = routines[routineIndex % routines.length];
         if (!routine) {
             const msg = `No routine found for index ${routineIndex} in template ${template}`;
             console.warn(msg);
             this.toastService.warning(msg, 4000, 'Template Warning');
-            // Optionally, you could assign a placeholder routine or skip
             return;
         }
+
         const dayGroup = this.createScheduledDayGroup({ dayOfWeek });
-        // use the weekDay name from dayOfWeekOptions instead of the number
         const dayName = this.dayOfWeekOptions.find(option => option.value === dayOfWeek)?.label || '';
-        const routineName = routine.name + ' ' + this.translate.instant('trainingPrograms.calendar.day') + ' ' + (dayName);
+
+        // For alternating templates (3x3, 5x5), add the day label (A, B, C, etc.)
+        let routineName: string;
+        if (isAlternatingTemplate && dayLabel) {
+            routineName = `${this.getTemplateProgramName(template)} ${this.translate.instant('trainingPrograms.calendar.day')} ${dayLabel}`;
+        } else {
+            routineName = routine.name + ' ' + this.translate.instant('trainingPrograms.calendar.day') + ' ' + (dayName);
+        }
+
         dayGroup.patchValue({
             routineId: routine.id,
             routineName: routineName,
             dayName: routineName
         });
         schedule.push(dayGroup);
+
         // Add to temporaryCustomRoutines for editing/persistence
-        const cacheKey = `0-${routineIndex}`;
+        const cacheKey = `${this.weeksFormArray.length}-${routineIndex}`;
         this.temporaryCustomRoutines.set(cacheKey, routines[routineIndex % routines.length]);
     }
 
@@ -2226,8 +2338,407 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         return null;
     }
 
-    // Add this property to your component
-    routineModalDayContext: { weekIndex?: number, dayIndex: number } | null = null;
+    /**
+ * Analyzes sets in an exercise and returns uniform target values if all sets are identical.
+ * This prevents repetition of the same info across all sets in the display.
+ * Inspired by getUniformSetValues from workout-builder.
+ * 
+ * @param exercise The exercise object with sets array
+ * @returns An object with uniform metrics (reps, weight, duration, distance, rest) or null if no uniformity
+ */
+    getUniformExerciseSetValues(exercise: WorkoutExercise): {
+        reps?: string;
+        weight?: string;
+        duration?: string;
+        distance?: string;
+        rest?: string
+    } | null {
+        if (!exercise?.sets || exercise.sets.length === 0) {
+            return null;
+        }
+
+        const metrics = ['targetReps', 'targetWeight', 'targetDuration', 'targetDistance', 'targetRest'] as const;
+        const result: { [key: string]: string } = {};
+
+        // Get the first set as reference
+        const firstSet = exercise.sets[0];
+
+        // For each metric, check if all sets have the same value
+        for (const metric of metrics) {
+            const firstValue = (firstSet as any)[metric];
+
+            // Check if first set has this metric
+            if (!this.targetExists(firstValue)) {
+                continue;
+            }
+
+            // Compare with all other sets
+            let isUniform = true;
+            for (let i = 1; i < exercise.sets.length; i++) {
+                const currentValue = (exercise.sets[i] as any)[metric];
+
+                // Deep compare: convert to string for consistency
+                const firstValueStr = JSON.stringify(firstValue);
+                const currentValueStr = JSON.stringify(currentValue);
+
+                if (firstValueStr !== currentValueStr) {
+                    isUniform = false;
+                    break;
+                }
+            }
+
+            // If uniform, format and add to result
+            // If uniform, format and add to result
+            if (isUniform) {
+                if (metric === 'targetReps') {
+                    const value = this.workoutUtilService.repsTargetAsString(firstValue);
+                    if (value) result['reps'] = value;
+                } else if (metric === 'targetWeight') {
+                    const value = this.workoutUtilService.weightTargetAsString(firstValue);
+                    if (value) result['weight'] = value;
+                } else if (metric === 'targetDuration') {
+                    const value = this.workoutUtilService.durationTargetAsString(firstValue);
+                    if (value) result['duration'] = value;
+                } else if (metric === 'targetDistance') {
+                    const value = this.workoutUtilService.distanceTargetAsString(firstValue);
+                    if (value) result['distance'] = value;
+                } else if (metric === 'targetRest') {
+                    const value = this.workoutUtilService.restTargetAsString(firstValue);
+                    if (value) result['rest'] = value;
+                }
+            }
+        }
+
+        return Object.keys(result).length > 0 ? result : null;
+    }
+
+    /**
+     * Gets the set count suffix for display (e.g., "3 sets of")
+     * @param exercise The exercise with sets
+     * @returns Formatted string like "3 sets of" or "5 rounds of"
+     */
+    getExerciseSetCountDisplay(exercise: WorkoutExercise): string {
+        if (!exercise?.sets) return '';
+        const count = exercise.sets.length;
+        return count === 1 ? this.translate.instant('programBuilder.exercise.set') : `${count} ${this.translate.instant('programBuilder.exercise.sets')}`;
+    }
+
+
+
+
+    fabMenuItems: FabAction[] = [];
+    private refreshFabMenuItems(): void {
+        const isSave = this.isNewMode ? true : false;
+
+        const programType = this.getProgramType();
+        const addElement = {
+            label: programType === 'linear' ? 'fab.add_week' : 'fab.add_day',
+            actionKey: programType === 'linear' ? 'add_week' : 'add_day',
+            iconName: 'plus-circle',
+            cssClass: programType === 'linear' ? 'bg-green-500 focus:ring-green-400' : 'bg-blue-500 focus:ring-blue-400',
+            isPremium: false
+        }
+
+        if (this.isEditMode || this.isNewMode) {
+            this.fabMenuItems = [addElement,
+                {
+                    label: this.isNewMode ? 'programBuilder.actions.createProgram' : 'programBuilder.actions.saveChanges',
+                    actionKey: 'save_program',
+                    iconName: 'save',
+                    cssClass: 'bg-primary focus:ring-primary-light',
+                    isPremium: false
+                }
+            ];
+
+            // RESET BY WIZARD TEMPLATE BTN
+            this.fabMenuItems.unshift({
+                label: 'workoutBuilder.buttons.resetTemplateButton',
+                actionKey: 'template_wizard',
+                iconName: 'restore',
+                cssClass: 'bg-amber-500 focus:ring-amber-400',
+            });
+        } else {
+            this.fabMenuItems = [
+                {
+                    label: 'fab.edit',
+                    actionKey: 'edit',
+                    iconName: 'edit',
+                    cssClass: 'bg-primary focus:ring-primary-light',
+                    isPremium: false
+                }
+            ];
+            // ACTIVATE PROGRAM BTN
+            if (!this.isCurrentProgramActive()) {
+                this.fabMenuItems.unshift({
+                    label: 'trainingPrograms.actions.activate',
+                    actionKey: 'activate',
+                    iconName: 'activate',
+                    cssClass: 'bg-emerald-500 focus:ring-emerald-400',
+                });
+            }
+            // DEACTIVATE PROGRAM BTN
+            if (this.isCurrentProgramActive()) {
+                this.fabMenuItems.unshift({
+                    label: 'trainingPrograms.actions.deactivate',
+                    actionKey: 'deactivate',
+                    iconName: 'deactivate',
+                    cssClass: 'bg-emerald-500 focus:ring-emerald-400',
+                });
+            }
+        }
+        // DELETE PROGRAM BTN
+        this.fabMenuItems.unshift({
+            label: 'trainingPrograms.actions.delete',
+            actionKey: 'delete',
+            iconName: 'trash',
+            cssClass: 'bg-red-600 focus:ring-red-500',
+        });
+        // PROGRAM HISTORY BTN
+        this.fabMenuItems.unshift({
+            label: 'trainingPrograms.actions.history',
+            actionKey: 'history',
+            iconName: 'clock',
+            cssClass: 'bg-gray-700 focus:ring-gray-600',
+        });
+    }
+
+    onFabAction(actionKey: string): void {
+        switch (actionKey) {
+            case 'add_day':
+                this.addScheduledDay();
+                break;
+            case 'add_week':
+                this.addWeek();
+                break;
+            case 'save_program':
+                this.onSubmit();
+                break;
+            case 'template_wizard':
+                this.showCreationWizard();
+                break;
+            case 'edit':
+                this.enableEditModeFromView();
+                break;
+            case 'activate':
+                this.toggleProgramStatus();
+                break;
+            case 'deactivate':
+                this.toggleProgramStatus();
+                break;
+            case 'history':
+                this.toggleProgramHistory();
+                break;
+            case 'delete':
+                this.deleteProgram();
+                break;
+        }
+    }
+
+    getDayOfWeekTranslationKey(dayValue: number | null | undefined): string {
+        if (dayValue === null || dayValue === undefined) {
+            return 'days.unknown';
+        }
+
+        const dayOfWeekName = this.dayOfWeekPipe.transform(dayValue, false);
+        return `days.${dayOfWeekName}`;
+    }
+
+    getDayDisplayName(day: FormGroup): string {
+        const dayOfWeekValue = day.get('dayOfWeek')?.value;
+        const dayName = day.get('dayName')?.value;
+
+        if (!dayOfWeekValue) return dayName || '';
+
+        const dayOfWeekName = this.dayOfWeekPipe.transform(dayOfWeekValue, false);
+        const translatedDay = this.translate.instant(`dates.days.${dayOfWeekName.toLowerCase()}`);
+
+        return dayName ? `${translatedDay}: ${dayName}` : translatedDay;
+    }
+
+
+    /**
+ * Checks if the program has logged workouts for the current active iteration
+ */
+    private hasLoggedWorkoutsForCurrentIteration(): boolean {
+        const program = this.currentProgram();
+        if (!program?.iterationId) return false;
+
+        const logs = this.allWorkoutLogs();
+        return logs.some(log => log.programId === program.id && log.iterationId === program.iterationId);
+    }
+
+    /**
+     * Checks if critical program structure has changed
+     */
+    private hasCriticalChanges(originalProgram: TrainingProgram): boolean {
+        const formValue = this.programForm.getRawValue();
+
+        // Check program type change
+        if (originalProgram.programType !== formValue.programType) return true;
+
+        // Check cycle length change (for cycled programs)
+        if (originalProgram.programType === 'cycled' && originalProgram.cycleLength !== formValue.cycleLength) return true;
+
+        // Check schedule/weeks structure changes
+        if (originalProgram.programType === 'cycled') {
+            if (originalProgram.schedule?.length !== formValue.schedule?.length) return true;
+        } else if (originalProgram.programType === 'linear') {
+            if (originalProgram.weeks?.length !== formValue.weeks?.length) return true;
+            // Check if week structures changed
+            for (let i = 0; i < Math.min(originalProgram.weeks?.length || 0, formValue.weeks?.length || 0); i++) {
+                if (originalProgram.weeks![i].schedule.length !== formValue.weeks[i].schedule.length) return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Warns user about critical changes with logged workouts
+     */
+    /**
+ * Warns user about critical changes with logged workouts
+ */
+    private async warnAboutCriticalChangesWithLogs(originalProgram: TrainingProgram, currentFormValue: any): Promise<boolean> {
+        const confirm = await this.alertService.showConfirmationDialog(
+            this.translate.instant('programBuilder.alerts.criticalChangeTitle'),
+            this.translate.instant('programBuilder.alerts.criticalChangeMessage'),
+            [
+                {
+                    text: this.translate.instant('programBuilder.alerts.criticalChangeCancel'),
+                    role: 'cancel',
+                    cssClass: 'bg-gray-400 hover:bg-gray-600',
+                    icon: 'cancel'
+                },
+                {
+                    text: this.translate.instant('programBuilder.alerts.criticalChangeCreate'),
+                    role: 'create_new',
+                    cssClass: 'bg-blue-600 hover:bg-blue-700',
+                    icon: 'plus'
+                },
+                {
+                    text: this.translate.instant('programBuilder.alerts.criticalChangeConfirm'),
+                    role: 'confirm',
+                    cssClass: 'bg-red-600 hover:bg-red-700',
+                    icon: 'warning'
+                }
+            ]
+        );
+
+        if (!confirm) return false;
+
+        if (confirm.role === 'create_new') {
+            // User wants to create a new program instead
+            this.toastService.info(
+                this.translate.instant('programBuilder.toasts.creatingDuplicate'),
+                3000
+            );
+            // Create a duplicate with the CURRENT FORM VALUES, not the original
+            await this.createDuplicateProgram(originalProgram, currentFormValue);
+            return false; // Don't save changes to original
+        }
+
+        return confirm.role === 'confirm';
+    }
+
+
+    /**
+     * Creates a duplicate of the current program with the edited form values
+     */
+    private async createDuplicateProgram(originalProgram: TrainingProgram, currentFormValue: any): Promise<void> {
+        const duplicateNameResult = await this.alertService.showPromptDialog(
+            this.translate.instant('programBuilder.alerts.duplicateNameTitle'),
+            this.translate.instant('programBuilder.alerts.duplicateNameMessage', { name: originalProgram.name }),
+            [
+                {
+                    name: 'duplicateName',
+                    type: 'text',
+                    label: this.translate.instant('programBuilder.form.nameLabel'),
+                    value: `${currentFormValue.name} (Copy)`,
+                    required: true,
+                    autofocus: true
+                }
+            ],
+            this.translate.instant('alertService.buttons.ok')
+        );
+
+        if (!duplicateNameResult || !duplicateNameResult['duplicateName']) return;
+
+        try {
+            this.spinnerService.show(this.translate.instant('programBuilder.toasts.creatingDuplicate'));
+
+            // Create a new program with the CURRENT FORM VALUES
+            const newProgramId = uuidv4();
+            const duplicateProgram: TrainingProgram = {
+                id: newProgramId,
+                name: String(duplicateNameResult['duplicateName']),
+                programType: currentFormValue.programType,
+                goals: this.selectedGoals(),
+                description: currentFormValue.description,
+                programNotes: currentFormValue.programNotes,
+                startDate: currentFormValue.startDate || null,
+                iterationId: '',
+                cycleLength: currentFormValue.programType === 'cycled' ? (currentFormValue.cycleLength || null) : null,
+                isRepeating: currentFormValue.programType === 'linear' ? currentFormValue.isRepeating : false,
+                isActive: false,
+                history: [], // Start with fresh history
+                // Map the current form schedule/weeks with new IDs
+                schedule: currentFormValue.schedule.map((s: ScheduledRoutineDay) => ({
+                    id: uuidv4(),
+                    dayOfWeek: Number(s.dayOfWeek),
+                    dayName: s.dayName || '',
+                    routineId: s.routineId,
+                    routineName: s.routineName,
+                    programId: newProgramId,
+                    notes: s.notes,
+                    timeOfDay: s.timeOfDay,
+                    isUnscheduled: s.isUnscheduled || false,
+                    iterationId: ''
+                } as ScheduledRoutineDay)),
+                weeks: currentFormValue.programType === 'linear'
+                    ? currentFormValue.weeks.map((w: any, index: number) => ({
+                        ...w,
+                        id: uuidv4(),
+                        schedule: w.schedule.map((d: ScheduledRoutineDay) => ({
+                            id: uuidv4(),
+                            dayOfWeek: Number(d.dayOfWeek),
+                            dayName: d.dayName || '',
+                            routineId: d.routineId,
+                            routineName: d.routineName,
+                            programId: newProgramId,
+                            notes: d.notes,
+                            timeOfDay: d.timeOfDay,
+                            isUnscheduled: d.isUnscheduled || false,
+                            iterationId: ''
+                        } as ScheduledRoutineDay))
+                    }))
+                    : []
+            };
+
+            const newProgram = await this.trainingProgramService.addProgram(
+                duplicateProgram as Omit<TrainingProgram, 'id' | 'isActive' | 'schedule'> & { schedule: Omit<ScheduledRoutineDay, 'id'>[] }
+            );
+
+            this.toastService.success(
+                this.translate.instant('programBuilder.toasts.duplicateCreated', { name: newProgram.name }),
+                3000,
+                this.translate.instant('common.success')
+            );
+
+            // Navigate to the new program in edit mode
+            setTimeout(() => {
+                this.router.navigate(['/training-programs/edit', newProgram.id]);
+            }, 100);
+        } catch (error) {
+            this.toastService.error(
+                this.translate.instant('programBuilder.toasts.duplicateFailed'),
+                0,
+                this.translate.instant('common.error')
+            );
+        } finally {
+            this.spinnerService.hide();
+        }
+    }
 }
 
 

@@ -55,14 +55,14 @@
                     <div class="flex justify-between items-baseline">
                         <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">
                             {{ (currentProgram()?.programType === 'linear' ? 'programBuilder.progress.overallWorkout' :
-                            'programBuilder.progress.currentCycle') | translate }}
+                            'programBuilder.progress.currentWeeklyCycle') | translate }}
                         </h3>
                         <span class="text-sm font-semibold text-primary dark:text-primary-light">
                             {{ progress.completedCount }} / {{ progress.totalCount }}
                         </span>
                     </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                        <div class="bg-primary h-2.5 rounded-full transition-all duration-500 ease-out"
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 relative flex items-center">
+                        <div class="bg-primary h-2.5  my-1 mx-1 absolute rounded-full transition-all duration-500 ease-out"
                             [style.width.%]="progress.percentage">
                         </div>
                     </div>
@@ -218,7 +218,8 @@
                                 [appTooltip]="infoTooltipString"></app-icon>
                         </span>
                     </label>
-                    <input type="number" id="cycleLength" formControlName="cycleLength" min="1"
+                    <input type="text" inputmode="decimal" pattern="[0-9]*" numbersOnly id="cycleLength"
+                        formControlName="cycleLength" min="1"
                         [placeholder]="'programBuilder.form.cycleLengthPlaceholder' | translate"
                         class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:[color-scheme:dark]">
                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -290,10 +291,6 @@
                             </button>
                         </div>
 
-                        <!-- ========================================================== -->
-                        <!-- START: MODIFIED DAY NAME INPUT FOR CYCLED PROGRAMS       -->
-                        <!-- Replaces the static text with an editable input field.   -->
-                        <!-- ========================================================== -->
                         <div class="flex justify-between items-center mb-2" [ngClass]="{'mt-1': isEditableMode()}">
                             <h4 class="text-md font-medium text-gray-800 dark:text-gray-100">
                                 <label class="block text-xs font-medium text-gray-700 dark:text-gray-300"
@@ -303,7 +300,8 @@
                                     [placeholder]="'programBuilder.schedule.dayNamePlaceholder' | translate"
                                     class="text-lg font-bold bg-transparent focus:ring-0 focus:border-primary dark:text-gray-100 p-1 w-full"
                                     [ngClass]="{
-'border-0 border-b-2 border-gray-300 dark:border-gray-500': !isViewMode                                    }">
+                                                    'border-0 border-b-2 border-gray-300 dark:border-gray-500': !isViewMode
+                                                    }">
                             </h4>
                         </div>
                         <!-- ========================================================== -->
@@ -347,11 +345,11 @@
                                                 }">
                                         <button *ngIf="!isViewMode" type="button" appPress
                                             (shortPress)="openRoutineSelectionModal(dayIndex)"
-                                            class="inline-flex items-center px-3 py-2 border border-l-0 rounded-r-md text-sm font-medium transition-colors duration-150"
+                                            class="inline-flex items-center px-3 py-2 border border-l-0 rounded-r-md text-sm font-medium transition-colors duration-150 text-white "
                                             [ngClass]="{
-                                                'border-blue-300 dark:border-blue-500 bg-blue-50 dark:bg-blue-500 text-white hover:bg-blue-100 dark:hover:bg-blue-400': !getScheduleDayControl(dayIndex).get('routineId')?.value && !(getScheduleDayControl(dayIndex).get('routineId')?.invalid && (getScheduleDayControl(dayIndex).get('routineId')?.touched || submitted)),
-                                                'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-700 text-green-700 dark:text-green-100 hover:bg-green-100 dark:hover:bg-green-600': getScheduleDayControl(dayIndex).get('routineId')?.value,
-                                                'border-red-500 dark:border-red-400 bg-red-100 dark:bg-red-600 text-red-700 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-500': getScheduleDayControl(dayIndex).get('routineId')?.invalid && (getScheduleDayControl(dayIndex).get('routineId')?.touched || submitted) 
+                                                'border-blue-300 dark:border-blue-500 bg-blue-400 dark:bg-blue-500 hover:bg-blue-600 dark:hover:bg-blue-400': !getScheduleDayControl(dayIndex).get('routineId')?.value && !(getScheduleDayControl(dayIndex).get('routineId')?.invalid && (getScheduleDayControl(dayIndex).get('routineId')?.touched || submitted)),
+                                                'border-green-500 dark:border-green-400 bg-green-400 dark:bg-green-700 dark:text-green-100 hover:bg-green-600 dark:hover:bg-green-600': getScheduleDayControl(dayIndex).get('routineId')?.value,
+                                                'border-red-500 dark:border-red-400 bg-red-400 dark:bg-red-600 dark:text-red-200 hover:bg-red-600 dark:hover:bg-red-500': getScheduleDayControl(dayIndex).get('routineId')?.invalid && (getScheduleDayControl(dayIndex).get('routineId')?.touched || submitted) 
                                             }">
                                             <app-icon name="change" class="h-4 w-4"></app-icon>
                                             <span class="ml-1">
@@ -403,7 +401,7 @@
                                     [id]="'exercise-list-' + dayCtrl.get('id')?.value"
                                     [ngClass]="{'bounce': bouncedExerciseListId === dayCtrl.get('id')?.value}">
                                     <button type="button"
-                                        class="flex items-center gap-2 font-semibold text-primary hover:underline mb-2 bg-primary-dark text-white rounded-md p-1"
+                                        class="flex items-center gap-2 font-semibold text-primary hover:underline mb-2 bg-primary-dark text-white rounded-md py-1 px-2"
                                         (click)="toggleExerciseList(dayCtrl.get('id')?.value)">
                                         <app-icon
                                             [name]="expandedExerciseLists[dayCtrl.get('id')?.value] ? 'chevron-down' : 'chevron-right'"
@@ -414,7 +412,7 @@
                                         <ng-container
                                             *ngFor="let ex of getExercisesForDay(dayCtrl.get('routineId')?.value); let exIndex = index">
                                             <ng-container
-                                                *ngTemplateOutlet="exerciseSetDisplay; context: { ex: ex }"></ng-container>
+                                                *ngTemplateOutlet="exerciseSetDisplay; context: { ex, exIndex }"></ng-container>
                                         </ng-container>
                                     </ul>
                                 </div>
@@ -635,7 +633,7 @@
                                                 [id]="'exercise-list-' + dayCtrl.get('id')?.value"
                                                 [ngClass]="{'bounce': bouncedExerciseListId === dayCtrl.get('id')?.value}">
                                                 <button type="button"
-                                                    class="flex items-center gap-2 font-semibold text-primary hover:underline mb-2 bg-primary-dark text-white rounded-md p-1"
+                                                    class="flex items-center gap-2 font-semibold text-primary hover:underline mb-2 bg-primary-dark text-white rounded-md py-1 px-2"
                                                     (click)="toggleExerciseList(dayCtrl.get('id')?.value)">
                                                     <app-icon
                                                         [name]="expandedExerciseLists[dayCtrl.get('id')?.value] ? 'chevron-down' : 'chevron-right'"
@@ -646,7 +644,7 @@
                                                     <ng-container
                                                         *ngFor="let ex of getExercisesForDay(dayCtrl.get('routineId')?.value); let exIndex = index">
                                                         <ng-container
-                                                            *ngTemplateOutlet="exerciseSetDisplay; context: { ex: ex }"></ng-container>
+                                                            *ngTemplateOutlet="exerciseSetDisplay; context: { ex, exIndex }"></ng-container>
                                                     </ng-container>
                                                 </ul>
                                             </div>
@@ -688,8 +686,7 @@
                                     class="text-sm text-gray-600 dark:text-gray-300">
                                     <span class="font-semibold">
                                         {{
-                                        (day.get('dayOfWeek')?.value | dayOfWeek : false)
-                                        + (day.get('dayName')?.value ? ': ' + day.get('dayName')?.value : '')
+                                        getDayDisplayName(day)
                                         }}
                                     </span>
                                     <span class="italic ml-2">{{'programBuilder.schedule.routineLabel' | translate }}:
@@ -749,7 +746,7 @@
 
     <!-- Routine Selection Modal (Unchanged) -->
     <div *ngIf="isRoutineModalOpen()" #routineModalChosen
-        class="fixed inset-0 bg-gray-700 bg-opacity-75 transition-opacity overflow-y-auto h-full w-full z-[70] flex items-center justify-center p-4"
+        class="fixed inset-0 bg-gray-700 bg-opacity-75 transition-opacity overflow-y-auto h-full w-full z-[70] flex items-center justify-center p-4 overflow-hidden"
         (click)="closeRoutineSelectionModal()">
         <div class="relative transform overflow-hidden rounded-md bg-white dark:bg-gray-700 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl"
             (click)="$event.stopPropagation()">
@@ -905,8 +902,8 @@
                                             date:'dd/MM/yy') : '-' }}</td>
                                         <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">{{ entry.endDate
                                             && entry.endDate !== '-' ? (entry.endDate | date:'dd/MM/yy') : '-' }}</td>
-                                        <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">{{ entry.status |
-                                            titlecase }}</td>
+                                        <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">{{ 'programBuilder.history.' + entry.status |
+                                            translate | titlecase }}</td>
                                         <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">{{ entry.date &&
                                             entry.date !== '-' ? (entry.date | date:'dd/MM/yy HH:mm') : '-' }}</td>
                                         <td class="px-4 py-3">
@@ -967,7 +964,7 @@
                                     <div class="grid grid-cols-2 gap-x-3 gap-y-2">
                                         <div class="text-xs font-medium text-gray-500 dark:text-gray-400">{{
                                             'programBuilder.modal.historyTable.status' | translate }}</div>
-                                        <div class="font-semibold dark:text-gray-100">{{ entry.status | titlecase }}
+                                        <div class="font-semibold dark:text-gray-100">{{ 'programBuilder.history.' + entry.status | translate | titlecase }}
                                         </div>
 
                                         <div class="text-xs font-medium text-gray-500 dark:text-gray-400">{{
@@ -991,12 +988,12 @@
                                         <button type="button" (click)="editHistoryEntry(entry)"
                                             class="flex items-center text-sm px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
                                             <app-icon name="edit" class="w-8 h-8 mr-1"></app-icon> {{
-                                            'programBuilder.actions.edit' | translate }}
+                                            'common.edit' | translate }}
                                         </button>
                                         <button type="button" (click)="removeProgramHistoryEntry(entry.id)"
                                             class="flex items-center text-sm px-3 py-1.5 rounded-md text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50">
                                             <app-icon name="trash" class="w-8 h-8 mr-1"></app-icon> {{
-                                            'programBuilder.actions.delete' | translate }}
+                                            'common.delete' | translate }}
                                         </button>
                                     </div>
                                 </div>
@@ -1094,19 +1091,36 @@
     </div>
 </div>
 
-<ng-template #exerciseSetDisplay let-ex="ex">
+<ng-template #exerciseSetDisplay let-ex="ex" let-exIndex="exIndex">
     <li class="mb-2 flex items-start gap-2">
         <!-- Exercise Icon -->
         <!-- <app-icon [name]="getExerciseIcon(ex.exerciseId)" class="h-5 w-5 mt-1 text-primary dark:text-primary-light"></app-icon> -->
-        <div>
+        <div class="flex-1">
             <div class="font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                <span class="text-xs font-bold bg-gray-200 dark:bg-gray-700 rounded px-2 py-0.5">#{{ exIndex + 1
+                    }}</span>
                 {{ ex.exerciseName }}
-                <!-- <span *ngIf="isExerciseCardioOnly(ex.exerciseId)"
-                    class="ml-2 px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-medium">Cardio</span>
-                <span *ngIf="!isExerciseCardioOnly(ex.exerciseId)"
-                    class="ml-2 px-2 py-0.5 rounded bg-green-100 text-green-700 text-xs font-medium">Strength</span> -->
             </div>
-            <div class="text-sm text-gray-600 dark:text-gray-300 mt-1 flex flex-wrap gap-2">
+
+            <!-- NEW: Summary display if all sets are uniform -->
+            <div *ngIf="getUniformExerciseSetValues(ex) as uniformValues"
+                class="text-sm text-gray-600 dark:text-gray-300 mt-2 inline-block px-3 py-1.5 rounded bg-blue-100 dark:bg-blue-900/40 border border-blue-300 dark:border-blue-700">
+                <strong>{{ getExerciseSetCountDisplay(ex) }}</strong> {{ 'programBuilder.exercise.of' | translate }}
+                <ng-container *ngIf="uniformValues.reps">{{ uniformValues.reps }} {{ 'metrics.reps' | translate
+                    }}</ng-container>
+                <ng-container *ngIf="uniformValues.weight">@ {{ uniformValues.weight }} {{
+                    unitsService.getWeightUnitSuffix() }}</ng-container>
+                <ng-container *ngIf="uniformValues.duration">{{ uniformValues.duration }} {{ 'metrics.duration' |
+                    translate }}</ng-container>
+                <ng-container *ngIf="uniformValues.distance">{{ uniformValues.distance }} {{ 'metrics.distance' |
+                    translate }}</ng-container>
+                <ng-container *ngIf="uniformValues.rest"> | {{ 'metrics.rest' | translate }}: {{ uniformValues.rest
+                    }}s</ng-container>
+            </div>
+
+            <!-- ORIGINAL: Detailed display if sets are NOT uniform -->
+            <div *ngIf="!getUniformExerciseSetValues(ex)"
+                class="text-sm text-gray-600 dark:text-gray-300 mt-1 flex flex-wrap gap-2">
                 <ng-container *ngFor="let set of ex.sets; let s = index">
                     <span class="inline-block px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 mr-1 mb-1">
                         Set #{{ s + 1 }}:
@@ -1135,3 +1149,7 @@
         </div>
     </li>
 </ng-template>
+
+<app-fab-menu [actions]="fabMenuItems" [checkForPausedSession]="false" [scrollToBottomDisabled]="true"
+    [scrollToTopDisabled]="true" (actionClicked)="onFabAction($event)">
+</app-fab-menu>

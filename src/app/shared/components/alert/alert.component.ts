@@ -8,11 +8,12 @@ import { IconComponent } from '../icon/icon.component';
 import { ToastService } from '../../../core/services/toast.service';
 import { trigger, style, animate, transition } from '@angular/animations';
 import { TranslateService } from '@ngx-translate/core';
+import { NumbersOnlyDirective } from '../../directives/onlyNumbers.directive';
 
 @Component({
   selector: 'app-alert',
   standalone: true,
-  imports: [CommonModule, FormsModule, PressDirective, IconComponent], // <-- Add FormsModule
+  imports: [CommonModule, FormsModule, PressDirective, IconComponent, NumbersOnlyDirective], // <-- Add FormsModule
   templateUrl: './alert.component.html',
   styleUrls: ['./alert.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,15 +44,14 @@ import { TranslateService } from '@ngx-translate/core';
 export class AlertComponent implements OnInit {
   Array = Array;
   @Input() options: AlertOptions | null = null;
-  @Output() dismissed = new EventEmitter<{ role: string, data?: any, values?: { [key: string]: string | number | boolean | number[] } } | undefined>();
+  @Output() dismissed = new EventEmitter<{ role: string, data?: any, values?: { [key: string]: string | number | boolean | number[] | undefined } } | undefined>();
   @ViewChildren('alertInput') inputElements!: QueryList<ElementRef<HTMLInputElement | HTMLTextAreaElement>>;
   @ViewChild('singleButton') singleButton?: ElementRef<HTMLButtonElement>;
   @ViewChildren('alertButton') allButtons!: QueryList<ElementRef<HTMLButtonElement>>;
 
   standardCssButtonClass: string = " w-full flex justify-center items-center text-white text-left px-4 py-2 rounded-md text-xl font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 ";
 
-  inputValues: { [key: string]: string | number | boolean | number[] } = {};
-
+  inputValues: { [key: string]: string | number | boolean | number[] | undefined } = {};
   private toastService = inject(ToastService);
   private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
   protected translate = inject(TranslateService);
@@ -79,24 +79,24 @@ export class AlertComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.options?.inputs) {
-    this.options.inputs.forEach(input => {
-      if (input.type === 'checkbox') {
-        // If the value is an array, use it directly (for checkbox groups)
-        if (Array.isArray(input.value)) {
-          this.inputValues[input.name] = input.value;
+      this.options.inputs.forEach(input => {
+        if (input.type === 'checkbox') {
+          // If the value is an array, use it directly (for checkbox groups)
+          if (Array.isArray(input.value)) {
+            this.inputValues[input.name] = input.value;
+          } else {
+            // Otherwise, treat as a single boolean checkbox
+            this.inputValues[input.name] = input.value !== undefined ? !!input.value : false;
+          }
+        } else if (input.type === 'radio' && input.options && input.options.length > 0) {
+          this.inputValues[input.name] = input.value !== undefined
+            ? input.value
+            : input.options[0].value;
         } else {
-          // Otherwise, treat as a single boolean checkbox
-          this.inputValues[input.name] = input.value !== undefined ? !!input.value : false;
+          this.inputValues[input.name] = input.value !== undefined ? input.value : (input.type === 'number' ? 0 : '');
         }
-      } else if (input.type === 'radio' && input.options && input.options.length > 0) {
-        this.inputValues[input.name] = input.value !== undefined
-          ? input.value
-          : input.options[0].value;
-      } else {
-        this.inputValues[input.name] = input.value !== undefined ? input.value : (input.type === 'number' ? 0 : '');
-      }
-    });
-  }
+      });
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -244,13 +244,13 @@ export class AlertComponent implements OnInit {
 
             // Check against the minimum value, if defined
             if (input.attributes !== undefined && input.attributes.min !== undefined && numericValue < parseFloat(String(input.attributes.min))) {
-                this.toastService.info(this.translate.instant('alertComponent.minNumber', { field: input.label || input.name, min: input.attributes.min }));
+              this.toastService.info(this.translate.instant('alertComponent.minNumber', { field: input.label || input.name, min: input.attributes.min }));
               return; // Stop dismissal
             }
 
             // Check against the maximum value, if defined
             if (input.attributes !== undefined && input.attributes.max !== undefined && numericValue > parseFloat(String(input.attributes.max))) {
-                this.toastService.info(this.translate.instant('alertComponent.maxNumber', { field: input.label || input.name, max: input.attributes.max }));
+              this.toastService.info(this.translate.instant('alertComponent.maxNumber', { field: input.label || input.name, max: input.attributes.max }));
               return; // Stop dismissal
             }
           }
@@ -267,7 +267,7 @@ export class AlertComponent implements OnInit {
     }
   }
 
-  private dismissWith(result: { role: string, data?: any, values?: { [key: string]: string | number | boolean | number[] } } | undefined): void {
+  private dismissWith(result: { role: string, data?: any, values?: { [key: string]: string | number | boolean | number[] | undefined } } | undefined): void {
     this.dismissed.emit(result);
   }
 

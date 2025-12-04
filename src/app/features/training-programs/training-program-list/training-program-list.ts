@@ -1310,4 +1310,61 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
 
     return { [classes.join(' ')]: true };
   }
+
+  getProgramProgress(program: TrainingProgram): { completedCount: number; totalCount: number; percentage: number } {
+    const logs = this.allWorkoutLogs();
+
+    // Guard clauses: We can't calculate progress without this essential info.
+    if (!program || !program.isActive || !program.startDate) {
+      return { completedCount: 0, totalCount: 0, percentage: 0 };
+    }
+
+    let completedCount = 0;
+    let totalCount = 0;
+    const startDate = parseISO(program.startDate);
+
+    // --- Logic for LINEAR programs ---
+    if (program.programType === 'linear' && program.weeks?.length) {
+      // Total workouts is the sum of all scheduled days across all weeks.
+      totalCount = program.weeks.reduce((sum, week) => sum + week.schedule.length, 0);
+
+      // Get all logs for this program that occurred on or after the start date.
+      const programLogs = logs.filter(log => log.programId === program.id && parseISO(log.date) >= startDate && program.iterationId === log.iterationId);
+
+      // Count unique logged workouts to prevent counting multiple sessions on the same day as extra progress.
+      const uniqueLogs = new Set(programLogs.map(log => `${log.date}-${log.routineId}`));
+      completedCount = uniqueLogs.size;
+    }
+    // --- Logic for CYCLED programs ---
+    else if (program.programType === 'cycled' && program.schedule.length > 0) {
+      const cycleLength = program.cycleLength || 7;
+      totalCount = program.schedule.length; // Total is the number of workouts in one cycle.
+
+      const daysSinceStart = differenceInDays(new Date(), startDate);
+      if (daysSinceStart >= 0) {
+        // Calculate the start date of the CURRENT cycle.
+        const completedCycles = Math.floor(daysSinceStart / cycleLength);
+        const currentCycleStartDate = addDays(startDate, completedCycles * cycleLength);
+
+        // Filter logs that belong to the current cycle.
+        const cycleLogs = logs.filter(log => {
+          const logDate = parseISO(log.date);
+          return log.programId === program.id && logDate >= currentCycleStartDate;
+        });
+
+        const uniqueLogsInCycle = new Set(cycleLogs.map(log => `${log.date}-${log.routineId}`));
+        completedCount = uniqueLogsInCycle.size;
+      }
+    }
+
+    if (totalCount === 0) {
+      return { completedCount: 0, totalCount: 0, percentage: 0 };
+    }
+
+    // Clamp completedCount so it doesn't exceed totalCount
+    completedCount = Math.min(completedCount, totalCount);
+    const percentage = Math.round((completedCount / totalCount) * 100);
+
+    return { completedCount, totalCount, percentage };
+  }
 }
