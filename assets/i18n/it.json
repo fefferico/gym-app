@@ -13,14 +13,17 @@
     "quickActionsTitle": "Azioni Rapide",
     "appVersion": "Versione App:",
     "pausedWorkout": {
-      "discardPromptTitle": "Discard Current Workout?",
-      "discardPromptMessage": "You have a paused workout session. Do you want to discard it and start a new one?"
+      "discardPromptTitle": "Scartare l'allenamento in pausa?",
+      "discardPromptMessage": "Hai una sessione di allenamento in pausa. Vuoi scartarla e iniziarne una nuova?",
+      "restartTooltip": "Ricomincia allenamento"
     }
   },
   "user": {
     "defaultName": "Appassionato di Fitness"
   },
   "pausedWorkout": {
+    "restorePromptTitle": "Ricomincia allenamento",
+    "restorePromptMessage": "Vuoi ricominciare l'allenamento in pausa?",
     "inProgress": "Hai un allenamento in corso!",
     "routineLabel": "Routine",
     "programLabel": "Programma",
@@ -31,6 +34,7 @@
     "adHocWorkout": "Allenamento Ad-hoc",
     "resumeButton": "RIPRENDI ALLENAMENTO",
     "detailsButton": "DETTAGLI",
+    "restoreButton": "RICOMINCIA",
     "discardButton": "SCARTA",
     "discardTitle": "Scartare l'allenamento in pausa?",
     "discardMessage": "Confermi di voler scartare questa sessione di allenamento in pausa? L'azione non può essere annullata.",
@@ -241,7 +245,9 @@
     }
   },
   "common": {
+    "blank": "Vuoto (Personalizzato)",
     "loading": "Caricamento...",
+    "success": "Successo",
     "save": "Salva",
     "on": "On",
     "off": "Off",
@@ -251,6 +257,7 @@
     "info": "Info",
     "cancel": "Annulla",
     "cancelled": "Annullato",
+    "delete": "Elimina",
     "discard": "Scarta",
     "undo": "Ripristina",
     "edit": "Modifica",
@@ -262,7 +269,9 @@
     "ok": "OK",
     "removed": "rimosso",
     "confirm": "Conferma",
-    "minutes": "minuti"
+    "minutes": "minuti",
+    "restart": "Ricomincia",
+    "details": "Dettagli"
   },
   "toasts": {
     "statusUpdated": "Stato Aggiornato",
@@ -414,12 +423,12 @@
       "showingAllRoutines": "Mostrando tutte le schede",
       "filterUpdate": "Filtri Aggiornati",
       "routineNotFound": "Scheda non trovata",
-      "routineDeleted": "Scheda \"{{name}}\" eliminata con successo.",
-      "routineCloned": "Scheda \"{{name}}\" clonata con successo.",
-      "colorUpdated": "Colore aggiornato per \"{{name}}\"",
+      "routineDeleted": "Scheda {{name}} eliminata con successo.",
+      "routineCloned": "Scheda {{name}} clonata con successo.",
+      "colorUpdated": "Colore aggiornato per {{name}}",
       "unhidden": "{{name}} non è più nascosta",
-      "addedToFavourites": "Scheda \"{{name}}\" aggiunta ai preferiti",
-      "removedFromFavourites": "Scheda \"{{name}}\" rimossa dai preferiti",
+      "addedToFavourites": "Scheda {{name}} aggiunta ai preferiti",
+      "removedFromFavourites": "Scheda {{name}} rimossa dai preferiti",
       "generationFailed": "Impossibile generare un allenamento con i criteri selezionati. Riprova.",
       "generationFailedTitle": "Generazione Fallita",
       "retryFailed": "Impossibile generare un nuovo allenamento. Prova a modificare le opzioni.",
@@ -430,14 +439,14 @@
       "editRunningTitle": "Info",
       "editRunningMessage": "Non è possibile modificare una scheda in esecuzione. Completala o scartala prima di procedere.",
       "deleteTitle": "Elimina Scheda",
-      "deleteMessage": "Confermi di voler eliminare la scheda \"{{name}}\"?",
+      "deleteMessage": "Confermi di voler eliminare la scheda {{name}}?",
       "deleteWithLogs": "Questo eliminerà anche {{count}} registrazioni di allenamenti associati.",
       "deleteWithPrograms": "Questo eliminerà anche le voci in {{count}} programmi associati.",
       "deleteWithOneProgram": "Questo eliminerà anche le voci nel programma associato '{{name}}'.",
       "cannotBeUndone": "Questa azione non può essere annullata.",
       "deleteButton": "Elimina",
       "pausedWorkoutTitle": "Allenamento in Corso",
-      "pausedWorkoutMessage": "Hai un allenamento in pausa (\"{{name}}\" del {{date}}). Cosa vorresti fare?",
+      "pausedWorkoutMessage": "Hai un allenamento in pausa ({{name}} del {{date}}). Cosa vorresti fare?",
       "resumeButton": "Riprendi: {{name}}",
       "discardAndStart": "Scarta e Inizia Nuovo",
       "unhideTitle": "Mostra scheda",
@@ -445,7 +454,7 @@
       "unmarkButton": "Rimuovi",
       "unmarkFavouriteTitle": "Rimuovi scheda dai preferiti",
       "unmarkFavouriteMessage": "Vuoi rimuovere {{name}} dai preferiti?",
-      "selectColorTitle": "Seleziona un Colore per \"{{name}}\"",
+      "selectColorTitle": "Seleziona un Colore per {{name}}",
       "clearColorButton": "Rimuovi Colore"
     },
     "wip": {
@@ -530,7 +539,7 @@
       "deleteLogTitle": "Elimina Sessione Allenamento",
       "deleteLogMessage": "Confermi di voler eliminare questa sessione? L'azione non può essere annullata",
       "deleteActivityTitle": "Eliminare Sessione Attività?",
-      "deleteActivityMessage": "Confermi di voler eliminare la sessione per \"{{name}}\"? L'azione non può essere annullata.",
+      "deleteActivityMessage": "Confermi di voler eliminare la sessione per {{name}}? L'azione non può essere annullata.",
       "deleteButton": "Elimina",
       "pausedWorkoutTitle": "Trovato Allenamento in Sospeso",
       "pausedWorkoutMessage": "C'è un allenamento in sospeso: vuoi scartare questa sessione in pausa e registrarne una nuova? L'azione non può essere annullata.",
@@ -623,7 +632,7 @@
       "deactivateFailed": "Disattivazione fallita",
       "setActiveFailed": "Impossibile impostare il programma come attivo",
       "logFailed": "Impossibile registrare la sessione: nessun programma attivo in visualizzazione.",
-      "cloneSuccess": "Programma \"{{name}}\" clonato con successo.",
+      "cloneSuccess": "Programma {{name}} clonato con successo.",
       "cloneFailed": "Clonazione programma fallita"
     },
     "alerts": {
@@ -633,6 +642,8 @@
       "deactivating": "Disattivazione programma...",
       "settingActive": "Impostazione programma attivo...",
       "programActiveTitle": "Il programma è attualmente attivo.",
+      "activateSuccess": "Il programma è ora attivo.",
+      "deactivateSuccess": "Il programma è ora inattivo.",
       "programActiveMessage": "Cosa vorresti fare?",
       "deactivate": "Disattiva",
       "complete": "Completa",
@@ -915,8 +926,8 @@
       "emomRoundComplete": "Turno EMOM {{number}} Completato!",
       "noSetsLoggedError": "Nessuna serie registrata. Allenamento non salvato.",
       "finishCancelled": "Completamento allenamento annullato.",
-      "newRoutineCreated": "Nuova scheda \"{{name}}\" creata.",
-      "routineUpdated": "La scheda \"{{name}}\" è stata aggiornata.",
+      "newRoutineCreated": "Nuova scheda {{name}} creata.",
+      "routineUpdated": "La scheda {{name}} è stata aggiornata.",
       "saveError": "Impossibile salvare: orario di inizio mancante.",
       "noFieldsToRemove": "Nessun campo può essere rimosso da questa serie.",
       "fieldAdded": "Campo {{field}} aggiunto alla serie.",
@@ -930,6 +941,16 @@
       "progressiveOverloadAppliedMultipleMessage": "I seguenti esercizi sono stati incrementati automaticamente:"
     },
     "alerts": {
+      "missingExercisesTitle": "Esercizi Mancanti Rilevati",
+      "missingExercisesMessage": "I seguenti esercizi in questa scheda non sono più disponibili:\n\n{{exercises}}\n\nVuoi sostituirli con nuovi esercizi o rimuoverli?",
+      "replaceExercises": "Sostituisci",
+      "removeExercises": "Rimuovi",
+      "exercisesRemoved": "{{count}} esercizio/i mancante/i rimosso/i",
+      "selectReplacementTitle": "Seleziona Sostituto",
+      "selectReplacementMessage": "Seleziona un esercizio sostitutivo per: {{name}}",
+      "exerciseReplaced": "Sostituito {{old}} con {{new}}",
+      "exerciseRemovedCancelled": "Rimosso {{name}} (annullato)",
+      "allExercisesRemovedOrMissing": "Tutti gli esercizi erano mancanti o rimossi. Inizio una nuova scheda.",
       "toughWorkoutTitle": "L'ultimo Allenamento è Stato Duro",
       "toughWorkoutMessage": "La tua ultima sessione è stata impegnativa. Vuoi ridurre automaticamente l'intensità per oggi?",
       "lightWorkoutTitle": "L'ultimo Allenamento è Stato Leggero",
@@ -951,7 +972,7 @@
       "removeSetMessage": "Confermi di voler rimuovere la serie da {{name}}?",
       "removeLastSetMessage": "Questo rimuoverà anche l'esercizio dall'allenamento. Continuare?",
       "removeSupersetTitle": "Rimuovi Superserie",
-      "removeSupersetMessage": "Questo rimuoverà l'intera superserie \"{{name}}\" e tutti i dati registrati per questa sessione. Continuare?",
+      "removeSupersetMessage": "Questo rimuoverà l'intera superserie {{name}} e tutti i dati registrati per questa sessione. Continuare?",
       "removeExerciseTitle": "Rimuovi Esercizio",
       "removeExerciseMessage": "Confermi di voler rimuovere {{name}}?",
       "removeExerciseLoggedMessage": "Confermi di voler rimuovere {{name}}? Tutti i dati registrati per questo esercizio in questa sessione andranno persi.",
@@ -1030,6 +1051,7 @@
     "doLater": "Fai dopo",
     "finishEarly": "Termina in anticipo",
     "createSuperset": "Crea Superserie",
+    "createCircuit": "Crea Circuito",
     "addToSuperset": "Aggiungi a Superserie",
     "removeFromSuperset": "Rimuovi da Superserie",
     "removeExercise": "Rimuovi Esercizio",
@@ -1100,6 +1122,12 @@
     "addSelected": "Aggiungi selezionato/i"
   },
   "workoutBuilder": {
+    "history": {
+      "addedExercise": "Esercizio aggiunto",
+      "removedExercise": "Esercizio rimosso",
+      "createdSuperset": "Superserie creata",
+      "editedRoutine": "Scheda modificata"
+    },
     "drag": {
       "cannotDragSupersetMember": "Non è possibile trascinare singolarmente gli esercizi di una superserie. Trascina il primo esercizio per spostare l'intero gruppo.",
       "supersetMoved": "Gruppo superserie spostato con successo",
@@ -1108,7 +1136,7 @@
       "keepSeparate": "Mantieni separato",
       "addToSuperset": "Aggiungi a Superserie",
       "chooseAction": "Scegli un'azione per l'esercizio rilasciato",
-      "addExerciseToSuperset": "Aggiungi esercizio alla superserie" ,
+      "addExerciseToSuperset": "Aggiungi esercizio alla superserie",
       "exerciseAddedToSuperset": "Esercizio aggiunto alla superserie"
     },
     "locationTypeLabel": "Tipo di Luogo (opzionale)",
@@ -1157,6 +1185,7 @@
       "custom": "Personalizzato"
     },
     "routineBuilder": {
+      "advancedOptions": "Dettagli Aggiuntivi",
       "nameWizardMsg": "Inserisci un nome per la tua nuova scheda.",
       "goalWizardMsg": "Seleziona l'obiettivo principale per questa scheda",
       "nameLabel": "Nome Scheda",
@@ -1170,7 +1199,8 @@
       "primaryCategoryPlaceholder": "-- Seleziona una categoria --",
       "secondaryCategoryLabel": "Categoria Secondaria (Opzionale)",
       "secondaryCategoryPlaceholder": "es., Corpo Libero, Ipertrofia Fase 1",
-      "tagsLabel": "Tag (separati da virgola)",
+      "tagsLabel": "Etichette (separate da virgola)",
+      "tagsLabelView": "Etichette",
       "tagsPlaceholder": "es., HIIT, Manubri, Total Body",
       "lastPerformed": "Ultima volta",
       "notPerformed": "Mai eseguita",
@@ -1216,12 +1246,15 @@
     },
     "changeType": "Cambia",
     "superset": {
+      "restBetweenRounds": "Riposo tra i round",
       "nonConsecutiveTitle": "Esercizi Non Consecutivi",
       "nonConsecutiveMessage": "Gli esercizi selezionati non sono adiacenti. Vuoi che li riordini automaticamente per renderli consecutivi prima di creare la superserie?",
       "reorderAndGroup": "Riordina e Crea",
       "exercisesReordered": "Esercizi riordinati per essere consecutivi",
       "removeExercisesButton": "Rimuovi esercizi",
       "groupButton": "Raggruppa in Superserie ({{count}})",
+      "circuitButton": "Raggruppa in Circuito ({{count}})",
+      "uncircuitButton": "Separa Circuito ({{count}})",
       "ungroupButton": "Separa Superserie ({{count}})",
       "exerciseLabel": "Esercizio della superserie [{{order}} di {{total}}]",
       "emomLabel": "EMOM",
@@ -1242,7 +1275,8 @@
       "howManyRounds": "Quanti round (serie) deve avere questo superset?",
       "supersetCreationCancelled": "Creazione superset annullata.",
       "setExerciseTargets": "Imposta obiettivi esercizio",
-      "enterTargets": "Inserisci le ripetizioni{{weight}} per \"{{exerciseName}}\".",
+      "enterTargets": "Inserisci le ripetizioni {{weight}} per \"{{exerciseName}}\".",
+      "enterTargetsAndWeight": " e peso",
       "emomCreated": "EMOM creato per {{rounds}} round!",
       "supersetCreated": "Superset creato con {{rounds}} round!"
     },
@@ -1255,6 +1289,7 @@
       "loggedNotesLabel": "Note per questo Esercizio Registrato",
       "remove": "Rimuovi Esercizio",
       "fillWithLast": "Riempi con i dati dell'ultima performance",
+      "exerciseInfo": "Info esercizio",
       "makeEmom": "Crea EMOM",
       "switch": "Sostituisci esercizio",
       "toggleNotes": "Note esercizio",
@@ -1274,7 +1309,7 @@
       "metricRemoved": "{{metric}} rimosso da tutte le serie.",
       "negativeNotAllowed": "I valori negativi non sono consentiti. I valori sono stati impostati su zero.",
       "set": "Serie",
-      "totalSets": "Serie totali",
+      "totalSets": "Serie",
       "round": "Turno",
       "header": "#",
       "type": "Tipo",
@@ -1324,6 +1359,7 @@
       "start": "INIZIA"
     },
     "toasts": {
+      "supersetMaxExercises": "Numero massimo di esercizi nella superserie raggiunto.",
       "viewMode": "Modalità visualizzazione. Nessuna modifica",
       "editMode": "Modalità modifica attivata",
       "supersetSizeError": "Seleziona almeno due esercizi",
@@ -1364,7 +1400,7 @@
       "noPerformanceData": "Nessun dato di performance recente trovato per questo esercizio.",
       "prefilledSuccess": "Serie pre-compilate con i dati della tua ultima performance.",
       "prefilledError": "Impossibile caricare i dati della performance.",
-      "colorUpdated": "Colore aggiornato per \"{{name}}\"",
+      "colorUpdated": "Colore aggiornato per {{name}}",
       "undoSuccessful": "Undo successful.",
       "redoSuccessful": "Redo successful."
     },
@@ -1381,7 +1417,7 @@
       "removeSetMessage": "Confermi di voler rimuovere la serie da {{name}}?",
       "removeLastSetMessage": "Questo rimuoverà anche l'esercizio dall'allenamento. Continuare?",
       "removeSupersetTitle": "Rimuovi Superserie",
-      "removeSupersetMessage": "Questo rimuoverà l'intera superserie \"{{name}}\" e tutti i suoi dati registrati per questa sessione. Continuare?",
+      "removeSupersetMessage": "Questo rimuoverà l'intera superserie {{name}} e tutti i suoi dati registrati per questa sessione. Continuare?",
       "removeExerciseTitle": "Rimuovi Esercizio",
       "removeExerciseLoggedMessage": "Confermi di voler rimuovere {{name}}? Tutti i dati registrati per questo esercizio in questa sessione andranno persi.",
       "removeExerciseMessage": "Confermi di voler rimuovere {{name}}?",
@@ -1401,9 +1437,9 @@
       "deleteRoutineTitle": "Elimina Scheda",
       "deleteRoutineMessage": "Confermi di voler eliminare questo allenamento? Questa azione non può essere annullata",
       "delete": "Elimina",
-      "cloneSuccess": "Scheda \"{{name}}\" clonata con successo.",
+      "cloneSuccess": "Scheda {{name}} clonata con successo.",
       "cloneFailed": "Clonazione scheda fallita",
-      "selectColorTitle": "Seleziona un Colore per \"{{name}}\"",
+      "selectColorTitle": "Seleziona un Colore per {{name}}",
       "clearColor": "Rimuovi Colore",
       "selectGroupTypeTitle": "Seleziona Tipo di Gruppo",
       "selectGroupTypeMessage": "Come vorresti raggruppare questi esercizi?",
@@ -1460,10 +1496,14 @@
     "scrollBottom": "TORNA GIÙ",
     "add": "AGGIUNTI",
     "add_exercise": "AGGIUNGI ESERCIZIO",
+    "add_day": "AGGIUNGI GIORNO",
+    "add_week": "AGGIUNGI SETTIMANA",
     "create": "CREA",
     "save": "SALVA",
     "save_routine": "SALVA SCHEDA",
+    "save_program": "SALVA PROGRAMMA",
     "save_log": "SALVA SESSIONE",
+    "save_changes": "SALVA MODIFICHE",
     "save_log_changes": "SALVA MODIFICHE",
     "start": "INIZIA",
     "log": "LOG",
@@ -1626,11 +1666,17 @@
     }
   },
   "programBuilder": {
+    "program": "Programma",
     "wizard": {
       "templateOrBlankTitle": "Scegli un Modello",
       "templateOrBlankMsg": "Vuoi iniziare da un modello o creare un programma personalizzato?",
       "templateOrBlankLabel": "Tipo di Scheda",
       "templateCreated": "Modello caricato! Ora puoi personalizzare il tuo programma."
+    },
+    "history": {
+      "active": "Attivo",
+      "completed": "Completato",
+      "cancelled": "Annullato"
     },
     "title": "Programmi",
     "toggleFilters": "Mostra/Nascondi Filtri",
@@ -1638,6 +1684,7 @@
     "progress": {
       "overallWorkout": "Progresso Allenamenti Totale",
       "currentCycle": "Progresso Ciclo Attuale",
+      "currentWeeklyCycle": "Progresso Ciclo Settimanale",
       "overallWeeks": "Progresso Totale (Settimane Completate)",
       "weekCompleted": " - Completata",
       "weekIncomplete": " - Incompleta",
@@ -1672,7 +1719,7 @@
       "addDay": "AGGIUNGI GIORNO",
       "dayNamePlaceholder": "es., Giorno di Spinta",
       "dayOfWeekLabel": "Giorno della Settimana",
-      "dayNameLabel": "Giorno",
+      "dayNameLabel": "Nome giorno",
       "cycleDayLabel": "Numero Giorno del Ciclo",
       "dayRequired": "Il giorno è obbligatorio.",
       "routineLabel": "Scheda",
@@ -1689,6 +1736,7 @@
     },
     "weeks": {
       "title": "Programmazione Settimanale",
+      "weekLabel": "Settimana #",
       "addWeek": "AGGIUNGI SETTIMANA",
       "weekNamePlaceholder": "es., Settimana 1: Volume",
       "removeWeek": "RIMUOVI SETTIMANA",
@@ -1699,7 +1747,9 @@
       "numWeeksLabel": "Numero di Settimane",
       "numWeeksWizardMsg": "Quante settimane dovrebbe avere il tuo programma?",
       "daysInWeekLabel": "Giorni nella Settimana {{week}}",
-      "daysInWeekWizardMsg": "Quanti giorni dovrebbe avere la settimana {{week}}?"
+      "daysInWeekWizardMsg": "Quanti giorni dovrebbe avere la settimana {{week}}?",
+      "confirmRemoveTitle": "Rimuovi Settimana",
+      "confirmRemoveMsg": "Confermi di voler rimuovere la Settimana {{week}} e tutti i suoi giorni pianificati?"
     },
     "actions": {
       "cancel": "ANNULLA",
@@ -1708,7 +1758,7 @@
     },
     "modal": {
       "currentSelectedRoutine": "Scheda selezionata attuale",
-      "selectingFor": "Selezionando scheda per",
+      "selectingFor": "Stai selezionando la scheda per",
       "week": "Settimana",
       "day": "Giorno",
       "selectRoutineTitle": "Seleziona una Scheda",
@@ -1732,6 +1782,12 @@
       "close": "CHIUDI"
     },
     "toasts": {
+      "creatingDuplicate": " Creazione del programma duplicato in corso...",
+      "duplicateCreated": "Programma '{{name}}' creato con successo",
+      "duplicateFailed": "Creazione del programma duplicato fallita",
+      "allDaysScheduled": "Tutti i giorni del ciclo sono stati pianificati.",
+      "customRoutinesSave": "{{count}} scheda/e personalizzata/e salvata/e.",
+      "customRoutineCreated": "Scheda personalizzata {{name}} creata.",
       "validationError": "Errore di Convalida",
       "linearNoWeeks": "I programmi lineari devono avere almeno una settimana.",
       "linearEmptyWeeks": "Aggiungi schede a ogni settimana o rimuovi le settimane vuote.",
@@ -1739,20 +1795,28 @@
       "formInvalid": "Compila tutti i campi obbligatori, inclusa la selezione di una scheda per ogni giorno pianificato.",
       "saveError": "Salvataggio fallito: {{error}}",
       "saveErrorTitle": "Errore di Salvataggio",
-      "created": "Programma \"{{name}}\" creato.",
+      "created": "Programma {{name}} creato.",
       "createdTitle": "Programma Creato",
+      "savingProgram": "Salvataggio programma...",
       "saved": "Programma salvato con successo",
       "saveSuccess": "Successo",
       "deleteError": "Nessun programma selezionato per l'eliminazione",
       "deleteErrorTitle": "Errore di Eliminazione",
       "deleteUnexpectedError": "Si è verificato un errore imprevisto durante l'eliminazione del programma",
       "completeFailed": "Impossibile completare il programma",
+      "completeSuccess": "Programma completato con successo",
       "deactivateFailed": "Disattivazione fallita",
+      "activateFailed": "Attivazione fallita",
       "setActiveFailed": "Impossibile impostare il programma come attivo",
       "statusUpdateFailed": "Aggiornamento stato programma fallito",
       "noHistory": "Nessuna cronologia disponibile per questo programma.",
+      "missingIds": "ID programma o voce della cronologia mancanti.",
+      "confirmHistoryRemoveTitle": "Rimozione Voce della Cronologia",
+      "confirmHistoryRemoveMsg": "Si conferma di voler rimuovere questa voce della cronologia? Questa azione non può essere annullata.",
       "historyRemoved": "Voce della cronologia rimossa.",
+      "historyRemoving": "Rimozione voce della cronologia in corso...",
       "historyRemoveFailed": "Rimozione voce della cronologia fallita.",
+      "invalidFields": "Assicurati che tutti i campi siano validi",
       "historySaveFailed": "Salvataggio voce della cronologia fallito.",
       "weekAddAllDays": "Tutti i 7 giorni di questa settimana sono stati pianificati.",
       "cycleAddAllDays": "Tutti i {{count}} giorni del ciclo sono stati pianificati.",
@@ -1763,6 +1827,13 @@
       "groupingCancelled": "Raggruppamento annullato."
     },
     "alerts": {
+      "criticalChangeTitle": "Modifiche Critiche al Programma Rilevate",
+      "criticalChangeMessage": "Stai per modificare impostazioni critiche del programma (tipo, programma, struttura settimane/giorni) mentre questo programma ha allenamenti registrati. Questo potrebbe causare incoerenze nei dati.\n\nVuoi:\n• Creare un nuovo programma con le tue modifiche (consigliato)\n• Continuare a modificare questo programma (procedi con cautela)",
+      "criticalChangeCancel": "Annulla",
+      "criticalChangeCreate": "Crea Nuovo Programma",
+      "criticalChangeConfirm": "Continua Comunque",
+      "duplicateNameTitle": "Nome del Tuo Nuovo Programma",
+      "duplicateNameMessage": "Inserisci un nome per la copia di '{{name}}':",
       "finishTitle": "Completa Programma",
       "finishMessage": "Confermi di voler contrassegnare questo programma come completato?",
       "finishButton": "Completa Programma",
@@ -1773,7 +1844,7 @@
       "deleteTitle": "Elimina Programma",
       "deleteMessage": "Confermi di voler eliminare questo programma? Questa azione non può essere annullata",
       "delete": "Elimina",
-      "cloneSuccess": "Programma \"{{name}}\" clonato con successo.",
+      "cloneSuccess": "Programma {{name}} clonato con successo.",
       "cloneFailed": "Clonazione programma fallita",
       "selectGroupTypeTitle": "Seleziona Tipo di Gruppo",
       "selectGroupTypeMessage": "Come vorresti raggruppare questi esercizi?",
@@ -1785,6 +1856,11 @@
       "setSupersetRoundsMessage": "Quanti round (serie) dovrebbe avere questa superserie?",
       "setExerciseTargetsTitle": "Imposta Target Esercizio",
       "setExerciseTargetsMessage": "Inserisci le ripetizioni e il peso target per ogni serie del gruppo."
+    },
+    "exercise": {
+      "set": "1 serie",
+      "sets": "serie",
+      "of": "di"
     }
   },
   "measurementHistory": {
@@ -2058,7 +2134,7 @@
     },
     "alerts": {
       "deleteTitle": "Eliminare Registro Attività?",
-      "deleteMessage": "Confermi di voler eliminare questa sessione per \"{{name}}\"? L'azione non può essere annullata.",
+      "deleteMessage": "Confermi di voler eliminare questa sessione per {{name}}? L'azione non può essere annullata.",
       "cancel": "Annulla",
       "deleteButton": "Elimina"
     }
@@ -2195,17 +2271,17 @@
   },
   "personalGymService": {
     "addSuccessTitle": "Attrezzatura Aggiunta",
-    "addSuccessMessage": "Aggiunto \"{{name}}\" alla tua palestra!",
+    "addSuccessMessage": "Aggiunto {{name}} alla tua palestra!",
     "updateSuccessTitle": "Attrezzatura Aggiornata",
-    "updateSuccessMessage": "Aggiornato \"{{name}}\" con successo!",
+    "updateSuccessMessage": "Aggiornato {{name}} con successo!",
     "updateFailedTitle": "Aggiornamento Fallito",
-    "updateFailedMessage": "Impossibile trovare \"{{name}}\" da aggiornare.",
+    "updateFailedMessage": "Impossibile trovare {{name}} da aggiornare.",
     "deleteFailedTitle": "Eliminazione Fallita",
     "deleteFailedMessage": "Attrezzatura non trovata.",
     "deleteConfirmTitle": "Elimina Attrezzatura",
-    "deleteConfirmMessage": "Confermi di voler eliminare \"{{name}}\" dalla tua palestra? Questa azione è irreversibile.",
+    "deleteConfirmMessage": "Confermi di voler eliminare {{name}} dalla tua palestra? Questa azione è irreversibile.",
     "deletedTitle": "Eliminato",
-    "deletedMessage": "\"{{name}}\" è stato eliminato.",
+    "deletedMessage": "{{name}} è stato eliminato.",
     "importErrorTitle": "Errore di Importazione",
     "importFailed": "Importazione fallita: File dati palestra personale non valido.",
     "mergeSuccessTitle": "Palestra Personale Unita",
@@ -2384,13 +2460,13 @@
     },
     "deleteConfirm": {
       "title": "Elimina Programma",
-      "message": "Confermi di voler eliminare il programma \"{{name}}\"? Questa azione è irreversibile.",
+      "message": "Confermi di voler eliminare il programma {{name}}? Questa azione è irreversibile.",
       "cancelButton": "Annulla",
       "deleteButton": "Elimina Programma"
     },
     "deleteSuccess": {
       "title": "Programma Eliminato",
-      "message": "Programma \"{{name}}\" eliminato."
+      "message": "Programma {{name}} eliminato."
     },
     "importError": {
       "title": "Errore di Importazione",
@@ -2407,10 +2483,10 @@
     },
     "toggle": {
       "notFound": "Programma non trovato.",
-      "alreadyActive": "\"{{name}}\" è già attivo."
+      "alreadyActive": "{{name}} è già attivo."
     },
     "deactivate": {
-      "info": "Il programma \"{{name}}\" è stato disattivato."
+      "info": "Il programma {{name}} è stato disattivato."
     },
     "updateHistory": {
       "programNotFound": "Programma non trovato.",
@@ -2681,9 +2757,9 @@
     },
     "delete": {
       "confirmTitle": "Elimina Esercizio",
-      "confirmMessage": "Confermi di voler eliminare \"{{name}}\"? Verrà rimosso da tutte le routine e dai registri storici. Questa azione non può essere annullata.",
+      "confirmMessage": "Confermi di voler eliminare {{name}}? Verrà rimosso da tutte le routine e dai registri storici. Questa azione non può essere annullata.",
       "successTitle": "Esercizio Eliminato",
-      "successMessage": "\"{{name}}\" è stato eliminato con successo.",
+      "successMessage": "{{name}} è stato eliminato con successo.",
       "errorTitle": "Eliminazione Fallita",
       "errorMessage": "Impossibile eliminare l'esercizio: {{error}}"
     },
@@ -2774,9 +2850,9 @@
     "delete": {
       "notFound": "Esercizio non trovato",
       "confirmTitle": "Elimina Esercizio",
-      "confirmMessage": "Confermi di voler eliminare \"{{name}}\"? Verrà rimosso da tutte le routine e dai registri storici. Questa azione non può essere annullata.",
+      "confirmMessage": "Confermi di voler eliminare {{name}}? Verrà rimosso da tutte le routine e dai registri storici. Questa azione non può essere annullata.",
       "deleting": "Eliminazione esercizio in corso...",
-      "success": "\"{{name}}\" è stato eliminato con successo.",
+      "success": "{{name}} è stato eliminato con successo.",
       "successTitle": "Eliminato",
       "error": "Impossibile eliminare l'esercizio. Potrebbe essere in uso."
     }
