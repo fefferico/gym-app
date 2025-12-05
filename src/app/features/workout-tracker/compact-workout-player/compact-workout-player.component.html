@@ -120,8 +120,8 @@
 
   <!-- Main Content: Exercises List -->
   <main class="mt-4 px-1 pb-36 bg-gray-200 dark:bg-gray-900">
-    <div *ngIf="routine() as currentRoutine; else loading" cdkDropList [cdkDropListData]="currentRoutine.workoutExercises"
-      (cdkDropListDropped)="onExerciseDrop($event)" class="">
+    <div *ngIf="routine() as currentRoutine; else loading" cdkDropList
+      [cdkDropListData]="currentRoutine.workoutExercises" (cdkDropListDropped)="onExerciseDrop($event)" class="">
       <ng-container *ngFor="let exercise of currentRoutine.workoutExercises; let exIndex = index;">
         <!-- Exercise Card -->
         <div #exerciseCard cdkDrag *ngIf="!exercise.supersetId || isSupersetStart(exIndex)" appShatterable
@@ -708,7 +708,9 @@
                       *ngIf="getRestTimerMode() === restTimerModeEnum.Compact && isRestTimerVisibleForSet(exIndex, setIndex)"
                       class="relative flex items-center px-2 py-0.5 transition-all"
                       [ngClass]="{'disabled-div-lower-opacity-70': restTimerRemainingForSet(exIndex, setIndex) === 0}">
-                      <app-icon class="h-6 w-6 text-yellow-600 ml-2 pb-1" [strokeWidth]="2.5"></app-icon>
+                      <app-icon (click)="skipCompactRestTimer(exIndex, setIndex)"
+                        *ngIf="isCompactRestTimerRunning(exIndex, setIndex)" name="skip-filled"
+                        class="h-6 w-6 text-yellow-600 mx-2 pb-1" [strokeWidth]="2.5"></app-icon>
                       <div
                         class="progress-bar-container w-full bg-gray-300 dark:bg-gray-700 rounded-full h-4 relative flex items-center">
                         <div class="progress-bar bg-yellow-400 h-3 rounded-full my-1 mx-1"
@@ -883,7 +885,9 @@
                       *ngIf="getRestTimerMode() === restTimerModeEnum.Compact && isRestTimerVisibleForSet(exIndex, roundIndex)"
                       class="relative flex items-center px-2 py-0.5 transition-all"
                       [ngClass]="{'disabled-div-lower-opacity-70': restTimerRemainingForSet(exIndex, roundIndex) === 0}">
-                      <app-icon class="h-6 w-6 text-yellow-600 ml-2 pb-1" [strokeWidth]="2.5"></app-icon>
+                      <app-icon (click)="skipCompactRestTimer(exIndex, roundIndex)"
+                        *ngIf="isCompactRestTimerRunning(exIndex, roundIndex)" name="skip-filled"
+                        class="h-6 w-6 text-yellow-600 mx-2 pb-1" [strokeWidth]="2.5"></app-icon>
                       <div
                         class="progress-bar-container w-full bg-gray-300 dark:bg-gray-700 rounded-full h-4 relative flex items-center">
                         <div class="progress-bar bg-yellow-400 h-3 rounded-full my-1 mx-1"
@@ -1066,6 +1070,42 @@
       ('compactPlayer.allSetsDone' | translate) }}
     </p>
   </div>
+
+  <!-- Floating Compact Rest Timer -->
+  <div *ngIf="shouldShowFloatingRestTimer() && floatingRestTimerState() as timerState"
+    class="fixed left-0 right-0 z-[19] bottom-24 flex justify-center px-4">
+    <div class="w-full max-w-sm bg-white dark:bg-gray-800 rounded-lg shadow-lg px-4 py-1 border-l-4 border-yellow-500">
+
+      <!-- Exercise Info -->
+      <div class="mb-1 text-gray-800 dark:text-gray-200">
+        <div [innerHTML]="restTimerNextUpText() || ''"></div>
+      </div>
+
+      <!-- Timer and Progress -->
+      <div class="flex items-center justify-between gap-3">
+        <!-- Skip Button -->
+        <button appBumpClick (click)="handleFloatingRestTimerSkipped()" [disabled]="floatingRestTimerPaused()"
+          class="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-semibold rounded-md transition-colors">
+          <app-icon name="skip-filled" class="h-4 w-4 inline-block mr-1"></app-icon>
+        </button>
+        <!-- Remaining Time -->
+        <span class="text-xl font-mono font-bold"
+          [ngClass]="floatingRestTimerPaused() ? 'text-gray-500 dark:text-gray-400' : 'text-yellow-600 dark:text-yellow-400'">
+          {{ formatSecondsToTime(floatingRestTimerRemaining()) }}
+        </span>
+
+        <!-- Progress Bar -->
+        <div class="flex-1">
+          <div class="w-full bg-gray-300 dark:bg-gray-700 rounded-full h-2">
+            <div [ngClass]="floatingRestTimerPaused() ? 'bg-gray-400' : 'bg-yellow-500'"
+              class="h-2 rounded-full transition-all duration-300" [style.width.%]="floatingRestTimerProgress()">
+            </div>
+          </div>
+        </div>
+        <app-icon name="rest" class="h-8 w-8 text-yellow-600" [strokeWidth]="3"></app-icon>
+      </div>
+    </div>
+  </div>
   <!-- Footer with Action Buttons -->
   <div #footerBar class="flex justify-center fixed left-0 right-0 z-20 bottom-0">
     <div
@@ -1106,10 +1146,10 @@
     (backToSearchClicked)="onBackToSearchFromSimilar()" (close)="closeSwitchExerciseModal()">
   </app-exercise-selection-modal>
 
-  <app-full-screen-rest-timer [isVisible]="isRestTimerVisible()" [mode]="restTimerMode()"
+  <app-full-screen-rest-timer [isVisible]="isRestTimerFullScreenVisible()" [mode]="restTimerMode()"
     [mainTimer]="sessionTimerDisplay()" [durationSeconds]="restDuration()" [mainText]="restTimerMainText()"
     [nextUpText]="restTimerNextUpText()" (timerFinished)="handleRestTimerFinished()"
-    (timerSkipped)="handleRestTimerSkipped($event)" (stopwatchStopped)="handleStopwatchStopped()"
+    (timerSkipped)="handleRestTimerFullScreenSkipped($event)" (stopwatchStopped)="handleStopwatchStopped()"
     (modeChanged)="restTimerMode.set($event)">
   </app-full-screen-rest-timer>
 

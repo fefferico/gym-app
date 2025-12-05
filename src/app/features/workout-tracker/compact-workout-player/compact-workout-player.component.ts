@@ -246,7 +246,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   showCompletedSetsForExerciseInfo = signal(true);
   showCompletedSetsForDayInfo = signal(false);
 
-  isRestTimerVisible = signal(false);
+  isRestTimerFullScreenVisible = signal(false);
   restDuration = signal(0);
   restTimerMainText = signal(this.translate.instant('compactPlayer.rest'));
   restTimerNextUpText = signal<string | null>(this.translate.instant('compactPlayer.loading'));
@@ -259,7 +259,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
  * Returns the remaining rest time in seconds.
  */
   restTimerRemaining(): number {
-    if (!this.isRestTimerVisible()) return 0;
+    if (!this.isRestTimerFullScreenVisible()) return 0;
     if (this.getRestTimerMode() !== this.restTimerModeEnum.Compact) {
       // fallback for fullscreen or other modes
       return this.restDuration();
@@ -2682,6 +2682,17 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return map;
   });
 
+  /**
+ * Returns the progress of the floating rest timer as a percentage (0-100).
+ */
+  floatingRestTimerProgress(): number {
+    const remaining = this.floatingRestTimerRemaining();
+    if (this.compactRestDuration <= 0) return 0;
+    const elapsed = this.compactRestDuration - remaining;
+    return Math.max(0, Math.min(100, (elapsed / this.compactRestDuration) * 100));
+  }
+
+  floatingRestTimerRemaining = signal<number>(0);
   private async startRestPeriod(duration: number, completedExIndex: number, completedSetIndex: number): Promise<void> {
     this.playerSubState.set(PlayerSubState.Resting);
     this.restTimerMode.set(TIMER_MODES.timer);
@@ -2691,16 +2702,26 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.restTimerNextSetDetails.set(null);
 
     if (this.getRestTimerMode() === this.restTimerModeEnum.Fullscreen) {
-      this.isRestTimerVisible.set(true);
+      this.isRestTimerFullScreenVisible.set(true);
     }
 
     if (this.getRestTimerMode() === this.restTimerModeEnum.Compact) {
       const restKey = this.getSupersetRestKey(completedExIndex, completedSetIndex);
       this.restStartTimestamps[restKey] = Date.now();
+      this.compactRestStartTimestamp = Date.now();
+      this.compactRestDuration = duration;
       this.lastCompactRestBeepSecond = null;
+
       if (this.compactRestInterval) clearInterval(this.compactRestInterval);
       this.compactRestInterval = setInterval(() => {
-        const remaining = this.restTimerRemainingForSet(completedExIndex, completedSetIndex);
+        // Update floating timer state when rest starts
+        this.updateFloatingRestTimerState(completedExIndex, completedSetIndex, true);
+
+        // Calculate remaining time
+        const elapsed = Math.floor((Date.now() - (this.compactRestStartTimestamp ?? 0)) / 1000);
+        const remaining = Math.max(0, this.compactRestDuration - elapsed);
+        this.floatingRestTimerRemaining.set(remaining);
+
         // Play countdown sound for last 5 seconds
         const countDownSoundEnabled: boolean = !!(this.appSettingsService.enableTimerCountdownSound() && this.appSettingsService.getSettings().countdownSoundSeconds);
         const countDownSoundNumber: number = countDownSoundEnabled ? this.appSettingsService.getSettings().countdownSoundSeconds : 0;
@@ -2715,6 +2736,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           clearInterval(this.compactRestInterval);
           this.compactRestInterval = null;
           this.lastCompactRestBeepSecond = null;
+          setTimeout(() => {
+            this.hideFloatingRestTimer();
+          }, 1500);
         }
       }, 250); // Check 4 times per second for responsiveness
     }
@@ -3076,7 +3100,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   handleRestTimerFinished(): void {
     this.playEndSound();
-    this.isRestTimerVisible.set(false);
+    this.isRestTimerFullScreenVisible.set(false);
+    this.hideFloatingRestTimer(); // Hide floating timer when rest finishes
 
     if (this.isManualRestActive && this.restTimerMode() === 'timer') {
       this.isManualRestActive = false;
@@ -3088,8 +3113,23 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.handleAutoExpandNextExercise();
   }
 
-  handleRestTimerSkipped(timeSkipped: number): void {
-    this.isRestTimerVisible.set(false);
+  /**
+ * Handles skipping the floating compact rest timer
+ */
+  handleFloatingRestTimerSkipped(): void {
+    if (this.compactRestInterval) {
+      clearInterval(this.compactRestInterval);
+      this.compactRestInterval = null;
+    }
+
+    this.floatingRestTimerRemaining.set(0);
+    this.hideFloatingRestTimer();
+    this.playEndSound();
+    this.handleRestTimerFinished();
+  }
+
+  handleRestTimerFullScreenSkipped(timeSkipped: number): void {
+    this.isRestTimerFullScreenVisible.set(false);
 
     if (this.isManualRestActive && this.restTimerMode() === 'timer') {
       this.isManualRestActive = false;
@@ -3192,7 +3232,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       sessionTimerElapsedSecondsBeforePause: currentTotalSessionElapsed,
       currentBlockRound: -1,
       totalBlockRounds: -1,
-      isResting: this.isRestTimerVisible(), // Full screen timer state
+      isResting: this.isRestTimerFullScreenVisible(), // Full screen timer state
       isRestTimerVisibleOnPause: this.playerSubState() === PlayerSubState.Resting, // General resting sub-state
       restTimerRemainingSecondsOnPause: this.restDuration(), // Should be remaining time from timer component
       restTimerInitialDurationOnPause: 0,
@@ -5208,7 +5248,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           this.restDuration.set(duration);
           this.restTimerMainText.set(this.translate.instant('compactPlayer.manualRest'));
           this.restTimerNextUpText.set(this.translate.instant('compactPlayer.takeABreak'));
-          this.isRestTimerVisible.set(true);
+          this.isRestTimerFullScreenVisible.set(true);
         }
       }
     } else if (choice.data === TIMER_MODES.stopwatch) {
@@ -5217,12 +5257,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       this.restTimerMode.set(TIMER_MODES.stopwatch); // Set mode to stopwatch
       this.restTimerMainText.set(this.translate.instant('compactPlayer.manualRest'));
       this.restTimerNextUpText.set(this.translate.instant('compactPlayer.takeABreak'));
-      this.isRestTimerVisible.set(true);
+      this.isRestTimerFullScreenVisible.set(true);
     }
   }
 
   handleStopwatchStopped(): void {
-    this.isRestTimerVisible.set(false);
+    this.isRestTimerFullScreenVisible.set(false);
 
     if (this.isManualRestActive) {
       this.isManualRestActive = false;
@@ -7493,6 +7533,113 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       ...log,
       workoutExercises: reorderedLoggedExercises
     }));
+  }
+
+  // Add this signal to track the floating rest timer state
+  floatingRestTimerState = signal<{
+    exIndex: number;
+    setIndex: number;
+    isVisible: boolean;
+  } | null>(null);
+  floatingRestTimerPaused = signal<boolean>(false);
+
+  /**
+   * Checks if the floating compact rest timer should be visible.
+   * Conditions:
+   * 1. Rest timer mode is Compact
+   * 2. Rest timer is currently active/visible
+   * 3. The related exercise card is collapsed (not expanded)
+   * @returns true if all conditions are met
+   */
+  shouldShowFloatingRestTimer(): boolean {
+    // Condition 1: Check if compact rest mode is active
+    if (this.getRestTimerMode() !== this.restTimerModeEnum.Compact) {
+      return false;
+    }
+
+    // Condition 2: Check if rest timer is visible
+    // if (!this.isRestTimerVisible()) {
+    //   return false;
+    // }
+
+    // Condition 3: Check if the exercise card is collapsed
+    // The exercise card is collapsed if expandedExerciseIndex is NOT set to the current exercise
+    const lastExIndex = this.lastExerciseIndex();
+    if (this.expandedExerciseIndex() === lastExIndex) {
+      return false; // Exercise card is expanded, don't show floating timer
+    }
+
+    // if (this.isRestTimerVisible()){
+    //   return true;
+    // }
+
+    return true;
+  }
+
+  /**
+   * Updates the floating rest timer state.
+   * Should be called whenever a set is completed and rest timer starts.
+   */
+  updateFloatingRestTimerState(exIndex: number, setIndex: number, isVisible: boolean): void {
+    if (isVisible) {
+      this.floatingRestTimerState.set({
+        exIndex,
+        setIndex,
+        isVisible: true
+      });
+    } else {
+      this.floatingRestTimerState.set(null);
+    }
+  }
+
+  /**
+   * Hides the floating rest timer
+   */
+  hideFloatingRestTimer(): void {
+    this.floatingRestTimerState.set(null);
+  }
+
+
+  /**
+ * Checks if a compact rest timer is currently running for a specific exercise and set.
+ * @param exIndex The exercise index
+ * @param setIndex The set index
+ * @returns true if a rest timer is active for this specific set
+ */
+  isCompactRestTimerRunning(exIndex: number, setIndex: number): boolean {
+    const timerState = this.floatingRestTimerState();
+    return timerState !== null && timerState.exIndex === exIndex && timerState.setIndex === setIndex;
+  }
+
+  /**
+ * Skips the compact rest timer for a specific exercise and set.
+ * @param exIndex The exercise index
+ * @param setIndex The set index
+ */
+  skipCompactRestTimer(exIndex: number, setIndex: number): void {
+    // Only skip if this timer is actually running for the specified set
+    if (!this.isCompactRestTimerRunning(exIndex, setIndex)) {
+      return;
+    }
+
+    if (this.compactRestInterval) {
+      clearInterval(this.compactRestInterval);
+      this.compactRestInterval = null;
+    }
+
+    // Mark the timer as paused instead of stopping it
+    this.floatingRestTimerPaused.set(true);
+
+    // Stop tracking the rest timer progress for this set
+    const restKey = this.getSupersetRestKey(exIndex, setIndex);
+    delete this.restStartTimestamps[restKey];
+
+    this.playEndSound();
+
+    // After a delay, finish the rest period
+    setTimeout(() => {
+      this.handleRestTimerFinished();
+    }, 500);
   }
 
 }
